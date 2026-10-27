@@ -39,6 +39,11 @@ otherwise the packaged suggestions for the executor's provider plus any model ad
 already in the policy ([D231](../DECISIONS.md#d231--packaged-model-suggestions-and-small-ui-patch-releases)). The
 reviewer decides the concrete selection and its reason per task and revision.
 
+Presets can also be declared in the global editor's guided form, with the same fields and checks as TOML; tool lists
+are offered only for executor-only Claude presets ([D250](../DECISIONS.md#d250--guided-profile-and-agent-forms-over-the-existing-configuration-contract)).
+A project with its own profile setup keeps the agents copied into its private configuration when first saved and
+edits them in its project editor after activation; later preset or global agent changes do not rewrite that copy.
+
 Preview and confirmation reuse `/registry/preview` and `/registry/apply`: CAS, and repeating the same preview does not
 increment another version. The hash binds the row, the selection, both full presets and the versions. An absent or
 incompatible preset never inherits another provider; at restart, an invalid row stays unavailable with a diagnostic.
@@ -65,4 +70,4 @@ pair or other projects.
 
 - `services/local_config.py` (presets and compositions), `services/project_registry.py`, `storage/registry.py`,
   `services/managed_runtime.py`.
-- `frontend/src/pages/Settings.tsx`.
+- `frontend/src/pages/Settings.tsx`, `frontend/src/pages/Configuration.tsx`, `frontend/src/ProfileFields.tsx`.

@@ -4,9 +4,13 @@ import type { S } from "../managed-api";
 import type { MessageKey } from "../i18n.ts";
 import { useI18n } from "../Language";
 import { useWorkspace } from "../workspace";
-import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
-import { configurationChange } from "../project-profile";
+import { DiffBlock, Evidence, Fields, Hash, Stale, usePoll } from "../ui";
+import { configurationChange, projectEditing, projectIssues } from "../project-profile";
 import type { Form } from "../project-profile";
+import { AgentFields, CommandsFields, ProfileFields, SaveImpact } from "../ProfileFields";
+import { domId, texts } from "../profile-form.ts";
+import type { Issues } from "../profile-form.ts";
+import { efforts, modelOptions } from "../configuration.ts";
 import { ConfigurationAssistance } from "./ConfigurationAssistance";
 import { Preparation } from "./Preparation";
 import { Link } from "../navigation";
@@ -129,12 +133,22 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState<{ kind: "save" | "activate"; body: Form; shown: S["ConfigurationPreviewRead"] }>();
   const [confirmed, setConfirmed] = useState(false);
+  const [issues, setIssues] = useState<Issues>({});
   useEffect(() => { setPreview(undefined); setConfirmed(false); }, [state.version, state.status]);
-  const edit = (next: Form) => { setForm(next); setPreview(undefined); setConfirmed(false); };
+  const edit = (next: Form) => { setForm(next); setPreview(undefined); setConfirmed(false); setIssues({}); };
   const activation = { revision: state.saved?.revision as number, sha256: state.saved?.sha256 as string,
     expected_version: state.version, reason };
-  const tools = form.commands.executables as Record<string, string>;
-  return <section className="panel">
+  const editing = projectEditing(state, form);
+  /** Check only the sections this stage can change; the server validates the whole candidate again. */
+  function checked() {
+    if (mode !== "form") return true;
+    const found = projectIssues(form, editing, efforts);
+    setIssues(found);
+    const first = Object.keys(found)[0];
+    if (first) document.getElementById?.(domId("project-profile", first))?.focus();
+    return !first;
+  }
+  return <section className="panel project-configuration">
     <h2>{t("profile.configuration")}</h2><p role="status">{t("profile.stage")} <strong>{STAGES[state.configuration_state] ? t(STAGES[state.configuration_state]) : state.configuration_state}</strong> · {state.status}</p>
     {state.candidate_state && state.candidate_state !== state.configuration_state && <p role="status">{t("configuration.candidate")} · {STAGES[state.candidate_state] ? t(STAGES[state.candidate_state]) : state.candidate_state}</p>}
     {state.status === "APPLY_PENDING" && <p role="status" className="state state-attention">{t("configuration.mode.apply_pending")}{" "}
@@ -152,22 +166,20 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
           disabled={busy} run={operate} contextPaths={state.assistance_documents}
           apply={next => { setText(next); setMode("toml"); setPreview(undefined); setConfirmed(false); }} />}
       </>}
-      <label>{t("profile.name")}<input readOnly value={String(form.profile_name)} /></label>
-      <label>{t("profile.instructions")}<textarea rows={4} value={form.profile.executor_instructions} disabled={mode === "toml"} onChange={e => edit({ ...form, profile: { ...form.profile, executor_instructions: e.target.value } })} /></label>
-      {Object.entries(tools).map(([name, path]) => <label key={name}>{t("profile.tool", { name })}<input value={path} disabled={mode === "toml"} spellCheck={false} onChange={e => edit({ ...form, commands: { ...form.commands, executables: { ...tools, [name]: e.target.value } } })} /></label>)}
-      {Object.entries(form.commands.environment as Record<string, string>).map(([name, value]) => <label key={name}>{name}<input value={value} disabled={mode === "toml"} spellCheck={false} onChange={e => edit({ ...form, commands: { ...form.commands, environment: { ...form.commands.environment, [name]: e.target.value } } })} /></label>)}
+      <ProjectScope form={form} editing={editing} />
+      {mode === "form" && <ProjectFields form={form} editing={editing} issues={issues} onChange={edit} />}
       <button disabled={busy} onClick={() => void operate(async () => {
         const converted = await managed<S["ConfigurationFormRead"]>(`${base}/form`, mode === "form" ? { form, validated: false } : { text, validated: false });
         edit(converted.form); setText(converted.text); setMode(mode === "form" ? "toml" : "form");
       })}>{mode === "form" ? t("profile.toml") : t("profile.form")}</button>
       {mode === "toml" && <label>{t("profile.toml")}<textarea id="project-profile-toml" rows={22} value={text} spellCheck={false} onChange={e => { setText(e.target.value); setPreview(undefined); setConfirmed(false); }} /></label>}
       <label>{t("docs.review.reason")}<input value={reason} maxLength={1000} onChange={e => { setReason(e.target.value); setPreview(undefined); setConfirmed(false); }} /></label>
-      <div className="actions"><button disabled={busy || !reason.trim()} onClick={() => void operate(async () => {
+      <div className="actions"><button disabled={busy || !reason.trim()} onClick={() => { if (checked()) void operate(async () => {
         const converted = await managed<S["ConfigurationFormRead"]>(`${base}/form`, mode === "form" ? { form, validated: true } : { text, validated: true });
         const body = configurationChange(cas, converted.text, reason);
         const shown = await managed<S["ConfigurationPreviewRead"]>(`${base}/preview`, body);
         setPreview({ kind: "save", body, shown }); setConfirmed(false);
-      })}>{t("profile.review_save")}</button>
+      }); }}>{t("profile.review_save")}</button>
       <button className="button-quiet" disabled={busy} onClick={() => { edit(state.form); setText(state.text ?? ""); setCas(state); }}>{t("profile.reload_base")}</button></div>
     </>
     <Evidence title={t("profile.references")} value={{ saved: state.saved, active: state.active, profile: state.profile }} />
@@ -180,6 +192,7 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
     {preview && <div className="decision">
       <Hash value={preview.shown.sha256} />
       {preview.shown.changes?.map((change, index) => <DiffBlock key={index} diff={String(change.diff ?? "")} label={t("profile.diff")} />)}
+      <SaveImpact preview={preview.shown} />
       <Evidence title={t("profile.evidence")} value={preview.shown} />
       <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("profile.confirm_exact")}</label>
       <button disabled={busy || !confirmed} onClick={() => void operate(async () => {
@@ -191,4 +204,70 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
       })}>{preview.kind === "save" ? t("registry.save") : t("profile.activate")}</button>
     </div>}
   </section>;
+}
+
+type Editing = ReturnType<typeof projectEditing>;
+
+/** OT004: what this private copy inherits and what the current stage lets the operator change. */
+function ProjectScope({ form, editing }: { form: Form; editing: Editing }) {
+  const { t } = useI18n();
+  return <div className="state state-info project-scope">
+    <p><strong>{t("editor.scope_title")}</strong> {t("editor.project_scope", { revision: String(form.global?.revision ?? "—") })}</p>
+    <p>{t(editing.stage === "initial" ? "editor.stage_initial" : editing.profile ? "editor.stage_edit" : "editor.stage_active")}</p>
+  </div>;
+}
+
+function ProjectFields({ form, editing, issues, onChange }: {
+  form: Form; editing: Editing; issues: Issues; onChange: (form: Form) => void;
+}) {
+  const { t } = useI18n();
+  const policy = form.policy ?? {};
+  const reviewer = form.agents?.reviewer ?? {};
+  const provider = String(reviewer.provider ?? "");
+  const model = domId("project-profile", "agents.reviewer.model");
+  const effort = domId("project-profile", "agents.reviewer.effort");
+  return <>
+    <fieldset><legend>{t("editor.profile_section")}</legend>
+      <label>{t("profile.name")}<input readOnly value={String(form.profile_name)} /></label>
+      {!editing.profile && <p className="hint">{t(editing.stage === "initial" ? "editor.profile_fixed" : "editor.profile_base")}</p>}
+      <ProfileFields scope="project-profile" prefix="profile" issues={issues} readOnly={!editing.profile} value={form.profile ?? {}}
+        onChange={profile => onChange({ ...form, profile })} />
+    </fieldset>
+    <fieldset><legend>{t("editor.commands_section")}</legend>
+      <CommandsFields scope="project-profile" prefix="commands" issues={issues} fixedNames={editing.stage === "initial"}
+        value={form.commands ?? {}} profile={form.profile} onChange={commands => onChange({ ...form, commands })} />
+    </fieldset>
+    <fieldset><legend>{t("editor.agents_section")}</legend>
+      <p className="hint">{t(editing.agents ? "editor.agents_hint" : "editor.agents_fixed")}</p>
+      {(["reviewer", "executor"] as const).map(role => <div key={role} className="agent-role">
+        <h3>{t(role === "reviewer" ? "settings.reviewer" : "settings.executor")}</h3>
+        <AgentFields scope="project-profile" prefix={`agents.${role}`} issues={issues} readOnly={!editing.agents} providerFixed
+          roles={[role]} value={form.agents?.[role] ?? {}} onChange={agent => onChange({ ...form, agents: { ...form.agents, [role]: agent } })}>
+          {role === "reviewer" && <>
+            <div><label htmlFor={model}>{t("settings.model")}</label>
+              <input id={model} list={`${model}-options`} value={String(reviewer.model ?? "")} readOnly={!editing.agents} spellCheck={false}
+                aria-invalid={!!issues["agents.reviewer.model"]}
+                onChange={event => onChange({ ...form, agents: { ...form.agents, reviewer: { ...reviewer, model: event.target.value } } })} />
+              <datalist id={`${model}-options`}>{modelOptions(provider).map(item => <option key={item} value={item} />)}</datalist>
+              {issues["agents.reviewer.model"] && <p className="field-error">{t(issues["agents.reviewer.model"])}</p>}</div>
+            <div><label htmlFor={effort}>{t("settings.effort")}</label>
+              {editing.agents ? <select id={effort} value={String(reviewer.effort ?? "")} aria-invalid={!!issues["agents.reviewer.effort"]}
+                onChange={event => onChange({ ...form, agents: { ...form.agents, reviewer: { ...reviewer, effort: event.target.value } } })}>
+                {[...new Set([String(reviewer.effort ?? ""), ...(efforts[provider] ?? [])])].map(item => <option key={item}>{item}</option>)}
+              </select> : <input id={effort} readOnly value={String(reviewer.effort ?? "")} />}
+              {issues["agents.reviewer.effort"] && <p className="field-error">{t(issues["agents.reviewer.effort"])}</p>}</div>
+          </>}
+        </AgentFields>
+      </div>)}
+      <h3>{t("editor.policy")}</h3>
+      <p className="hint">{t("editor.policy_hint")}</p>
+      <Fields items={[
+        [t("settings.planning"), String(policy.planning_mode ?? "")], [t("settings.selection"), String(policy.executor_mode ?? "")],
+        [t("settings.models"), texts(policy.executor_models).map(item => <code key={item} className="chip">{item}</code>)],
+        [t("settings.efforts"), texts(policy.executor_efforts).join(", ")],
+        [t("editor.revision_cycles"), policy.max_revision_cycles === undefined ? t("common.not_recorded") : String(policy.max_revision_cycles)],
+      ]} />
+    </fieldset>
+    <p className="hint">{t("editor.preserved")}</p>
+  </>;
 }

@@ -13,7 +13,7 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 ## Estado
 
 Versión previa a 1.0: la primera versión local está completa en el alcance declarado, el
-paquete declara `0.1.5`, quinto parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
+paquete declara `0.1.6`, sexto parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
 herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
 protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos.
@@ -70,15 +70,15 @@ scripts/install --allow-network
 
 ### 2b. Instalar desde un paquete publicado
 
-Descarga `my-harness-0.1.5-distribution.tar.gz` y su `.sha256` de la
+Descarga `my-harness-0.1.6-distribution.tar.gz` y su `.sha256` de la
 [página Releases](https://github.com/AcostaDDev/my-harness/releases) (o con `curl` como abajo) en la misma carpeta y ejecuta:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.5/my-harness-0.1.5-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.5/my-harness-0.1.5-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.5-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.5-distribution.tar.gz
-cd my-harness-0.1.5
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.6/my-harness-0.1.6-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.6/my-harness-0.1.6-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.6-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.6-distribution.tar.gz
+cd my-harness-0.1.6
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -131,7 +131,11 @@ publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni dat
    el recibo y activa por separado. Solo entonces se habilita la primera tarea. Django/TypeScript son opcionales.
    [Recorrido completo](README.md#start-a-project).
 
-**Edición posterior:** configuración global desde la navegación y perfil desde el proyecto, por formulario/TOML.
+**Edición posterior:** configuración global desde la navegación y perfil desde el proyecto (resumen y Ajustes), por
+formulario/TOML. Los formularios guiados cubren agentes y sus capacidades de herramientas, perfiles reutilizables,
+composiciones y presets globales y, por proyecto, comandos del perfil (argumentos, directorio, tiempo límite,
+entorno, JUnit), prefijos, rutas protegidas/sensibles/de modelo de datos, formateador, rutas instaladas,
+autorización/límites y agentes, según lo que permita la etapa del proyecto; los ajustes sin control se conservan en TOML.
 La ayuda IA es opcional y usa clientes activos; aplicar una propuesta cambia el borrador. Diff, guardado,
 preparación y activación siguen separados. Global se aplica sin reiniciar (salvo lease/poll con el supervisor en
 marcha, que la vista previa indica); cambios técnicos de perfil, preparación nueva. Los conflictos conservan el

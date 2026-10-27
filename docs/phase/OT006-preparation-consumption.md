@@ -106,7 +106,7 @@ this incident. `OwnershipLost` is a Harness ownership diagnostic, not a provider
 
 ## Resume after context reset
 
-1. Read STATE/ONE_OFF_TASKS/NEXT_STEPS and preserve this uncommitted documentation topic. OT006 is pending, not
+1. Read STATE/ONE_OFF_TASKS/NEXT_STEPS (this handoff is integrated into develop at `f185265`). OT006 is pending, not
    implemented. Resolve its priority/release target before product edits; OT004's existing assignment is unchanged.
 2. Use the aggregates above for synthetic reproduction. If additional local diagnosis is required, open
    `~/Library/Application Support/My Harness/data/harness.sqlite3` with SQLite URI `mode=ro`; locate the incident by

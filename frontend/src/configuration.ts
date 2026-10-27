@@ -1,6 +1,7 @@
 import type { S } from "./managed-api";
 import { managed, ManagedError } from "./managed-api";
 import type { MessageKey } from "./i18n.ts";
+import { agentIssues, commandsIssues, isObject, profileIssues, texts } from "./profile-form.ts";
 
 export type Form = Record<string, unknown>;
 export type Draft = {
@@ -95,6 +96,38 @@ export function errors(draft: Draft): Record<string, MessageKey> {
     result["agents.reviewer.effort"] = "configuration.effort_invalid";
   const roots = field(draft.form, "registration.roots");
   if (Array.isArray(roots) && roots.some(root => typeof root !== "string" || !root.startsWith("/"))) result["registration.roots"] = "configuration.absolute";
+  for (const role of ["reviewer", "executor"])
+    for (const [key, issue] of Object.entries(agentIssues(field(draft.form, `agents.${role}`), `agents.${role}`, [role], efforts))) result[key] ??= issue;
+  return { ...result, ...catalogIssues(draft.form) };
+}
+
+const MODEL = /^[A-Za-z0-9][A-Za-z0-9._:@[\]-]{0,127}$/;
+/** OT004: reusable profiles, compositions and presets of the global form; the server repeats every check. */
+export function catalogIssues(form: Form): Record<string, MessageKey> {
+  const result: Record<string, MessageKey> = {};
+  const profiles = isObject(form.profiles) ? form.profiles : {};
+  for (const [name, profile] of Object.entries(profiles)) Object.assign(result, profileIssues(profile, `profiles.${name}`));
+  for (const [name, composition] of Object.entries(isObject(form.compositions) ? form.compositions : {})) {
+    const prefix = `compositions.${name}`;
+    if (!isObject(composition)) { result[prefix] = "editor.command_invalid"; continue; }
+    if (typeof composition.profile !== "string" || !composition.profile) result[`${prefix}.profile`] = "configuration.required";
+    // Recipe compositions have fixed executables and authorization, checked by the server against the recipe.
+    if (!composition.recipe) Object.assign(result, commandsIssues(composition, prefix, profiles[String(composition.profile)]));
+  }
+  for (const [name, preset] of Object.entries(isObject(form.agent_presets) ? form.agent_presets : {})) {
+    const prefix = `agent_presets.${name}`;
+    if (!isObject(preset)) { result[prefix] = "configuration.required"; continue; }
+    const roles = texts(preset.roles);
+    Object.assign(result, agentIssues(preset, prefix, roles, efforts));
+    if (!roles.length || new Set(roles).size !== roles.length || roles.some(role => role !== "reviewer" && role !== "executor"))
+      result[`${prefix}.roles`] = "editor.roles_required";
+    const models = texts(preset.models);
+    if (!models.length || new Set(models).size !== models.length || models.some(model => !MODEL.test(model)))
+      result[`${prefix}.models`] = "editor.models_invalid";
+    const chosen = texts(preset.efforts);
+    if (!chosen.length || new Set(chosen).size !== chosen.length || chosen.some(effort => !(efforts[String(preset.provider)] ?? []).includes(effort)))
+      result[`${prefix}.efforts`] = "configuration.effort_invalid";
+  }
   return result;
 }
 

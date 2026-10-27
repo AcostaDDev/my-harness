@@ -7,6 +7,7 @@ import { Fields, Loading, PageHeader, Stale, usePoll } from "../ui";
 import { RegistrySettings } from "./Registry";
 import { WorkLanguageSettings } from "../WorkLanguage";
 import { useWorkspace } from "../workspace";
+import { ProjectProfile } from "./ProjectProfile";
 
 const SELECTION: Record<"catalog" | "open", MessageKey> = { catalog: "settings.selection.catalog", open: "settings.selection.open" };
 const PLANNING: Record<"auto" | "agent" | "deterministic", MessageKey> = {
@@ -52,6 +53,9 @@ export function SettingsPage() {
         <h3>{t("settings.versions")}</h3>
         <Fields items={Object.entries(p.versions).map(([k, v]) => [k, v === null ? <span className="muted">{t("common.not_recorded")}</span> : <code>{v}</code>])} />
       </section>
+      {/* OT004: the project's own profile, commands and agents, with the same save/preparation/activation gates. */}
+      {(p.versions.local_config === "local-config-9" || p.configuration_state === "PREPARATION_REQUIRED" || p.configuration_state === "READY_TO_ACTIVATE")
+        && p.configuration_state !== "PROFILE_REQUIRED" && <ProjectProfile />}
       <WorkLanguageSettings project={project} work={p.work_language} onChanged={() => setRevision(n => n + 1)} />
       {p.source === "registry" && <RegistrySettings project={project} onChanged={() => setRevision(n => n + 1)} />}
       <Prompts project={project} />

@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT003 release qualification/publication in progress; OT004 pending after OT003.
-**Next: OT003 — qualify and deliver 0.1.4; then OT004 for 0.1.5; then NEXT_STEPS.md.**
+**Queue:** OT004 pending.
+**Next: OT004 — visual profile/agent editor for its own 0.1.5 patch; then NEXT_STEPS.md.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -37,41 +37,10 @@ installation are different states. Keep outstanding agreed delivery in this queu
 deferred with a recorded destination. D239's patch-per-one-off rule and D235's branch/release route apply.
 Recording a release target does not authorize a commit, merge, push, publication, service restart or installation.
 
-## OT003 — Intake profile rejection diagnostics
-
-**Status:** implementation and local installation complete; owner-authorized 0.1.4 release qualification/publication in progress.
-The owner now explicitly requested the commit, distribution, PR to main and GitHub publication. Prior local upgrade/restart and preservation checks are in the evidence.
-**Classification:** fix outside the roadmap; separate patch **0.1.4** (D239/D242).
-**Branch:** `fix/intake-profile-diagnostics`, based on `develop`.
-**Delivery route:** topic → `develop` → release PR/merge into `main` → tag/package/distribution for 0.1.4.
-**Objective:** explain invalid executable aliases in documentary profile candidates and prevent repeated proposals
-that confuse executable names with installed paths.
-**Implemented scope:** safe field-specific executable diagnostics, clarified definition/onboarding prompts,
-previous-turn failure reasons in new reviewer context, en/es labels distinguishing rejected document lists,
-and the adoption corrections/ordering guidance below.
-**Approved extension:** the owner included the adoption failure found during manual onboarding testing in OT003,
-before commit (D244). Informational pending notices must not prevent adoption; unresolved nondeferred blocking
-questions still do. Identify documents missing from private drafts or changed since the proposal; do not misreport
-their absence as an invalid candidate. Explain the document-application/adoption order in the existing UI.
-The owner also approved reviewing all pending document proposals together, optionally excluding documents, and
-applying the selected exact proposals with one confirmation (D245). Reuse per-document CAS actions sequentially;
-stop on a conflict or uncertain response, report acknowledged progress, and require a fresh review of remaining
-proposals. Profile adoption, tree/commit, preparation and activation remain separate.
-**Acceptance:** invalid candidates remain rejected without automatic normalization/retry; earlier valid proposals,
-frozen histories/catalogs and explicit adoption gates remain intact; diagnostics do not reflect command candidate
-values. Synthetic tests cover pending notices, explicit deferral, missing/partial/changed documents and exact adoption.
-**Evidence:** [OT003-intake-profile-diagnostics](phase/OT003-intake-profile-diagnostics.md), D241/D244/D245.
-**Remaining delivery:** full release regression/qualification, version/changelog/package preparation, reviewed
-integration and release under D235/D239. Commit, integration/push, the release PR/merge and GitHub publication are
-now explicitly authorized by the owner in the session. No new operator-project changes or provider calls are included.
-**Validation:** focused checks already recorded in the artifact; use the repository's offline regression and
-package verification procedures for the release, recording failures and omissions.
-**Deliverables:** qualified 0.1.4 source/distribution and current evidence/status, with publication only when authorized.
-
 ## OT004 — Visual profile and agent configuration editor
 
 **Status:** pending; priority and separate patch delivery chosen by the owner. Not implemented.
-**Depends on:** OT003's separate 0.1.4 delivery; precedes P001-T001 Metrics Records (D243).
+**Depends on:** OT003's separate 0.1.4 delivery (completed); precedes P001-T001 Metrics Records (D243).
 **Classification:** bounded UX development outside the roadmap; separate patch **0.1.5**, after 0.1.4 (D239).
 **Branch:** a separate `feat/ot004-visual-profile-editor` topic from `develop` when OT004 starts.
 **Delivery route:** its own topic → `develop` → separate release PR/merge into `main` → 0.1.5 distribution.

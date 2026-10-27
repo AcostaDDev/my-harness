@@ -7,7 +7,7 @@ first public snapshot is summarized below as the starting baseline; its decision
 
 What exists and works at the first public snapshot, verified offline with temporary Git repositories, SQLite and
 processes, fake agents and synthetic data unless stated otherwise. First local version complete within the scope
-described in the [supported scope](../README.md#supported-scope-and-limits); package `0.1.1`; `0.1.0` is published as a GitHub Release.
+described in the [supported scope](../README.md#supported-scope-and-limits); package `0.1.1`, published with `0.1.0` as GitHub Releases.
 The real validation originally deferred in D151 now has the bounded evidence below.
 
 - **Engine.** Package `my_harness` with an explicit context per project, frozen task contracts, planning by the
@@ -104,8 +104,9 @@ Interface-only patch before P001
 reviewer's model from packaged suggestions per provider with a hand-written **Other**, and project policies choose the
 executor's models with checkboxes (preset models in `catalog` mode, otherwise suggestions plus models added by hand).
 No configuration format, API contract or schema changes; only the shared version string moves to `0.1.1`. Covered by
-the frontend suites; no visual QA was run for these controls. Building, checking and publishing the `0.1.1` release
-package are separate steps ([work notes](phase/v0.1.1-model-selectors.md)).
+the frontend suites; no visual QA was run for these controls. Published as the GitHub Release `v0.1.1` (tag on
+`e252fdc`) with a self-contained package built and checked locally
+([work notes](phase/v0.1.1-model-selectors.md)).
 
 ## Active phase — P001 Optional continuous mode between phases
 

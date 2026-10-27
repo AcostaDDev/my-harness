@@ -33,6 +33,8 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [0.1.7] — 2026-10-27
 
+GitHub Release `v0.1.7` (tag on merge `a3e9794`), with the self-contained archive and its checksum.
+
 Patch release for OT006 (D251). Install the new package after stopping the service and writers; projects,
 configuration and histories are preserved. No configuration format, API contract, database schema, migration,
 dependency, recipe or `cli-14` adapter-version change.

@@ -1,11 +1,10 @@
 # One-off tasks
 
-**Queue:** OT006 source complete for **0.1.7**; delivery pending (PR merge, release publication).
-**Next: OT006 delivery — merge the release PR and publish the draft v0.1.7 only on explicit owner instruction; then
-NEXT_STEPS.md.**
+**Queue:** OT007 pending.
+**Next: OT007 — task-run lease renewal and stream journal pressure; then NEXT_STEPS.md.**
 
-OT004 was released as **0.1.6** ([evidence](phase/OT004-visual-profile-editor.md)) and removed after its published
-downloads were verified. OT006's fix (D251) is integrated into develop; its agreed patch delivery is still open.
+OT006 was released as **0.1.7** ([evidence](phase/OT006-preparation-consumption.md), D251), installed locally and
+removed after its published downloads were verified. OT007 is the wider task-run issue that OT006 scoped out.
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -41,51 +40,51 @@ installation are different states. Keep outstanding agreed delivery in this queu
 deferred with a recorded destination. D239's patch-per-one-off rule and D235's branch/release route apply.
 Recording a release target does not authorize a commit, merge, push, publication, service restart or installation.
 
-## OT006 — Repetitive preparation executor output and ownership loss
+## OT007 — Task-run lease renewal and stream journal pressure
 
-**Status:** source complete and integrated into develop
-([evidence](phase/OT006-preparation-consumption.md#resolution-d251),
-[D251](DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)); delivery
-pending.
-**Depends on:** OT005 source/release baseline; OT004 was delivered first as 0.1.6. OT006 precedes P001-T001; no
-Metrics Records work is completed here.
-**Classification:** bounded runtime reliability/consumption incident outside the roadmap, separate from released
-OT005 and from P001's accounting feature work.
-**Branch:** handoff `docs/ot006-preparation-consumption` (`6a1b721`, integrated by `f185265`); implementation and
-release preparation on `fix/ot006-preparation-consumption`, merged into develop (see the evidence's delivery state).
-**Delivery route:** agreed 2026-10-27: patch **0.1.7** (D239) via topic → `develop` → release PR → `main` (D235).
-Done: source, integration into develop, release PR opened, the self-contained archive and its checksum uploaded to a
-**draft** GitHub Release `v0.1.7`. Outstanding: merge the PR, tag the merge and publish the draft (each on explicit
-owner instruction), verify the public downloads, record closing evidence and then remove this section. Installing
-0.1.7 on the operator machine is a separate operator action with stopped service/writers. No retry of the failed
-real preparation is authorized.
-**Objective:** establish why the generic preparation executor emitted repetitive text without completing its
-work, prevent unbounded useless generation, and diagnose/fix lease loss with truthful terminal process evidence.
-**Evidence/handoff:** [OT006 incident notes](phase/OT006-preparation-consumption.md), including exact aggregate
-counts, token limitations, local read-only lookup instructions and source inspection points.
-**Allowed paths:** relevant CLI/stream/process adapters, generic preparation service/storage and managed write
-coordination only as required by the reproduced cause; focused synthetic tests and current docs/parity artifacts.
-No new dependency, operator configuration change or private production fixture.
+**Status:** pending; registered 2026-10-27 at the owner's request so the queue can be finished in the next session.
+No implementation yet.
+**Depends on:** OT006/D251 (released 0.1.7), which fixed the same pattern only for generic preparation. OT007
+precedes P001-T001; no Metrics Records work is completed here.
+**Classification:** bounded runtime reliability fix outside the roadmap, for managed task/phase/chat/definition runs.
+**Branch:** create `fix/ot007-task-run-lease` from current `develop`.
+**Delivery route:** the agreed one-off policy applies: next patch **0.1.8** (D239) via topic → `develop` → release PR
+→ `main` → GitHub Release with the self-contained archive (D235/D242). Confirm or reroute the target with the owner
+before product edits. Source, integration, publication and installation are separate states; merging, publishing
+and installing each need explicit owner instruction (precedent: OT006).
+**Objective:** apply D251's lease-renewal and write-pressure lessons to managed runs. Keep their fencing and their
+explicit heartbeat-failure stop. Decide whether `output-guard-1` evidence/stop behavior needs any run-level surfacing.
+**Known facts (from OT006 source inspection, not yet reproduced for runs):**
+
+- `services/managed.py`, `LocalSupervisor.run_once` → `heartbeat()`: any exception sets `heartbeat_failed` and the
+  thread returns. `_Journal._call` then refuses the next journal operation with
+  `supervisor.heartbeat_failed_stop_before`. A single transient SQLite busy error (a waiting writer can hit the 5 s
+  `busy_timeout` under a tight writer loop; see OT006's experiment) therefore ends an otherwise healthy attempt.
+- `storage/managed.py`, `process_update()`: one guarded write transaction per stream record and per byte chunk.
+  `CLIProcessAdapter.invoke` already batches via an optional `process_updates(attempt_id, items)` journal method
+  (D251); the managed `_Journal`/repository do not implement it yet.
+- The CLI adapter already writes `capture.json` on interrupted invocations and reports `output_guard` /
+  `final_usage_observed` in run attempt metadata. Check how run recovery (`RECOVERY_REQUIRED`, confirm-stopped)
+  treats a stale `RUNNING` process row versus that capture.
+
+**Allowed paths:** `services/managed.py`, `storage/managed.py`, CLI/stream adapters only if a shared helper is
+needed, focused synthetic tests and current docs/parity (flows `task-run.md`, DECISIONS, ARCHITECTURE, catalogs en/es).
+No schema change unless a decision is recorded first; no new dependency or operator configuration change.
 **Acceptance criteria:**
 
-- Reproduce the repetitive text/protocol symptom with synthetic streams and investigate prompt/tool/CLI contract
-  handling before choosing a fix. Distinguish actual tool calls from textual imitations and stream events from
-  provider requests; do not assume a model change or lower effort alone fixes the cause.
-- Define and record a bounded output/repetition stop policy, with false-positive and legitimate long-output cases,
-  then verify termination of the owned process group and retention of partial evidence. Do not silently grant
-  more tools, writes, network access or retries; actual subscription quota is not inferable from token counts.
-- Reproduce or otherwise establish the lease/heartbeat failure path under synthetic sustained streaming and
-  contention. Make heartbeat failure diagnosable; preserve fencing, checkout exclusion, cancellation and recovery.
-  Do not treat lease expiry or a stale process status as proof that a writer stopped.
-- Preserve available usage, artifact and terminal/group evidence when ownership/persistence fails, through an
-  ownership-safe design. An absent final token count remains unknown; do not double count initial/repeated usage,
-  turn partial counters into totals or rewrite the original failed operation into a successful receipt.
-- Keep en/es diagnostics and affected flow/API/schema parity if changed; preserve frozen recipes, histories,
-  configuration and D247–D249 tool/write-scope guarantees. Scope any wider discovered issue explicitly.
+- Reproduce, with synthetic tests and temporary SQLite/processes, that one transient heartbeat failure stops a
+  managed run today. After the fix, transient failures are retried within the lease, and only lost ownership (or
+  an exhausted lease) stops the attempt. The diagnostic names the renewal failure; the lease is not merely lengthened.
+- Batch each read chunk's stream events into one guarded transaction for managed runs. Keep event content, order,
+  sequence numbers and run-projection/metrics derivations identical (existing metrics/projection tests prove it).
+- Interrupted-attempt evidence on runs: the closing owner settles its own stale `RUNNING` process rows from
+  independent group liveness, keeping the adapter's partial capture, never replacing a stored capture, never
+  marking an attempt successful and never treating lease expiry as proof that a writer stopped.
+- Preserve job fencing, checkout exclusion, cancellation, quarantine/recovery, frozen versions (`cli-14`) and
+  histories; en/es parity for any new text.
 
-**Validation:** synthetic fake-CLI/parser and preparation/storage regression tests for repetitive text, legitimate
-streaming, lease contention/failure, cancellation, partial capture and stopped/uncertain groups; relevant offline
-suites and parity checks. No real provider, production retry, recovery confirmation or installation without a
-separate explicit operator instruction. Do not copy this real stream, prompt or project into tests.
-**Deliverables:** established cause(s), accepted bounded design, implementation/tests/parity and updated incident
-evidence with exact checks/omissions; separately track the agreed patch delivery and any operator validation.
+**Validation:** synthetic fake-CLI/managed tests for transient and permanent heartbeat failure, sustained
+streaming, cancellation and recovery; full offline suites, `alembic check`, frontend tests/typecheck if texts or API
+change. No real provider, production retry or installation without explicit owner instruction.
+**Deliverables:** decision record, implementation/tests/parity, `docs/phase/OT007-task-run-lease.md` evidence with
+exact checks/omissions, and the agreed 0.1.8 delivery tracked here until completed or explicitly deferred.

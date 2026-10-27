@@ -1,11 +1,12 @@
 # OT006 — Preparation consumption and ownership-loss incident
 
-**Status:** causes established and fix implemented on `fix/ot006-preparation-consumption`
-([D251](../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)), target
-patch **0.1.7**; see [Resolution](#resolution-d251) and [Delivery state](#delivery-state). The sections down to
+**Status:** delivered. Released as **0.1.7** ([PR #6](https://github.com/AcostaDDev/my-harness/pull/6), merge/tag
+`a3e9794` / `v0.1.7`) and installed locally
+([D251](../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)); see
+[Resolution](#resolution-d251), [Delivery state](#delivery-state) and [Published 0.1.7](#published-017). The sections down to
 "Resume after context reset" are the original handoff (2026-10-27), kept as recorded. No retry, recovery confirmation,
 installation or new provider invocation was performed during diagnosis or the fix.
-Task contract: [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot006--repetitive-preparation-executor-output-and-ownership-loss).
+Task contract: formerly in ONE_OFF_TASKS, removed after delivery; the remaining task-run issue is OT007.
 Documentation topic: `docs/ot006-preparation-consumption`, from develop `3876230`.
 
 ## Context and delivery boundary
@@ -252,10 +253,49 @@ All checks ran offline on macOS ARM64 / Python 3.14 with temporary SQLite, Git a
   integration commit, run `check_distribution.py`, and upload the archive and its `.sha256` to a **draft** GitHub
   Release `v0.1.7` targeting `main`, then verify both by downloading them. The PR number, archive size and SHA-256
   are listed in the PR description and the draft release.
-- **Outstanding** (each on its own explicit owner instruction, as for 0.1.6): merge the PR with a merge commit,
-  publish the draft so tag `v0.1.7` points at that merge, verify the public downloads, and record closing evidence
-  here. Then remove OT006 from ONE_OFF_TASKS. Installing 0.1.7 on the operator machine is a separate action with
-  the service and writers stopped.
+- **Completed later at the owner's instruction:** merge, publication, public download verification and local
+  installation ([below](#published-017)). The remaining task-run question went to OT007.
+
+## Published 0.1.7
+
+The owner then asked the session to merge the PR, publish the release, install the new version and register the
+remaining issue as a one-off for the next session.
+
+- [PR #6](https://github.com/AcostaDDev/my-harness/pull/6) was merged with a merge commit,
+  **`a3e979446fc908de16c2067cc04761b98a2cdcc1`**. Its first parent is the 0.1.6 release `0319b66` and its second the
+  develop integration `59bb475`. Its tree equals `59bb475`'s exactly, so the archive built from that tree is the
+  release artifact, without a rebuild.
+- `my-harness-0.1.7-distribution.tar.gz`: **3,689,519 bytes**, SHA-256
+  **`e0ecbb7a62b9adeda014a56785ae41aab3116743abee162adaa65df70ecbaddc`**. Its root `my-harness-0.1.7/` has the same
+  13 files as 0.1.6's layout. It was built offline from a clean detached worktree of `59bb475` and passed
+  `check_distribution.py` (exact members, metadata, licenses and `SHA256SUMS`; the isolated installed-wheel
+  UI/API/session/definition/task/commit/restart/error/restored-evidence journey).
+- The draft release was downloaded back and matched byte for byte. The annotated tag `v0.1.7` was pushed on the
+  merge `a3e9794`, and the draft was then published as
+  [GitHub Release v0.1.7](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.7) (latest, not draft or
+  prerelease).
+- The public `curl` downloads from the README URLs pass the published `.sha256`, match the local archive and checksum
+  byte for byte, and all 12 `SHA256SUMS` entries pass after extraction.
+- develop was fast-forwarded to the release merge and pushed. This closing documentation is integrated into develop
+  separately, so the tagged source is not rewritten.
+
+### Local installation
+
+The operator installation was upgraded at the owner's explicit request.
+
+- Before the upgrade: no Harness service, `process_gate.py` or `my-harness` process was running. The database, read
+  with `mode=ro`, had only `DONE` jobs, the single `FAILED` preparation, no checkout locks, and one stale `RUNNING`
+  process row: the incident's, whose group had been confirmed dead. The other Codex/Claude processes on the
+  machine were the owner's own sessions, not Harness writers.
+- `scripts/install --dist <public my-harness-0.1.7> --upgrade --writers-stopped` (offline, default paths) published
+  generation `gen-8570ad968e0b42f090237633bd568570`: `READY`, `project_version` **0.1.7**, `network: false`. Its
+  isolated distribution check and `uv pip check` passed. The previous generation (`gen-d55da…`, package 0.1.4
+  metadata) is kept, and the installer changed no database or configuration file.
+- The database is already at `0027_profile_proposals`, the unchanged schema head, so no migration was needed or run.
+- The service was not running before and was not started. Start it with `scripts/start` when ready.
+- **Before retrying the preparation:** the failed operation remains `FAILED`. Its linked successor is refused at
+  preview until the Claude executor agent has `Write` and/or `Edit` in both its tools and allowed tools (editable
+  in the agent form, D250). Retrying it is an operator action that was not performed.
 
 ## Not covered
 
@@ -264,7 +304,7 @@ All checks ran offline on macOS ARM64 / Python 3.14 with temporary SQLite, Git a
   at preview until the operator configures a write tool for the Claude executor.
 - The guard watches Claude text only. Codex partial text is not streamed by `exec --json`, and thinking loops are not
   inspected. The thresholds are engineering bounds checked against synthetic cases, not tuned on provider data.
-- Task runs were not changed. Their journal still writes once per stream record. `LocalSupervisor`'s heartbeat
+- Task runs were not changed (now tracked as **OT007**). Their journal still writes once per stream record. `LocalSupervisor`'s heartbeat
   also stops after its first exception, but unlike preparation it sets `heartbeat_failed`, so the next journal call
   stops the attempt with an explicit diagnostic. Its exposure to transient SQLite busy is the same wider issue and
   is left for a separately scoped task.

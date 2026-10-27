@@ -317,12 +317,12 @@ def test_spawn_record_failure_never_executes_gate(tmp_path,context,repository,mo
 def test_capture_write_failure_kills_group_without_more_effects(tmp_path,context,repository,monkeypatch):
     port=adapter(tmp_path,'hang')
     job,claim,request=setup_invocation(repository,context,port)
-    original=repository.process_update
-    def failing(claim,attempt,kind,data):
-        if kind=='stream_bytes':
+    original=repository.process_updates
+    def failing(claim,attempt,items):
+        if any(kind=='stream_bytes' for kind, _ in items):
             raise OSError('Synthetic disk persistence outage')
-        return original(claim,attempt,kind,data)
-    monkeypatch.setattr(repository,'process_update',failing)
+        return original(claim,attempt,items)
+    monkeypatch.setattr(repository,'process_updates',failing)
     with pytest.raises(JournalError):
         port.invoke(context,request)
     row=repository.processes(job.id)[0]
@@ -330,6 +330,9 @@ def test_capture_write_failure_kills_group_without_more_effects(tmp_path,context
     assert row['status']=='RUNNING'  # uncertain durable result, never silently retried
     assert (tmp_path/'captures'/request.id/'stdout.bin').read_bytes()
     repository.close_owner(claim)
+    row=repository.processes(job.id)[0]
+    assert row['status']=='STOPPED' and row['capture']['status']=='interrupted'
+    assert row['capture']['settled_by']=='closing_owner'
 
 
 def test_config_snapshot_mismatch_stops_before_spawn(tmp_path,context,repository):

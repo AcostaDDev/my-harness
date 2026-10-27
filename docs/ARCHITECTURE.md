@@ -88,6 +88,8 @@ one-provider example, v2 recipe fragments and a synthetic demo.
 - **Persisted jobs.** SQLite queue with `Idempotency-Key`, `expected_version`, lease and heartbeat; exclusion per
   canonical root (`checkout_locks`). Separate writer and chat lanes
   ([D083](DECISIONS.md#d083--chat-over-a-head-snapshot-in-its-own-lane)).
+  D252: transient renewal failures retry within the existing lease and are recorded at owner closure; lost ownership
+  still fences every effect. CLI read chunks journal their events in one transaction, preserving each sequence.
 - **Intent before effect.** `CommitIntent` seals tree, message, identity, date and commit id before writing; after a
   crash the same commit is reconciled. The same applies to tags, bootstrap, export, edits, onboarding, creation and
   preparation.
@@ -98,6 +100,8 @@ one-provider example, v2 recipe fragments and a synthetic demo.
   source.
 - **Provenance.** Each datum distinguishes requested, reported, derived, measured or absent.
 - **Conservative recovery.** `RECOVERY_REQUIRED` until the user confirms that the writer stopped.
+  The closing managed owner settles its unfinished process rows from independent group liveness, preserving partial
+  captures and reported/observed group states. This neither completes an attempt nor releases the checkout lock.
 
 ## 5. Persistence
 

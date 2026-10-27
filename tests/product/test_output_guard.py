@@ -140,23 +140,20 @@ def test_interrupted_invocation_leaves_partial_capture_beside_artifacts(tmp_path
     from my_harness.storage.managed import OwnershipLost
     port = adapter(tmp_path, 'repetitive')
     _, _, request = setup_invocation(repository, context, port)
-    original = port.journal.process_update
-    seen = []
+    original = port.journal.process_updates
 
-    def update(attempt_id, kind, payload):
-        if kind == 'stream_bytes' and seen:
+    def update(attempt_id, items):
+        if any(kind == 'stream_bytes' for kind, _ in items):
             raise OwnershipLost('synthetic lease loss')
-        seen.append(kind)
-        return original(attempt_id, kind, payload)
+        return original(attempt_id, items)
 
-    port.journal.process_update = update
+    port.journal.process_updates = update
     with pytest.raises(OwnershipLost):
         port.invoke(context, request)
     capture = json.loads((tmp_path / 'captures' / request.id / 'capture.json').read_text())
     assert capture['status'] == 'interrupted' and capture['interruption'] == 'OwnershipLost'
     assert capture['group_state'] == 'dead' and capture['final_usage_observed'] is False
     assert capture['artifacts']['stdout']['size'] > 0
-    assert seen == ['process_spawned']
     # The fenced journal kept the stale RUNNING row; only an independent check can settle it.
     with Session(repository.engine) as session:
         process = session.get(ManagedProcessRow, request.id)

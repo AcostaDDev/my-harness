@@ -517,13 +517,40 @@ def test_work_has_no_open_sqlite_transaction_and_heartbeat_runs(repository, cont
     assert repository.get_run(job.run_id).history.status == "acceptance_ready"
 
 
-def test_heartbeat_failure_prevents_later_calls_and_retains_lock(repository, context, monkeypatch):
+def test_transient_heartbeat_failure_is_retried_without_stopping_work(repository, context, monkeypatch):
+    from sqlalchemy.exc import OperationalError
+    job = submit(repository, context)
+    renewed = Event()
+    original, calls = repository.heartbeat, []
+
+    def transient(*args, **kwargs):
+        calls.append(True)
+        if len(calls) == 1:
+            raise OperationalError('UPDATE', {}, Exception('database is locked'))
+        original(*args, **kwargs)
+        renewed.set()
+
+    monkeypatch.setattr(repository, 'heartbeat', transient)
+
+    def slow(context, request):
+        assert renewed.wait(timeout=5)
+        return edit()(context, request)
+
+    supervisor, _, _, _ = worker(repository, context, [slow, review()], lease_seconds=1.5)
+    assert supervisor.run_once().status == 'DONE'
+    assert len(calls) >= 2
+    assert repository.get_run(job.run_id).status == 'ACCEPTANCE_READY'
+    closed = next(e for e in repository.events(job.run_id) if e['kind'] == 'process_owner_closed')
+    assert closed['payload']['heartbeat'] == {'failures': 1, 'last_error': 'OperationalError', 'lost': False}
+
+
+def test_heartbeat_ownership_loss_prevents_later_calls_and_retains_lock(repository, context, monkeypatch):
     job = submit(repository, context)
     failed = Event()
 
     def broken(*args, **kwargs):
         failed.set()
-        raise RuntimeError("Synthetic heartbeat storage error")
+        raise OwnershipLost("Synthetic ownership loss")
 
     monkeypatch.setattr(repository, "heartbeat", broken)
 

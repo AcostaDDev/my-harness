@@ -18,7 +18,7 @@ The completed intake/configuration fix is documented in
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT007**, task-run lease renewal and stream journal
-pressure (target 0.1.8, to be confirmed). OT006's preparation fix was released and installed as **0.1.7** through
+pressure (target **0.1.8**, confirmed; implementation/delivery in progress). OT006's preparation fix was released and installed as **0.1.7** through
 [PR #6](https://github.com/AcostaDDev/my-harness/pull/6), merge/tag `a3e9794` / `v0.1.7`
 ([D251](DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence),
 [evidence](phase/OT006-preparation-consumption.md)). OT004's visual profile/agent editor was released as **0.1.6**

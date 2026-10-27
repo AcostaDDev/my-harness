@@ -1,12 +1,11 @@
 # OT005 — Generic preparation and read-only existing tool aliases
 
-**Status:** D248 is qualified/installed (`3e2ad45`). The owner's next screenshot loads the preview, exposing an
-incomplete generic review display; D249 is qualified/installed (`be76164`). The owner subsequently reached active
-preparation and explicitly authorized the separate 0.1.5 release; qualification/publication is in progress.
-The latest explicit release instruction supersedes the earlier conditional gate; live preparation completion is
-still unverified, as recorded below.
+**Status:** released as **0.1.5** on 2026-10-27 through [PR #4](https://github.com/AcostaDDev/my-harness/pull/4),
+merge/tag `b0d035d` / `v0.1.5`. GitHub archive/checksum downloaded and verified; OT005 delivery complete.
+The owner's last real-workflow evidence is ACTIVE preparation; a completed receipt/activation is not claimed.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
-**Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
+**Release task contract:** [OT005 at the immutable v0.1.5 tag](https://github.com/AcostaDDev/my-harness/blob/v0.1.5/docs/ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
+Current queue: [ONE_OFF_TASKS](../ONE_OFF_TASKS.md).
 **Decisions:** [D246](../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
 [D247](../DECISIONS.md#d247--frozen-read-only-tool-link-evidence-in-generic-preparation),
 [D248](../DECISIONS.md#d248--external-directory-aliases-only-along-frozen-tool-resolution),
@@ -14,23 +13,20 @@ still unverified, as recorded below.
 
 ## Resumption and delivery status
 
-The initial handoff was documentation only, on `fix/ot005-preparation-tool-links`, created from `develop` at
-`a8efd10`. The owner subsequently requested continuation through OT005 and authorized a repository commit.
-That commit includes the preserved task/priority documents and this implementation. No OT004/P001 work is included.
+The original topic `fix/ot005-preparation-tool-links` was created from develop at `a8efd10`. Initial source: `e2d62fe`;
+D248 external directory amendment: `3e2ad45`; D249 review display: `be76164`; qualified release metadata: `d25548d`.
+Integration on develop: `b50070d`; release PR #4 merged to main at `b0d035d`, tagged `v0.1.5`. The source topic was
+deleted after integration. OT003's earlier 0.1.4 tag/evidence remain unchanged.
 
-OT003 remains the published 0.1.4 release: implementation `437acf5`, release merge/tag `9985b0a` / `v0.1.4`, PR #3;
-its closing documentation reached develop at `a8efd10`. Its frozen evidence and published artifacts are unchanged.
-The source candidate now shares **0.1.5** across package/API/UI metadata and lockfiles. The separately installed
-operator build has **0.1.4 metadata plus OT005 code** and remains running; publication does not update or restart it.
-Initial source implementation: `e2d62fe`; D248: `3e2ad45`; D249 review: `be76164`.
+Delivery is complete: the 0.1.5 archive/checksum were published, downloaded and verified; OT005 is removed from the
+queue. OT004/0.1.6 is next; no Metrics Records task is complete. Final publication details are recorded at the end.
+Closing documentation is integrated into develop separately so the published tag/artifact source is not rewritten.
 
-The agreed delivery remains topic → `develop` → separate release PR/merge into `main` → **0.1.5** distribution.
-The owner-authorized local test reached an ACTIVE preparation and they explicitly requested release now. This
-supersedes the previous conditional success-report gate; it does not establish a completed real receipt/activation.
-Candidate 0.1.5 build/installed-wheel qualification passed; full final regression, integration and release are pending.
-Keep OT005 in ONE_OFF_TASKS until delivery is complete or explicitly deferred under D242. No operator configuration
-edit or maintenance-triggered real preparation/provider invocation is part of publication. Do not rerun the operator's
-onboarding/preparation or interrupt their active service.
+Local installation is a separate state: the previously authorized generation contains source `be76164` with 0.1.4
+metadata. Publication left it running and did not install the 0.1.5 release, edit operator configuration or replay any
+preparation/provider. A future upgrade to the published package is an explicit operator operation with stopped
+service/writers, not outstanding work implicitly owed by this release request. The owner authorized publication
+while their preparation was ACTIVE; completion of its real commands/receipt/activation remains unverified.
 
 ## Observed failure and diagnosis
 
@@ -321,3 +317,34 @@ Final pre-integration release regression: `UV_CACHE_DIR=.local/uv-cache uv run -
 intentional duplicate-ZIP warnings remain. Shared version/README/OpenAPI/client parity, local documentary links,
 reviewed diff and `git diff --check` passed. No source, dependency or validation exception was needed for release.
 The real-owner evidence remains ACTIVE preparation only; this qualification does not relabel it as completed.
+
+## Published 0.1.5
+
+- Release-preparation commit: `d25548d`; integrated into develop by `b50070d`.
+- [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), develop → main, merged with a merge commit at **`b0d035dfbbafc332d1bfb32e8644f76dfde6e1a6`**.
+  The release tree matches the qualified integration tree exactly; parent one is the previous 0.1.4 release and
+  parent two is the develop integration. Lightweight **`v0.1.5`** points to that exact release merge.
+- Final distribution built offline from a clean detached worktree of the release merge, with the existing operator
+  cache and no network installs. Exact artifact/member/metadata/license/checksum checks and isolated installed-wheel
+  synthetic UI/API/session/definition/task/commit/restart/error/restored-evidence qualification passed again. The
+  temporary build worktree was removed after verification; built artifacts remain outside tracked source.
+- [GitHub Release v0.1.5](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.5) is published, not draft or prerelease. Assets:
+  `my-harness-0.1.5-distribution.tar.gz` (**3,650,944 bytes**) and its `.sha256`.
+- Archive SHA-256: **`0aef67c23548703e18c025170a2109f9bcaad216420b6fe2d44f72cf3db520ab`**.
+  The `my-harness-0.1.5/` root contains exactly **13 files** matching the qualified distribution. Both GitHub assets
+  match their local files byte for byte; the downloaded checksum and every archived file hash passed verification.
+- main and develop were synchronized to the release merge; closing documentation is subsequently integrated on
+  develop via a documentation topic. OT005 is removed from ONE_OFF_TASKS only after this published/downloaded
+  verification. OT004 stays next for its own 0.1.6 patch; no P001 task is marked complete.
+
+Final release qualification: **2140 pytest cases passed, 2 skipped, 29 subtests passed** (332.47 s); **213 frontend
+and 10 unittest cases passed**; typecheck/build, OpenAPI/client/shared-version parity and fresh temporary Alembic
+upgrade/check passed. The 11 known TestClient/intentional duplicate-ZIP warnings and Vite large-chunk advisory remain.
+D249's synthetic Chrome scope/limits are recorded above; no new browser matrix or real-provider qualification is
+claimed for publication.
+
+The owner explicitly requested this release after reaching ACTIVE preparation. Neither that screenshot nor this
+release qualifies its eventual real receipt/activation. Publication did not restart/reinstall the active operator
+service, edit its TOML/data or start another real provider/project command; the same loopback listener remained
+running afterwards. The separately installed 0.1.4-metadata build already contains OT005 code, and upgrading its
+metadata/package to the published release awaits a future explicit operator request with stopped writers.

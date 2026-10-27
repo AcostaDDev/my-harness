@@ -17,20 +17,15 @@ The completed intake/configuration fix is documented in
 [failed-intake-activation](phase/failed-intake-activation.md) and committed as
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
-[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT005 preparation tool links hotfix → 0.1.5**,
-then **OT004 visual profile/agent editor → 0.1.6** (D246 supersedes D243's target/order). OT005 source is implemented
-and qualified on `fix/ot005-preparation-tool-links`; integration and separate 0.1.5 delivery remain pending. OT004
-is unimplemented. Resume from [OT005's evidence/delivery status](phase/OT005-preparation-tool-links.md) before
-starting the next one-off. The initial manual preview exposed an external Homebrew directory alias; the approved
-D248 amendment, source **`3e2ad45`**, is now qualified and installed after another authorized offline restart. The owner
-reported a loaded preview with missing generic step/file details. D249's bounded review display correction is now
-qualified (213 frontend tests and typecheck/build), installed as **`be76164`** with matching packaged/served UI assets
-and preserved data/configuration. The owner now reports an ACTIVE preparation and explicitly authorizes the
-separate 0.1.5 release; delivery is in progress, with no claim that the real preparation/receipt/activation completed.
-No real preparation was run by maintenance; leave the installed service running.
-[OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review (D244/D245), was released
-as **0.1.4** through PR #3 and its archive/checksum were verified after download.
-Resume P001-T001 after these one-offs are completed or explicitly rerouted. No phase task is completed by them.
+[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT004 visual profile/agent editor → 0.1.6**
+(D246 supersedes D243's target/order). OT004 is unimplemented. OT005's tool-chain/preparation-review fix was released
+as **0.1.5** through [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), merge/tag `b0d035d` / `v0.1.5`;
+the self-contained archive/checksum were downloaded from GitHub and verified byte for byte. See
+[OT005 evidence](phase/OT005-preparation-tool-links.md). The owner explicitly authorized publication after reaching
+ACTIVE preparation; a completed real receipt/activation is not claimed. Publication left the installed service running.
+[OT003](phase/OT003-intake-profile-diagnostics.md) was released as **0.1.4** through PR #3. OT005 was removed from
+the queue after delivery verification; resume P001-T001 after OT004 is completed or explicitly rerouted. No phase
+task is completed by these one-offs.
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before
 T002–T005 change runtime behavior. The target release is the patch version that follows the one-off releases

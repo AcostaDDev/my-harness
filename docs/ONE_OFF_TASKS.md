@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT005 source complete, delivery pending; then OT004.
-**Next: owner tests the locally installed OT005; on success, authorized 0.1.5 delivery; then OT004/0.1.6.**
+**Queue:** OT005 reopened after owner manual-test failure; then OT004.
+**Next: resolve OT005 external tool-directory alias failure; release remains gated on owner success; then OT004/0.1.6.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -39,8 +39,13 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT005 — Read-only existing tool aliases in generic preparation
 
-**Status:** implemented and synthetically qualified in source (D247); integration and separate 0.1.5 delivery pending.
-Source commit: `e2d62fe`. The owner-requested offline local reinstall/restart is complete, with unchanged data/TOML
+**Status:** reopened: the owner's preparation-preview test failed after local installation. The D247 implementation
+rejects an external Homebrew directory alias in the declared interpreter's chain; the API translates that OSError
+to `target_identity_changed`. The owner approved the bounded external-tool-directory evidence amendment (D248);
+its source implementation is qualified (2140 pytest cases passed), awaiting another local reinstall and owner retest.
+Integration and
+separate 0.1.5 delivery remain gated on manual success.
+Initial source commit: `e2d62fe`; the D248 follow-up is in the current topic commit. The owner-requested offline local reinstall/restart is complete, with unchanged data/TOML
 hashes and HTTP 200 on loopback 8013. The owner will test; their success report conditionally authorizes the archive,
 release PR to main and GitHub publication. Keep this section until delivery is completed or explicitly deferred (D242).
 **Priority:** before OT004 and P001-T001, explicitly confirmed by the owner (D246).
@@ -64,8 +69,9 @@ inline link evidence and historical receipt/recovery compatibility, with no API 
   preparation `local_paths`, resolving to the declared frozen executable. Preview must remain read-only and not
   require adding the environment to `write_paths`/`local_paths`, relocating it or deleting/recreating it.
 - Bound any exception to the explicitly declared resolved tool and its content evidence. Never follow directory
-  links, traverse arbitrary external trees or allow unrelated external targets, broken links, loops or changed tools.
-  Retain existing internal private-environment link behavior and snapshot limits.
+  links inside the checkout, traverse arbitrary external trees or allow unrelated external targets, broken links, loops
+  or changed tools. The owner-approved D248 amendment permits external directory aliases only along exact declared
+  tool chains with frozen evidence. Retain existing private-environment link behavior and snapshot limits.
 - Preserve link bytes/modes and the before/after write-scope guards: accepting a read-only input must not allow the
   executor to rewrite that alias/environment or affect its external target. Reject retargeted links or changed
   executable bytes through the appropriate existing guards; do not silently refresh hashes.

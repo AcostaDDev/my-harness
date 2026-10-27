@@ -35,6 +35,7 @@ from my_harness.storage.models import (
 from my_harness.storage.preparation import PreparationJournal, PreparationAgentJournal
 
 CONTRACT = 'project-profile-preparation-1'
+TOOL_LINK_POLICY = 'external-directories-1'
 
 
 def git_controls(root):
@@ -85,6 +86,46 @@ def tool_link(path, tools):
                         or not any(str(path) == tool['resolved'] for tool in tools.values())):
                     raise refuse('scope')
                 return {'chain': chain, 'resolved': str(path), 'mode': stat.S_IMODE(info.st_mode)}
+
+
+def external_tool_link(path, tools, root):
+    """D248: resolve exact tool components, explicitly binding external directory aliases."""
+    pending, current, chain = list(path.parts[1:]), Path('/'), []
+    while pending:
+        part, *pending = pending
+        if part in ('', '.'):
+            continue
+        if part == '..':
+            current = current.parent
+            continue
+        candidate = current / part
+        with directory(current) as fd:
+            info = os.stat(part, dir_fd=fd, follow_symlinks=False)
+            if stat.S_ISLNK(info.st_mode):
+                if len(chain) == 40 or pending and candidate.is_relative_to(root):
+                    raise refuse('scope')
+                link = os.readlink(part, dir_fd=fd)
+                evidence = {'path': str(candidate), 'link': link, 'mode': stat.S_IMODE(info.st_mode)}
+                if pending:
+                    evidence['directory'] = True
+                chain.append(evidence)
+                # Keep trailing slash/dot components: a regular file cannot serve as a directory.
+                parts = link.split('/')
+                if link.startswith('/'):
+                    current = Path('/')
+                    pending = parts[1:] + pending
+                else:
+                    pending = parts + pending
+            elif pending:
+                if not stat.S_ISDIR(info.st_mode):
+                    raise refuse('scope')
+                current = candidate
+            else:
+                if (not stat.S_ISREG(info.st_mode) or not info.st_mode & 0o111
+                        or not any(str(candidate) == tool['resolved'] for tool in tools.values())):
+                    raise refuse('scope')
+                return {'chain': chain, 'resolved': str(candidate), 'mode': stat.S_IMODE(info.st_mode)}
+    raise refuse('scope')
 
 
 def refuse(key='invalid'):
@@ -242,7 +283,13 @@ class ProfilePreparation(ProjectPreparation):
             verify_tools(plan['tool_files'])
         def permitted(root, key, path):
             if frozen is not None and not matches(key, plan['technical']['local_paths']):
-                evidence = tool_link(path, plan['tool_files'])
+                if plan.get('tool_link_policy') == TOOL_LINK_POLICY:
+                    try:
+                        evidence = external_tool_link(path, plan['tool_files'], root)
+                    except OSError as error:
+                        raise ValueError(tr('preparation.unexpected_symlink', key=key)) from error
+                else:
+                    evidence = tool_link(path, plan['tool_files'])
                 if discover is not None:
                     discover[key] = evidence
                     return True
@@ -345,8 +392,11 @@ class ProfilePreparation(ProjectPreparation):
             previous = self.repository.require(session, previous_id)
             if 'read_only_tool_links' in previous.plan:
                 plan['read_only_tool_links'] = previous.plan['read_only_tool_links']
+            if 'tool_link_policy' in previous.plan:
+                plan['tool_link_policy'] = previous.plan['tool_link_policy']
             workspace = snapshot(root, self._links(plan))
         else:
+            plan['tool_link_policy'] = TOOL_LINK_POLICY
             plan['read_only_tool_links'] = {}
             workspace = snapshot(root, self._links(plan, discover=plan['read_only_tool_links']))
             if any(matches(p, profile.protected_paths) for p in plan['read_only_tool_links']):
@@ -595,6 +645,8 @@ class ProfilePreparation(ProjectPreparation):
                    'work_language': plan['work_language'], 'results': results}
         if 'read_only_tool_links' in plan:
             receipt['read_only_tool_links'] = plan['read_only_tool_links']
+        if 'tool_link_policy' in plan:
+            receipt['tool_link_policy'] = plan['tool_link_policy']
         return receipt
 
     def bind(self, project):
@@ -645,6 +697,8 @@ def verify_profile_receipt(root, receipt):
             'tool_files': receipt['tools']}
     if 'read_only_tool_links' in receipt:
         plan['read_only_tool_links'] = receipt['read_only_tool_links']
+    if 'tool_link_policy' in receipt:
+        plan['tool_link_policy'] = receipt['tool_link_policy']
     workspace = snapshot(root, ProfilePreparation._links(plan))
     if any(p not in workspace or 'link' not in workspace[p] for p in receipt.get('read_only_tool_links', {})):
         raise refuse('stale')

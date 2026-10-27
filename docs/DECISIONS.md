@@ -1317,7 +1317,8 @@ handoff and work within OT005 before starting OT004; release/operation authoriza
 
 ## D247 — Frozen read-only tool-link evidence in generic preparation
 
-Status: accepted within OT005's implementation scope; no new write authority.
+Status: accepted within OT005's implementation scope; no new write authority. D248 amends external directory
+alias handling only for newly marked plans/receipts; the original policy remains for older evidence.
 
 The owner resumed OT005 after the documentation-only handoff and authorized implementation and a source commit.
 D246's separate release order/targets remain; publication, installation and operator actions are still separate.
@@ -1336,3 +1337,23 @@ execution, recovery and receipt verification; missing, added or changed outside-
 Protected-path links remain refused. Read-only aliases never extend write/local/environment paths and do not
 accredit the rest of an existing environment: stable environment accreditation still uses `environment_paths`.
 The cooperative before/after guards detect persistent changes; they do not provide OS isolation or rollback.
+
+## D248 — External directory aliases only along frozen tool resolution
+
+Status: accepted by the owner's explicit approval after the OT005 manual preview failure. Amends D247's
+no-directory-alias rule only outside the checkout, for resolution of the explicitly declared executable.
+
+A declared Homebrew interpreter may pass through `/opt/homebrew/opt/python@3.14`, an external directory alias.
+Rejecting every such component prevented the original environment from reaching preview even after D247. New
+previews opt in with `tool_link_policy = external-directories-1`; bounded component-by-component resolution records
+file and external directory links (exact path, text and mode) along the tool chain, and the final executable/mode.
+Every link counts against the same 40-link ceiling. Parent access still uses O_NOFOLLOW: directory aliases are read
+and resolved explicitly, never silently traversed. The final regular executable must equal a declared frozen
+resolved path and pass its frozen SHA-256 check. No external directory is enumerated and no extra writes are granted.
+
+Directory links within the checkout remain refused, including a hop later cancelled by `..`. Broken/looping chains,
+unbound targets, added/removed/changed aliases and protected checkout links remain refused. Scope and receipt guards
+preserve the exact evidence; no silent rebinding, retry, environment accreditation or activation is introduced.
+Plans/receipts without the marker keep D247's strict parent-directory policy (or its historical predecessor), including
+explicit recovery. Existing evidence is not rewritten. The marker/evidence remain inline JSON under the existing
+contract; no ORM/schema, configuration format, API model, dependency or recipe fingerprint changes.

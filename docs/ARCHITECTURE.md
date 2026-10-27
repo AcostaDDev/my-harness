@@ -309,10 +309,13 @@ structured commands/tool evidence against frozen documents/inventory; planning t
 `project-profile-preparation-1` contract, exact argv, JUnit, reconcilable technical commits and receipts. Activation
 precomposes and verifies exact saved references before exposing a runnable `ProjectContext`.
 D247 adds optional inline `read_only_tool_links` evidence to new generic plans/receipts. File-link chains outside
-`local_paths` resolve through at most 40 links, checking parent directories with `O_NOFOLLOW`, to a declared frozen
-tool. Snapshots and post-effect guards reverify tool hashes and exact chain text/modes; receipt verification also
-checks the complete captured alias path set. Recovery preserves the original opt-in or historical policy. Protected
-links remain refused, stable-environment evidence is separate, and recipe fingerprints/sources are unchanged.
+`local_paths` resolve through at most 40 links to a declared frozen tool. D248's new `tool_link_policy` marker
+`external-directories-1` explicitly resolves and binds external directory aliases along that exact tool chain; parent
+access still uses `O_NOFOLLOW`, and directory links inside the checkout remain refused. File/directory links share
+the ceiling; no external directory is enumerated. Plans without the marker retain the strict D247 resolver. Snapshots
+and post-effect guards reverify tool hashes and exact chain text/modes; receipt verification also checks the complete
+captured alias path set. Recovery preserves the original opt-in/policy marker or historical policy. Protected links
+remain refused, stable-environment evidence is separate, and recipe fingerprints/sources are unchanged.
 
 Alembic 0026 adds three configuration tables (scope references, revisions and operations); 0027 makes registered
 composition/profile nullable for documentary intake. There are 54 tables. JSON journals extend existing operations

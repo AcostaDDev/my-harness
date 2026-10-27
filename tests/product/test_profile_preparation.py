@@ -397,7 +397,7 @@ def test_generic_api_validates_exact_union_and_security_before_confirming(generi
     from session_client import TestClient
     from my_harness.api.app import create_app
     service, body, *_ = generic
-    existing_tool_aliases(generic)
+    _, _, directory_alias = external_tool_directory_alias(generic)
     # Keep the real protected app/session router, substitute only runtime composition with this synthetic fixture.
     application = create_app(str(service.runtime.engine.url), service.runtime.database.parent / 'test-ui',
                              managed=service.runtime.config)
@@ -414,6 +414,12 @@ def test_generic_api_validates_exact_union_and_security_before_confirming(generi
             base = '/api/managed/projects/child/preparation'
             assert http.post(base+'/preview', json={**body, 'argv': ['foreign']}).status_code == 422
             assert http.post(base+'/preview', json=body, headers={'Origin': 'https://foreign.invalid'}).status_code == 403
+            directory_alias.unlink()
+            directory_alias.symlink_to('missing-directory', target_is_directory=True)
+            refused = http.post(base+'/preview', json=body)
+            assert refused.status_code == 422 and refused.json()['detail']['code'] == 'invalid_request'
+            directory_alias.unlink()
+            directory_alias.symlink_to(directory_alias.parent, target_is_directory=True)
             shown = http.post(base+'/preview', json=body)
             assert shown.status_code == 200, shown.text
             assert len(shown.json()['read_only_tool_links']) == 3
@@ -717,6 +723,7 @@ def test_old_receipts_keep_the_original_link_policy_without_rewriting(generic):
     result = finish(generic)
     old = copy.deepcopy(result['receipt'])
     old.pop('read_only_tool_links')
+    old.pop('tool_link_policy')
     frozen = freeze(old)
     root = service.runtime.project('child').context.root
     verify_receipt(root, old)
@@ -730,7 +737,7 @@ def test_old_receipts_keep_the_original_link_policy_without_rewriting(generic):
 
 def test_new_read_only_link_evidence_survives_explicit_recovery(generic, monkeypatch):
     service, _, executor, *_ = generic
-    existing_tool_aliases(generic)
+    external_tool_directory_alias(generic)
     original = ProfilePreparation._execute_step
     def fail(self, operation_id, token, project, plan, step):
         if step['spec']['kind'] == 'command':
@@ -747,6 +754,7 @@ def test_new_read_only_link_evidence_survives_explicit_recovery(generic, monkeyp
     completed = service.repository.read(successor['id'])
     assert completed['status'] == 'COMPLETED', completed['diagnostic']
     assert completed['receipt']['read_only_tool_links'] == failed['plan']['read_only_tool_links']
+    assert completed['receipt']['tool_link_policy'] == failed['plan']['tool_link_policy']
     verify_receipt(service.runtime.project('child').context.root, completed['receipt'])
     previous = service.repository.read(op['id'])
     assert len(executor.calls) == 1
@@ -805,6 +813,7 @@ def test_historical_operation_recovery_does_not_opt_into_new_link_policy(generic
     def historical(self, *args, **kwargs):
         plan = original(self, *args, **kwargs)
         plan.pop('read_only_tool_links', None)
+        plan.pop('tool_link_policy', None)
         plan.pop('preview_sha256')
         return {**plan, 'preview_sha256': digest(plan)}
     with monkeypatch.context() as legacy:
@@ -855,3 +864,147 @@ def test_read_only_link_cannot_be_deleted_even_if_named_in_write_paths(generic):
     failed = service.repository.read(op['id'])
     assert failed['status'] == 'FAILED' and failed['receipt'] is None
     assert git(root, 'rev-parse', 'HEAD') == head
+
+
+def external_tool_directory_alias(generic):
+    _, _, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    directory_alias = tool.parent / 'synthetic-python-opt'
+    directory_alias.symlink_to(tool.parent, target_is_directory=True)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(directory_alias / tool.name)
+    return root, binaries, directory_alias
+
+
+def test_existing_tool_chain_with_external_directory_alias_is_bound_read_only(generic):
+    service, body, executor, *_ = generic
+    root, binaries, directory_alias = external_tool_directory_alias(generic)
+    before = {p.name: (os.readlink(p), p.lstat().st_mode) for p in binaries.iterdir()}
+    shown = service.preview('child', body)
+    assert shown['technical']['write_paths'] == technical()['write_paths']
+    assert shown['technical']['local_paths'] == ['.prepare/**']
+    assert not executor.calls and not (root / '.prepare').exists()
+    result = finish(generic)
+    verify_receipt(root, result['receipt'])
+    assert any(entry.get('directory') and entry['path'] == str(directory_alias)
+               for entry in result['receipt']['read_only_tool_links']['.venv/bin/python']['chain'])
+    assert before == {p.name: (os.readlink(p), p.lstat().st_mode) for p in binaries.iterdir()}
+    assert directory_alias.is_symlink()
+    directory_alias.unlink()
+    directory_alias.symlink_to(str(directory_alias.parent) + '/.', target_is_directory=True)
+    with pytest.raises(JournalError):
+        verify_receipt(root, result['receipt'])
+
+
+@pytest.mark.parametrize('fault', ['retarget', 'mode', 'foreign', 'broken', 'loop'])
+def test_receipt_refuses_external_tool_directory_chain_drift(generic, fault):
+    _, _, _, _, _, tool = generic
+    root, _, directory_alias = external_tool_directory_alias(generic)
+    receipt = finish(generic)['receipt']
+    if fault == 'mode':
+        os.chmod(directory_alias, 0o700, follow_symlinks=False)
+    else:
+        directory_alias.unlink()
+        if fault == 'retarget':
+            directory_alias.symlink_to(str(directory_alias.parent) + '/.', target_is_directory=True)
+        elif fault == 'foreign':
+            foreign = tool.parent / 'foreign-interpreter'
+            foreign.mkdir()
+            clone = foreign / tool.name
+            clone.write_bytes(tool.read_bytes())
+            clone.chmod(0o700)
+            directory_alias.symlink_to(foreign, target_is_directory=True)
+        elif fault == 'broken':
+            directory_alias.symlink_to('missing-directory', target_is_directory=True)
+        else:
+            directory_alias.symlink_to(directory_alias.name, target_is_directory=True)
+    with pytest.raises(JournalError):
+        verify_receipt(root, receipt)
+
+
+@pytest.mark.parametrize('stage', ['confirmation', 'before-executor', 'executor'])
+def test_external_tool_directory_alias_drift_never_rebinds_or_commits(generic, stage):
+    service, body, executor, *_ = generic
+    root, _, directory_alias = external_tool_directory_alias(generic)
+    head = git(root, 'rev-parse', 'HEAD')
+    def mutate():
+        directory_alias.unlink()
+        directory_alias.symlink_to(str(directory_alias.parent) + '/.', target_is_directory=True)
+    if stage == 'confirmation':
+        plan = service.preview('child', body)
+        mutate()
+        with pytest.raises(RegistryError):
+            service.confirm('child', {'change': body, 'preview_sha256': plan['preview_sha256'],
+                                     'confirmed': True, 'reason': 'Stale external directory link'}, 'stale-directory')
+        assert not executor.calls
+    else:
+        op = confirm(generic)
+        if stage == 'before-executor':
+            mutate()
+        else:
+            original = executor.effect
+            executor.effect = lambda root: (original(root), mutate())
+        service.run_once()
+        failed = service.repository.read(op['id'])
+        assert failed['status'] == 'FAILED' and failed['receipt'] is None
+        assert len(executor.calls) == (1 if stage == 'executor' else 0)
+    assert git(root, 'rev-parse', 'HEAD') == head
+
+
+@pytest.mark.parametrize('directory_links', [37, 38])
+def test_tool_chain_budget_counts_file_and_external_directory_links_together(generic, directory_links):
+    service, body, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    for index in range(directory_links):
+        alias = tool.parent / f'opt{index}'
+        alias.symlink_to(f'opt{index + 1}' if index < directory_links - 1 else tool.parent,
+                         target_is_directory=True)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(tool.parent / 'opt0' / tool.name)
+    if directory_links == 37:
+        plan = service.preview('child', body)
+        assert len(plan['read_only_tool_links']['.venv/bin/python']['chain']) == 40
+    else:
+        with pytest.raises(RegistryError):
+            service.preview('child', body)
+    assert not (root / '.prepare').exists()
+
+
+def test_d247_plan_and_receipt_keep_strict_directory_policy_on_recovery(generic, monkeypatch):
+    service, _, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    original = ProfilePreparation.preview
+    def d247(self, *args, **kwargs):
+        plan = original(self, *args, **kwargs)
+        plan.pop('tool_link_policy', None)
+        plan.pop('preview_sha256')
+        return {**plan, 'preview_sha256': digest(plan)}
+    with monkeypatch.context() as previous:
+        previous.setattr(ProfilePreparation, 'preview', d247)
+        op = confirm(generic)
+    assert 'read_only_tool_links' in op['plan'] and 'tool_link_policy' not in op['plan']
+    service.control(op['id'], {'expected_version': op['version'], 'plan_sha256': op['plan_sha256']}, 'cancel')
+    successor = confirm(generic, key='d247-successor', previous_id=op['id'], retry_step=0)
+    assert 'tool_link_policy' not in successor['plan']
+    service.run_once()
+    result = service.repository.read(successor['id'])
+    assert result['status'] == 'COMPLETED', result['diagnostic']
+    receipt = result['receipt']
+    assert 'tool_link_policy' not in receipt
+    verify_receipt(root, receipt)
+    alias = tool.parent / 'old-policy-directory-alias'
+    alias.symlink_to(tool.parent, target_is_directory=True)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(alias / tool.name)
+    with pytest.raises(JournalError):
+        verify_receipt(root, receipt)
+
+
+@pytest.mark.parametrize('suffix', ['/', '/.'])
+def test_tool_file_link_cannot_hide_a_directory_requirement(generic, suffix):
+    service, body, _, _, _, tool = generic
+    _, binaries = existing_tool_aliases(generic)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(str(tool) + suffix)
+    with pytest.raises(RegistryError):
+        service.preview('child', body)

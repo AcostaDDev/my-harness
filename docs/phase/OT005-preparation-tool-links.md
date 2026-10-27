@@ -1,11 +1,13 @@
 # OT005 — Generic preparation and read-only existing tool aliases
 
-**Status:** source implemented, synthetically qualified and installed locally; owner manual verification pending.
+**Status:** D248 amendment approved, implemented and qualified after the owner's manual-preview failure;
+local reinstall and owner retest pending.
 Separate 0.1.5 release is authorized conditionally on the owner confirming that verification succeeds.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
 **Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
 **Decisions:** [D246](../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
-[D247](../DECISIONS.md#d247--frozen-read-only-tool-link-evidence-in-generic-preparation).
+[D247](../DECISIONS.md#d247--frozen-read-only-tool-link-evidence-in-generic-preparation),
+[D248](../DECISIONS.md#d248--external-directory-aliases-only-along-frozen-tool-resolution).
 
 ## Resumption and delivery status
 
@@ -44,7 +46,7 @@ Deleting/recreating the environment or granting writes to it was not an acceptab
 The first two new regression cases reproduced `Unexpected symlink: .venv/bin/python` against the original source,
 with configuration pointing either to the alias or directly to the resolved fake executable.
 
-## Implemented behavior
+## Initial D247 implementation and qualification
 
 Only `services/profile_preparation.py` changes product behavior. New generic previews carry
 `read_only_tool_links`, an exact map of existing aliases outside `local_paths`. Each file-link chain is resolved
@@ -146,3 +148,59 @@ outside the repository; no operational rows, key bytes or TOML contents are copi
 The service is ready for the owner to sign in with the new key and perform the manual preparation test. No claim
 that the real failing project is fixed is made before their report. On success, continue the conditionally authorized
 0.1.5 archive/release PR/GitHub publication; OT004 stays behind OT005's delivery.
+
+## Manual preview failure — external tool-directory alias
+
+The owner reported `409 target_identity_changed` from **Review preparation plan** after the local upgrade. Read-only
+inspection found no preparation operation, an accessible canonical checkout root, and interpreter aliases resolving
+to declared tools. Their chain traverses the external Homebrew directory alias `/opt/homebrew/opt/python@3.14`.
+The D247 `tool_link` helper's parent-directory O_NOFOLLOW check rejects that component with `NotADirectoryError`
+(errno 20); the API registry wrapper maps all OSError instances to the generic folder-identity diagnostic. Direct
+read-only invocation of that helper reproduced the error without invoking tools/providers or changing data.
+
+The external-directory case was missing from the synthetic acceptance matrix. D247 explicitly forbids every
+directory-link traversal, so changing it requires an agreed design amendment. Proposed boundary: allow directory
+aliases outside the checkout only along resolution of the explicitly declared executable, bind exact alias text/modes
+and final executable hash, keep all checkout directory links refused and grant no extra writes/tree enumeration.
+The owner explicitly approved that bounded amendment; D248 records the accepted boundary. Publication remains
+gated on their eventual success report. The running service/data/configuration have not been changed during this diagnosis.
+
+## D248 implementation after the manual failure
+
+New plans/receipts add `tool_link_policy = external-directories-1`. The resolver opens each current parent with
+O_NOFOLLOW, lstat/readlink-checks each component, and explicitly resolves/binds directory links only outside the
+checkout. Both file and directory links count against the 40-link ceiling. Chain entries record raw path/text/mode,
+mark directory aliases, and end at an exact declared, hash-bound regular executable. Dot/parent/trailing-slash
+components retain their filesystem meaning, so a checkout directory redirect cannot be hidden by `..` and a regular
+file cannot be used as a directory. No external tree is enumerated or made writable.
+
+The marker and exact chain evidence survive confirmation, post-effect guards, receipt verification and explicit
+recovery. Older D247 plans/receipts without the marker use their original strict resolver; pre-D247 evidence also
+retains its old behavior. No historical bytes are rewritten. Broken new-policy link resolution now becomes the
+existing localized unexpected-link diagnostic instead of leaking OSError into the generic folder-identity response.
+
+The added synthetic Homebrew-style directory-alias fixture reproduced the old `NotADirectoryError` before this
+amendment. Read-only inspection with the new resolver accepts the actual interpreter aliases and binds one external
+directory alias per chain; no interpreter, preparation command or provider was invoked. Further cases cover
+external link text/mode/target/broken/loop drift, confirmation and executor changes, the combined 40/41-link boundary,
+trailing slash/dot file targets, protected API preview/confirmation and D247 recovery compatibility. Full results and
+subsequent authorized local reinstall will be recorded below. No real-project success is claimed before the owner.
+
+### D248 verification
+
+- Full offline `pytest -q`: **2140 passed, 2 skipped, 29 subtests passed**, no failures, in **320.58 seconds**.
+  The same 11 known TestClient/intentional duplicate-ZIP warnings remain. Fourteen new parametrized cases were added.
+- After strengthening the existing new-policy recovery test with an external directory chain and policy-marker
+  comparison, its focused serial rerun passed (**1 passed, 82 deselected**, 12.02 seconds).
+- The Homebrew-style synthetic regression first failed with the same `NotADirectoryError` as the manual case;
+  it now completes passive preview, confirmed execution, scope guards, receipt creation and receipt verification.
+- Read-only resolver checks of the actual interpreter aliases succeeded, preserving declared tool binding. The full
+  checkout snapshot also succeeded (**11843 entries, 4 bound read-only aliases**), using the saved declared tools and
+  accepted plan. No real provider/preparation/command or database write was invoked. The owner still owns the real
+  preview/execution test.
+- The intermediate focused preparation run had **184 passed, 1 skipped** plus one fixture assertion failure from
+  reading the API error envelope at the wrong key. The corrected envelope assertion passes in the full run.
+- Specification, architecture, inline JSON data description and both affected flows are in parity. No API model,
+  ORM/migration, dependency, configuration format, recipe source/fingerprint or version change. UI tests/visual QA
+  and schema checks were not repeated for this backend-only amendment; the local installer will build/check the UI
+  and qualify the installed package before restart.

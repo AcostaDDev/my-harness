@@ -10,9 +10,11 @@ normally empty priority queue for bounded fixes/improvements outside roadmap pha
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
 The owner confirmed **OT005 → 0.1.5** (generic-preparation tool-alias hotfix), then **OT004 → 0.1.6** (visual
 profile/agent editor), before the unchanged Metrics Records task P001-T001 (D246 supersedes D243's target/order).
-OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005 is implemented in source
-with synthetic qualification in the linked evidence; its delivery remains pending. OT004 is not implemented; no Metrics
-Records task is complete.
+OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005's initial source fix is
+installed, but the owner's manual preparation preview failed on an external Homebrew directory alias. OT005 is reopened;
+the owner approved the bounded D248 amendment, now source-qualified (2140 pytest cases passed). Another local
+reinstall and owner retest are pending; release remains gated on manual success.
+OT004 is not implemented; no Metrics Records task is complete.
 
 **Resume after `/clear`:** OT005 source is on `fix/ot005-preparation-tool-links`, based on `develop` at `a8efd10`.
 The owner authorized implementation and a commit. New generic preparation admits existing read-only file aliases of
@@ -20,9 +22,10 @@ explicitly frozen tools and preserves exact chain evidence through execution/rec
 See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). Integration, the separate 0.1.5
 release/version/package qualification/publication are pending the owner's manual test; keep OT005 in ONE_OFF_TASKS.
 The owner-authorized offline reinstall/restart is complete, with installed OT005 source and unchanged database/TOML
-hashes. The service is running on loopback 8013; package/API/UI metadata remains 0.1.4. The owner will test manually;
-on their success report, archive/release PR/GitHub publication as 0.1.5 is conditionally authorized. No real provider
-or preparation was invoked by this maintenance operation.
+hashes. The service is running on loopback 8013; package/API/UI metadata remains 0.1.4. The owner's manual preview
+failed with `target_identity_changed`; read-only diagnosis reproduced an O_NOFOLLOW rejection of an external
+tool-directory alias (see task evidence). Their eventual success report still conditionally authorizes archive/release
+PR/GitHub publication as 0.1.5. No real provider or preparation was invoked by this maintenance operation.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
 through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The

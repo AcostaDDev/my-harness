@@ -8,7 +8,8 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT004**, the visual profile/agent editor targeting its own **0.1.6** patch, before the
+The queue contains **OT004**, the visual profile/agent editor targeting its own **0.1.6** patch, then **OT006**,
+the later repetitive-preparation/ownership-loss incident (release target pending), before the
 unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005 were released separately as
 0.1.2/0.1.3/0.1.4/**0.1.5** (D239). OT004 is unimplemented; no Metrics task is complete.
 
@@ -20,8 +21,14 @@ checksum, downloaded and verified byte for byte. Full final pytest: **2140 passe
 [The evidence](phase/OT005-preparation-tool-links.md) records D247–D249 and the owner's ACTIVE-preparation report;
 completed real commands/receipt/activation are not claimed. OT005 was removed from the queue only after delivery.
 
-**Resume after `/clear`:** start with OT004 in ONE_OFF_TASKS on its own topic from `develop`; do not start Metrics
-Records yet. Publication did not replace/restart the operator installation: its separately installed source `be76164`
+**Resume after `/clear`:** preserve the uncommitted handoff on `docs/ot006-preparation-consumption` and read
+[OT006 evidence](phase/OT006-preparation-consumption.md). The later real preparation FAILED with `OwnershipLost`:
+one Claude session emitted 226,378 text characters with extensive repetition over about nine minutes, before any
+native command; its process group is now dead. Exact quota consumption and the repetition/lease root causes remain
+unproven. This request records evidence only; OT004 retains priority unless the owner reprioritizes OT006 and agrees
+its delivery target. Do not start Metrics Records or retry real preparation from this handoff.
+
+Publication did not replace/restart the operator installation: its separately installed source `be76164`
 contains the OT005 fixes with **0.1.4 metadata**, and the same loopback service remained running. Installing the
 published 0.1.5 package is a separate future operator action when service/writers are stopped; it was not requested
 or performed during publication. Closing release documentation is kept on develop, without changing the tag.

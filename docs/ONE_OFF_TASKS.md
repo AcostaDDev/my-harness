@@ -1,7 +1,11 @@
 # One-off tasks
 
-**Queue:** OT004 pending.
-**Next: OT004 — visual profile/agent editor for 0.1.6; then NEXT_STEPS.md.**
+**Queue:** OT004 and OT006 pending.
+**Next: OT004 — visual profile/agent editor for 0.1.6; then OT006, then NEXT_STEPS.md.**
+
+OT006 records the later preparation incident and the handoff requested before `/clear`. This documentation-only
+request does not change D246's OT004 priority/version; agree any incident reprioritization and OT006 release target
+before product changes.
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -78,3 +82,48 @@ No real agents/providers or changes to the operator's installed configuration.
 **Deliverables:** editor implementation, tests/parity, `docs/phase/OT004-visual-profile-editor.md`, and a separately
 qualified 0.1.6 delivery. Implementation details are resolved within the existing contract; inconsistencies are
 raised before changing its permission design.
+
+## OT006 — Repetitive preparation executor output and ownership loss
+
+**Status:** pending investigation/fix; sanitized read-only evidence recorded, no implementation.
+**Depends on:** OT005 source/release baseline; follows OT004 under the current queue order unless the owner
+explicitly reprioritizes it. Both precede P001-T001; no Metrics Records work is completed here.
+**Classification:** bounded runtime reliability/consumption incident outside the roadmap, separate from released
+OT005 and from P001's accounting feature work.
+**Branch:** handoff on `docs/ot006-preparation-consumption` from `develop` at `3876230`; preserve its uncommitted
+documentation. Create a `fix/ot006-preparation-consumption` topic from current `develop` for implementation,
+carrying forward this handoff if it has not yet been integrated.
+**Delivery route:** product delivery target/order must be agreed before implementation (D242); the existing
+topic → `develop` → separate release PR/merge into `main` → patch distribution policy applies (D235/D239).
+No version is assigned here; OT004's 0.1.6 is unchanged. Source, integration, publication and installation are
+all pending; this request authorizes evidence/task documentation only, not a retry or new provider invocation.
+**Objective:** establish why the generic preparation executor emitted repetitive text without completing its
+work, prevent unbounded useless generation, and diagnose/fix lease loss with truthful terminal process evidence.
+**Evidence/handoff:** [OT006 incident notes](phase/OT006-preparation-consumption.md), including exact aggregate
+counts, token limitations, local read-only lookup instructions and source inspection points.
+**Allowed paths:** relevant CLI/stream/process adapters, generic preparation service/storage and managed write
+coordination only as required by the reproduced cause; focused synthetic tests and current docs/parity artifacts.
+No new dependency, operator configuration change or private production fixture.
+**Acceptance criteria:**
+
+- Reproduce the repetitive text/protocol symptom with synthetic streams and investigate prompt/tool/CLI contract
+  handling before choosing a fix. Distinguish actual tool calls from textual imitations and stream events from
+  provider requests; do not assume a model change or lower effort alone fixes the cause.
+- Define and record a bounded output/repetition stop policy, with false-positive and legitimate long-output cases,
+  then verify termination of the owned process group and retention of partial evidence. Do not silently grant
+  more tools, writes, network access or retries; actual subscription quota is not inferable from token counts.
+- Reproduce or otherwise establish the lease/heartbeat failure path under synthetic sustained streaming and
+  contention. Make heartbeat failure diagnosable; preserve fencing, checkout exclusion, cancellation and recovery.
+  Do not treat lease expiry or a stale process status as proof that a writer stopped.
+- Preserve available usage, artifact and terminal/group evidence when ownership/persistence fails, through an
+  ownership-safe design. An absent final token count remains unknown; do not double count initial/repeated usage,
+  turn partial counters into totals or rewrite the original failed operation into a successful receipt.
+- Keep en/es diagnostics and affected flow/API/schema parity if changed; preserve frozen recipes, histories,
+  configuration and D247–D249 tool/write-scope guarantees. Scope any wider discovered issue explicitly.
+
+**Validation:** synthetic fake-CLI/parser and preparation/storage regression tests for repetitive text, legitimate
+streaming, lease contention/failure, cancellation, partial capture and stopped/uncertain groups; relevant offline
+suites and parity checks. No real provider, production retry, recovery confirmation or installation without a
+separate explicit operator instruction. Do not copy this real stream, prompt or project into tests.
+**Deliverables:** established cause(s), accepted bounded design, implementation/tests/parity and updated incident
+evidence with exact checks/omissions; separately track the agreed patch delivery and any operator validation.

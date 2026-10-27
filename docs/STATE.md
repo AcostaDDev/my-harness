@@ -9,7 +9,10 @@ Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
 The queue contains **OT007**: task-run lease renewal and stream journal pressure, the wider issue OT006 scoped
-out. It comes before the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004/OT006 were
+out. Its owner-confirmed delivery target is **0.1.8**, on `fix/ot007-task-run-lease` from `b8e1a90`. Source is
+qualified (2185 pytest cases passed); integration, release and offline installation remain pending
+([evidence](phase/OT007-task-run-lease.md), D252).
+It comes before the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004/OT006 were
 released separately as 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/**0.1.7** (D239). No Metrics task is complete.
 
 **OT006 / 0.1.7 (D251):** the failed preparation launched its Claude executor with no tools (`--tools ''`) and asked

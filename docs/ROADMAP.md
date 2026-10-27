@@ -16,8 +16,8 @@ hotfix → 0.1.5**, before **OT004 visual profile editor → 0.1.6**, then P001
 D239/D242 still govern separate patch deliveries). OT005 was released as **0.1.5** through PR #4, with its archive
 and checksum verified after download. OT004 was released as **0.1.6** through PR #5 (tag `v0.1.6`), with its
 archive and checksum verified after download.
-OT006 records a later real repetitive-preparation/ownership-loss incident and is now next in the one-off queue, with no
-release target yet; its evidence-only handoff does not authorize a production retry.
+OT006's repetitive-preparation/ownership-loss fix was released and installed as **0.1.7**. OT007 applies the managed
+run renewal/journal follow-up and targets **0.1.8**, confirmed by the owner. No production retry is authorized.
 See [OT005 release evidence](phase/OT005-preparation-tool-links.md); no Metrics task is complete.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit

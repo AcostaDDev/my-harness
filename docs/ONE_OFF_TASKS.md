@@ -1,6 +1,6 @@
 # One-off tasks
 
-**Queue:** OT007 pending.
+**Queue:** OT007 in progress.
 **Next: OT007 — task-run lease renewal and stream journal pressure; then NEXT_STEPS.md.**
 
 OT006 was released as **0.1.7** ([evidence](phase/OT006-preparation-consumption.md), D251), installed locally and
@@ -42,16 +42,17 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT007 — Task-run lease renewal and stream journal pressure
 
-**Status:** pending; registered 2026-10-27 at the owner's request so the queue can be finished in the next session.
-No implementation yet.
+**Status:** source implemented and qualified; owner confirmed **0.1.8** on 2026-10-27. Integration, release and
+installation remain pending; evidence: [OT007](phase/OT007-task-run-lease.md).
 **Depends on:** OT006/D251 (released 0.1.7), which fixed the same pattern only for generic preparation. OT007
 precedes P001-T001; no Metrics Records work is completed here.
 **Classification:** bounded runtime reliability fix outside the roadmap, for managed task/phase/chat/definition runs.
-**Branch:** create `fix/ot007-task-run-lease` from current `develop`.
+**Branch:** `fix/ot007-task-run-lease` from clean, synchronized `develop` (`b8e1a90`).
 **Delivery route:** the agreed one-off policy applies: next patch **0.1.8** (D239) via topic → `develop` → release PR
-→ `main` → GitHub Release with the self-contained archive (D235/D242). Confirm or reroute the target with the owner
-before product edits. Source, integration, publication and installation are separate states; merging, publishing
-and installing each need explicit owner instruction (precedent: OT006).
+→ `main` → GitHub Release with the self-contained archive (D235/D242). The owner explicitly authorized the final
+commit, integration/push, release PR, offline archive/checksum build, draft upload/download verification, PR merge,
+publication/public download verification, offline installation with the service stopped and closure evidence.
+Track these states separately until all are complete. No real provider invocation or service start is authorized.
 **Objective:** apply D251's lease-renewal and write-pressure lessons to managed runs. Keep their fencing and their
 explicit heartbeat-failure stop. Decide whether `output-guard-1` evidence/stop behavior needs any run-level surfacing.
 **Known facts (from OT006 source inspection, not yet reproduced for runs):**

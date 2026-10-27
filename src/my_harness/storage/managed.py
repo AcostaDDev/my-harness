@@ -830,15 +830,35 @@ class SQLiteManagedRepository:
             job.process_owner = identity
             self._event(session, run, "process_owner_registered", {"job_id": job.id, "identity": identity})
 
-    def close_owner(self, claim):
+    def close_owner(self, claim, *, heartbeat=None):
         # Closing the scope forbids future launches; may run after lease loss.
         with self._write() as session:
             job = session.get(Job, claim.id)
             if job is None or job.owner_token != claim.owner_token:
                 raise OwnershipLost("Different process owner")
-            job.owner_closed = True
             run = session.get(Run, job.run_id)
-            self._event(session, run, "process_owner_closed", {"job_id": job.id})
+            # D252: only the closing owner may settle its unfinished attempts, even after lease loss.
+            from my_harness.adapters.processes import liveness
+            for row in session.scalars(select(Process).where(Process.job_id == job.id, Process.status == 'RUNNING')):
+                if row.capture is not None or row.identity is None:
+                    continue
+                state = liveness(row.identity, group=True)
+                partial = None
+                artifacts = (row.spec or {}).get('artifacts')
+                if isinstance(artifacts, str):
+                    try:
+                        partial = json.loads((Path(artifacts) / 'capture.json').read_text())
+                    except (OSError, ValueError):
+                        pass
+                capture = partial if isinstance(partial, dict) else {'status': 'interrupted'}
+                row.capture = {**capture, 'reported_group_state': capture.get('group_state'), 'group_state': state,
+                               'settled_by': 'closing_owner'}
+                row.status = 'STOPPED' if state == 'dead' else 'UNCERTAIN'
+                self._event(session, run, 'process_interrupted', {'job_id': job.id, 'attempt_id': row.attempt_id,
+                    'process_status': row.status, 'group_state': state, 'partial_capture': isinstance(partial, dict)})
+            job.owner_closed = True
+            self._event(session, run, "process_owner_closed", {"job_id": job.id,
+                **({'heartbeat': dict(heartbeat)} if heartbeat and (heartbeat['failures'] or heartbeat['lost']) else {})})
 
     def process_intent(self, claim, attempt_id, spec):
         with self._write() as session:
@@ -853,19 +873,24 @@ class SQLiteManagedRepository:
             self._event(session, run, "process_intent", {"job_id": job.id, "attempt_id": attempt_id, "spec": spec})
 
     def process_update(self, claim, attempt_id, kind, payload):
+        self.process_updates(claim, attempt_id, ((kind, payload),))
+
+    def process_updates(self, claim, attempt_id, items):
+        """D252: preserve each event and sequence, with one fenced transaction per read chunk."""
         with self._write() as session:
             job, run = self._owned(session, claim)
             row = session.get(Process, attempt_id)
             if row is None or row.job_id != job.id:
                 raise Conflict("Unknown process intent")
-            if kind == "process_spawned":
-                if job.owner_closed or row.identity is not None:
-                    raise Conflict("Process identity cannot change")
-                row.identity, row.status = payload, "RUNNING"
-            elif kind == "process_finished":
-                row.status = "STOPPED" if payload["group_state"] == "dead" else "UNCERTAIN"
-                row.capture = payload
-            self._event(session, run, kind, {"job_id": job.id, "attempt_id": attempt_id, **payload})
+            for kind, payload in items:
+                if kind == "process_spawned":
+                    if job.owner_closed or row.identity is not None:
+                        raise Conflict("Process identity cannot change")
+                    row.identity, row.status = payload, "RUNNING"
+                elif kind == "process_finished":
+                    row.status = "STOPPED" if payload["group_state"] == "dead" else "UNCERTAIN"
+                    row.capture = payload
+                self._event(session, run, kind, {"job_id": job.id, "attempt_id": attempt_id, **payload})
 
     def processes(self, job_id):
         with Session(self.engine) as session:

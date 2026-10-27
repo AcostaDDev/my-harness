@@ -1192,7 +1192,7 @@
   "supervisor.definition_turns_require_configured": "Los turnos de definición requieren el lector Git configurado",
   "supervisor.document_export_requires_configured": "La exportación de documentos requiere el escritor Git configurado",
   "supervisor.document_operations_require_configured": "Las operaciones documentales requieren el escritor Git configurado",
-  "supervisor.heartbeat_failed_stop_before": "Falló el latido; detente antes del siguiente efecto",
+  "supervisor.heartbeat_failed_stop_before": "La renovación del lease perdió la propiedad ({failures} fallos de renovación, último: {error}); detener antes del siguiente efecto",
   "supervisor.import_requires_configured_git": "La importación requiere el escritor Git configurado",
   "supervisor.managed_documentation_blocks_could": "No se pudieron regenerar los bloques de documentación gestionados: {exc}",
   "supervisor.managed_persistence_failed": "Falló la persistencia gestionada: {exc}",

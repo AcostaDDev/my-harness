@@ -10,10 +10,12 @@ phases; phases are numbered from P001 in this repository.
 ([D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
 [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); `0.1.2` was released for OT001 and `0.1.3`
 for OT002.
-The owner prioritized OT003 (0.1.4 intake-profile fix) and OT004 (0.1.5 visual profile editor) as separate
-out-of-roadmap patches before P001 ([D242](DECISIONS.md#d242--task-ownership-and-delivery-disposition-before-product-changes),
-[D243](DECISIONS.md#d243--visual-profile-editing-as-ot004-before-metrics-records)). OT003 was released as 0.1.4; OT004's 0.1.5 target remains planned.
-Current pending work is in [ONE_OFF_TASKS](ONE_OFF_TASKS.md).
+OT003 was released as 0.1.4 outside the roadmap. The owner subsequently confirmed **OT005 preparation tool-link
+hotfix → 0.1.5**, before **OT004 visual profile editor → 0.1.6**, then P001
+([D246](DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor) supersedes D243's target/order;
+D239/D242 still govern separate patch deliveries). OT005 source is implemented and synthetically qualified; its
+integration and 0.1.5 release remain pending. OT004 is not implemented. Current task contracts and order are in
+[ONE_OFF_TASKS](ONE_OFF_TASKS.md), with [OT005 evidence/delivery status](phase/OT005-preparation-tool-links.md).
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex

@@ -1239,7 +1239,7 @@ actions retain the session's authorization requirements. Documentation must repo
 
 ## D243 — Visual profile editing as OT004 before Metrics Records
 
-Status: accepted for implementation, not implemented.
+Status: accepted for implementation, not implemented. Release target/order superseded by D246; scope unchanged.
 
 The owner chose OT004 before Metrics Records, with its own patch after OT003: target 0.1.5 after OT003's 0.1.4.
 The contract in ONE_OFF_TASKS is authoritative; P001/P002 and the six Metrics Records tasks keep their scope.
@@ -1293,3 +1293,84 @@ advanced only by acknowledged own writes, never silently adopting a concurrent v
 This is UI orchestration over existing endpoints: no new API/schema, batch job, provider call or execution authority.
 Documents go to the same draft area as individual apply (private for onboarding). Profile adoption, documentary
 tree/commit, private configuration, preparation and activation keep separate confirmations and gates.
+
+## D246 — OT005 preparation tool aliases before the visual editor
+
+Status: accepted at the owner's explicit confirmation. Supersedes only D243's target/order, not its editor scope.
+
+After OT003 was published as 0.1.4, the operator encountered `Unexpected symlink: .venv/bin/python` while reviewing
+generic preparation. Read-only diagnosis traced it to the whole-checkout snapshot and `_links`' additional
+`local_paths` requirement for otherwise declared byte-bound tool aliases. The configured executable loader itself
+accepts symlinks. This is a new bounded preparation hotfix, not an amendment/rewrite of published OT003.
+
+Record **OT005 → 0.1.5**, before **OT004 → 0.1.6**, then resume the unchanged P001 Metrics Records plan. Both are
+outside the roadmap and retain separate topic/integration/release routes under D235/D239/D242. The proposed fix is
+limited to read-only pre-existing aliases of explicitly declared, resolved and content-bound tools, retaining
+write-scope, external-target, change-detection and receipt guarantees. It does not authorize arbitrary symlinks or
+adding an existing environment to writable scope. Exact compatibility/receipt handling remains implementation work.
+
+At the owner's request this session changes documentation only and leaves a handoff for another session after
+`/clear`. OT005 and OT004 are not implemented. No new code/test, version bump, commit, merge, push, publication,
+reinstallation, service restart, operator configuration change or real preparation/provider invocation is authorized
+by this documentation-only instruction. The next session must preserve the uncommitted task documents, review the
+handoff and work within OT005 before starting OT004; release/operation authorization must be established separately.
+
+## D247 — Frozen read-only tool-link evidence in generic preparation
+
+Status: accepted within OT005's implementation scope; no new write authority. D248 amends external directory
+alias handling only for newly marked plans/receipts; the original policy remains for older evidence.
+
+The owner resumed OT005 after the documentation-only handoff and authorized implementation and a source commit.
+D246's separate release order/targets remain; publication, installation and operator actions are still separate.
+
+New generic previews may admit pre-existing file-link chains outside `local_paths` only when the final regular
+executable is an explicitly configured resolved/hash-bound tool. Resolve at most 40 file links with no directory
+symlink traversal. Capture the exact chain paths, link text and modes as `read_only_tool_links` in the plan and
+receipt. The whole-checkout snapshot remains bounded and never descends through directory links. Verify tools
+against their frozen evidence before accepting these links, including after executor/native-command effects.
+Existing private-local link rules and recipe sources remain unchanged.
+
+This is additive inline journal/receipt evidence under `project-profile-preparation-1`, with no schema, TOML or
+API request/response model change. Only plans/receipts carrying the new evidence opt in; older ones retain their
+old link policy and bytes, including linked recovery. No history is backfilled. New evidence is immutable through
+execution, recovery and receipt verification; missing, added or changed outside-local aliases are refused.
+Protected-path links remain refused. Read-only aliases never extend write/local/environment paths and do not
+accredit the rest of an existing environment: stable environment accreditation still uses `environment_paths`.
+The cooperative before/after guards detect persistent changes; they do not provide OS isolation or rollback.
+
+## D248 — External directory aliases only along frozen tool resolution
+
+Status: accepted by the owner's explicit approval after the OT005 manual preview failure. Amends D247's
+no-directory-alias rule only outside the checkout, for resolution of the explicitly declared executable.
+
+A declared Homebrew interpreter may pass through `/opt/homebrew/opt/python@3.14`, an external directory alias.
+Rejecting every such component prevented the original environment from reaching preview even after D247. New
+previews opt in with `tool_link_policy = external-directories-1`; bounded component-by-component resolution records
+file and external directory links (exact path, text and mode) along the tool chain, and the final executable/mode.
+Every link counts against the same 40-link ceiling. Parent access still uses O_NOFOLLOW: directory aliases are read
+and resolved explicitly, never silently traversed. The final regular executable must equal a declared frozen
+resolved path and pass its frozen SHA-256 check. No external directory is enumerated and no extra writes are granted.
+
+Directory links within the checkout remain refused, including a hop later cancelled by `..`. Broken/looping chains,
+unbound targets, added/removed/changed aliases and protected checkout links remain refused. Scope and receipt guards
+preserve the exact evidence; no silent rebinding, retry, environment accreditation or activation is introduced.
+Plans/receipts without the marker keep D247's strict parent-directory policy (or its historical predecessor), including
+explicit recovery. Existing evidence is not rewritten. The marker/evidence remain inline JSON under the existing
+contract; no ORM/schema, configuration format, API model, dependency or recipe fingerprint changes.
+
+## D249 — Complete generic preparation review within OT005
+
+Status: accepted within OT005's existing exact-preview criterion; no execution/configuration authority change.
+
+The owner's next manual screenshot shows that the plan now loads, but the UI prints `undefined` for file hashes and
+blank step labels. The recipe renderer assumed fixed file bytes and top-level argv/labels; the existing generic
+contract instead declares writable path/effect pairs and kind-based steps with nested commands. Include this bounded
+review correction in OT005/0.1.5 before declaring the manual workflow successful; it is not OT004's visual editor.
+
+Render generic write scope as possible effects, without inventing fixed content, diffs or hashes. Show private
+directories, executor selection/instructions/write scope, exact declared argv and command cwd/timeouts/environment,
+network/scripts and the technical commit. Give generic modes their own wording instead of Django wheel promises.
+Preserve recipe v1/v2 review, journal labels, raw evidence, exact preview hash/configuration binding, reason and consent,
+idempotency and separate activation. Only frontend presentation/catalogs and current parity/evidence change; no API,
+schema, saved profile, provider execution or earlier plan/receipt rewrite. Reinstall locally for the owner's retest;
+release remains conditional on their success report.

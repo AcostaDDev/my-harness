@@ -72,6 +72,23 @@ fresh JUnit and makes a reconcilable technical commit when content changes. Fail
 a valid receipt. Activation independently verifies the saved configuration, tools/environment, documents, clean
 HEAD, receipt and absence of pending/uncertain work. P001 alone cannot admit tasks. Recipes remain optional.
 
+For new generic previews, existing file aliases outside `local_paths` can be read-only inputs only when their bounded
+chain resolves to an explicitly declared executable with frozen resolved path/hash (D247/D248). Preview records exact
+chain paths, link text and modes; confirmation binds that evidence. Execution and post-step snapshots preserve it
+and recheck tool bytes, so changes fail without a receipt. D248's `external-directories-1` policy explicitly binds
+external directory aliases only along that tool chain; the 40-link ceiling includes them. Protected aliases, directory
+links inside the checkout, unrelated targets, broken links and loops are refused. Tool-link resolution failures have
+a link diagnostic instead of the generic folder-identity error. The receipt carries the same evidence for activation/
+admission verification; recovery does not rediscover or refresh it. Old operations/receipts retain their original
+policy, including D247 without external-directory support. This does not expand write/local/environment paths or
+certify undeclared environment contents.
+
+The generic review displays authorized write paths as possible effects, private process directories, the executor's
+selection/instructions/write scope, exact nested command argv plus cwd/timeouts/environment, network/scripts and
+technical commit (D249). It does not show invented fixed content/hashes. Recipe v1/v2 keeps its fixed-file review.
+Full evidence, reason and explicit consent still bind the exact preview/configuration; confirmation and activation
+remain separate. Changing this display never launches preparation.
+
 Later editing uses the same gates. Technical changes need current committed documents and a new receipt;
 nontechnical changes may retain an exact compatible receipt after current verification. Optional assistance
 freezes active clients and authorized context. The reviewer returns a proposal in read-only mode; the executor

@@ -397,6 +397,7 @@ def test_generic_api_validates_exact_union_and_security_before_confirming(generi
     from session_client import TestClient
     from my_harness.api.app import create_app
     service, body, *_ = generic
+    _, _, directory_alias = external_tool_directory_alias(generic)
     # Keep the real protected app/session router, substitute only runtime composition with this synthetic fixture.
     application = create_app(str(service.runtime.engine.url), service.runtime.database.parent / 'test-ui',
                              managed=service.runtime.config)
@@ -413,13 +414,21 @@ def test_generic_api_validates_exact_union_and_security_before_confirming(generi
             base = '/api/managed/projects/child/preparation'
             assert http.post(base+'/preview', json={**body, 'argv': ['foreign']}).status_code == 422
             assert http.post(base+'/preview', json=body, headers={'Origin': 'https://foreign.invalid'}).status_code == 403
+            directory_alias.unlink()
+            directory_alias.symlink_to('missing-directory', target_is_directory=True)
+            refused = http.post(base+'/preview', json=body)
+            assert refused.status_code == 422 and refused.json()['detail']['code'] == 'invalid_request'
+            directory_alias.unlink()
+            directory_alias.symlink_to(directory_alias.parent, target_is_directory=True)
             shown = http.post(base+'/preview', json=body)
             assert shown.status_code == 200, shown.text
+            assert len(shown.json()['read_only_tool_links']) == 3
             request = {'change': body, 'preview_sha256': shown.json()['preview_sha256'],
                        'confirmed': True, 'reason': 'Exact generic preparation'}
             assert http.post(base+'/confirm', json=request).status_code == 422
             confirmed = http.post(base+'/confirm', json=request, headers={'Idempotency-Key': 'generic-api'})
             assert confirmed.status_code == 200, confirmed.text
+            assert confirmed.json()['plan']['read_only_tool_links'] == shown.json()['read_only_tool_links']
             assert http.post(base+'/confirm', json=request, headers={'Idempotency-Key': 'generic-api'}).json() == confirmed.json()
 
 
@@ -567,3 +576,435 @@ def test_environment_links_allow_only_explicit_byte_bound_tools(generic):
     (root / '.prepare/tool-alias').unlink()
     (root / '.prepare/tool-alias').symlink_to(foreign)
     with pytest.raises(ValueError): snapshot(root, ProfilePreparation._links(plan))
+
+
+def existing_tool_aliases(generic, *, configured_alias=False):
+    service, body, _, repo, data, tool = generic
+    root = service.runtime.project('child').context.root
+    (root / '.git/info').mkdir(exist_ok=True)
+    (root / '.git/info/exclude').write_text('.venv/\n')
+    binaries = root / '.venv/bin'
+    binaries.mkdir(parents=True)
+    (binaries / 'python').symlink_to('python3')
+    (binaries / 'python3').symlink_to('python3.14')
+    (binaries / 'python3.14').symlink_to(tool)
+    (root / '.venv/dependency.txt').write_text('existing synthetic dependency')
+    if configured_alias:
+        data['commands']['executables']['go'] = str(binaries / 'python')
+        save(repo, [change(repo, toml_document(data), 'project:child')], key='alias-configuration')
+        ref = repo.read('project:child')['saved']
+        body.update(configuration_revision=ref['revision'], configuration_sha256=ref['sha256'])
+    return root, binaries
+
+
+@pytest.mark.parametrize('configured_alias', [False, True])
+def test_existing_read_only_tool_chain_survives_preview_execution_and_receipt(generic, configured_alias):
+    service, body, executor, *_ = generic
+    root, binaries = existing_tool_aliases(generic, configured_alias=configured_alias)
+    before = {p.name: (os.readlink(p), p.lstat().st_mode) for p in binaries.iterdir()}
+    shown = service.preview('child', body)
+    assert shown['technical']['write_paths'] == technical()['write_paths']
+    assert shown['technical']['local_paths'] == ['.prepare/**']
+    assert not executor.calls and not (root / '.prepare').exists()
+    result = finish(generic)
+    verify_receipt(root, result['receipt'])
+    service.generic().verify_configuration(service.runtime.project('child'), result['receipt'])
+    assert service.read('child')['prepared']
+    assert result['receipt']['environment'] == {}  # No accreditation of undeclared environment contents.
+    assert before == {p.name: (os.readlink(p), p.lstat().st_mode) for p in binaries.iterdir()}
+    assert (root / '.venv/dependency.txt').read_text() == 'existing synthetic dependency'
+    assert '.venv' not in git(root, 'ls-files')
+
+
+@pytest.mark.parametrize('fault', ['foreign', 'broken', 'loop', 'directory', 'directory-hop', 'directory-dotdot', 'long-chain'])
+def test_read_only_tool_links_refuse_unbound_or_non_file_chains(generic, fault):
+    service, body, executor, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    alias = binaries / 'python3.14'
+    alias.unlink()
+    if fault == 'foreign':
+        foreign = tool.with_name('foreign')
+        foreign.write_bytes(tool.read_bytes())  # Identical bytes alone do not declare another tool.
+        foreign.chmod(0o700)
+        alias.symlink_to(foreign)
+    elif fault == 'broken':
+        alias.symlink_to('missing')
+    elif fault == 'loop':
+        alias.symlink_to('python')
+    elif fault == 'directory':
+        alias.symlink_to(tool.parent, target_is_directory=True)
+    elif fault == 'directory-hop':
+        (binaries / 'redirect').symlink_to(tool.parent, target_is_directory=True)
+        alias.symlink_to('redirect/' + tool.name)
+    elif fault == 'directory-dotdot':
+        (binaries / 'redirect').symlink_to(tool.parent, target_is_directory=True)
+        (binaries / 'declared').symlink_to(tool)
+        alias.symlink_to('redirect/../declared')
+    else:
+        for index in range(41):
+            (binaries / f'chain{index}').symlink_to(f'chain{index + 1}' if index < 40 else tool)
+        alias.symlink_to('chain0')
+    with pytest.raises((OSError, ValueError, RegistryError)):
+        service.preview('child', body)
+    assert not executor.calls and not (root / '.prepare').exists()
+
+
+def mutate_alias(root, binaries, tool, fault):
+    alias = binaries / 'python'
+    if fault == 'tool-bytes':
+        tool.write_text(tool.read_text() + '\n# tool drift\n')
+    elif fault == 'environment':
+        (root / '.venv/dependency.txt').write_text('changed outside write scope')
+    elif fault == 'add':
+        (binaries / 'extra').symlink_to(tool)
+    elif fault == 'regular':
+        alias.unlink()
+        alias.write_text('replaced by regular file')
+    elif fault == 'mode':
+        os.chmod(alias, 0o700, follow_symlinks=False)
+    else:
+        alias.unlink()
+        if fault != 'delete':
+            alias.symlink_to(tool)  # Same final tool, different link bytes.
+
+
+@pytest.mark.parametrize('fault', ['retarget', 'delete', 'regular', 'mode', 'add', 'environment', 'tool-bytes'])
+def test_read_only_environment_changes_during_executor_never_accredit_or_commit(generic, fault):
+    service, _, executor, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    head = git(root, 'rev-parse', 'HEAD')
+    original = executor.effect
+    executor.effect = lambda root: (original(root), mutate_alias(root, binaries, tool, fault))
+    op = confirm(generic)
+    service.run_once()
+    failed = service.repository.read(op['id'])
+    assert failed['status'] == 'FAILED' and failed['receipt'] is None
+    assert git(root, 'rev-parse', 'HEAD') == head
+    with Session(service.runtime.engine) as session:
+        assert not session.scalar(select(Process.id).where(Process.preparation_id == op['id']))
+    with pytest.raises((OSError, ValueError, RegistryError)):
+        confirm(generic, key='no-adoption', previous_id=op['id'], retry_step=1)
+
+
+@pytest.mark.parametrize('fault', ['retarget', 'delete', 'regular', 'mode', 'add', 'tool-bytes'])
+def test_receipt_keeps_exact_read_only_alias_evidence(generic, fault):
+    service, _, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    result = finish(generic)
+    receipt = result['receipt']
+    assert set(receipt['read_only_tool_links']) == {'.venv/bin/' + name for name in ('python', 'python3', 'python3.14')}
+    frozen = freeze(receipt)
+    mutate_alias(root, binaries, tool, fault)
+    with pytest.raises((JournalError, RegistryError)):
+        verify_receipt(root, receipt)
+    assert freeze(service.repository.read(result['id'])['receipt']) == frozen
+
+
+def test_read_only_tool_drift_after_preview_and_after_confirmation_is_refused(generic):
+    service, body, executor, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    shown = service.preview('child', body)
+    (binaries / 'python').unlink()
+    (binaries / 'python').symlink_to(tool)
+    with pytest.raises(RegistryError):
+        service.confirm('child', {'change': body, 'preview_sha256': shown['preview_sha256'],
+                                 'confirmed': True, 'reason': 'Stale links'}, 'stale-links')
+    op = confirm(generic)
+    tool.write_text(tool.read_text() + '\n# changed after confirmation\n')
+    service.run_once()
+    failed = service.repository.read(op['id'])
+    assert failed['status'] == 'FAILED' and failed['receipt'] is None
+    assert not executor.calls and not (root / '.prepare').exists()
+
+
+def test_old_receipts_keep_the_original_link_policy_without_rewriting(generic):
+    from my_harness.services.project_preparation import snapshot
+    service, body, *_ = generic
+    result = finish(generic)
+    old = copy.deepcopy(result['receipt'])
+    old.pop('read_only_tool_links')
+    old.pop('tool_link_policy')
+    frozen = freeze(old)
+    root = service.runtime.project('child').context.root
+    verify_receipt(root, old)
+    root, _ = existing_tool_aliases(generic)
+    with pytest.raises(ValueError):
+        snapshot(root, ProfilePreparation._links({'technical': technical(), 'tool_files': old['tools']}))
+    with pytest.raises(JournalError):
+        verify_receipt(root, old)
+    assert freeze(old) == frozen
+
+
+def test_new_read_only_link_evidence_survives_explicit_recovery(generic, monkeypatch):
+    service, _, executor, *_ = generic
+    external_tool_directory_alias(generic)
+    original = ProfilePreparation._execute_step
+    def fail(self, operation_id, token, project, plan, step):
+        if step['spec']['kind'] == 'command':
+            raise ValueError('Synthetic failure before command effects')
+        return original(self, operation_id, token, project, plan, step)
+    monkeypatch.setattr(ProfilePreparation, '_execute_step', fail)
+    op = confirm(generic)
+    service.run_once()
+    failed = service.repository.read(op['id'])
+    frozen = freeze({'plan': failed['plan'], 'steps': failed['steps'], 'receipt': failed['receipt']})
+    monkeypatch.setattr(ProfilePreparation, '_execute_step', original)
+    successor = confirm(generic, key='linked-aliases', previous_id=op['id'], retry_step=2)
+    service.run_once()
+    completed = service.repository.read(successor['id'])
+    assert completed['status'] == 'COMPLETED', completed['diagnostic']
+    assert completed['receipt']['read_only_tool_links'] == failed['plan']['read_only_tool_links']
+    assert completed['receipt']['tool_link_policy'] == failed['plan']['tool_link_policy']
+    verify_receipt(service.runtime.project('child').context.root, completed['receipt'])
+    previous = service.repository.read(op['id'])
+    assert len(executor.calls) == 1
+    assert freeze({k: previous[k] for k in ('plan', 'steps', 'receipt')}) == frozen
+
+
+def test_protected_paths_still_refuse_read_only_tool_links(generic):
+    service, body, executor, repo, data, _ = generic
+    root, _ = existing_tool_aliases(generic)
+    data['profile']['protected_paths'].append('.venv/bin/**')
+    save(repo, [change(repo, toml_document(data), 'project:child')], key='protect-aliases')
+    ref = repo.read('project:child')['saved']
+    body.update(configuration_revision=ref['revision'], configuration_sha256=ref['sha256'])
+    with service.managed._write() as session:
+        proposal = session.get(Proposal, body['proposal_id'])
+        payload = json.loads(proposal.content)
+        payload['candidate']['profile'] = data['profile']
+        proposal.content = freeze(payload)
+        proposal.content_sha256 = text_hash(proposal.content)
+    with pytest.raises(RegistryError):
+        service.preview('child', body)
+    assert not executor.calls and not (root / '.prepare').exists()
+
+
+def test_receipt_protected_link_refusal_is_not_bypassed(generic):
+    service, *_ = generic
+    root, _ = existing_tool_aliases(generic)
+    receipt = finish(generic)['receipt']
+    receipt['protected_paths'].append('.venv/bin/**')
+    with pytest.raises(JournalError):
+        verify_receipt(root, receipt)
+
+
+def test_tool_mutation_by_native_command_fails_before_commit(generic, monkeypatch):
+    from my_harness.adapters.preparation import PreparationCommandRunner
+    service, _, _, _, _, tool = generic
+    root, _ = existing_tool_aliases(generic)
+    original = PreparationCommandRunner.run_managed
+    def changed(self, *args, **kwargs):
+        result = original(self, *args, **kwargs)
+        tool.write_text(tool.read_text() + '\n# mutated by synthetic command\n')
+        return result
+    monkeypatch.setattr(PreparationCommandRunner, 'run_managed', changed)
+    head = git(root, 'rev-parse', 'HEAD')
+    op = confirm(generic)
+    service.run_once()
+    failed = service.repository.read(op['id'])
+    assert failed['status'] == 'FAILED' and failed['receipt'] is None
+    assert failed['steps'][2]['status'] == 'STARTED'
+    assert git(root, 'rev-parse', 'HEAD') == head
+
+
+def test_historical_operation_recovery_does_not_opt_into_new_link_policy(generic, monkeypatch):
+    service, *_ = generic
+    original = ProfilePreparation.preview
+    def historical(self, *args, **kwargs):
+        plan = original(self, *args, **kwargs)
+        plan.pop('read_only_tool_links', None)
+        plan.pop('tool_link_policy', None)
+        plan.pop('preview_sha256')
+        return {**plan, 'preview_sha256': digest(plan)}
+    with monkeypatch.context() as legacy:
+        legacy.setattr(ProfilePreparation, 'preview', historical)
+        op = confirm(generic)
+    assert 'read_only_tool_links' not in op['plan']
+    service.control(op['id'], {'expected_version': op['version'], 'plan_sha256': op['plan_sha256']}, 'cancel')
+    successor = confirm(generic, key='historical-successor', previous_id=op['id'], retry_step=0)
+    assert 'read_only_tool_links' not in successor['plan']
+    service.run_once()
+    completed = service.repository.read(successor['id'])
+    assert completed['status'] == 'COMPLETED', completed['diagnostic']
+    assert 'read_only_tool_links' not in completed['receipt']
+    verify_receipt(service.runtime.project('child').context.root, completed['receipt'])
+
+
+def test_receipt_freezes_external_file_link_chain_without_scanning_external_tree(generic):
+    service, body, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    external = tool.with_name('external-alias')
+    external.symlink_to(tool.name)
+    # An unrelated broken link outside the checkout is never enumerated.
+    tool.with_name('unrelated-broken-link').symlink_to('absent')
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(external)
+    receipt = finish(generic)['receipt']
+    verify_receipt(root, receipt)
+    external.unlink()
+    external.symlink_to(tool)  # Same target, changed chain bytes.
+    with pytest.raises(JournalError):
+        verify_receipt(root, receipt)
+
+
+def test_read_only_link_cannot_be_deleted_even_if_named_in_write_paths(generic):
+    service, body, executor, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    with service.managed._write() as session:
+        proposal = session.get(Proposal, body['proposal_id'])
+        payload = json.loads(proposal.content)
+        payload['candidate']['preparation_plan']['write_paths'].append('.venv/bin/python')
+        proposal.content = freeze(payload)
+        proposal.content_sha256 = text_hash(proposal.content)
+    original = executor.effect
+    executor.effect = lambda root: (original(root), (binaries / 'python').unlink())
+    head = git(root, 'rev-parse', 'HEAD')
+    op = confirm(generic)
+    service.run_once()
+    failed = service.repository.read(op['id'])
+    assert failed['status'] == 'FAILED' and failed['receipt'] is None
+    assert git(root, 'rev-parse', 'HEAD') == head
+
+
+def external_tool_directory_alias(generic):
+    _, _, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    directory_alias = tool.parent / 'synthetic-python-opt'
+    directory_alias.symlink_to(tool.parent, target_is_directory=True)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(directory_alias / tool.name)
+    return root, binaries, directory_alias
+
+
+def test_existing_tool_chain_with_external_directory_alias_is_bound_read_only(generic):
+    service, body, executor, *_ = generic
+    root, binaries, directory_alias = external_tool_directory_alias(generic)
+    before = {p.name: (os.readlink(p), p.lstat().st_mode) for p in binaries.iterdir()}
+    shown = service.preview('child', body)
+    assert shown['technical']['write_paths'] == technical()['write_paths']
+    assert shown['technical']['local_paths'] == ['.prepare/**']
+    assert not executor.calls and not (root / '.prepare').exists()
+    result = finish(generic)
+    verify_receipt(root, result['receipt'])
+    assert any(entry.get('directory') and entry['path'] == str(directory_alias)
+               for entry in result['receipt']['read_only_tool_links']['.venv/bin/python']['chain'])
+    assert before == {p.name: (os.readlink(p), p.lstat().st_mode) for p in binaries.iterdir()}
+    assert directory_alias.is_symlink()
+    directory_alias.unlink()
+    directory_alias.symlink_to(str(directory_alias.parent) + '/.', target_is_directory=True)
+    with pytest.raises(JournalError):
+        verify_receipt(root, result['receipt'])
+
+
+@pytest.mark.parametrize('fault', ['retarget', 'mode', 'foreign', 'broken', 'loop'])
+def test_receipt_refuses_external_tool_directory_chain_drift(generic, fault):
+    _, _, _, _, _, tool = generic
+    root, _, directory_alias = external_tool_directory_alias(generic)
+    receipt = finish(generic)['receipt']
+    if fault == 'mode':
+        os.chmod(directory_alias, 0o700, follow_symlinks=False)
+    else:
+        directory_alias.unlink()
+        if fault == 'retarget':
+            directory_alias.symlink_to(str(directory_alias.parent) + '/.', target_is_directory=True)
+        elif fault == 'foreign':
+            foreign = tool.parent / 'foreign-interpreter'
+            foreign.mkdir()
+            clone = foreign / tool.name
+            clone.write_bytes(tool.read_bytes())
+            clone.chmod(0o700)
+            directory_alias.symlink_to(foreign, target_is_directory=True)
+        elif fault == 'broken':
+            directory_alias.symlink_to('missing-directory', target_is_directory=True)
+        else:
+            directory_alias.symlink_to(directory_alias.name, target_is_directory=True)
+    with pytest.raises(JournalError):
+        verify_receipt(root, receipt)
+
+
+@pytest.mark.parametrize('stage', ['confirmation', 'before-executor', 'executor'])
+def test_external_tool_directory_alias_drift_never_rebinds_or_commits(generic, stage):
+    service, body, executor, *_ = generic
+    root, _, directory_alias = external_tool_directory_alias(generic)
+    head = git(root, 'rev-parse', 'HEAD')
+    def mutate():
+        directory_alias.unlink()
+        directory_alias.symlink_to(str(directory_alias.parent) + '/.', target_is_directory=True)
+    if stage == 'confirmation':
+        plan = service.preview('child', body)
+        mutate()
+        with pytest.raises(RegistryError):
+            service.confirm('child', {'change': body, 'preview_sha256': plan['preview_sha256'],
+                                     'confirmed': True, 'reason': 'Stale external directory link'}, 'stale-directory')
+        assert not executor.calls
+    else:
+        op = confirm(generic)
+        if stage == 'before-executor':
+            mutate()
+        else:
+            original = executor.effect
+            executor.effect = lambda root: (original(root), mutate())
+        service.run_once()
+        failed = service.repository.read(op['id'])
+        assert failed['status'] == 'FAILED' and failed['receipt'] is None
+        assert len(executor.calls) == (1 if stage == 'executor' else 0)
+    assert git(root, 'rev-parse', 'HEAD') == head
+
+
+@pytest.mark.parametrize('directory_links', [37, 38])
+def test_tool_chain_budget_counts_file_and_external_directory_links_together(generic, directory_links):
+    service, body, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    for index in range(directory_links):
+        alias = tool.parent / f'opt{index}'
+        alias.symlink_to(f'opt{index + 1}' if index < directory_links - 1 else tool.parent,
+                         target_is_directory=True)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(tool.parent / 'opt0' / tool.name)
+    if directory_links == 37:
+        plan = service.preview('child', body)
+        assert len(plan['read_only_tool_links']['.venv/bin/python']['chain']) == 40
+    else:
+        with pytest.raises(RegistryError):
+            service.preview('child', body)
+    assert not (root / '.prepare').exists()
+
+
+def test_d247_plan_and_receipt_keep_strict_directory_policy_on_recovery(generic, monkeypatch):
+    service, _, _, _, _, tool = generic
+    root, binaries = existing_tool_aliases(generic)
+    original = ProfilePreparation.preview
+    def d247(self, *args, **kwargs):
+        plan = original(self, *args, **kwargs)
+        plan.pop('tool_link_policy', None)
+        plan.pop('preview_sha256')
+        return {**plan, 'preview_sha256': digest(plan)}
+    with monkeypatch.context() as previous:
+        previous.setattr(ProfilePreparation, 'preview', d247)
+        op = confirm(generic)
+    assert 'read_only_tool_links' in op['plan'] and 'tool_link_policy' not in op['plan']
+    service.control(op['id'], {'expected_version': op['version'], 'plan_sha256': op['plan_sha256']}, 'cancel')
+    successor = confirm(generic, key='d247-successor', previous_id=op['id'], retry_step=0)
+    assert 'tool_link_policy' not in successor['plan']
+    service.run_once()
+    result = service.repository.read(successor['id'])
+    assert result['status'] == 'COMPLETED', result['diagnostic']
+    receipt = result['receipt']
+    assert 'tool_link_policy' not in receipt
+    verify_receipt(root, receipt)
+    alias = tool.parent / 'old-policy-directory-alias'
+    alias.symlink_to(tool.parent, target_is_directory=True)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(alias / tool.name)
+    with pytest.raises(JournalError):
+        verify_receipt(root, receipt)
+
+
+@pytest.mark.parametrize('suffix', ['/', '/.'])
+def test_tool_file_link_cannot_hide_a_directory_requirement(generic, suffix):
+    service, body, _, _, _, tool = generic
+    _, binaries = existing_tool_aliases(generic)
+    (binaries / 'python3.14').unlink()
+    (binaries / 'python3.14').symlink_to(str(tool) + suffix)
+    with pytest.raises(RegistryError):
+        service.preview('child', body)

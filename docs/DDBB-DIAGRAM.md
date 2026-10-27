@@ -973,6 +973,11 @@ corrections. No new table or column.
 
 Profile proposals reuse planning proposals (`kind=profile`) with frozen binding/document evidence. Generic
 preparation reuses project preparation operations/steps/receipts with a contract discriminator, not a task run.
+New generic `plan`/`receipt` JSON includes optional `read_only_tool_links` (D247): an exact alias-path map with file-link
+chain paths/text/modes and resolved executable/mode. Existing tool evidence owns the frozen executable hash.
+D248 adds the optional inline `tool_link_policy = external-directories-1` marker; chain entries may bind external
+directory aliases with `directory: true`. Historical JSON is not backfilled and retains its original link policy.
+No table, column or migration changes.
 Own configuration authority is in scope references, while nullable registry composition/profile marks intake.
 Jobs seal project revision/hash and environment receipt in `versions_json`; earlier snapshots retain their bytes.
 A backup inventory covers all three tables plus referenced configuration/evidence. Restore keeps the existing

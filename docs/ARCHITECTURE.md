@@ -340,3 +340,31 @@ verify distribution and venv identity; instance/install locks survive in the chi
 SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm user/global configuration paths
 are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
 version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.
+
+## 12. Accepted P001 accounting architecture (not implemented)
+
+[T001 contract](phase/P001-T001-accounting-contract.md), D254–D257. Production remains `terminal-2`/`metrics-1`,
+schema 0027, global v9/project v1 and backup format 2. T002–T005 will implement these boundaries:
+
+- A standard-library pure calculator and separate immutable JSON identity/tariff references under `core/engine/`,
+  packaged for offline use. Digest-bound inputs, decimal-string rates/amounts, exact disjoint lines and one
+  ROUND_HALF_EVEN quantization to 12 places; no network or billing API in calculation or reads.
+- A source-keyed invocation ledger alongside existing journals. `managed.py` supplies managed attempts;
+  `profile_preparation.py`/`storage/preparation.py` supply executor-step identity and process capture;
+  `configuration_assistance.py` supplies its native operation/request identity. Intent/completion writes are atomic
+  with native records and obey existing fencing. Captures/components/references/valuations are immutable; lifecycle
+  projection and missing-row coverage are separate from captured usage or proof that a process stopped.
+- Global v10 named billing profiles and project v2 selectors use existing versioned files/SQLite authority and
+  save/activate CAS. Frozen binding is additional admission metadata; billing-only edits preserve compatible
+  technical receipt evidence. Old formats, queued work, recipe sources and histories are not rebound or rewritten.
+- Additive tables preserve original metrics floats. Explicit accounting backfill/repricing forms named cohorts;
+  queries select original admission-bound values or one complete cohort, not all alternative interpretations.
+  New paginated API contracts expose decimal strings and unknown reasons alongside unchanged legacy endpoints;
+  aggregates use exact values and explicit denominators without decoding full histories.
+- Retention keeps sufficient billing evidence and referenced bytes; format-3 backup verifies digests/native links.
+  Archive queries use the bundle without original roots, clients or configuration authority, preserving all
+  query-only restrictions. Legacy bundle compatibility is schema-scoped; any archive upgrade is explicit on a copy.
+
+See the [planned data responsibilities](DDBB-DIAGRAM.md#planned-p001-accounting-records-not-implemented) and
+[planned accounting flow](flows/metrics-accounting.md). Implementing tasks update actual schema/flows/OpenAPI/types;
+these design sections do not predeclare runtime support.

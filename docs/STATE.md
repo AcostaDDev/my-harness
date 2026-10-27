@@ -8,9 +8,11 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The one-off queue is **empty**. **Next: P001-T001**, the unchanged Metrics Records accounting contract/evidence
-inventory. OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
-0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). No Metrics task is complete.
+The one-off queue is **empty**. **Next: P001-T002**, versioned references and the pure calculator.
+P001-T001 accounting design/inventory is complete; runtime implementation has not started.
+OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
+0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). P001 targets **0.1.9 at phase closure**; P002 targets
+**0.2.0 at its closure** (D253).
 
 **OT007 / 0.1.8 (D252):** managed-run heartbeat renewal retries transient failures within the existing lease;
 stream chunks journal their events in one transaction; closing owners retain interrupted captures and settle
@@ -203,20 +205,27 @@ the frontend suites; no visual QA was run for these controls. Published as the G
 `e252fdc`) with a self-contained package built and checked locally
 ([work notes](phase/v0.1.1-model-selectors.md)).
 
-## Active phase — P001 Metrics Records (target: next patch after the one-off queue)
+## Active phase — P001 Metrics Records (target: 0.1.9 at phase closure)
 
 Documentation initialized on 2026-10-27 at the user's request
 ([D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries)); reordered as P001 with target `0.1.2`
 by [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020), then moved after the
-one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions).
+one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions); the owner confirmed
+0.1.9 at phase closure in [D253](DECISIONS.md#d253--phase-release-targets-after-018).
 The [handoff](phase/P001-metrics-records.md) records the implemented `metrics-1` baseline, missing billing inputs,
 scope and verification matrix. [Reference notes](phase/P001-metrics-records-references.md) contain
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
 independent USD/credit valuation and versioned reference records are planned, not implemented.
-[NEXT_STEPS](NEXT_STEPS.md) now contains the six pending task sections with dependencies, scope, acceptance,
-validation and deliverables; **next phase task is P001-T001**, the accounting contract/evidence inventory
-([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)). No task is complete and technical design remains pending
-T001. Assigning a release target does not release it.
+[NEXT_STEPS](NEXT_STEPS.md) contains the six task sections with dependencies, scope, acceptance,
+validation and deliverables ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)).
+**P001-T001 is complete as design/inventory only**; [its contract](phase/P001-T001-accounting-contract.md) and
+D254–D257 define native invocation accounting, evidence limits, immutable references/billing profiles, exact Decimal
+valuation, compatibility and synthetic acceptance cases. Planned data/flows are explicitly unimplemented; schema
+0027, metrics-1 and runtime version 0.1.8 are unchanged. **Next: P001-T002**; five implementation/qualification tasks
+remain. T001 source delivery is `docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge;
+release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.
+Static links, design/source consistency and independent arithmetic are checked; application suites/provider calls
+are not T001 evidence. Exact checks/delivery are recorded in the task contract.
 
 ## Planned phase — P002 Continuous Mode (target 0.2.0)
 
@@ -261,7 +270,7 @@ in the task artifact. Frozen histories/catalogs remain unchanged.
 Released through PR #3 as 0.1.4, with full offline regression, package verification and matching GitHub downloads.
 OT003 was removed from ONE_OFF_TASKS only after publication/verification (D242). Subsequent preparation diagnosis
 and the owner's D246 priority decision now put OT005 before OT004.
-See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. No Metrics Records task is complete.
+See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. That delivery completed no Metrics task.
 
 ## Patch 0.1.5 — read-only preparation tool aliases and complete review (OT005)
 

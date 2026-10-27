@@ -6,9 +6,10 @@ phases; phases are numbered from P001 in this repository.
 
 ## P001 — Metrics Records
 
-**Target release:** the patch version after the one-off queue empties
-([D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
-[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); `0.1.2` was released for OT001 and `0.1.3`
+**Target release:** **0.1.9, published at P001 closure**
+([D253](DECISIONS.md#d253--phase-release-targets-after-018)). Earlier target history:
+[D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
+[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions); `0.1.2` was released for OT001 and `0.1.3`
 for OT002.
 OT003 was released as 0.1.4 outside the roadmap. The owner subsequently confirmed **OT005 preparation tool-link
 hotfix → 0.1.5**, before **OT004 visual profile editor → 0.1.6**, then P001
@@ -19,15 +20,17 @@ archive and checksum verified after download.
 OT006's repetitive-preparation/ownership-loss fix was released and installed as **0.1.7**. OT007's managed-run
 renewal/journal follow-up was released and installed as **0.1.8** through
 [PR #7](https://github.com/AcostaDDev/my-harness/pull/7); its draft/public downloads and installation were verified
-([evidence](phase/OT007-task-run-lease.md)). The one-off queue is empty; P001-T001 is next. No production retry was made.
-See [OT005 release evidence](phase/OT005-preparation-tool-links.md); no Metrics task is complete.
+([evidence](phase/OT007-task-run-lease.md)). The one-off queue is empty; P001-T001 is now complete as design/inventory
+and P001-T002 is next. No production retry was made.
+See [OT005 release evidence](phase/OT005-preparation-tool-links.md); one-off deliveries are separate from Metrics work.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex
 clients; keep the accounting concepts extensible without adding another execution provider.
-**Status:** active phase; six pending tasks in [NEXT_STEPS](NEXT_STEPS.md), starting with P001-T001.
-Implementation has not started; the technical contract is the first task
-([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)).
+**Status:** active phase; T001 design/inventory complete, five pending tasks in [NEXT_STEPS](NEXT_STEPS.md), starting
+with P001-T002. Runtime implementation has not started. [T001](phase/P001-T001-accounting-contract.md) and D254–D257
+settle the technical contract, source limits and synthetic acceptance matrix; data/flows remain labelled planned
+until their implementing tasks. D234 still owns the six-task plan.
 
 **Exit criteria:**
 
@@ -44,14 +47,14 @@ Implementation has not started; the technical contract is the first task
 
 **Dependencies:** the current metrics baseline (D074), model-selection distinction (D231), and the repository's
 configuration, backup and immutability guarantees. No continuous-mode behavior is required for the calculation
-engine. Detailed technical decisions remain open.
+engine. The accepted T001 contract guides implementation; unsupported evidence cases remain explicit.
 
 **Start here:** [task plan](NEXT_STEPS.md), [phase handoff](phase/P001-metrics-records.md), then
 [pricing references and worked examples](phase/P001-metrics-records-references.md).
 
 ## P002 — Continuous Mode
 
-**Target release:** `0.2.0`
+**Target release:** `0.2.0`, published at P002 closure (D253)
 ([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
 

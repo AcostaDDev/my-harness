@@ -1,7 +1,7 @@
-# P001 — Metrics Records (target: next patch after the one-off queue)
+# P001 — Metrics Records (target: 0.1.9 at phase closure)
 
-**Status:** active phase; six tasks pending, implementation not started.
-**Next phase task: P001-T001 — Accounting contract and evidence inventory.**
+**Status:** active phase; T001 design complete, five tasks pending; runtime implementation not started.
+**Next phase task: P001-T002 — Versioned references and pure calculator.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty.
@@ -22,12 +22,14 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T001.** Earlier one-off releases remain documented in STATE and their evidence; no Metrics Records task
-is completed by these deliveries.
+**Next: P001-T002.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+complete a Metrics Records task. T001 is now separately complete as accepted design/inventory (D254–D257).
 
-The sections below are the current task plan, not implemented features. T001 settles the technical contract before
-T002–T005 change runtime behavior. The target release is the patch version that follows the one-off releases
-([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); OT001 shipped `0.1.2` and OT002 `0.1.3`.
+The sections below are the current task plan, not implemented features. T001 settled the technical contract before
+T002–T005 change runtime behavior. The owner confirmed **P001 → 0.1.9** and **P002 → 0.2.0**, published at each
+phase closure ([D253](DECISIONS.md#d253--phase-release-targets-after-018)); `0.1.8` is already the OT007 release.
+T001 uses `docs/p001-t001-accounting-contract` → `develop`; commit, necessary merge and push are authorized for this
+task. There is no task release or runtime version bump; release qualification/publication remains at P001 closure.
 
 ## Shared constraints
 
@@ -53,8 +55,11 @@ T002–T005 change runtime behavior. The target release is the patch version tha
 
 ## P001-T001 — Accounting contract and evidence inventory
 
-**Status:** pending; next task.
+**Status:** complete (accepted design/inventory only; no runtime implementation).
 **Depends on:** D232–D234 and the implemented D074 baseline.
+**Evidence:** [accounting contract](phase/P001-T001-accounting-contract.md), source observation/digest and synthetic
+acceptance matrix; D253–D257. Topic delivery: `docs/p001-t001-accounting-contract` → `develop`; exact verification
+and delivery status are in the evidence artifact. The criteria below are retained as the completed task contract.
 **Objective:** define the accounting contract and supported billing cases before changing capture, storage or API.
 **Allowed paths:** current `docs/**`; archived histories and frozen sources are read-only.
 **Acceptance criteria:**
@@ -82,18 +87,22 @@ accepted decisions and updated current design documentation.
 
 ## P001-T002 — Versioned references and pure calculator
 
-**Status:** pending.
-**Depends on:** completed T001 and its accounting/reference contract.
+**Status:** pending; next task.
+**Depends on:** completed T001, D254–D257 and its [accounting/reference contract](phase/P001-T001-accounting-contract.md).
 **Objective:** implement an offline, reproducible calculator and the approved model/tariff reference representation.
 **Allowed paths:** `src/my_harness/core/engine/**`, packaged reference files and packaging metadata identified by
-T001, focused `tests/**`, and current documentation. No execution-adapter or operational database change here.
+T001 (`core/engine/` packaged JSON and existing package-data metadata), focused `tests/**`, and current
+documentation. No execution-adapter or operational database change here. The T001 observation file is immutable
+research evidence, not an already implemented catalog; construct runtime references separately.
 **Acceptance criteria:**
 
 - Implement separate model identity and tariff references with immutable identity/content digest, source,
   observation date, known effective period or explicit unknown, billing unit and applicable conditions. Cover the
   initial suggested models with sourced references; custom/unpriced identifiers stay visible and unresolved.
 - Calculate line items from disjoint uncached input, cache read, applicable cache-write lifetime and output
-  categories. Apply T001's decimal/rounding and modifier policy; reasoning already included in output is not added.
+  categories. Apply D256/T001 precision 160, exact lines and once-per-invocation half-even rounding to 12 places;
+  reasoning already included in output is not added. Cover T001 A01–A14/A20–A26 with pinned evidence, including
+  Responses-API write semantics as a separate evidence contract, never an assumed Codex CLI capability.
 - Return quantity/rate/reference evidence and complete/incomplete/unsupported status with reasons. Unknown model,
   scheme, TTL, tier or modifier cannot silently become Standard pricing or zero cost. Keep units and bases separate.
 - Pin source data for offline use; a new reference never edits an earlier version. Keep source refresh outside
@@ -112,7 +121,10 @@ with exact checks and supported/unsupported cases.
 **Objective:** persist detailed usage and immutable valuations with the evidence required to reproduce them.
 **Allowed paths:** relevant `src/my_harness/adapters/**`, `src/my_harness/core/engine/**`,
 `src/my_harness/storage/**`, `src/my_harness/services/**`, `src/my_harness/migrations/**` and
-`src/my_harness/cli.py`; focused `tests/**`; current docs and parity artifacts if a contract changes.
+`src/my_harness/cli.py`; relevant configuration/accounting backend routes in `src/my_harness/api/**` when needed;
+focused `tests/**`; current docs and parity artifacts if a contract changes. This T001 refinement puts the native
+preparation/assistance ledger, v10/v2 billing binding, reference import backend, explicit accounting cohorts and
+format-3 backup in T003, before T004 query contracts and T005 controls; it does not start those implementations.
 **Acceptance criteria:**
 
 - Capture only fields supported by the evidence matrix, preserving exact requested/reported identities, source
@@ -123,7 +135,10 @@ with exact checks and supported/unsupported cases.
   Define deduplication and transaction/recovery behavior so retries cannot duplicate consumption or amounts.
 - Provide the explicit idempotent backfill/repricing policy adopted in T001. Keep new interpretations identifiable,
   leave original `metrics-1` values and phase snapshots intact, and report incomplete historical evidence.
-- Include new records/references in retention and verified backup/restore. Query-only consultation works without
+- Preserve `metrics-backfill`; new accounting backfill/repricing needs explicit preview/confirmation and named
+  closed cohorts, with original admission-bound totals remaining the default (D257).
+- Include new records/references in retention and verified backup/restore. T003 owns format 3 and the documented
+  schema-scoped legacy-bundle/explicit archive-copy upgrade path. Query-only consultation works without
   original roots, clients, network, executable configuration or mutations; reading cannot backfill or recalculate.
 - Update the data diagram and affected capture/configuration/migration/backup flows in the same task. If an API
   contract is touched, export OpenAPI and regenerate types as required by shared constraints.

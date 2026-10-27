@@ -5,6 +5,17 @@ Official pages checked on **2026-10-27**. Observation date does not establish hi
 Values below are starter examples; revalidate model identity, billing scheme and applicable conditions in T001.
 They must not be applied automatically to old runs or to an account with an unknown billing arrangement.
 
+## T001 revalidation handoff
+
+T001 re-opened R1–R7, compared the English/Spanish Work/Codex credit rows and corroborated model IDs/API prices.
+The [accepted contract](P001-T001-accounting-contract.md#3-official-source-revalidation) records applicability,
+remaining evidence limits and conflict handling. The [dated extraction](P001-T001-reference-observations.json)
+retains minimal facts/rate strings with a digest in the task evidence; it is not a runtime tariff catalog.
+The original seed tables/examples below are retained. The earlier translated-page discrepancy is resolved for
+these fetched rows; future conflicting sources still block reference admission. API cache writes now have explicit
+lifetime categories in the research, without assuming the Codex CLI emits them. Current phase target is 0.1.9
+at closure (D253), not the handoff's original 0.1.2.
+
 ## Source register
 
 | ID | Official source | Use and limit |

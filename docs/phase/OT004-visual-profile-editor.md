@@ -69,6 +69,27 @@ always restricted read-only and Codex uses its checkout-limited sandbox.
   overflow and stacked rows. A class-name collision (`command-list`) found during QA was fixed. No confirmation was
   submitted and the mock refused every mutation.
 
+## 0.1.6 candidate qualification
+
+Shared package/API/UI version **0.1.6** (`pyproject.toml`, `api/app.py`, `frontend/package.json`/lock, `uv.lock`
+project entry), CHANGELOG and en/es README download instructions. Exported OpenAPI differs only in `info.version`;
+client type regeneration produced no diff. No dependency change.
+
+- Full offline pytest: two runs with the default worker count under heavy unrelated machine load (load average ~20
+  on 10 cores from other processes) each had **one different** timing failure in pre-existing backend tests
+  (`test_project_preparation.py::test_changed_generated_bytes_stop_without_a_technical_commit`: RECOVERY_REQUIRED
+  instead of FAILED; `test_configuration.py::test_concurrent_editors_and_idempotency_collision`: missing
+  `.configuration.lock` during the race). Both passed serially three times each, their module passed (41/41), and the
+  backend source is unchanged apart from the version string. A full rerun with `-n 4`: **2140 passed, 2 skipped,
+  29 subtests passed**, 0 failed (392.85 s). The intermittent races are recorded, not fixed here.
+- `python3 -m unittest discover -s tests -p 'test_*.py'`: 10 passed. Fresh temporary SQLite `alembic upgrade head` and
+  `alembic check`: no new upgrade operations.
+- Frontend: 230 passed after the build's `npm ci`; typecheck/build passed (known large-chunk advisory).
+- `scripts/build_distribution.py --offline` into `.local/releases/ot004-0.1.6-candidate` and
+  `scripts/check_distribution.py --cache-dir .local/uv-cache`: exact members, metadata, licenses and `SHA256SUMS`;
+  isolated installed wheel UI/assets/API, session, definition/task/commit/restart, errors and restored evidence OK.
+- Local links/anchors of the changed documents: 157 checked, none broken; `git diff --check` clean.
+
 ## Not covered
 
 - No real service, database, provider, preparation or activation; previews in QA are mocked shapes.

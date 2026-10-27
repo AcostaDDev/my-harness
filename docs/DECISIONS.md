@@ -987,3 +987,61 @@ shape and the server keeps validating them.
 
 Updating the list is a release of the interface. A patch release (`0.x.y`) may carry such small interface
 improvements as well as defect fixes, provided it changes no configuration format, API contract or stored data.
+
+## D232 — Metrics Records phase and accounting boundaries
+
+Status: accepted (accounting boundaries; phase order and release assignment superseded by D233).
+
+P002 **Metrics Records** is added after P001 to cover detailed provider/model consumption, cost analysis and
+versioned reference data. The user requested a self-contained documentation handoff before implementation.
+Claude Code and Codex are the initial execution clients; extensibility of the accounting data does not authorize
+another provider integration. P001 stays active and no release version is assigned by this decision.
+
+The phase must distinguish amounts reported by a client, valuations calculated from an identified tariff, credits
+and authoritative billing evidence. Token-based valuations do not establish subscription allowance consumption,
+remaining quota or the user's final invoice. Missing model, usage or tariff conditions remain explicit uncertainty,
+never free usage or a silently chosen substitute. Historical metrics, histories and frozen catalogs retain their
+meaning and bytes; subsequent references or calculations must be separately identifiable.
+
+The [phase handoff](phase/P001-metrics-records.md) and [reference notes](phase/P001-metrics-records-references.md)
+are planning artifacts. Their task breakdown, candidate record fields and calculation policy require technical
+decisions during P002-T001; they are not a new schema, API, billing configuration format or implemented feature.
+No real calls, network installation, global configuration change, commit or publication is authorized by this plan.
+
+## D233 — Metrics Records first in 0.1.2, Continuous Mode second in 0.2.0
+
+Status: accepted (roadmap order and release targets; implementation pending).
+
+At the user's explicit direction, P001 is **Metrics Records**, targeting `0.1.2`; P002 is **Continuous Mode**,
+targeting `0.2.0`. This supersedes the initial ordering and unassigned metrics release in D232. P001 is the active
+documentation phase with its detailed task plan still pending adoption; Continuous Mode follows it. The metrics
+handoff, reference notes and proposed task identifiers are renamed from P002 to P001. These are unfrozen planning
+documents; no persisted project phases, histories, catalogs or recipe fingerprints are renumbered.
+
+Continuous Mode automatically closes/archives a completed phase and opens/plans its successor within the optional,
+explicit bounded authorization described by D156, preserving READY, acceptance, intent/recovery and stop conditions.
+No automatic phase transitions are implemented by this documentation change.
+
+The `0.1.2` assignment is a specific user-authorized exception to the patch scope in D231 and the changelog's
+general versioning policy: Metrics Records may include the additive metrics data/API/configuration changes adopted
+in its technical design. Existing compatibility, explicit migration and snapshot guarantees still apply. It is not
+an interface-only patch. No general relaxation for other patch releases is implied.
+
+Package/API/UI version strings remain `0.1.1` until the corresponding implementation/release task changes them
+together. Target versions are not published releases, and this decision authorizes no commit or publication.
+
+## D234 — P001 task plan in NEXT_STEPS
+
+Status: accepted (task breakdown and documentation placement; implementation pending).
+
+At the user's request, NEXT_STEPS contains the actual P001 Metrics Records task plan, rather than only linking to
+an outline in the phase handoff. Six ordered tasks specify status, dependencies, objective, allowed paths,
+acceptance criteria, validation and deliverables. All are pending; the next is P001-T001, the accounting contract
+and evidence inventory. Recording this plan resolves the pending task-breakdown step in D233, not the technical
+decisions reserved for T001, and does not start implementation or authorize external effects.
+
+The handoff is supporting scope/code/reference context; task status and contracts are maintained in NEXT_STEPS
+to avoid competing plans. The layout follows the explicit task sections in the base project's archived P013
+NEXT_STEPS (with P012 as another example), adapted to this repository's English work language. The base archive
+was consulted read-only for structure; none of its run data, private evidence, managed blocks or closed snapshots
+is imported or modified, and the new plan does not require access to that checkout.

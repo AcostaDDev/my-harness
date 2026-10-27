@@ -13,7 +13,11 @@ All notable changes to My Harness are recorded here. The format follows
   ([D231](docs/DECISIONS.md#d231--packaged-model-suggestions-and-small-ui-patch-releases)). Data compatibility does
   not depend on the version number: every release keeps reading older databases and histories, and the SQLite schema
   is upgraded only by `my-harness migrate`, which takes a verified snapshot first.
-- `0.2.0` is reserved for the optional continuous mode described in the [roadmap](docs/ROADMAP.md).
+- By explicit roadmap assignment, P001 **Metrics Records** targets `0.1.2` as a specific exception to the patch
+  scope above; it may include additive metrics data/API/configuration changes with the existing compatibility and
+  migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase closure and opening under a
+  bounded authorization ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
+  [roadmap](docs/ROADMAP.md)). Both are planned, not released.
 - A version is released by tagging its commit and attaching to a GitHub Release the self-contained package
   `my-harness-<version>-distribution.tar.gz` (a `my-harness-<version>/` folder with the wheel, sdist,
   `pylock.toml`, `distribution-1.json`, `SHA256SUMS` and `scripts/` for `scripts/install --dist`) and its `.sha256`

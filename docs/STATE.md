@@ -108,6 +108,24 @@ the frontend suites; no visual QA was run for these controls. Published as the G
 `e252fdc`) with a self-contained package built and checked locally
 ([work notes](phase/v0.1.1-model-selectors.md)).
 
-## Active phase — P001 Optional continuous mode between phases
+## Active phase — P001 Metrics Records (target 0.1.2)
 
-No notes yet. The phase has no tasks: its design and plan are pending (see [NEXT_STEPS](NEXT_STEPS.md)).
+Documentation initialized on 2026-10-27 at the user's request
+([D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries)); reordered as P001 with target `0.1.2`
+by [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020).
+The [handoff](phase/P001-metrics-records.md) records the implemented `metrics-1` baseline, missing billing inputs,
+scope and verification matrix. [Reference notes](phase/P001-metrics-records-references.md) contain
+official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
+independent USD/credit valuation and versioned reference records are planned, not implemented.
+[NEXT_STEPS](NEXT_STEPS.md) now contains the six pending task sections with dependencies, scope, acceptance,
+validation and deliverables; **next is P001-T001**, the accounting contract/evidence inventory
+([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)). No task is complete and technical design remains pending
+T001. The installed/package version remains `0.1.1`; assigning a release target does not release it.
+
+## Planned phase — P002 Continuous Mode (target 0.2.0)
+
+After Metrics Records, automate closing/archiving a completed phase and opening/planning its successor under one
+explicit bounded authorization, retaining stop conditions, READY and recovery guarantees. Design and tasks remain
+pending; this is not implemented
+([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
+[D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).

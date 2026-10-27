@@ -4,20 +4,62 @@ The repository opens with the first local version of My Harness already built: [
 starting baseline, including guided installation/configuration, and [DECISIONS](DECISIONS.md) the decisions behind it. That earlier work is not replayed here as
 phases; phases are numbered from P001 in this repository.
 
-## P001 — Optional continuous mode between phases
+## P001 — Metrics Records
 
-**Objective:** Let one explicit, bounded authorization chain tasks, commits, the READY check, the closure and archive
-of a phase, and the planning and execution of the next phase, stopping at the first error, question or limit
-([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020)). Planned for v0.2.0; design and tasks
-are pending.
+**Target release:** `0.1.2`
+([D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
+
+**Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
+analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex
+clients; keep the accounting concepts extensible without adding another execution provider.
+**Status:** active phase; six pending tasks in [NEXT_STEPS](NEXT_STEPS.md), starting with P001-T001.
+Implementation has not started; the technical contract is the first task
+([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)).
+
 **Exit criteria:**
+
+- Attempts preserve provider/client versions, requested and reported model/effort, token categories, durations,
+  tools, outcome and evidence provenance without double counting or treating missing data as zero.
+- Each supported billing case has either a reproducible valuation or an explicit reason it cannot be calculated;
+  reported amounts, calculated USD, calculated credits and confirmed billing evidence remain distinguishable.
+- Versioned references identify the applicable provider, model, billing scheme, units, source, observation date,
+  known effective period and pricing conditions; later updates do not change historical valuations.
+- Statistics support provider/model, role, project, phase, task and time analysis with coverage and compatible
+  units; subscription allowances and invoices are not inferred from tokens.
+- Synthetic checks cover calculation, capture, aggregation, historical compatibility, retention, backup and
+  query-only consultation; data diagrams, flows, OpenAPI/client types and en/es UI stay in parity where changed.
+
+**Dependencies:** the current metrics baseline (D074), model-selection distinction (D231), and the repository's
+configuration, backup and immutability guarantees. No continuous-mode behavior is required for the calculation
+engine. Detailed technical decisions remain open.
+
+**Start here:** [task plan](NEXT_STEPS.md), [phase handoff](phase/P001-metrics-records.md), then
+[pricing references and worked examples](phase/P001-metrics-records-references.md).
+
+## P002 — Continuous Mode
+
+**Target release:** `0.2.0`
+([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
+[D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
+
+**Objective:** Automatically close and archive a completed phase, open and plan the next phase, and continue its
+execution under one explicit, bounded authorization. Chain tasks, commits and the READY check while stopping at
+the first error, question or limit.
+
+**Status:** planned after P001; design and tasks pending.
+
+**Exit criteria:**
+
 - The mode is optional and starts only from an initial authorization with an explicit scope and budget.
+- Phase closure, archiving and opening/planning the successor happen automatically within that authorization,
+  subject to a valid READY check and the existing content-bound guarantees.
 - It stops at the first error, blocking condition, question for the user, out-of-scope change or consumption limit,
   and the stopped work can be inspected and resumed.
 - READY binding, acceptance by exact content, intent before effect and recovery keep their current guarantees.
 - Without that authorization the current behavior is unchanged: explicit task batches, explicit check, closure
   authorized on READY and a confirmed plan for each new phase.
-**Dependencies:** the first public release.
+
+**Dependencies:** P001 Metrics Records (`0.1.2`) and the existing phase lifecycle and authorization guarantees.
 
 ## Known gaps without a phase
 

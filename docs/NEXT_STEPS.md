@@ -19,7 +19,7 @@ The completed intake/configuration fix is documented in
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before
 T002–T005 change runtime behavior. The target release is the patch version that follows the one-off releases
-([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); OT001 shipped `0.1.2`.
+([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); OT001 shipped `0.1.2` and OT002 `0.1.3`.
 
 ## Shared constraints
 

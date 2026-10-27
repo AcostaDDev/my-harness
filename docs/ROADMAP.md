@@ -8,7 +8,8 @@ phases; phases are numbered from P001 in this repository.
 
 **Target release:** the patch version after the one-off queue empties
 ([D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
-[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); `0.1.2` was released for OT001.
+[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); `0.1.2` was released for OT001 and `0.1.3`
+for OT002.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex

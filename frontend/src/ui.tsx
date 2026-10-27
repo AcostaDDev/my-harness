@@ -101,6 +101,19 @@ export function PageHeader({ title, code = false, children, aside }: { title: Re
   </header>;
 }
 
+/**
+ * Page body with a side rail (OT002): the rail sits to the right, sticky, when the body itself is wide enough
+ * (a container query, so it also works inside other columns) and follows the main column when it is not.
+ * Without a rail the body renders as is. The main column comes first in reading and keyboard order.
+ */
+export function Workbench({ aside, label, children }: { aside?: ReactNode; label?: string; children: ReactNode }) {
+  if (!aside) return <>{children}</>;
+  return <div className="workbench"><div className="workbench-grid">
+    <div className="workbench-main">{children}</div>
+    <aside className="workbench-aside" aria-label={label}>{aside}</aside>
+  </div></div>;
+}
+
 export function Fields({ items }: { items: [string, ReactNode][] }) {
   return <dl className="fields">{items.map(([term, value]) => <div key={term}><dt>{term}</dt><dd>{value}</dd></div>)}</dl>;
 }
@@ -117,6 +130,7 @@ const RUN: Record<string, [MessageKey, Tone]> = {
   QUEUED: ["status.run.QUEUED", "active"], ACTIVE: ["status.run.ACTIVE", "active"], PLANNING: ["status.run.PLANNING", "active"],
   PREPARING: ["status.run.PREPARING", "active"], EXECUTING: ["status.run.EXECUTING", "active"], REVIEWING: ["status.run.REVIEWING", "active"],
   VALIDATING: ["status.run.VALIDATING", "active"], COMMITTING: ["status.run.COMMITTING", "active"],
+  ANSWERING: ["status.run.ANSWERING", "active"], DISCOVERING: ["status.run.DISCOVERING", "active"],
   ACCEPTANCE_READY: ["status.run.ACCEPTANCE_READY", "attention"], BLOCKED: ["status.run.BLOCKED", "attention"],
   REVISION_LIMIT: ["status.run.REVISION_LIMIT", "attention"], RECOVERY_REQUIRED: ["status.run.RECOVERY_REQUIRED", "attention"],
   STOPPED: ["status.run.STOPPED", "neutral"], INTERRUPTED: ["status.run.INTERRUPTED", "danger"],

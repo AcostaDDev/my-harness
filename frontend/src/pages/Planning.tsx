@@ -9,10 +9,12 @@ import type { Route } from "../router";
 import { ProfileProposal, ProfileReplay, ProjectProfile } from "./ProjectProfile";
 import { Preparation } from "./Preparation";
 import { Link, navigate } from "../navigation";
-import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
+import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, Workbench, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
 import { EditProgress, MarkdownView } from "./Docs";
 import { recipeText } from "../preparation.ts";
+import { LiveActivity } from "../Activity";
+import { QuestionAnswers } from "./Answers";
 
 // Conversational creation and planning in the UI (H6.2 E4) over the H6.5 API (D075).
 // The agent never writes: each draft is applied or edited with CAS on the hash shown, and the acceptance
@@ -104,11 +106,14 @@ function MessageForm({ conversation, path, hint }: { conversation: Conversation;
   const [text, setText] = useState("");
   const pending = conversation.turns.some(t => t.status === "QUEUED");
   const open = conversation.actions.includes("message");
-  return <form onSubmit={e => { e.preventDefault(); if (open && text.trim()) void operate(async () => {
+  // Free follow-up beside the question answers: it never carries their drafts, so nothing is sent twice.
+  const questions = conversation.questions.length > 0;
+  return <form className="composer" onSubmit={e => { e.preventDefault(); if (open && text.trim()) void operate(async () => {
     await send(jobRequest(path, { expected_version: conversation.version, text } satisfies S["PlanningMessageCreate"]));
     setText("");
   }); }}>
-    <label>{t("planning.message")}<textarea rows={4} value={text} maxLength={20000} onChange={e => setText(e.target.value)} disabled={!open} /></label>
+    <label>{questions ? t("planning.message.other") : t("planning.message")}<textarea rows={4} value={text} maxLength={20000} onChange={e => setText(e.target.value)} disabled={!open} /></label>
+    {questions && <p className="hint">{t("planning.message.other_hint")}</p>}
     <p className="hint">{hint}</p>
     {pending && <p role="status" className="state state-loading">{t("planning.message.pending")}</p>}
     <button disabled={busy || !open || !text.trim()}>{t("planning.message.send")}</button>
@@ -215,17 +220,18 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
           </PageHeader>
           <Stale error={read.error} />
           <Steps current={step} />
+          <Workbench aside={<ConversationRail conversation={c} />} label={t("planning.rail")}>
           {op?.status !== "COMPLETED" && <ProfileReplay />}
           {op?.status === "COMPLETED" && <><ProjectProfile /><LegacyPreparation /></>}
           {op && <OperationPanel conversation={c} op={op} />}
-          <BriefPanel base={base} brief={c.brief} />
+          <QuestionAnswers conversation={c} base={base} />
           <section className="panel" aria-labelledby="def-turns">
             <h2 id="def-turns">{t("planning.conversation")} <span className="count">{n("chat.turns", c.turns.length)}</span></h2>
             <TurnList conversation={c} />
             {!c.created && drafts.data?.drafts.length === 0 && <p className="hint">{t("planning.definition.new_folder")}</p>}
             {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint={t("planning.definition.message_hint")} />}
           </section>
-          <Questions conversation={c} base={base} />
+          <BriefPanel base={base} brief={c.brief} />
           {(proposed.length > 0 || c.proposals.length > 0) && <section className="panel" aria-labelledby="def-proposals">
             <h2 id="def-proposals">{t("planning.proposals")} <span className="count">{n("planning.proposals.pending", proposed.length)}</span></h2>
             {proposed.length === 0 && <p className="hint">{t("planning.proposals.empty")}</p>}
@@ -233,6 +239,7 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
             <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
           </section>}
           {!c.created && !op && <AcceptPanel conversation={c} base={base} drafts={drafts.data} />}
+          </Workbench>
         </>}
     </div>
   </div>;
@@ -249,29 +256,28 @@ function BriefPanel({ base, brief }: { base: string; brief: Conversation["brief"
   </details>;
 }
 
-function Questions({ conversation, base }: { conversation: Conversation; base: string }) {
+/** Right rail of a documentary conversation: what its latest turn is doing and where the conversation stands. */
+function ConversationRail({ conversation }: { conversation: Conversation }) {
   const { t } = useI18n();
-  const { busy, operate } = useWorkspace();
-  const [reasons, setReasons] = useState<Record<string, string>>({});
-  if (!conversation.questions.length && !conversation.pending.length) return null;
-  const canDefer = conversation.actions.includes("defer_question");
-  return <section className="panel" aria-labelledby="def-questions">
-    <h2 id="def-questions">{t("planning.questions")}</h2>
-    {conversation.questions.map(question => <div key={question.id} className={question.blocking && !question.deferred ? "entry entry-open" : "entry"}>
-      <p><strong>{question.blocking ? t("planning.question.blocking") : t("planning.question.informative")}</strong>{question.deferred ? ` · ${t("planning.question.deferred")}` : ""}: {question.text}</p>
-      {question.deferred && <p className="hint">{t("planning.question.deferred_reason", { reason: String(question.deferred.reason) })}</p>}
-      {question.blocking && !question.deferred && <>
-        <p className="hint">{t("planning.question.hint")}</p>
-        {canDefer && <div className="form-row"><label>{t("planning.question.defer_reason")}<input value={reasons[question.id] ?? ""} maxLength={2000} onChange={e => setReasons({ ...reasons, [question.id]: e.target.value })} /></label>
-          <button type="button" className="button-quiet" disabled={busy || !(reasons[question.id] ?? "").trim()} onClick={() => void operate(async () => {
-            await managed(`${base}/questions/defer`, { expected_version: conversation.version, question_id: question.id, reason: reasons[question.id] } satisfies S["PlanningDeferCreate"]);
-          })}>{t("planning.question.defer")}</button></div>}
-      </>}
-    </div>)}
-    {conversation.pending.length > 0 && <><h3>{t("planning.pending")}</h3>
-      <p className="hint">{t("planning.pending.hint")}</p>
-      <ul>{conversation.pending.map(item => <li key={item}>{item}</li>)}</ul></>}
-  </section>;
+  const { refresh } = useWorkspace();
+  const latest = conversation.turns.reduce<Turn | undefined>((last, turn) => !last || turn.number > last.number ? turn : last, undefined);
+  const blocking = conversation.questions.filter(q => q.blocking && !q.deferred).length;
+  const proposals = conversation.proposals.filter(p => p.status === "PROPOSED").length;
+  return <>
+    {latest ? <LiveActivity runId={latest.run_id} status={latest.run_status} refresh={refresh} title={t("activity.title.turn", { number: latest.number })} />
+      : <section className="activity" aria-labelledby="rail-activity"><div className="activity-head"><h2 id="rail-activity">{t("activity.title")}</h2></div>
+        <p className="hint">{t("activity.no_turns")}</p></section>}
+    <section className="rail-panel" aria-labelledby="rail-status">
+      <h2 id="rail-status">{t("planning.rail.status")}</h2>
+      <dl className="rail-stats">
+        <div className={blocking ? "rail-stat rail-stat-attention" : "rail-stat"}><dt>{t("planning.rail.blocking")}</dt><dd>{blocking}</dd></div>
+        <div className="rail-stat"><dt>{t("planning.rail.informative")}</dt><dd>{conversation.questions.filter(q => !q.blocking).length}</dd></div>
+        <div className={proposals ? "rail-stat rail-stat-attention" : "rail-stat"}><dt>{t("planning.rail.proposals")}</dt><dd>{proposals}</dd></div>
+        <div className="rail-stat"><dt>{t("planning.rail.turns")}</dt><dd>{conversation.turns.length}</dd></div>
+      </dl>
+      <p className="hint">{conversation.created ? t("planning.rail.closed") : t("planning.rail.version", { version: conversation.version })}</p>
+    </section>
+  </>;
 }
 
 function ProposalHistory({ proposals }: { proposals: Proposal[] }) {
@@ -668,14 +674,14 @@ function PlanConversation({ id, phase, writable }: { id: string; phase: string; 
   if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
   if (c.kind !== "phase_planning" || c.phase?.code !== phase) return <Empty title={t("planning.plan.other_phase")} />;
   const plans = c.proposals.filter(p => p.kind === "plan");
-  return <section className="panel" aria-labelledby="plan-title">
+  return <Workbench aside={<ConversationRail conversation={c} />} label={t("planning.rail")}>
+    <QuestionAnswers conversation={c} base={base} />
+    <section className="panel" aria-labelledby="plan-title">
     <h2 id="plan-title">{c.title}</h2>
     <p className="hint">{rich("planning.plan.from_phase", { phase: <Link className="mono" to={{ name: "phase", project, phase }}>{phase}</Link> })} <Status kind="phase" value={c.phase.status} /> · {t("planning.plan.version", { version: c.version })}</p>
     <Stale error={read.error} />
     <TurnList conversation={c} />
-    {c.questions.length > 0 && <><h3>{t("planning.plan.questions")}</h3><ul>{c.questions.map(question => <li key={question.id}>{question.blocking ? <strong>{t("planning.plan.blocking")} </strong> : null}{question.text}</li>)}</ul>
-      <p className="hint">{t("planning.plan.questions_hint")}</p></>}
-    {c.pending.length > 0 && <><h3>{t("planning.pending")}</h3><ul>{c.pending.map(item => <li key={item}>{item}</li>)}</ul></>}
+    {c.questions.length > 0 && <p className="hint">{t("planning.plan.questions_hint")}</p>}
     <h3>{t("planning.plan.proposed")}</h3>
     {!plans.length && <p className="hint">{t("planning.plan.no_plans")}</p>}
     {plans.map(p => <div key={p.id} className={p.status === "PROPOSED" ? "entry entry-open" : "entry"}>
@@ -688,7 +694,8 @@ function PlanConversation({ id, phase, writable }: { id: string; phase: string; 
     </div>)}
     {writable && <><h3>{t("planning.plan.new_message")}</h3>
       <MessageForm conversation={c} path={`${base}/messages`} hint={t("planning.plan.message_hint")} /></>}
-  </section>;
+    </section>
+  </Workbench>;
 }
 
 // --- confirmed plan of the active phase (on the phase page) --------------------------------------------------------
@@ -797,7 +804,7 @@ export function ImportPage({ conversation, path }: { conversation?: string; path
   return <>
     <PageHeader title={t("onboarding.title")}><p>{t("onboarding.lede")}</p></PageHeader>
     <Stale error={entry.error ?? list.error} />
-    {!op && <section className="panel">
+    {!op && <section className="panel conversation-picker">
       <ul className="link-list">{mine.map(c => <li key={c.id}><Link to={{ name: routeName, project, conversation: c.id }} current={selected === c.id}>{c.title} · {n("chat.turns", c.turns)}</Link></li>)}</ul>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
         const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: flow, title: title.trim(), brief: null, phase_id: null } satisfies S["PlanningConversationCreate"]);
@@ -821,18 +828,18 @@ function ImportConversation({ id, path, operation, kind }: { id: string; path?: 
   return <div className="docs-layout">
     <DraftTree conversation={c} drafts={drafts.data} current={path} error={drafts.error} />
     <div className="docs-main"><Stale error={read.error} />
-      {path && !c.created ? <DraftPage key={path} conversation={c} path={path} drafts={drafts.data} /> : <>
+      {path && !c.created ? <DraftPage key={path} conversation={c} path={path} drafts={drafts.data} /> : <Workbench aside={<ConversationRail conversation={c} />} label={t("planning.rail")}>
         {operation?.status !== "COMPLETED" && <ProfileReplay />}
         <h2>{c.title}</h2><Evidence title={t("onboarding.source")} value={c.source} />
+        <QuestionAnswers conversation={c} base={base} />
         <section className="panel"><h3>{t("planning.conversation")}</h3><TurnList conversation={c} />
           {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint={t("onboarding.message_hint")} />}
         </section>
-        <Questions conversation={c} base={base} />
         {c.proposals.filter(p => p.status === "PROPOSED" || !c.created && p.kind === "profile" && p.status === "ACCEPTED").map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
         <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
         {operation?.status === "COMPLETED" && <ProjectProfile />}
         <ImportConfirmation base={base} conversation={c} operation={operation} />
-      </>}
+      </Workbench>}
     </div>
   </div>;
 }

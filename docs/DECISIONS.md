@@ -1167,3 +1167,36 @@ carry additive API/UI changes needed by its task, with the existing compatibilit
 guarantees; it changes no stored data format or frozen identity without a migration and decision. P001 **Metrics
 Records** keeps its scope and task plan and targets the next patch version after the one-off queue empties;
 P002 **Continuous Mode** keeps `0.2.0`.
+
+## D240 — Question-first answers and the live activity rail
+
+Status: accepted. Implements OT002; the full-width layout and the live activity rail were added to its scope at the
+owner's explicit request in the implementation session, replacing OT002's exclusion of a global redesign for these
+two changes only.
+
+**Answers.** In onboarding, definition and phase planning conversations the reviewer's open questions are rendered
+before the conversation history and its free composer, blocking first, with declared pending items apart. Each
+question has an answer field whose draft is kept in browser local storage under
+`harness-planning-answers-v1:<project>:<conversation>`, keyed by question id and bound to the question text and the
+answered turn that asked it; typing calls nothing. One answer, the selected answers or all prepared answers are sent
+only through an explicit review of the exact message, as one `PlanningMessageCreate` through the existing endpoint,
+with its `expected_version` and the workspace's `Idempotency-Key`: one turn per submission. The message repeats each
+question's text after a language-neutral marker `[q:<first 12 hex of the question id>]`; the UI derives the states
+draft, waiting (queued turn), resolved (answered turn that no longer asks it), still asked and not reviewed (failed
+turn) from the turns' messages and results, and drops a draft only when its question was resolved and its text was
+sent unchanged. Drafts for questions no longer asked are offered for an explicit decision (include as earlier answers
+or discard). The 20,000-character limit applies to the whole composed message, without truncation or splitting.
+Question derivation, blocking, deferral and adoption rules are unchanged (D075/D102); deferral remains a separate
+action with a reason. No API, schema or stored format changes.
+
+**Layout and live activity.** Content uses the full window width instead of a 1120 px strip. A `Workbench` adds a
+sticky right rail through a container query (side by side from 800 px of body width, stacked below otherwise), with
+the main column first in reading order. The rail of project, phase, task, run, chat and planning pages shows the live
+activity of the relevant run (latest run of the project, phase or task; the run itself; a conversation's latest
+turn). It reads only `GET /runs/{id}/events`: windows below the run's version, then the forward cursor, and folds the
+recorded `agent_event` records (Claude `stream-json` and Codex `exec --json`), lifecycle, validation and recovery
+events into plain-language steps, newest first, with the block being streamed as a "now" line. Unknown events are
+ignored and nothing is inferred beyond the records; the run page keeps the complete events and evidence.
+
+Limits: drafts do not follow the user to another browser; states read from markers assume messages composed by this
+UI; the rail shows at most the latest 60 steps and keeps 1,500 relevant events in the page.

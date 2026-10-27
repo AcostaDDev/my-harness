@@ -186,6 +186,12 @@ the operator adopts after reviewing documents and command evidence. The reviewer
 eleven contract documents and flows, citing facts and inferred decisions, and asks about what cannot be deduced. Its
 proposals are applied with CAS to private drafts next to SQLite, without writing the checkout or running code or
 commands ([D102](DECISIONS.md#d102--onboarding-by-reverse-engineering-over-head-with-private-drafts)).
+In onboarding, definition and phase planning the reviewer's open questions come first: each has its own answer field,
+and one answer, a selection or all prepared answers are sent as one explicit turn with the exact composed message.
+Sending answers neither resolves a blocking question nor enables confirmation; only a later answered turn that stops
+asking it, or an explicit deferral with a reason, does
+([flow](flows/project-onboarding.md#answering-the-reviewers-questions),
+[D240](DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail)).
 
 The preview requires the documents, P001 and its criteria, blocking questions resolved or deferred, and a clean
 checkout and index on the original HEAD. It confirms documents and profile by hash, reason and Idempotency-Key; it

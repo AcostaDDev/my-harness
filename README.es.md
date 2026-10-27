@@ -13,7 +13,7 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 ## Estado
 
 Versión previa a 1.0: la primera versión local está completa en el alcance declarado, el
-paquete declara `0.1.2`, segundo parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
+paquete declara `0.1.3`, tercer parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
 herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
 protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos.
@@ -28,6 +28,9 @@ Licencia [MIT](LICENSE). Detalle en
 - **Incorporar un repositorio existente sin harness**: registras un checkout Git con al menos un commit y sin
   documentos de harness; el harness inventaría su árbol sin ejecutar código, el revisor redacta la documentación y
   una propuesta de perfil, y tú confirmas el commit documental que adopta la fase `P001`.
+
+En ambas conversaciones respondes cada pregunta del revisor en su propio campo y envías una, una selección o todas
+en un único turno; el panel lateral de tareas, runs, chat y conversaciones muestra en vivo lo que hace el agente.
 
 [Más detalle](README.md#two-ways-to-start-a-project).
 
@@ -67,15 +70,15 @@ scripts/install --allow-network
 
 ### 2b. Instalar desde un paquete publicado
 
-Descarga `my-harness-0.1.2-distribution.tar.gz` y su `.sha256` de la
+Descarga `my-harness-0.1.3-distribution.tar.gz` y su `.sha256` de la
 [página Releases](https://github.com/AcostaDDev/my-harness/releases) (o con `curl` como abajo) en la misma carpeta y ejecuta:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.2-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.2-distribution.tar.gz
-cd my-harness-0.1.2
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.3/my-harness-0.1.3-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.3/my-harness-0.1.3-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.3-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.3-distribution.tar.gz
+cd my-harness-0.1.3
 scripts/install --dist "$PWD" --allow-network
 ```
 

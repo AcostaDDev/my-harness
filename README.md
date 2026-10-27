@@ -12,7 +12,7 @@ models are reached through the official Codex and Claude Code CLIs with your own
 ## Status
 
 - **Pre-release.** The first local version is complete within the scope described below; the package declares
-  version `0.1.2`, the second patch of the first public release `0.1.0`, and is not published on PyPI. See the
+  version `0.1.3`, the third patch of the first public release `0.1.0`, and is not published on PyPI. See the
   [changelog](CHANGELOG.md) for the versioning policy.
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
@@ -124,15 +124,15 @@ scripts/install --allow-network
 
 ### 2b. Install from a release package
 
-Download `my-harness-0.1.2-distribution.tar.gz` and its `.sha256` from the
+Download `my-harness-0.1.3-distribution.tar.gz` and its `.sha256` from the
 [Releases page](https://github.com/AcostaDDev/my-harness/releases) (or with `curl` as below) into the same folder, then:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.2-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.2-distribution.tar.gz
-cd my-harness-0.1.2
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.3/my-harness-0.1.3-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.3/my-harness-0.1.3-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.3-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.3-distribution.tar.gz
+cd my-harness-0.1.3
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -240,14 +240,16 @@ outside checkouts, use private files (0600), and inspect a legacy file with the 
 2. **New project** or **Register project:** review the target/trust preview, agents, policy and immutable work
    language. A project can start without a stack composition. An existing composition is optional.
 3. **Definition or onboarding conversation:** describe the project or let the reviewer inspect its static HEAD
-   inventory. Answer questions, review/apply document drafts, then review and adopt the proposed profile. Check
+   inventory. Answer the reviewer's questions in their own fields (one, a selection or all of them in one turn),
+   review/apply document drafts, then review and adopt the proposed profile. Check
    tools, functional validations, command permissions, protected paths and the technical preparation plan.
 4. Confirm the documentation commit that adopts `P001`. In the project's configuration editor, complete executable
    paths and the private environment, validate, review the diff and save the exact profile.
 5. Review and confirm **preparation**: files, dependencies, argv, network and write scope. The executor prepares
    the permitted files; the harness runs the exact validations and records a receipt. A failure keeps tasks blocked.
    After success, review and separately confirm profile activation. This takes effect between tasks without restart.
-6. **Phases → P001 → a task:** queue it and follow planning, execution, validation and review. At *accepted, commit
+6. **Phases → P001 → a task:** queue it and follow planning, execution, validation and review; the side panel of
+   the task, run, chat and conversation pages shows what the agent is doing as its steps are recorded. At *accepted, commit
    pending*, review the evidence and confirm the commit to reach **COMMITTED**. A READY check and confirmed
    closure archive a completed phase.
 

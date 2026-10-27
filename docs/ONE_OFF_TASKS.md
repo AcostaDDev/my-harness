@@ -1,7 +1,7 @@
 # One-off tasks
 
 **Queue:** OT005 source complete, delivery pending; then OT004.
-**Next: complete OT005 delivery for 0.1.5 after authorization; then OT004 for 0.1.6; then NEXT_STEPS.md.**
+**Next: owner tests the locally installed OT005; on success, authorized 0.1.5 delivery; then OT004/0.1.6.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -40,8 +40,9 @@ Recording a release target does not authorize a commit, merge, push, publication
 ## OT005 — Read-only existing tool aliases in generic preparation
 
 **Status:** implemented and synthetically qualified in source (D247); integration and separate 0.1.5 delivery pending.
-The owner authorized continuation and a commit; publication/installation were not requested. Keep this section until
-the agreed delivery is completed or explicitly deferred (D242).
+Source commit: `e2d62fe`. The owner-requested offline local reinstall/restart is complete, with unchanged data/TOML
+hashes and HTTP 200 on loopback 8013. The owner will test; their success report conditionally authorizes the archive,
+release PR to main and GitHub publication. Keep this section until delivery is completed or explicitly deferred (D242).
 **Priority:** before OT004 and P001-T001, explicitly confirmed by the owner (D246).
 **Classification:** bounded hotfix outside the roadmap; separate patch **0.1.5**, after released OT003/0.1.4.
 **Branch:** `fix/ot005-preparation-tool-links`, created from `develop` at `a8efd10`. The source commit includes the
@@ -83,7 +84,8 @@ provider, Docker/project commands, operator configuration edits or preparation e
 implementation/compatibility evidence, exact checks/omissions and outstanding delivery steps.
 **Deliverables:** bounded fix, regression/compatibility evidence, current parity docs, and separately qualified
 0.1.5 delivery after authorization. Source implementation and commit are authorized; integration, version bump,
-release package qualification/publication and local upgrade/restart remain separately tracked in the evidence.
+0.1.5 release package qualification/publication await the owner's manual success report. Local reinstall/restart
+has completed separately as recorded in the evidence; no real preparation was invoked by maintenance.
 
 ## OT004 — Visual profile and agent configuration editor
 

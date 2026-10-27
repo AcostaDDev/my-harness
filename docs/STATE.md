@@ -18,8 +18,11 @@ Records task is complete.
 The owner authorized implementation and a commit. New generic preparation admits existing read-only file aliases of
 explicitly frozen tools and preserves exact chain evidence through execution/recovery/receipt checks (D247).
 See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). Integration, the separate 0.1.5
-release/version/package qualification/publication and any local installation are pending; keep OT005 in ONE_OFF_TASKS.
-Package/API/UI metadata remains 0.1.4. No service/configuration or real provider/preparation operation was performed.
+release/version/package qualification/publication are pending the owner's manual test; keep OT005 in ONE_OFF_TASKS.
+The owner-authorized offline reinstall/restart is complete, with installed OT005 source and unchanged database/TOML
+hashes. The service is running on loopback 8013; package/API/UI metadata remains 0.1.4. The owner will test manually;
+on their success report, archive/release PR/GitHub publication as 0.1.5 is conditionally authorized. No real provider
+or preparation was invoked by this maintenance operation.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
 through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The
@@ -234,8 +237,10 @@ and recovery keep their original link policy and bytes; recipe sources/fingerpri
 
 Source regression/qualification and limits are recorded in [the evidence](phase/OT005-preparation-tool-links.md).
 The owner authorized a source commit on the existing topic branch. Integration, separate version/package/release
-qualification and publication as 0.1.5, and any local upgrade/restart remain pending; metadata is still 0.1.4. Keep
-OT005 in ONE_OFF_TASKS under D242. OT004/0.1.6 and Metrics Records are unchanged and not implemented.
+qualification and publication as 0.1.5 await the owner's manual success report. Their requested offline local
+upgrade/restart is complete, the installed source matches `e2d62fe`, HTTP returns 200 and all database/TOML hashes
+were preserved; metadata remains 0.1.4 for the test. Their success report authorizes the archive/release PR/GitHub
+publication. Keep OT005 in ONE_OFF_TASKS under D242. OT004/0.1.6 and Metrics Records remain unimplemented.
 
 ## Planned one-off — visual profile and agent configuration editor (OT004)
 

@@ -1192,7 +1192,7 @@
   "supervisor.definition_turns_require_configured": "Definition turns require the configured Git reader",
   "supervisor.document_export_requires_configured": "Document export requires the configured Git writer",
   "supervisor.document_operations_require_configured": "Document operations require the configured Git writer",
-  "supervisor.heartbeat_failed_stop_before": "Heartbeat failed; stop before the next effect",
+  "supervisor.heartbeat_failed_stop_before": "Heartbeat lease renewal lost ownership ({failures} renewal failures, last: {error}); stop before the next effect",
   "supervisor.import_requires_configured_git": "Import requires the configured Git writer",
   "supervisor.managed_documentation_blocks_could": "Managed documentation blocks could not be regenerated: {exc}",
   "supervisor.managed_persistence_failed": "Managed persistence failed: {exc}",

@@ -17,19 +17,20 @@ The completed intake/configuration fix is documented in
 [failed-intake-activation](phase/failed-intake-activation.md) and committed as
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
-[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT006**'s fix for repetitive preparation output and
-ownership loss is source-complete for patch **0.1.7**
+[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT007**, task-run lease renewal and stream journal
+pressure (target **0.1.8**, confirmed; implementation/delivery in progress). OT006's preparation fix was released and installed as **0.1.7** through
+[PR #6](https://github.com/AcostaDDev/my-harness/pull/6), merge/tag `a3e9794` / `v0.1.7`
 ([D251](DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence),
-[evidence](phase/OT006-preparation-consumption.md)); its release merge and publication are still pending. OT004's visual
-profile/agent editor was released as **0.1.6** through [PR #5](https://github.com/AcostaDDev/my-harness/pull/5),
-merge/tag `0319b66` / `v0.1.6` ([evidence](phase/OT004-visual-profile-editor.md)).
+[evidence](phase/OT006-preparation-consumption.md)). OT004's visual profile/agent editor was released as **0.1.6**
+through [PR #5](https://github.com/AcostaDDev/my-harness/pull/5), merge/tag `0319b66` / `v0.1.6`
+([evidence](phase/OT004-visual-profile-editor.md)).
 OT005's tool-chain/preparation-review fix was released
 as **0.1.5** through [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), merge/tag `b0d035d` / `v0.1.5`;
 the self-contained archive/checksum were downloaded from GitHub and verified byte for byte. See
 [OT005 evidence](phase/OT005-preparation-tool-links.md). The owner explicitly authorized publication after reaching
 ACTIVE preparation; a completed real receipt/activation is not claimed. Publication left the installed service running.
 [OT003](phase/OT003-intake-profile-diagnostics.md) was released as **0.1.4** through PR #3. OT005 was removed from
-the queue after delivery verification; resume P001-T001 after OT006's delivery is completed or explicitly deferred. No phase
+the queue after delivery verification; resume P001-T001 after OT007's delivery is completed or explicitly deferred. No phase
 task is completed by these one-offs.
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before

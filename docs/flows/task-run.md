@@ -99,6 +99,27 @@ effects keeps the history's terminal state (or `COMMITTED`) and only marks `REFU
 The job follows `QUEUED → ACTIVE → DONE | REFUSED | RECOVERY_REQUIRED → INTERRUPTED`; an attempt without a result
 when the stop is confirmed becomes `INTERRUPTED` with no automatic retry.
 
+## Lease renewal and interrupted attempts
+
+[D252](../DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence): the shared
+supervisor for tasks, phases, chat and definition retries a transient renewal exception within one second, without
+increasing the lease. Successful renewal returns to lease/3. Lost ownership stops renewal and the next journal
+operation; an exhausted lease also refuses every effect through the unchanged fencing guard. The last renewal
+exception class appears in the stop diagnostic. Renewal failures/count/ownership loss are recorded in
+`process_owner_closed`, including transient failures from an otherwise successful run. An idle CLI is fenced at its
+next journal operation; this does not add a separate watchdog or provider retry.
+
+Each read chunk records stream bytes and parsed events in one guarded transaction, retaining their contents,
+ordering and individual sequences. History, run-projection-1 and metrics-1 derivations are unchanged.
+
+If the final fenced process write fails, the adapter stops its own group and leaves partial `capture.json` beside
+the raw artifacts. Before owner closure, the same owner settles its own stale RUNNING rows without stored capture:
+independent group liveness gives STOPPED only for `dead`, otherwise UNCERTAIN. Readable partial capture retains its
+reported group state separately from the observed one; missing/malformed capture records explicit interruption.
+Stored captures are never replaced and no attempt is marked successful. The run remains RECOVERY_REQUIRED with its
+checkout reserved until the existing explicit confirm-stopped action; lease expiry alone proves nothing about a
+writer. `output-guard-1` already appears in repetitive attempt status, stop reason and capture metadata.
+
 ## Reading a run
 
 - `GET /runs/{id}` returns the summary, the stops, `history.cycle_count` and `history.latest_cycle`; cycles are read

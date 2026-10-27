@@ -16,20 +16,29 @@ from my_harness.core.engine.journal import JournalError
 from my_harness.core.engine.serialization import restore_context
 from my_harness.core.engine.workflow import OfflineEngine
 from my_harness.i18n import emission, tr
+from my_harness.storage.managed import OwnershipLost
 
 
 class _Journal:
-    def __init__(self, repository, claim, heartbeat_failed):
+    def __init__(self, repository, claim, heartbeat_failed, renewal=None):
         self.repository = repository
         self.claim = claim
         self.heartbeat_failed = heartbeat_failed
+        self.renewal = renewal if renewal is not None else {'failures': 0, 'last_error': None, 'lost': False}
+
+    def _renewal_error(self):
+        return tr('supervisor.heartbeat_failed_stop_before', failures=self.renewal['failures'],
+                  error=self.renewal['last_error'] or 'OwnershipLost')
 
     def _call(self, operation, *args):
         if self.heartbeat_failed.is_set():
-            raise JournalError(tr('supervisor.heartbeat_failed_stop_before'))
+            raise JournalError(self._renewal_error())
         try:
             return operation(self.claim, *args)
         except Exception as exc:
+            if isinstance(exc, OwnershipLost) and (self.renewal['failures'] or self.renewal['lost']):
+                self.renewal['lost'] = True
+                raise JournalError(self._renewal_error()) from exc
             raise JournalError(tr('supervisor.managed_persistence_failed', exc=exc)) from exc
 
     def checkpoint(self, history, stage):
@@ -46,6 +55,9 @@ class _Journal:
 
     def process_update(self, attempt_id, kind, payload):
         self._call(self.repository.process_update, attempt_id, kind, payload)
+
+    def process_updates(self, attempt_id, items):
+        self._call(self.repository.process_updates, attempt_id, items)
 
     def command_process_event(self, command_id, kind, payload):
         self._call(self.repository.command_process_event, command_id, kind, payload)
@@ -171,14 +183,24 @@ class LocalSupervisor:
             self.repository.refuse(claim, refusal)
             return replace(claim, status="REFUSED")
         stopped, heartbeat_failed = Event(), Event()
+        renewal = {'failures': 0, 'last_error': None, 'lost': False}
 
         def heartbeat():
-            while not stopped.wait(self.lease_seconds / 3):
+            interval = self.lease_seconds / 3
+            wait = interval
+            while not stopped.wait(wait):
                 try:
                     self.repository.heartbeat(claim, lease_seconds=self.lease_seconds)
-                except Exception:
+                    wait = interval
+                except OwnershipLost:
+                    renewal['lost'] = True
                     heartbeat_failed.set()
                     return
+                except Exception as exc:
+                    # D252: retry renewal within the existing lease; every effect still checks ownership.
+                    renewal['failures'] += 1
+                    renewal['last_error'] = type(exc).__name__
+                    wait = min(interval, 1.0)
 
         thread = Thread(target=heartbeat, name=f"managed-heartbeat-{claim.id}", daemon=True)
         thread.start()
@@ -189,7 +211,7 @@ class LocalSupervisor:
             self.repository.register_owner(claim, identity())
             record = self.repository.get_run(claim.run_id)
             context = restore_context(record.history.context_json)
-            journal = _Journal(self.repository, claim, heartbeat_failed)
+            journal = _Journal(self.repository, claim, heartbeat_failed, renewal)
             request = json.loads(claim.request_json)
             versions = json.loads(record.versions_json)
             language = self.repository.job_language(claim)  # D169: only the pair sealed at admission
@@ -389,7 +411,9 @@ class LocalSupervisor:
                                            notes=request.get("notes"))
                 else:
                     history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
-            self.repository.close_owner(claim)
+            stopped.set()
+            thread.join()
+            self.repository.close_owner(claim, heartbeat=renewal)
             owner_closed = True
             journal._call(self.repository.finish, history, outcome)
             return replace(claim, status="DONE")
@@ -403,4 +427,4 @@ class LocalSupervisor:
             stopped.set()
             thread.join()
             if not owner_closed:
-                self.repository.close_owner(claim)
+                self.repository.close_owner(claim, heartbeat=renewal)

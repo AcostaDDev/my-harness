@@ -31,7 +31,22 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.8] — 2026-10-27
+
+Patch release for OT007 (D252). Stop the service and writers before installing. No database migration,
+configuration, dependency, recipe, API contract or `cli-14` adapter-version change.
+
+### Fixed
+
+- Managed task, phase, chat and definition runs retry transient heartbeat failures within the existing lease.
+  Ownership loss still stops the next journal operation; diagnostics and closure events retain renewal evidence.
+- CLI stream events are journaled once per read chunk, with their original contents, order and sequence numbers.
+- The closing owner settles interrupted process rows using independent group liveness and retains partial captures.
+  Existing captures and histories stay intact; quarantine, checkout exclusion and confirm-stopped remain required.
+
 ## [0.1.7] — 2026-10-27
+
+GitHub Release `v0.1.7` (tag on merge `a3e9794`), with the self-contained archive and its checksum.
 
 Patch release for OT006 (D251). Install the new package after stopping the service and writers; projects,
 configuration and histories are preserved. No configuration format, API contract, database schema, migration,

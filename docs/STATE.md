@@ -8,17 +8,29 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT006**, the repetitive-preparation/ownership-loss fix. Its source is complete for patch
-**0.1.7** (D251), and it stays queued until delivery, ahead of the unchanged Metrics Records task P001-T001 (D246).
-OT001/OT002/OT003/OT005/OT004 were released separately as 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6 (D239). No Metrics
-task is complete.
+The queue contains **OT007**: task-run lease renewal and stream journal pressure, the wider issue OT006 scoped
+out. Its owner-confirmed delivery target is **0.1.8**, on `fix/ot007-task-run-lease` from `b8e1a90`. Source is
+qualified (2185 pytest cases passed); integration, release and offline installation remain pending
+([evidence](phase/OT007-task-run-lease.md), D252).
+It comes before the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004/OT006 were
+released separately as 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/**0.1.7** (D239). No Metrics task is complete.
 
 **OT006 / 0.1.7 (D251):** the failed preparation launched its Claude executor with no tools (`--tools ''`) and asked
 it to write. Generic preparation now refuses such a writer at preview and before launch. `output-guard-1` stops
 repetitive streamed Claude text. Lease renewal retries transient failures and reports them. Stream events are
 journaled once per chunk. Interrupted attempts keep a partial capture, and the closing owner settles their stale
-`RUNNING` rows from independent liveness. Release PR and draft release state, plus checks, are in
-[the evidence](phase/OT006-preparation-consumption.md#delivery-state). Nothing was retried, installed or restarted.
+`RUNNING` rows from independent liveness. It was released through
+[PR #6](https://github.com/AcostaDDev/my-harness/pull/6), merge **`a3e9794`**, tagged **`v0.1.7`**. The
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.7) archive and checksum were verified
+byte for byte from the public URLs. Full pytest: **2166 passed, 2 skipped, 29 subtests**; 230 frontend tests,
+10 unittest cases, typecheck, temporary schema, distribution build/check and installed-wheel checks passed.
+[Evidence](phase/OT006-preparation-consumption.md).
+
+**Operator installation:** at the owner's request, 0.1.7 was installed offline from the public package into the
+default paths (generation `gen-8570ad96…`, READY; earlier generations kept). Nothing was running beforehand. The
+database was already at schema head `0027`, so no migration ran. The service was **not started**; start it with
+`scripts/start`. The failed OT006 preparation remains `FAILED`, and retrying it needs `Write`/`Edit` configured for
+the Claude executor agent. That is an operator action that was not performed.
 
 OT004 (D250) was integrated on develop at `bd0787b`, released through
 [PR #5](https://github.com/AcostaDDev/my-harness/pull/5), merge **`0319b66`**, and tagged **`v0.1.6`**. The
@@ -35,15 +47,6 @@ checksum, downloaded and verified byte for byte. Full final pytest: **2140 passe
 **213 frontend tests**, 10 unittest cases, typecheck/build, temporary schema and final installed-wheel checks passed.
 [The evidence](phase/OT005-preparation-tool-links.md) records D247–D249 and the owner's ACTIVE-preparation report;
 completed real commands/receipt/activation are not claimed. OT005 was removed from the queue only after delivery.
-
-**OT006 handoff (historical):** the later real preparation FAILED with `OwnershipLost` after one Claude session
-emitted 226,378 text characters of repetitive text. Its causes are now established in
-[the evidence](phase/OT006-preparation-consumption.md#established-causes); the failed operation is preserved as is.
-
-Publication did not replace/restart the operator installation: its separately installed source `be76164`
-contains the OT005 fixes with **0.1.4 metadata**, and the same loopback service remained running. Installing the
-published 0.1.5 package is a separate future operator action when service/writers are stopped; it was not requested
-or performed during publication. Closing release documentation is kept on develop, without changing the tag.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
 through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The

@@ -1451,3 +1451,31 @@ specific exception in the real incident was not recorded and remains unproven.
   partial capture, never replaces a stored capture and never completes a step. Lease expiry or a stale row is
   never treated as proof that a writer stopped. Recovery still uses the existing confirm-stopped/linked-successor
   route.
+
+## D252 — Managed-run lease renewal, chunk journals and interrupted process evidence
+
+Status: accepted for OT007; target patch **0.1.8**, with source, release and installation tracked separately.
+Extends D251's runtime reliability treatment to the shared managed supervisor (task, phase, chat and definition
+lanes). No schema, dependency, configuration, API contract or frozen adapter/version change.
+
+- A non-ownership heartbeat exception is counted by exception class and retried within one second. Successful
+  renewal restores the normal lease/3 cadence; `OwnershipLost` stops renewal and the next journal operation.
+  Every write retains the original token/status/lease/checkout fencing. Exhaustion also stops the attempt through
+  that guard; no lease is lengthened and no provider invocation is retried. `process_owner_closed` records
+  `{failures, last_error, lost}` when renewal encountered trouble, including recovered failures. A fenced journal
+  failure after renewal trouble names the last renewal exception in an en/es diagnostic, without raw SQL or values.
+- Managed `process_updates` records the bytes and parsed events of each CLI read chunk in one guarded transaction.
+  The single-event entry point delegates to it. Contents, ordering, per-event sequences, history/projection and
+  metrics semantics remain unchanged; an invalid batch rolls back in full.
+- The closing owner settles only its own still-`RUNNING` process rows with no stored capture, before marking its
+  owner scope closed. Independent group liveness selects `STOPPED` only for `dead`, otherwise `UNCERTAIN`.
+  The adapter's partial `capture.json`, when readable as an object, is retained with its reported group state
+  separate from the observed state. Missing/malformed capture leaves explicit interrupted evidence. No stored
+  capture is replaced, attempt is completed, history is rewritten, lock is released or stopped writer is inferred
+  from lease expiry. Quarantine and explicit confirm-stopped remain the recovery route.
+- `output-guard-1` already surfaces in the managed attempt status (`repetitive`), stop reason and process/attempt
+  metadata. Synthetic coverage verifies this path; no new API/UI or output-guard policy is needed.
+
+The owner explicitly authorized commit, integration/push, release PR/draft and verified archive/checksum, merge,
+publication/public verification, offline installation with the service stopped, and closure. This does not authorize
+real providers, a project retry or service start. Evidence: [OT007](phase/OT007-task-run-lease.md).

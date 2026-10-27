@@ -153,6 +153,15 @@ def with_usage(provider, terminal):
                            'claude-synthetic-b': per_model(200, 0, 40, 0, 0.0025)}}
 
 
+if writer and os.environ.get('PROBE_STREAM_SECONDS'):
+    until = time.monotonic() + float(os.environ['PROBE_STREAM_SECONDS'])
+    number = 0
+    while time.monotonic() < until:
+        print(json.dumps({'type': 'stream_event', 'event': {'type': 'content_block_delta', 'index': 0,
+              'delta': {'type': 'text_delta', 'text': f'Synthetic progress {number}\n'}}}), flush=True)
+        number += 1
+        time.sleep(.02)
+
 if mode == 'invalid':
     print('invalid JSONL', flush=True)
 elif mode == 'utf8':
@@ -169,6 +178,15 @@ elif (mode == 'hang' or mode == 'child') and os.environ.get('PROBE_USAGE') == '1
     for event in usage_events(provider)[:6]:
         print(json.dumps(event), flush=True)
     time.sleep(60)
+    sys.exit(0)
+elif mode == 'slow_stream':
+    # OT007: an unfinished synthetic invocation keeps journaling past the lease deadline.
+    print(json.dumps({'type': 'stream_event', 'event': {'type': 'message_start', 'message': {
+        'id': 'msg_synthetic', 'usage': {'input_tokens': 2, 'output_tokens': 1}}}}), flush=True)
+    for number in range(3000):
+        print(json.dumps({'type': 'stream_event', 'event': {'type': 'content_block_delta', 'index': 0,
+              'delta': {'type': 'text_delta', 'text': f'Synthetic step {number}\n'}}}), flush=True)
+        time.sleep(.02)
     sys.exit(0)
 elif mode == 'repetitive':
     # OT006/D251: synthetic shape of the incident (not its stream). Text deltas imitate tool markup over and

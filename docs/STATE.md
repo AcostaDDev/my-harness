@@ -8,21 +8,17 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT003 release delivery, then OT004**, before the unchanged Metrics Records task P001-T001.
-OT001 was released as `0.1.2` and OT002 as `0.1.3`; the agreed next separate patch targets are **0.1.4 for OT003**
-and **0.1.5 for OT004** (D239/D242/D243). Neither target is released.
+The queue contains **OT004**, the visual profile/agent editor targeting its own 0.1.5 patch, before the unchanged
+Metrics Records task P001-T001 (D243). OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239).
+OT004 is planned, not implemented; no Metrics Records task is complete.
 
-OT003's intake diagnostics and owner-approved adoption and joint-review follow-ups (D241/D244/D245) are implemented on
-`fix/intake-profile-diagnostics`; checks/status are in [the evidence](phase/OT003-intake-profile-diagnostics.md).
-The owner has now authorized the repository commit, 0.1.4 distribution, release PR/merge to main and GitHub
-publication. The candidate is prepared and under release qualification; integration/publication remain pending. A later operator turn was observed using the original
-OT003 prompt/failure context, and a later screenshot showed the corrected document blocker; this does not qualify a
-release. The owner-authorized offline update/restart after joint-review implementation completed successfully:
-the installed generation is READY, backend source matches, UI contains joint review, and the service answers on
-8013. Conversation/proposal/configuration hashes are unchanged; no new reviewer invocation or adoption occurred.
-See the task evidence. Local installation does not finish the agreed release delivery (D242).
-OT004's visual profile/agent editor is **planned, not implemented**, in its own task contract in ONE_OFF_TASKS.
-All product changes in the current working diff belong to OT003; the OT004/governance additions are planning only.
+OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
+through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.4) includes the self-contained archive
+and checksum, downloaded and verified byte for byte. Full offline pytest: 2095 passed, 2 skipped, 29 subtests passed;
+203 frontend tests, unittest/typecheck/build, temporary schema and installed-wheel checks passed. Earlier authorized
+local installation used the uncommitted implementation with 0.1.3 metadata; publishing this release did not restart
+or replace the operator's running service. See [the evidence](phase/OT003-intake-profile-diagnostics.md).
 
 ## Accumulated baseline
 
@@ -197,7 +193,7 @@ promoted revision 4 with both clients at 3600 seconds. No new provider invocatio
 Focused synthetic checks and limitations are recorded in
 [the fix artifact](phase/failed-intake-activation.md).
 
-## Bounded fix — intake profile rejection diagnostics (OT003; delivery pending)
+## Patch 0.1.4 — onboarding profile adoption and joint document review (OT003)
 
 Current definition/onboarding prompts explain logical executable aliases and exact direct-tool membership. Invalid
 executable names now identify the command field/index without echoing candidate values; later planning contexts
@@ -213,8 +209,9 @@ Focused offline synthetic checks and frontend build passed. No real provider, pr
 release was performed. The owner-authorized offline local upgrade/restart subsequently completed successfully;
 installed checks, HTTP/source/UI verification and unchanged conversation/proposal/configuration hashes are recorded
 in the task artifact. Frozen histories/catalogs remain unchanged.
-See [OT003](phase/OT003-intake-profile-diagnostics.md). Source changes are complete; release qualification,
-integration and the agreed 0.1.4 distribution remain in ONE_OFF_TASKS (D242). No Metrics Records task is complete.
+Released through PR #3 as 0.1.4, with full offline regression, package verification and matching GitHub downloads.
+OT003 was removed from ONE_OFF_TASKS only after publication/verification; OT004 remains next (D242/D243).
+See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. No Metrics Records task is complete.
 
 ## Planned one-off — visual profile and agent configuration editor (OT004)
 

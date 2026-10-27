@@ -12,8 +12,8 @@ phases; phases are numbered from P001 in this repository.
 for OT002.
 The owner prioritized OT003 (0.1.4 intake-profile fix) and OT004 (0.1.5 visual profile editor) as separate
 out-of-roadmap patches before P001 ([D242](DECISIONS.md#d242--task-ownership-and-delivery-disposition-before-product-changes),
-[D243](DECISIONS.md#d243--visual-profile-editing-as-ot004-before-metrics-records)). Both targets are unpublished;
-their current work/delivery states are in [ONE_OFF_TASKS](ONE_OFF_TASKS.md).
+[D243](DECISIONS.md#d243--visual-profile-editing-as-ot004-before-metrics-records)). OT003 was released as 0.1.4; OT004's 0.1.5 target remains planned.
+Current pending work is in [ONE_OFF_TASKS](ONE_OFF_TASKS.md).
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex

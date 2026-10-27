@@ -30,8 +30,10 @@ T002–T005 change runtime behavior. The target release is `0.1.2`; the current 
 - Record durable choices in [DECISIONS](DECISIONS.md), and task evidence in `docs/phase/`, with checks, omissions
   and limitations. Complete each task's acceptance and relevant checks before the next; update STATE/NEXT_STEPS.
 - [AGENTS](../AGENTS.md) and [README](../README.md#development) list existing offline commands. Establish the current
-  baseline: the [v0.1.1 notes](phase/v0.1.1-model-selectors.md) record 40 unresolved Python failures reproduced on
-  both release trees on that machine. Report current failures; do not assume they are waived or caused by P001.
+  baseline: with `.local/npm-cache` filled as in the README the full Python suite passed (2048 passed, 2 skipped;
+  [npm cache baseline](phase/test-npm-cache-baseline.md)). Report current failures; do not assume they are waived
+  or caused by P001. Each task uses its own topic branch from `develop`
+  ([D235](DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
 
 ## P001-T001 — Accounting contract and evidence inventory
 

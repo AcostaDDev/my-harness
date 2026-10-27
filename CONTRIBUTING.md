@@ -9,9 +9,12 @@ CLI versions if relevant, expected behavior and a minimal synthetic reproduction
 Remove credentials, personal paths, project code and operational data from reports.
 Follow [SECURITY.md](SECURITY.md) for suspected vulnerabilities.
 
-Before making a substantial change, describe the problem in an issue. Keep pull
-requests focused, explain the resulting behavior and report the checks performed
-and any omissions. Read the repository's agent instructions and current project
+Before making a substantial change, describe the problem in an issue. Branch from
+`develop` with a `<kind>/<topic>` name (`feat`, `fix`, `docs`, `chore` or `test`)
+and open the pull request against `develop`: `main` only receives release merges
+([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
+Keep pull requests focused, explain the resulting behavior and report the checks
+performed and any omissions. Read the repository's agent instructions and current project
 documentation before editing. Keep model/schema documentation and flow diagrams
 consistent with changes. Preserve frozen histories, snapshots and fixtures.
 

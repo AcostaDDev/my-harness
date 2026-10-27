@@ -27,6 +27,9 @@ agents; its work language is English.
 - Fixtures are always synthetic: no runs, credentials or private data. Exact versions; no new dependency without a
   recorded decision.
 - One bounded task at a time. Do not discard someone else's changes. Commit only when asked.
+- Work on a topic branch from `develop` (`<kind>/<topic>`); `main` only receives release merges. Check the current
+  branch at the start of a session
+  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
 - Never present as implemented what is only designed. Frozen histories, snapshots, catalogs and fingerprinted
   recipe sources are not rewritten.
 - When finishing: relevant checks, reviewed diff, `docs/STATE.md` and `docs/NEXT_STEPS.md` up to date, durable

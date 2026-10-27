@@ -391,6 +391,10 @@ npm --prefix frontend ci --ignore-scripts --cache .local/npm-cache
 scripts/dev
 ```
 
+The npm command also fills `.local/npm-cache`, which the Python tests with real Node/npm use offline for the
+TypeScript fixture; with an empty cache they stop at *Environment preparation failed* and pytest names the cause.
+Work happens on topic branches from `develop`; `main` only carries releases (see [CONTRIBUTING](CONTRIBUTING.md)).
+
 `scripts/dev` checks the tool versions, migrates a development database (`.local/harness.sqlite3`) after backing it
 up, and starts the API on `:8013` and Vite on `http://127.0.0.1:5173`; it accepts `--database` and `--config`.
 Use it only for development: real use goes through the installed package.

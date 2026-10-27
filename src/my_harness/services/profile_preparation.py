@@ -556,14 +556,16 @@ class ProfilePreparation(ProjectPreparation):
         # T009 owns activation and executable runtime composition. A receipt alone grants neither.
         return project
 
-    def verify_configuration(self, project, receipt, *, active=False):
-        """Service-side activation/admission building block; never trusts a caller's ready flag."""
+    def verify_configuration(self, project, receipt, *, active=False, reference=None, global_reference=None):
+        """Service-side activation/admission building block; never trusts a caller's ready flag.
+
+        Explicit references verify a staged live set (D238) against its own candidate revisions."""
         if receipt.get('contract') != CONTRACT:
             raise refuse('configuration')
         config = self.configuration()
         state = config.read('project:' + project.id)
-        ref = state['active'] if active else state['saved']
-        if state['status'] not in ('READY', 'UNCONFIGURED') or not ref:
+        ref = reference or (state['active'] if active else state['saved'])
+        if state['status'] not in ('READY', 'UNCONFIGURED', 'APPLY_PENDING') or not ref:
             raise refuse('configuration')
         data = parse(config.document(state['scope'], ref['revision']), state['scope'])
         from my_harness.services.configuration_editing import prepared
@@ -575,8 +577,8 @@ class ProfilePreparation(ProjectPreparation):
         except ConfigurationConflict:
             raise refuse('configuration') from None
         global_state = config.read('global')
-        global_ref = global_state['saved'] if self.runtime.setup.legacy else global_state['active']
-        if (global_state['status'] not in ('READY', 'UNCONFIGURED') or not global_ref
+        global_ref = global_reference or (global_state['saved'] if self.runtime.setup.legacy else global_state['active'])
+        if (global_state['status'] not in ('READY', 'UNCONFIGURED', 'APPLY_PENDING') or not global_ref
                 or data['global'] != {k: global_ref[k] for k in ('revision', 'sha256')}):
             raise refuse('configuration')
         verify_profile_receipt(project.context.root, receipt)

@@ -15,6 +15,11 @@ from my_harness.cli import main
 
 @pytest.fixture
 def config(tmp_path):
+    return probe_config(tmp_path)
+
+
+def probe_config(tmp_path):
+    """Synthetic version/help probe; also used by configuration fixtures that activate live (D238)."""
     probe = tmp_path / 'probe.py'
     probe.write_text('''import json, os, sys, time, subprocess
 from pathlib import Path

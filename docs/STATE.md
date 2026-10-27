@@ -3,6 +3,17 @@
 No managed blocks: this repository is developed by hand and is not registered in a harness. The work done before the
 first public snapshot is summarized below as the starting baseline; its decisions are in [DECISIONS](DECISIONS.md).
 
+## Work routing
+
+Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
+normally empty priority queue for bounded fixes/improvements outside roadmap phases
+([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
+One entry is pending: **OT002 — question-first reviewer answers with individual/batch
+submission**, expected as `0.1.3` ([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)).
+Its implementation has not started; it includes actual use of Claude Code's frontend-design
+plugin in its implementation session. OT001 is complete and released as `0.1.2` (below).
+Complete the one-off queue before resuming the unchanged Metrics Records task P001-T001.
+
 ## Accumulated baseline
 
 What exists and works at the first public snapshot, verified offline with temporary Git repositories, SQLite and
@@ -53,7 +64,9 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
   member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
   `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
-  package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md).
+  package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md). The repository is public;
+  the protected `main` only carries releases merged from `develop` by pull request, and work goes through topic
+  branches into `develop` (D235).
 - **Real-provider evidence.** Historical evidence before `cli-14`: first real use to a closed phase, four
   reviewer/executor combinations COMMITTED (D071), and Django recipe creation through four tasks and phase closure
   on macOS ARM64/Python 3.13. Current-adapter evidence (October 2026, same platform): Claude Code 2.1.310 reviewer
@@ -82,8 +95,9 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   receipt, initializes only an absent database, keeps instance locks/signals and serves the packaged UI without Node.
 - Authenticated `/setup` works without TOML or inference. Global v9/project v1 private TOML versions live outside
   checkouts; SQLite owns saved/active/pending references and recoverable CAS intentions. Form/TOML editors show
-  exact diffs; saving and activating are separate. Global activation requires restart; project activation happens
-  between tasks after preparation/receipt checks and the work barrier.
+  exact diffs; saving and activating are separate. Since `0.1.2` a confirmed global or project set applies in the
+  running service at an idle boundary (D238); only worker-loop service fields under a running supervisor and legacy
+  import promotion still need a restart.
 - Creation from documents and onboarding from a static committed inventory can start without a stack composition.
   The reviewer proposes a profile after context; confirmed documentary commit/P001, saved tool paths, bounded
   preparation, fresh validation receipt and separate activation precede the first task. Other stacks are supported;
@@ -96,6 +110,17 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - Installed first-use checks use fake Claude and Go tools, disposable projects and temporary Git/SQLite on macOS
   ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
   above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
+
+## Patch 0.1.2 — live agent configuration (OT001)
+
+[D238](DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary): a confirmed configuration set is staged
+completely (client preflight, every registered project) before confirmation and applied in the running service
+without restart or new login; with current work it waits as **Apply when current work finishes** and switches at the
+first idle boundary, withdrawing itself if the candidate no longer composes. Admitted work keeps its frozen settings.
+Task admission now binds the receipt selected for the frozen project revision, fixing refused tasks after derived or
+agent-only revisions. Additive API (state `APPLY_PENDING`, `live_activation`, preview `apply`/`restart_fields`/
+`waiting`, save `removed_fields`, structured 409 corrections); no schema or format change. Verified with offline
+suites and synthetic en/es Chrome QA; see the [work notes](phase/OT001-live-agent-configuration.md).
 
 ## Patch 0.1.1 — model selectors
 
@@ -118,7 +143,7 @@ scope and verification matrix. [Reference notes](phase/P001-metrics-records-refe
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
 independent USD/credit valuation and versioned reference records are planned, not implemented.
 [NEXT_STEPS](NEXT_STEPS.md) now contains the six pending task sections with dependencies, scope, acceptance,
-validation and deliverables; **next is P001-T001**, the accounting contract/evidence inventory
+validation and deliverables; **next phase task is P001-T001**, the accounting contract/evidence inventory
 ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)). No task is complete and technical design remains pending
 T001. The installed/package version remains `0.1.1`; assigning a release target does not release it.
 
@@ -129,3 +154,19 @@ explicit bounded authorization, retaining stop conditions, READY and recovery gu
 pending; this is not implemented
 ([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
+
+## Bounded fix — activation after empty intake failure
+
+On `fix/failed-intake-activation`, the work barrier no longer classifies a fully
+failed, observed-unchanged, empty definition/onboarding conversation as adoptable
+pending work. Real/uncertain jobs, answered turns, drafts, edits, deferrals,
+proposals and other barriers remain protected (D236). Frozen histories are unchanged.
+This source correction is separate from P001 Metrics Records; no P001 task is complete.
+An explicitly authorized offline local upgrade installed the correction and
+restarted the service, preserving configuration and historical rows; no release
+was published. After the operator confirmed the normal activation preview, a second
+restart promoted saved revision 3. The operator then restored the explicit client
+paths/PATH in revision 4 and confirmed its activation; a further requested restart
+promoted revision 4 with both clients at 3600 seconds. No new provider invocation was started.
+Focused synthetic checks and limitations are recorded in
+[the fix artifact](phase/failed-intake-activation.md).

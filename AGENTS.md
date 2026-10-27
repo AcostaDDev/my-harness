@@ -9,12 +9,13 @@ agents; its work language is English.
 ## Discovery at the start of a session
 
 1. `docs/STATE.md`: accumulated baseline and active phase.
-2. `docs/NEXT_STEPS.md`: tasks of the active phase and the next task.
-3. `docs/ROADMAP.md`: section of the active phase.
-4. `docs/SPECIFICATION.md` and `docs/ARCHITECTURE.md`: only the sections that affect the task.
-5. `docs/DECISIONS.md`: the decisions the task cites; the index, to look for precedents.
-6. `docs/DDBB-DIAGRAM.md` and `docs/flows/` when the task touches data or flows.
-7. `docs/archive/` only when a document cites it.
+2. `docs/ONE_OFF_TASKS.md`: pending bounded work outside phases; handle it before phase tasks. Normally empty.
+3. `docs/NEXT_STEPS.md`: tasks of the active phase and the next task when the one-off queue is empty.
+4. `docs/ROADMAP.md`: section of the active phase.
+5. `docs/SPECIFICATION.md` and `docs/ARCHITECTURE.md`: only the sections that affect the task.
+6. `docs/DECISIONS.md`: the decisions the task cites; the index, to look for precedents.
+7. `docs/DDBB-DIAGRAM.md` and `docs/flows/` when the task touches data or flows.
+8. `docs/archive/` only when a document cites it.
 
 ## Unbreakable rules
 
@@ -27,10 +28,14 @@ agents; its work language is English.
 - Fixtures are always synthetic: no runs, credentials or private data. Exact versions; no new dependency without a
   recorded decision.
 - One bounded task at a time. Do not discard someone else's changes. Commit only when asked.
+- Work on a topic branch from `develop` (`<kind>/<topic>`); `main` only receives release merges. Check the current
+  branch at the start of a session
+  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
 - Never present as implemented what is only designed. Frozen histories, snapshots, catalogs and fingerprinted
   recipe sources are not rewritten.
-- When finishing: relevant checks, reviewed diff, `docs/STATE.md` and `docs/NEXT_STEPS.md` up to date, durable
-  decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D230) and work artifacts in `docs/phase/`.
+- When finishing: relevant checks, reviewed diff and current STATE/NEXT_STEPS/ONE_OFF_TASKS. Record durable
+  decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D230) and evidence in `docs/phase/`.
+  Remove completed one-off task sections after recording their evidence; keep that queue empty when idle.
   Say what was tested and what was not.
 
 ## Commands (from the root; offline after the first installation)

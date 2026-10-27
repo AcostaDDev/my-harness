@@ -35,3 +35,17 @@ def _bypass_xcode_git_shim():
 
 
 _bypass_xcode_git_shim()
+
+
+def pytest_report_header(config):
+    from npm_cache import notice
+    return notice()
+
+
+def pytest_terminal_summary(terminalreporter):
+    """An empty npm cache looks like product failures; name the cause next to them."""
+    from npm_cache import notice
+    message = notice()
+    if message and terminalreporter.stats.get('failed'):
+        terminalreporter.section('npm cache')
+        terminalreporter.write_line(message, yellow=True, bold=True)

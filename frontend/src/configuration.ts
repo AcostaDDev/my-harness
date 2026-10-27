@@ -111,5 +111,27 @@ export function baseChanged(a: S["ConfigurationRead"], b: S["ConfigurationRead"]
 
 export const modeLabels: Record<S["ConfigurationRead"]["mode"], MessageKey> = {
   UNCONFIGURED: "configuration.mode.unconfigured", INVALID: "configuration.mode.invalid", READY: "configuration.mode.ready",
-  RESTART_REQUIRED: "configuration.mode.restart", RECOVERY_REQUIRED: "configuration.mode.recovery", READ_ONLY_ARCHIVE: "archive.title",
+  APPLY_PENDING: "configuration.mode.apply_pending", RESTART_REQUIRED: "configuration.mode.restart",
+  RECOVERY_REQUIRED: "configuration.mode.recovery", READ_ONLY_ARCHIVE: "archive.title",
 };
+
+const WAITING: Record<string, MessageKey> = {
+  job: "configuration.waiting.job", phase_operation: "configuration.waiting.phase_operation",
+  acceptance: "configuration.waiting.acceptance", commit: "configuration.waiting.commit",
+  documents: "configuration.waiting.documents", assistance: "configuration.waiting.assistance",
+  project_creation: "configuration.waiting.project_creation",
+};
+/** D238 waiting reason `kind:id` (a job id may itself be `preparation:<id>`) as a catalog key and its identifier. */
+export function waitingReason(reason: string): { key: MessageKey; id: string } {
+  const [kind, ...rest] = reason.split(":");
+  const id = rest.join(":");
+  if (kind === "job" && id.startsWith("preparation:")) return { key: "configuration.waiting.preparation", id: id.slice(12) };
+  return { key: WAITING[kind] ?? "configuration.waiting.other", id: id || reason };
+}
+
+export type LiveRefusal = S["LiveRefusalRead"];
+/** One correction line of a refused live candidate: where (project or role/setting), the code and its diagnostic. */
+export function refusalLine(item: LiveRefusal): string {
+  const where = item.project ?? item.setting ?? item.role ?? "";
+  return [where, item.code, item.diagnostic].filter(Boolean).join(" · ");
+}

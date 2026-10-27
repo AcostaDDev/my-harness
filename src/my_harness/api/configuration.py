@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
 from my_harness.api.security import local_request, problem
@@ -92,8 +92,28 @@ class ConfigurationRevisionRead(BaseModel):
     status: Literal['DRAFT', 'VALIDATED']
 
 
+class LiveRefusalRead(BaseModel):
+    project: str | None = None
+    role: str | None = None
+    setting: str | None = None
+    code: str
+    diagnostic: str | None = None
+    already_failing: bool = False
+
+
+class LiveActivationRead(BaseModel):
+    """D238: a confirmed live set waiting for current work, or the last switch that could not be staged."""
+    activation_id: str
+    state: Literal['APPLY_PENDING', 'FAILED']
+    waiting: list[str] = []
+    restart_fields: list[str] = []
+    code: str | None = None
+    details: list[LiveRefusalRead] = []
+
+
 class ConfigurationRead(BaseModel):
-    mode: Literal['UNCONFIGURED', 'INVALID', 'READY', 'RESTART_REQUIRED', 'RECOVERY_REQUIRED', 'READ_ONLY_ARCHIVE']
+    mode: Literal['UNCONFIGURED', 'INVALID', 'READY', 'APPLY_PENDING', 'RESTART_REQUIRED', 'RECOVERY_REQUIRED',
+                  'READ_ONLY_ARCHIVE']
     status: str
     version: int
     legacy: bool
@@ -111,6 +131,7 @@ class ConfigurationRead(BaseModel):
     form: dict[str, Any] | None = None
     activation_references: list[ConfigurationReference] = []
     pending_versions: dict[str, int] = {}
+    live_activation: LiveActivationRead | None = None
 
 
 class ConfigurationFormRead(BaseModel):
@@ -127,6 +148,9 @@ class ConfigurationPreviewRead(BaseModel):
     changes: list[dict[str, Any]] | None = None
     references: list[dict[str, Any]] | None = None
     restart_required: bool | None = None
+    apply: Literal['live', 'restart'] | None = None
+    restart_fields: list[str] | None = None
+    waiting: list[str] | None = None
     roots: list[str] | None = None
     evidence: dict[str, Any] | None = None
     directory: str | None = None
@@ -159,6 +183,13 @@ class ConfigurationClientsRead(BaseModel):
     internal_effects_verified: Literal[False] = False
 
 
+def conflict(error):
+    """409 with the structured corrections of a refused live candidate (D238), when it has them."""
+    if error.details:
+        return HTTPException(409, {'code': error.code, 'diagnostic': tr('setup.live_refused'), 'details': error.details})
+    return problem(409, error.code, tr('setup.conflict'))
+
+
 def configuration_router(runtime):
     router = APIRouter(prefix='/api/managed/configuration', dependencies=[Depends(local_request)],
                        responses={status: {'model': ProblemResponse} for status in (403, 404, 409, 422)})
@@ -169,7 +200,7 @@ def configuration_router(runtime):
                 raise ConfigurationConflict('configuration_setup_unavailable')
             return operation(runtime.setup)
         except ConfigurationConflict as error:
-            raise problem(409, error.code, tr('setup.conflict')) from None
+            raise conflict(error) from None
         except LookupError:
             raise problem(404, 'configuration_not_found', tr('setup.not_found')) from None
         except (ValueError, OSError):
@@ -183,6 +214,8 @@ def configuration_router(runtime):
     @router.get('', response_model=ConfigurationRead, operation_id='configuration_read')
     def read():
         def view(setup):
+            # A pending live set is applied as soon as its waiting reasons are gone, also without a worker.
+            runtime.try_apply_pending()
             state = setup.state()
             # Complete content is confined to this authenticated editor, never general listings.
             if state['mode'] != 'INVALID' and state['saved']:
@@ -248,8 +281,11 @@ def configuration_router(runtime):
             setup.editable()
             if not any(ref.scope == 'global' for ref in body.references):
                 raise ValueError(tr('setup.invalid'))
-            return setup.repository.activate([ref.model_dump() for ref in body.references], reason=body.reason,
-                                              preview_sha256=body.preview_sha256, key=idempotency_key)
+            result = setup.repository.activate([ref.model_dump() for ref in body.references], reason=body.reason,
+                                               preview_sha256=body.preview_sha256, key=idempotency_key)
+            # The confirmed live set is switched now when idle; its outcome is part of the state view.
+            runtime.try_apply_pending()
+            return result
         return call(apply)
 
     @router.post('/cancel', response_model=ConfigurationOperationRead, operation_id='configuration_cancel')

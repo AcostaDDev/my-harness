@@ -16,7 +16,7 @@ from my_harness.services import local_config as legacy
 from my_harness.services.configuration import GLOBAL, parse
 from my_harness.services.managed_runtime import CONFIG_ENV, ManagedConfig, load_config
 from my_harness.storage.backup import is_read_only_archive, RESTORED_USER_VERSION
-from my_harness.storage.configuration import ConfigurationConflict, ConfigurationRepository, UNRESOLVED
+from my_harness.storage.configuration import ConfigurationConflict, ConfigurationRepository, UNRESOLVED, live
 from my_harness.storage.managed import SQLiteManagedRepository
 from my_harness.storage.models import (ConfigurationScopeRow as Scope, ConfigurationOperationRow as Operation,
                                           RegisteredProjectRow as Project)
@@ -88,10 +88,14 @@ class ConfigurationSetup:
                 self._new_installation()
                 with Session(self.engine) as session:
                     activation_id = session.get(Scope, 'global').pending_operation_id
-                self.repository.promote_pending(activation_id=activation_id, key=f'startup:{activation_id}', restarted=True)
-                state = self.repository.read()
+                    pending_live = live(session.get(Operation, activation_id))
+                # A live set (D238) waits for the runtime's idle boundary; startup loads the active one.
+                if not pending_live:
+                    self.repository.promote_pending(activation_id=activation_id, key=f'startup:{activation_id}',
+                                                    restarted=True)
+                    state = self.repository.read()
             if state['active']:
-                if state['status'] != 'READY':
+                if state['status'] not in ('READY', 'APPLY_PENDING'):
                     return ManagedConfig()
                 self._new_installation()
                 text = self.repository.document('global', state['active']['revision'])
@@ -147,12 +151,15 @@ class ConfigurationSetup:
                 and mode in ('UNCONFIGURED', 'READY')):
             mode = 'READY'
         # Cancelling pending activation must never enable a process that did not load the active version.
-        if mode == 'READY' and not self.legacy and self.loaded != state['active']:
+        if mode in ('READY', 'APPLY_PENDING') and not self.legacy and self.loaded != state['active']:
             mode = 'RESTART_REQUIRED'
         with Session(self.engine) as session:
             head = session.get(Scope, 'global')
             operations = list(session.scalars(select(Operation.id).where(Operation.status.in_(UNRESOLVED))))
             pending_id = head.pending_operation_id if head else None
+            # A project-only live set (D238) is also shown and cancelled from this editor.
+            pending_id = pending_id or session.scalar(select(Scope.pending_operation_id).where(
+                Scope.pending_operation_id.is_not(None)).order_by(Scope.scope).limit(1))
         from my_harness.services.configuration_import import imported
         with Session(self.engine) as session:
             importing = imported(session)
@@ -170,6 +177,7 @@ class ConfigurationSetup:
             if pending:
                 pending_versions = {ref['scope']: session.get(Scope, ref['scope']).version
                                     for ref in pending.payload['references']}
+            live_activation = self._live_activation(session, pending)
         if importing and not state['active']:
             with Session(self.engine) as session:
                 references = []
@@ -183,7 +191,21 @@ class ConfigurationSetup:
                 'activation_references': references,
                 'pending_versions': pending_versions,
                 'pending_activation_id': pending_id, 'recovery_operations': operations,
-                'blockers': [] if mode == 'READY' else [self.startup_error or mode.lower()]}
+                'live_activation': live_activation,
+                'blockers': [] if mode in ('READY', 'APPLY_PENDING') else [self.startup_error or mode.lower()]}
+
+    def _live_activation(self, session, pending):
+        """D238: the pending live set with its current waiting reasons, or the last failed switch."""
+        if live(pending):
+            return {'activation_id': pending.id, 'state': 'APPLY_PENDING',
+                    'waiting': self.repository.waiting(pending.payload['references']),
+                    'restart_fields': [], 'code': None, 'details': []}
+        last = session.scalar(select(Operation).where(Operation.kind.in_(('ACTIVATE', 'PROMOTE', 'CANCEL')))
+                              .order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
+        if last is not None and last.kind == 'PROMOTE' and (last.result or {}).get('state') == 'FAILED':
+            return {'activation_id': last.result['activation_id'], 'state': 'FAILED', 'waiting': [],
+                    'restart_fields': [], 'code': last.result['code'], 'details': last.result.get('details') or []}
+        return None
 
     def require_ready(self, session=None):
         if session is None:
@@ -200,7 +222,9 @@ class ConfigurationSetup:
                 raise ConfigurationConflict('configuration_not_ready')
             return
         state = self.repository._state(session, self.repository._files(session), 'global')
-        if self.startup_error or state['status'] != 'READY' or state['active'] != self.loaded:
+        # A pending live set keeps the loaded active authority usable until its switch (D238).
+        if (self.startup_error or state['status'] not in ('READY', 'APPLY_PENDING')
+                or state['active'] is None or state['active'] != self.loaded):
             raise ConfigurationConflict('configuration_not_ready')
 
     def editable(self):

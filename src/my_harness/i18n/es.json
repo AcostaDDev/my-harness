@@ -1238,6 +1238,7 @@
   "setup.form_value": "Los valores del formulario deben ser JSON compatible con TOML.",
   "setup.candidate": "Indica un texto TOML o un formulario de configuración, solo uno.",
   "setup.path": "Indica un PATH explícito que solo contenga directorios absolutos.",
+  "setup.live_refused": "El candidato no se puede aplicar. La configuración activa no cambia; corrige los ajustes indicados y repite la vista previa.",
   "setup.conflict": "La configuración ha cambiado o la operación está bloqueada. Recarga su estado y repite la vista previa.",
   "setup.not_found": "No se ha encontrado la operación de configuración.",
   "setup.invalid": "Configuración no válida o archivos privados inaccesibles. Revisa el candidato y los directorios elegidos.",

@@ -887,7 +887,7 @@ invent missing content or overwrite conflicting external edits. Drafts cannot ac
 
 ## D222 — Setup API and global authority at startup
 
-Status: accepted.
+Status: accepted; activation for restart superseded by D238 for live fields.
 
 Protected deterministic form/TOML endpoints validate, preview, save, activate for restart, cancel and recover.
 Client discovery uses explicit PATH; version/help probes do not invoke inference. Authority is selected and
@@ -896,7 +896,7 @@ this operating lane before any original path or client is used.
 
 ## D223 — Guided UI with exact confirmations
 
-Status: accepted.
+Status: accepted; the restart step is superseded by D238 for live fields.
 
 `/setup` and `/settings/configuration` share the en/es editor. Server-validated form/TOML conversion preserves
 advanced fields. Saving and activation have separate exact previews and confirmations. Browser-tab draft/base and
@@ -934,7 +934,7 @@ configuration revision/hash and receipt; replay cannot duplicate intake, prepara
 
 ## D227 — Later editing, frozen assistance and joint impact
 
-Status: accepted.
+Status: accepted; joint activation on restart superseded by D238 for live fields.
 
 Global SAVE derives private copies of active project profiles bound to its exact global version, with joint
 activation/cancellation on restart. Technical project edits need current committed documents and a new receipt;
@@ -1010,7 +1010,7 @@ No real calls, network installation, global configuration change, commit or publ
 
 ## D233 — Metrics Records first in 0.1.2, Continuous Mode second in 0.2.0
 
-Status: accepted (roadmap order and release targets; implementation pending).
+Status: accepted (roadmap order and release targets; implementation pending); the `0.1.2` target is superseded by D239.
 
 At the user's explicit direction, P001 is **Metrics Records**, targeting `0.1.2`; P002 is **Continuous Mode**,
 targeting `0.2.0`. This supersedes the initial ordering and unassigned metrics release in D232. P001 is the active
@@ -1045,3 +1045,125 @@ to avoid competing plans. The layout follows the explicit task sections in the b
 NEXT_STEPS (with P012 as another example), adapted to this repository's English work language. The base archive
 was consulted read-only for structure; none of its run data, private evidence, managed blocks or closed snapshots
 is imported or modified, and the new plan does not require access to that checkout.
+
+## D235 — Release branch, integration branch and topic branches
+
+Status: accepted.
+
+Development moves off `main` so that `main` only carries published versions:
+
+- `main` receives one `--no-ff` merge from `develop` per release, with the version bump and changelog already on
+  `develop`. That merge commit gets the tag `vX.Y.Z`, and the distribution package is built and checked from it
+  (D230). `git log --first-parent main` therefore lists releases. No work is committed directly to `main`.
+- `develop` is the integration branch and the target of pull requests. Phase tasks, documentation and fixes land
+  there once their checks pass.
+- Each bounded task uses a short-lived topic branch from `develop`, named `<kind>/<topic>` with `feat`, `fix`,
+  `docs`, `chore` or `test` (for example `feat/p001-t001-accounting-contract`), merged into `develop` and then
+  deleted.
+- A fix for a published version branches from its tag, is released through `main` like any version and is merged
+  back into `develop`.
+
+GitHub's default branch stays `main`, so visitors see the released state. Commits already pushed to `main` after
+`v0.1.1` are not rewritten; the next release merge brings `main` forward. Agents check the current branch at the
+start of a session and never work on `main`.
+
+The repository is public since 2026-10-27, and GitHub protects `main`: changes need a pull request (no required
+approvals, as there is a single maintainer), the rule also applies to administrators, and force pushes and deletion
+are refused. A release is therefore a pull request from `develop` to `main` merged with **Create a merge commit**,
+which is the `--no-ff` merge above; squash or rebase would break the shared history with `develop`.
+
+
+## D236 — Empty failed intake turns are not pending configuration work
+
+Status: accepted.
+
+Clarification of the D221 work barrier: a definition/onboarding conversation whose
+turns all ended FAILED with no result, unchanged observations and no observed drafts
+is not adoptable work when it also has no known drafts, edit log, deferrals or
+proposals. Its historical rows remain intact; the next explicit turn freezes the
+then-active configuration through the normal path. This permits an operator to
+confirm and activate a corrected client timeout after an empty intake failure.
+
+Answered, queued, unknown or unobserved turns, partial results, observed/known
+drafts, edit history, deferrals and proposals keep the conversation barrier. Job,
+writer/checkout, preparation, acceptance, commit-intent and phase-operation barriers
+remain independent and unchanged. Save, activation preview, confirmation and restart
+remain separate; this exception neither activates configuration nor retries a model.
+No API, schema, frozen format, source snapshot or previous run is rewritten.
+
+
+## D237 — One-off development queue before phase work
+
+Status: accepted.
+
+At the owner's request, `docs/ONE_OFF_TASKS.md` is a manual development priority
+queue, read after STATE and before NEXT_STEPS. It holds bounded fixes, improvements
+and design changes that do not require a complete roadmap phase. It is normally
+empty; an empty queue means resume the active phase's existing next task.
+
+Entries use stable phase-independent OTNNN IDs and NEXT_STEPS-style scope,
+acceptance, checks and deliverables. Work stays one bounded task at a time. Before
+removing a completed entry, record checks, omissions and outcomes in
+`docs/phase/OTNNN-<topic>.md`, retain durable decisions in this log and reconcile
+current documents. Then remove its whole task section and update Queue/Next;
+completed records do not accumulate in the queue and IDs are not reused.
+Blocked work remains explicit rather than silently yielding to the roadmap.
+
+This does not add a phase, alter Metrics Records/Continuous Mode numbering or
+introduce a managed-project document, parser, API or automatic scheduler. The
+harness is not run on this repository. OT001 records the requested live agent
+configuration behavior for a later session; the concrete technical design remains
+to be settled in that task and is not already implemented or an amendment to
+D222/D223/D227 in this documentation-only change. D236's failed-intake fix is
+already committed and must not be implemented again as pending work.
+
+
+## D238 — Live configuration switch at an idle boundary
+
+Status: accepted. Supersedes the restart rule of D222/D223/D227 for global agent settings and the outright
+refusal of activations with pending work (D221/D226); every other rule of those decisions stands.
+
+A confirmed global activation is applied by the running service without restart, a new login or reinstallation,
+unless it changes a field the process cannot switch. Restart-only: `service.supervisor`, `service.lease_seconds`
+and `service.poll_seconds` while a worker thread runs (with no worker the switch starts one with the new values),
+and any activation under legacy authority or a legacy import promotion (D228). `service.state_dir` stays fixed at
+startup; listener, database and configuration directory are startup arguments. Agents, presets, Git, registration,
+profiles, compositions and recipes are live. The preview names `apply` (`live` or `restart`) and `restart_fields`.
+
+Before confirmation, the preview stages a complete candidate runtime outside write transactions: the global
+composer, a version/help preflight of both roles with exact executable/PATH/environment (no inference) and the
+recomposition of every ACTIVE registered project with the set's own project revisions and selected receipts. A
+failure is `live_configuration_refused` with structured corrections (project or role, setting, code, diagnostic);
+a project already failing under the active authority is reported without blocking the fix.
+
+Waiting reasons are current work: unfinished jobs of both lanes, checkout locks, reserved preparations, phase
+operations, reserved creation, unfinished documentary commits, runs awaiting acceptance, commit intents and
+unresolved assistance. With none, the set switches immediately; otherwise its references stay pending with
+`apply: live` and status APPLY_PENDING (**Apply when current work finishes**). Work continues and new admissions
+use the active configuration until the switch; nothing is terminated, retried, advanced or rebound. Documentary
+conversations and chat/profile proposals are not waiting reasons for a global set, since each later turn or
+accepted proposal freezes the then-active configuration (generalizing D236); project-only sets keep refusing them.
+
+The runtime promotes a pending live set at the first idle boundary (writer worker idle, after a confirmation, on
+reads of the configuration state, at startup). It restages the candidate; a failure withdraws the pending
+references with a PROMOTE operation whose result is FAILED, leaving the previous authority active. Promotion
+rechecks references, evidence and waiting reasons in one write transaction and installs the staged objects
+(configuration, project map, unavailable projects, loaded reference) by pointer swaps before it commits; workers
+read the factories on every claim. A crash before promotion keeps the pending set and loads the previous one; after
+it, startup loads the new one. Cancellation uses the existing CAS cancel. No schema change: the existing pending
+columns, operation kinds and statuses carry the state.
+
+Admission of a project task binds the exact receipt selected for the job's frozen project revision (its own, or
+the one a confirmed activation retained for a nontechnical or derived revision), instead of requiring the receipt
+to carry that revision's hash, which refused every task after a derived or agent-only revision.
+
+## D239 — One-off tasks released as patch versions
+
+Status: accepted. Supersedes the `0.1.2` assignment of D233.
+
+At the owner's direction, each completed one-off task (D237) that changes the product is released on its own as
+the next patch version: OT001 is `0.1.2`, OT002 is expected as `0.1.3`. Like D233's exception, such a release may
+carry additive API/UI changes needed by its task, with the existing compatibility, explicit-migration and snapshot
+guarantees; it changes no stored data format or frozen identity without a migration and decision. P001 **Metrics
+Records** keeps its scope and task plan and targets the next patch version after the one-off queue empties;
+P002 **Continuous Mode** keeps `0.2.0`.

@@ -281,6 +281,19 @@ inherit that value: they receive their own `HOME`/`TMPDIR` inside the child.
 publishes private files with atomic replacement. `configuration_editing.py` derives private project copies and
 impact previews; `configuration_assistance.py` freezes active clients, context, process ownership and result.
 `configuration_import.py` explicitly converts legacy sources without replacing legacy authority before preparation.
+The shared registry work barrier excludes only empty, observed-unchanged failed intake conversations
+with no surviving drafts, edits, deferrals or proposals (D236). Job/writer and adoptable-work gates remain;
+activation never retries or rewrites earlier turns.
+
+Live switching (D238): `storage/configuration.py` classifies a set (`restart_fields` hook from the runtime) and
+splits current work (`_waiting`) from documentary refusals; a live set is recorded in the existing pending columns
+with `apply: live` (scope status APPLY_PENDING) and promoted by `promote_pending`, or withdrawn by `fail_pending`.
+`ManagedRuntime._stage` builds a shadow runtime (copied runtime with its own composer, registry, project
+configuration and preparation services) from explicit candidate references; `apply_pending` runs from the idle
+writer lane, configuration reads/confirmations and startup, and installs the staged configuration and project map
+inside the promotion transaction. `require_ready` keeps refusing writes whenever the loaded and active global
+references differ. Worker loops resolve ports/writer factories through the runtime on each claim. Task admission
+binds the receipt selected for the frozen project revision (`selected_receipt`).
 
 `IntakeContext` carries documentary capabilities without an executable profile. `profile_proposal.py` validates
 structured commands/tool evidence against frozen documents/inventory; planning tables retain proposal versions.

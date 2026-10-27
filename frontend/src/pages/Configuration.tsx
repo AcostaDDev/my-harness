@@ -5,8 +5,8 @@ import { managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import { Alert, DiffBlock, Evidence, Fields, Loading, PageHeader, Stale, message, usePoll } from "../ui";
 import { baseChanged, candidate, change, changeField, efforts, errors, field, initialDraft, modeLabels,
-  modelOptions, readAction, readDraft, sendAction, storeDraft } from "../configuration.ts";
-import type { Action, Draft, Review } from "../configuration.ts";
+  modelOptions, readAction, readDraft, refusalLine, sendAction, storeDraft, waitingReason } from "../configuration.ts";
+import type { Action, Draft, LiveRefusal, Review } from "../configuration.ts";
 
 import { Link } from "../navigation";
 import { ConfigurationAssistance } from "./ConfigurationAssistance";
@@ -36,6 +36,23 @@ function ModelChoice({ id, provider, value, problem, onChange }: {
       onChange={event => onChange(event.target.value)} />}
     {problem && <p id={`${id}-error`} className="field-error">{t(problem)}</p>}
   </div>;
+}
+
+/** D238: why a confirmed set has not switched yet; each reason is current work that ends or is resolved explicitly. */
+function Waiting({ reasons }: { reasons: string[] }) {
+  const { t } = useI18n();
+  if (!reasons.length) return null;
+  return <ul className="configuration-waiting">{reasons.map(reason => {
+    const { key, id } = waitingReason(reason);
+    return <li key={reason}>{t(key, { id })}</li>;
+  })}</ul>;
+}
+
+/** Corrections of a refused live candidate: project or role, setting, code and diagnostic. */
+function Refusals({ items }: { items: LiveRefusal[] }) {
+  const { t } = useI18n();
+  return <ul>{items.map((item, index) => <li key={index}>{refusalLine(item)}
+    {item.already_failing && <> · {t("configuration.live.already_failing")}</>}</li>)}</ul>;
 }
 
 export function ConfigurationFields({ draft, onChange, issues }: {
@@ -137,6 +154,7 @@ export function ConfigurationPage() {
   const [check, setCheck] = useState<S["ConfigurationClientsRead"]>();
   const [issues, setIssues] = useState<Record<string, MessageKey>>({});
   const [error, setError] = useState<string>();
+  const [refusals, setRefusals] = useState<LiveRefusal[]>();
   const [busy, setBusy] = useState(false);
   const working = useRef(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -158,13 +176,16 @@ export function ConfigurationPage() {
   function edit(next: Draft) {
     setDraft(next); setReview(undefined); setActivation(undefined); setCheck(undefined);
     setConfirmed(false); setActivateConfirmed(false); setCancelConfirmed(false); setDiscardConfirmed(false); setIssues({}); setError(undefined);
+    setRefusals(undefined);
   }
   async function run(work: () => Promise<void>) {
     if (working.current) return;
-    working.current = true; setBusy(true); setError(undefined);
+    working.current = true; setBusy(true); setError(undefined); setRefusals(undefined);
     try { await work(); }
     catch (error) {
-      setError(error instanceof ManagedError && error.status === 409
+      const live = error instanceof ManagedError && error.status === 409 && error.code === "live_configuration_refused";
+      setRefusals(live ? (error.details ?? []) as LiveRefusal[] : undefined);
+      setError(live ? t("configuration.live.refused") : error instanceof ManagedError && error.status === 409
         ? `${t("configuration.conflict")} (${error.code ?? "conflict"})` : message(error));
       setReview(undefined); setActivation(undefined); setConfirmed(false); setActivateConfirmed(false);
       refresh(n => n + 1);
@@ -195,6 +216,7 @@ export function ConfigurationPage() {
   const saved = state.saved;
   const activationStale = activation?.body.references[0]?.expected_version !== state.version;
   const cancelStale = cancelReference?.id !== state.pending_activation_id || cancelReference?.version !== state.version;
+  const live = state.live_activation;
   return <div className="configuration-editor">
     <PageHeader title={t("configuration.title")}><p>{t("configuration.lede")}</p></PageHeader>
     <Stale error={read.error} />
@@ -202,6 +224,14 @@ export function ConfigurationPage() {
       <h2 id="configuration-status">{t("configuration.status")}</h2>
       <p role="status">{t(modeLabels[state.mode])}</p>
       {state.mode === "RESTART_REQUIRED" && <p>{t("configuration.restart_hint")}</p>}
+      {live?.state === "APPLY_PENDING" && <div className="state state-attention">
+        <p><strong>{t("configuration.live.when_idle")}</strong> {t("configuration.live.pending_hint")}</p>
+        <Waiting reasons={live.waiting ?? []} />
+      </div>}
+      {live?.state === "FAILED" && <div role="alert" className="state state-error">
+        <p>{t("configuration.live.failed", { id: live.activation_id })} ({live.code})</p>
+        <Refusals items={live.details ?? []} />
+      </div>}
       {state.mode === "INVALID" && <p>{t("configuration.invalid_hint")}</p>}
       <Fields items={(["active", "saved", "pending"] as const).map(key => [t(`configuration.ref.${key}`), state[key]
         ? <span>{t("configuration.revision", { revision: state[key]!.revision })} · <code className="configuration-hash">{state[key]!.sha256}</code> · {t(state[key]!.status === "DRAFT" ? "configuration.draft" : "configuration.validated")}</span>
@@ -227,7 +257,7 @@ export function ConfigurationPage() {
     {!!state.imported_projects?.length && <section className="panel"><p>{t("configuration.import_prepare")}</p>
       {state.imported_projects.map(project => <p key={project}><Link to={{ name: "project", project }}>{project}</Link></p>)}
     </section>}
-    {error && <Alert>{error}</Alert>}
+    {error && <Alert>{error}{refusals && <Refusals items={refusals} />}</Alert>}
     {action && <section className="panel"><h2>{t("configuration.unacknowledged")}</h2>
       <p>{t("configuration.retry_hint")}</p><Evidence title={t("configuration.exact_request")} value={action} />
       <button type="button" disabled={busy || state.mode === "READ_ONLY_ARCHIVE"} onClick={() => void run(() => submit(action.path, action.body, action))}>{t("configuration.retry")}</button>
@@ -303,6 +333,8 @@ export function ConfigurationPage() {
           <h3 id="configuration-save-review">{t("configuration.save_review")}</h3>
           <p>{t("configuration.save_hint")}</p><code className="configuration-hash">{review.preview.sha256}</code>
           {review.preview.changes?.map((item, index) => <div key={index}><DiffBlock diff={String(item.diff)} label={t("configuration.diff")} />
+            {Array.isArray(item.removed_fields) && item.removed_fields.length > 0 && <p className="state state-attention">
+              {t("configuration.removed_fields", { fields: item.removed_fields.join(", ") })}</p>}
             <details><summary>{t("configuration.toml")}</summary><pre>{String(item.text)}</pre></details></div>)}
           <p>{t("configuration.impact")}</p><Evidence title={t("configuration.activation_review")} value={review.preview} />
           <label className="check"><input type="checkbox" checked={confirmed} disabled={frozen || stale} onChange={event => setConfirmed(event.target.checked)} />{t("configuration.confirm_save")}</label>
@@ -310,12 +342,17 @@ export function ConfigurationPage() {
         </section>}
       </section>
       <section className="panel"><h2>{t("configuration.activation")}</h2><p>{t("configuration.activation_hint")}</p>
+        <p className="hint">{t("configuration.activation_scope")}</p>
         <button type="button" disabled={frozen || !saved || saved.status !== "VALIDATED" || !!state.pending || state.status === "RECOVERY_REQUIRED" || state.status === "INVALID" || !draft.reason.trim()}
           onClick={() => void run(async () => {
             const body: S["ConfigurationActivation"] = { references: state.activation_references?.length ? state.activation_references : [{ scope: "global", revision: saved!.revision, sha256: saved!.sha256, expected_version: state.version }], reason: draft.reason };
             setActivation({ body, preview: await managed<S["ConfigurationPreviewRead"]>(`${ROOT}/activation/preview`, body) }); setActivateConfirmed(false);
           })}>{t("configuration.activation_preview")}</button>
         {activation && <div className="decision"><code className="configuration-hash">{activation.preview.sha256}</code>
+          {activation.preview.apply === "restart"
+            ? <p className="state state-attention">{t("configuration.live.restart", { fields: (activation.preview.restart_fields ?? []).join(", ") })}</p>
+            : <><p>{t(activation.preview.waiting?.length ? "configuration.live.will_wait" : "configuration.live.now")}</p>
+              <Waiting reasons={activation.preview.waiting ?? []} /></>}
           <Evidence title={t("configuration.activation_review")} value={activation.preview} />
           <label className="check"><input type="checkbox" checked={activateConfirmed} disabled={frozen || activationStale}
             onChange={event => setActivateConfirmed(event.target.checked)} />{t("configuration.confirm_activation")}</label>

@@ -6,8 +6,9 @@ phases; phases are numbered from P001 in this repository.
 
 ## P001 — Metrics Records
 
-**Target release:** `0.1.2`
-([D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
+**Target release:** the patch version after the one-off queue empties
+([D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
+[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); `0.1.2` was released for OT001.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex
@@ -59,7 +60,7 @@ the first error, question or limit.
 - Without that authorization the current behavior is unchanged: explicit task batches, explicit check, closure
   authorized on READY and a confirmed plan for each new phase.
 
-**Dependencies:** P001 Metrics Records (`0.1.2`) and the existing phase lifecycle and authorization guarantees.
+**Dependencies:** P001 Metrics Records and the existing phase lifecycle and authorization guarantees.
 
 ## Known gaps without a phase
 

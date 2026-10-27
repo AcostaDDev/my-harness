@@ -1238,6 +1238,7 @@
   "setup.form_value": "Form values must be TOML-compatible JSON values.",
   "setup.candidate": "Supply exactly one TOML text or configuration form.",
   "setup.path": "Supply an explicit PATH containing only absolute directories.",
+  "setup.live_refused": "The candidate cannot be applied. The active configuration is unchanged; correct the listed settings and preview again.",
   "setup.conflict": "Configuration changed or the operation is blocked. Reload its state and preview again.",
   "setup.not_found": "Configuration operation was not found.",
   "setup.invalid": "Invalid configuration or inaccessible private files. Review the candidate and selected directories.",

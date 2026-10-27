@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "My Harness",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "paths": {
     "/api/session": {
@@ -16565,6 +16565,49 @@
             ],
             "title": "Restart Required"
           },
+          "apply": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "live",
+                  "restart"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply"
+          },
+          "restart_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Restart Fields"
+          },
+          "waiting": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waiting"
+          },
           "roots": {
             "anyOf": [
               {
@@ -16656,6 +16699,7 @@
               "UNCONFIGURED",
               "INVALID",
               "READY",
+              "APPLY_PENDING",
               "RESTART_REQUIRED",
               "RECOVERY_REQUIRED",
               "READ_ONLY_ARCHIVE"
@@ -16808,6 +16852,16 @@
             "type": "object",
             "title": "Pending Versions",
             "default": {}
+          },
+          "live_activation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LiveActivationRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -20162,6 +20216,126 @@
         ],
         "title": "LanguageContextRead",
         "description": "P011-T008: language pair frozen when the job was admitted (D167); continuations keep the first job's value."
+      },
+      "LiveActivationRead": {
+        "properties": {
+          "activation_id": {
+            "type": "string",
+            "title": "Activation Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPLY_PENDING",
+              "FAILED"
+            ],
+            "title": "State"
+          },
+          "waiting": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Waiting",
+            "default": []
+          },
+          "restart_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Restart Fields",
+            "default": []
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/LiveRefusalRead"
+            },
+            "type": "array",
+            "title": "Details",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "activation_id",
+          "state"
+        ],
+        "title": "LiveActivationRead",
+        "description": "D238: a confirmed live set waiting for current work, or the last switch that could not be staged."
+      },
+      "LiveRefusalRead": {
+        "properties": {
+          "project": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "setting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setting"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "already_failing": {
+            "type": "boolean",
+            "title": "Already Failing",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "LiveRefusalRead"
       },
       "ManagedAttemptRead": {
         "properties": {

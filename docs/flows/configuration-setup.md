@@ -11,8 +11,11 @@ flowchart TD
     S --> U[Authenticated setup without TOML or inference]
     U --> D[Validate form or TOML; review exact diff]
     D --> G[Confirm private version save]
-    G --> A[Review and confirm activation set]
-    A --> N[Restart; verify and promote pending references]
+    G --> A[Review activation set; stage candidate clients and projects]
+    A --> L{Current work?}
+    L -->|none| N[Switch in the running service]
+    L -->|waiting| H[Apply when current work finishes]
+    H --> N
     N --> C[Create or register without a stack composition]
     C --> P[Documentary conversation; adopt profile proposal]
     P --> B[Confirm documentary commit and P001]
@@ -32,8 +35,29 @@ The port precheck permits recently closed connections; an active listener still 
 
 Global content is private immutable TOML outside checkouts. SQLite owns saved/active/pending revision references.
 CAS, exact preview hashes and idempotency keys guard intentions before atomic file publication. External edits do
-not change active authority. Global activation covers derived private project copies and takes effect on restart;
-project activation takes effect between tasks after the work barrier and receipt checks. Saving alone does neither.
+not change active authority. Global activation covers derived private project copies and applies in the running
+service ([D238](../DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary)); project activation takes effect between tasks after its documentary barrier and
+receipt checks. Saving alone does neither.
+
+The activation preview stages the whole candidate without installing it: global composer, preflight of both roles
+with the exact executable/PATH/environment, and every ACTIVE registered project with the set's own revisions and
+selected receipts. A refusal lists project or role, setting, code and diagnostic and changes nothing. After
+confirmation, an idle installation switches at once. Otherwise the set waits (APPLY_PENDING) for jobs of both lanes,
+checkout locks, preparations, phase operations, project creation, documentary commits, acceptances, commit intents
+and configuration assistance; documentary conversations and proposals do not hold a global set. Waiting work and
+new admissions use the active set; nothing is cancelled, retried or rebound. The idle writer lane, a configuration
+read or a confirmation restages and promotes the set; if the candidate no longer composes it is withdrawn (PROMOTE
+FAILED) and the previous set stays active. A restart before the boundary loads the previous set and the same
+boundary applies the pending one. Worker-loop service fields under a running supervisor and legacy import
+promotion still need restart; the preview names them. Cancelling uses the same exact CAS confirmation.
+
+Empty failed definition/onboarding turns do not count as pending adoptable work
+([D236](../DECISIONS.md#d236--empty-failed-intake-turns-are-not-pending-configuration-work)):
+every turn must be FAILED with no result, unchanged observations and no observed drafts,
+and the conversation must have no known drafts, edit log, deferrals or proposals.
+Existing jobs, uncertain writers and all other work barriers still block. Historical
+turns stay immutable; a later explicit message uses newly frozen active clients.
+Activation still requires its exact preview/confirmation; no failed turn retries automatically.
 
 A new project talks from a brief; onboarding inventories a committed tree without executing it. The reviewer
 proposes tools, meaningful validations, command evidence and a technical plan after documentation/architecture.

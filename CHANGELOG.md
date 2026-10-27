@@ -13,18 +13,54 @@ All notable changes to My Harness are recorded here. The format follows
   ([D231](docs/DECISIONS.md#d231--packaged-model-suggestions-and-small-ui-patch-releases)). Data compatibility does
   not depend on the version number: every release keeps reading older databases and histories, and the SQLite schema
   is upgraded only by `my-harness migrate`, which takes a verified snapshot first.
-- By explicit roadmap assignment, P001 **Metrics Records** targets `0.1.2` as a specific exception to the patch
+- At the owner's direction each completed one-off task is released as the next patch version and may carry the
+  additive API/UI changes it needs ([D239](docs/DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)).
+- By explicit roadmap assignment, P001 **Metrics Records** targets the patch release after the one-off queue (it
+  was `0.1.2` before D239) as a specific exception to the patch
   scope above; it may include additive metrics data/API/configuration changes with the existing compatibility and
   migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase closure and opening under a
   bounded authorization ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
   [roadmap](docs/ROADMAP.md)). Both are planned, not released.
-- A version is released by tagging its commit and attaching to a GitHub Release the self-contained package
-  `my-harness-<version>-distribution.tar.gz` (a `my-harness-<version>/` folder with the wheel, sdist,
-  `pylock.toml`, `distribution-1.json`, `SHA256SUMS` and `scripts/` for `scripts/install --dist`) and its `.sha256`
-  file; the wheel, sdist, `pylock.toml` and `SHA256SUMS` may also be attached individually. Nothing is published
-  to PyPI, and built artifacts are never committed to the repository.
+- A version is released through a pull request from `develop` to the protected `main`, merged as a merge commit
+  (`--no-ff`), tagging that merge commit
+  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)) and attaching to a GitHub
+  Release the self-contained package `my-harness-<version>-distribution.tar.gz` (a `my-harness-<version>/` folder
+  with the wheel, sdist, `pylock.toml`, `distribution-1.json`, `SHA256SUMS` and `scripts/` for
+  `scripts/install --dist`) and its `.sha256` file; the wheel, sdist, `pylock.toml` and `SHA256SUMS` may also be
+  attached individually. Nothing is published to PyPI, and built artifacts are never committed to the repository.
 
 ## [Unreleased]
+
+## [0.1.2] — 2026-10-27
+
+Patch release for one-off task OT001 ([D238](docs/DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary),
+[D239](docs/DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)). Upgrade by installing the new package;
+no configuration format or database schema changes, and existing configurations, projects and histories are kept.
+The API adds fields and one state; the generated client types are regenerated.
+
+### Changed
+
+- Activating a saved global configuration (agents, models, efforts, timeouts, executables, PATH/environment, presets,
+  Git identity, roots) applies it in the running service: no restart, reinstall or new access key. The activation
+  preview first checks the selected clients (version/help only) and recomposes every registered project with the
+  candidate, and names any project, role or setting to correct. A refused candidate changes nothing.
+- When work is running, queued, awaiting acceptance or recovery, the confirmed change waits as **Apply when current
+  work finishes**, listing that work. Admitted work keeps its frozen settings and is never cancelled, retried or
+  rebound; new work uses the active configuration until the switch. A change that cannot be applied at the switch
+  is withdrawn and the previous configuration stays active. It can be cancelled while it waits.
+- Project-only activations follow the same rule for running work; their documentary barriers are unchanged.
+- Only the supervisor's `lease_seconds`/`poll_seconds`/`supervisor` while it runs, and promoting a legacy import,
+  still need a restart; the preview says so before confirming.
+- The save preview lists fields removed by the candidate.
+
+### Fixed
+
+- A definition or onboarding conversation whose turns all failed without output or draft changes no longer blocks
+  activating a corrected configuration, such as a longer client timeout
+  ([D236](docs/DECISIONS.md#d236--empty-failed-intake-turns-are-not-pending-configuration-work)).
+- Tasks of a project with its own profile could not be admitted after a global change or an agent-only project
+  change (`preparation_required`): admission now binds the receipt selected for the job's exact configuration
+  revision.
 
 ## [0.1.1] — 2026-10-27
 

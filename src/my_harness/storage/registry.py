@@ -18,6 +18,15 @@ from my_harness.i18n import tr
 UNFINISHED = ('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')
 
 
+def _empty_failed_intake_turn(status, result):
+    if status != 'FAILED' or not isinstance(result, dict) or result.get('result') is not None:
+        return False
+    observed = result.get('observed')
+    return (isinstance(observed, dict) and observed.get('unchanged') is True
+            and all(isinstance(observed.get(side), dict) and not observed[side].get('drafts')
+                    for side in ('before', 'after')))
+
+
 def confirm_work_language(session, project_id, root, preview, source, preview_sha256, reason, now):
     """P011-T008: the root's work language, in the transaction of the confirmation that fixes it (D167).
 
@@ -95,11 +104,7 @@ class ProjectRegistryRepository:
     @staticmethod
     def _configuration_blockers(session, root):
         """V5: work that is still acceptable cannot survive the composition change."""
-        from my_harness.storage.models import (
-            ChatConversationRow, ChatProposalRow, ManagedCommitRow, PlanningConversationRow,
-            PlanningTurnRow, ProjectBootstrapRow, ProjectImportRow,
-        )
-        from my_harness.storage.planning import PlanningRepository
+        from my_harness.storage.models import ManagedCommitRow, ProjectBootstrapRow, ProjectImportRow
         from my_harness.storage.models import ProjectPreparationOperationRow as Preparation
         blockers = [tr('registry.blocker_preparation', id=value) for value in session.scalars(
             select(Preparation.id).where(Preparation.root == root, Preparation.reserved.is_(True)))]
@@ -108,20 +113,38 @@ class ProjectRegistryRepository:
         blockers += [tr('registry.blocker_commit', id=value) for value in session.scalars(
             select(ManagedCommitRow.operation_id).join(Run, Run.id == ManagedCommitRow.run_id)
             .where(Run.root == root, ManagedCommitRow.status == 'INTENT'))]
-        blockers += [tr('registry.blocker_proposal', id=value) for value in session.scalars(
+        blockers += ProjectRegistryRepository._documentary_blockers(session, root)
+        for model in (ProjectBootstrapRow, ProjectImportRow):
+            blockers += [tr('registry.blocker_documents', id=value) for value in session.scalars(
+                select(model.id).where(model.root == root, model.status != 'COMPLETED'))]
+        return sorted(blockers)
+
+    @staticmethod
+    def _documentary_blockers(session, root):
+        """Chat proposals and substantive intake conversations: no job, but bound to the composition."""
+        from my_harness.storage.models import (
+            ChatConversationRow, ChatProposalRow, PlanningConversationRow, PlanningProposalRow, PlanningTurnRow,
+        )
+        from my_harness.storage.planning import PlanningRepository
+        blockers = [tr('registry.blocker_proposal', id=value) for value in session.scalars(
             select(ChatProposalRow.id).join(ChatConversationRow,
                                            ChatConversationRow.id == ChatProposalRow.conversation_id)
             .where(ChatConversationRow.root == root, ChatProposalRow.status == 'PROPOSED'))]
         for conversation in session.scalars(select(PlanningConversationRow).where(
                 PlanningConversationRow.root == root, PlanningConversationRow.kind != 'phase_planning')):
-            if (not PlanningRepository._drafts_created(session, conversation)
-                    and session.scalar(select(PlanningTurnRow.id).where(
-                        PlanningTurnRow.conversation_id == conversation.id).limit(1))):
+            turns = session.execute(select(PlanningTurnRow.status, PlanningTurnRow.result).where(
+                PlanningTurnRow.conversation_id == conversation.id)).all()
+            # A completed failure with no output or draft changes is not adoptable work.
+            # Keeping it as a barrier prevents correcting the client timeout after onboarding fails.
+            empty_failures = bool(turns) and all(_empty_failed_intake_turn(*turn) for turn in turns)
+            empty_failures = (empty_failures and not conversation.known and not conversation.log
+                              and not conversation.deferred
+                              and session.scalar(select(PlanningProposalRow.id).where(
+                                  PlanningProposalRow.conversation_id == conversation.id).limit(1)) is None)
+            if (not PlanningRepository._drafts_created(session, conversation) and turns
+                    and not empty_failures):
                 blockers.append(tr('registry.blocker_conversation', id=conversation.id))
-        for model in (ProjectBootstrapRow, ProjectImportRow):
-            blockers += [tr('registry.blocker_documents', id=value) for value in session.scalars(
-                select(model.id).where(model.root == root, model.status != 'COMPLETED'))]
-        return sorted(blockers)
+        return blockers
 
     def configuration_blockers(self, root):
         with self._read() as session:

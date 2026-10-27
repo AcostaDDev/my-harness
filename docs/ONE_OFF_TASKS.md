@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT005 reopened after owner manual-test failure; then OT004.
-**Next: resolve OT005 external tool-directory alias failure; release remains gated on owner success; then OT004/0.1.6.**
+**Queue:** OT005 amended source installed; owner retest and delivery pending; then OT004.
+**Next: owner retests OT005; on success, authorized 0.1.5 delivery; then OT004/0.1.6.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -39,15 +39,12 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT005 — Read-only existing tool aliases in generic preparation
 
-**Status:** reopened: the owner's preparation-preview test failed after local installation. The D247 implementation
-rejects an external Homebrew directory alias in the declared interpreter's chain; the API translates that OSError
-to `target_identity_changed`. The owner approved the bounded external-tool-directory evidence amendment (D248);
-its source implementation is qualified (2140 pytest cases passed), awaiting another local reinstall and owner retest.
-Integration and
-separate 0.1.5 delivery remain gated on manual success.
-Initial source commit: `e2d62fe`; the D248 follow-up is in the current topic commit. The owner-requested offline local reinstall/restart is complete, with unchanged data/TOML
-hashes and HTTP 200 on loopback 8013. The owner will test; their success report conditionally authorizes the archive,
-release PR to main and GitHub publication. Keep this section until delivery is completed or explicitly deferred (D242).
+**Status:** D247's initial local test failed on an external Homebrew directory alias. The owner-approved D248
+amendment is now qualified and installed: latest source commit **`3e2ad45`**, full pytest **2140 passed, 2 skipped,
+29 subtests passed**, real-checkout snapshot passed in read-only inspection. The latest authorized offline
+reinstall/restart preserved every database-table/private-TOML hash and returns HTTP 200 on loopback 8013.
+The owner must repeat the manual test; only their success report authorizes the archive, release PR to main and
+GitHub publication. Keep this section until delivery is completed or explicitly deferred (D242).
 **Priority:** before OT004 and P001-T001, explicitly confirmed by the owner (D246).
 **Classification:** bounded hotfix outside the roadmap; separate patch **0.1.5**, after released OT003/0.1.4.
 **Branch:** `fix/ot005-preparation-tool-links`, created from `develop` at `a8efd10`. The source commit includes the
@@ -55,7 +52,7 @@ previous documentation handoff as requested; metadata remains 0.1.4 pending sepa
 **Delivery route:** topic → `develop` → separate release PR/merge into `main` → 0.1.5 distribution (D235/D239/D242).
 **Objective:** let generic preparation inspect an existing environment's read-only executable aliases when they
 resolve to the explicitly declared, byte-bound tool, without granting writes to that environment or arbitrary links.
-**Cause:** `_executable` admits executable symlinks and preparation binds their resolved target/hash, but
+**Original cause:** `_executable` admits executable symlinks and preparation binds their resolved target/hash, but
 `ProfilePreparation._links` also requires the alias to match `local_paths`. Existing `.venv/bin/python` aliases
 outside the private preparation write scope are therefore rejected by the whole-checkout snapshot, even when the
 plan only reuses that environment. Changing the executable mapping alone leaves those links in the scanned tree.

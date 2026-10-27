@@ -10,22 +10,18 @@ normally empty priority queue for bounded fixes/improvements outside roadmap pha
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
 The owner confirmed **OT005 → 0.1.5** (generic-preparation tool-alias hotfix), then **OT004 → 0.1.6** (visual
 profile/agent editor), before the unchanged Metrics Records task P001-T001 (D246 supersedes D243's target/order).
-OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005's initial source fix is
-installed, but the owner's manual preparation preview failed on an external Homebrew directory alias. OT005 is reopened;
-the owner approved the bounded D248 amendment, now source-qualified (2140 pytest cases passed). Another local
-reinstall and owner retest are pending; release remains gated on manual success.
-OT004 is not implemented; no Metrics Records task is complete.
+OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005's initial manual preview failed
+on an external Homebrew directory alias; the owner-approved D248 amendment is now implemented, qualified and
+installed for their retest. Release remains gated on manual success. OT004 is unimplemented; no Metrics task is complete.
 
 **Resume after `/clear`:** OT005 source is on `fix/ot005-preparation-tool-links`, based on `develop` at `a8efd10`.
-The owner authorized implementation and a commit. New generic preparation admits existing read-only file aliases of
-explicitly frozen tools and preserves exact chain evidence through execution/recovery/receipt checks (D247).
-See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). Integration, the separate 0.1.5
-release/version/package qualification/publication are pending the owner's manual test; keep OT005 in ONE_OFF_TASKS.
-The owner-authorized offline reinstall/restart is complete, with installed OT005 source and unchanged database/TOML
-hashes. The service is running on loopback 8013; package/API/UI metadata remains 0.1.4. The owner's manual preview
-failed with `target_identity_changed`; read-only diagnosis reproduced an O_NOFOLLOW rejection of an external
-tool-directory alias (see task evidence). Their eventual success report still conditionally authorizes archive/release
-PR/GitHub publication as 0.1.5. No real provider or preparation was invoked by this maintenance operation.
+Latest source commit **`3e2ad45`** adds exact external-directory evidence along declared tool chains, retaining the
+old policies for previous receipts (D247/D248). Full offline pytest: **2140 passed, 2 skipped, 29 subtests passed**.
+The authorized offline reinstall/restart is complete: installed source matches that commit, HTTP root is 200 and all
+SQLite table/private TOML hashes were preserved. Service is on loopback 8013; package/API/UI metadata is still 0.1.4.
+See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). The owner must retest preparation;
+only their success report authorizes the separate 0.1.5 archive/release PR/GitHub publication. Keep OT005 in the queue.
+No real provider or preparation was invoked by maintenance; no operator TOML edit, migration or publication occurred.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
 through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The
@@ -238,12 +234,13 @@ verification preserve that binding; directory redirects, unrelated/changed targe
 Existing environments gain no write authority or undeclared stable-environment accreditation. Historical receipts
 and recovery keep their original link policy and bytes; recipe sources/fingerprints are unchanged.
 
-Source regression/qualification and limits are recorded in [the evidence](phase/OT005-preparation-tool-links.md).
-The owner authorized a source commit on the existing topic branch. Integration, separate version/package/release
-qualification and publication as 0.1.5 await the owner's manual success report. Their requested offline local
-upgrade/restart is complete, the installed source matches `e2d62fe`, HTTP returns 200 and all database/TOML hashes
-were preserved; metadata remains 0.1.4 for the test. Their success report authorizes the archive/release PR/GitHub
-publication. Keep OT005 in ONE_OFF_TASKS under D242. OT004/0.1.6 and Metrics Records remain unimplemented.
+The initial local test exposed an external Homebrew directory alias; D248's approved policy explicitly binds that
+alias in the declared executable chain and keeps directory links inside the checkout refused. Source commit
+`3e2ad45` is now qualified and installed; the real checkout snapshot also passed in read-only inspection. The latest
+local restart preserved all data/configuration hashes and returned HTTP 200. Full results/limits are recorded in
+[the evidence](phase/OT005-preparation-tool-links.md). The owner must repeat their UI test; integration/version/package
+qualification and publication as 0.1.5 remain conditional on their success report. Keep OT005 in ONE_OFF_TASKS (D242).
+OT004/0.1.6 and Metrics Records remain unimplemented.
 
 ## Planned one-off — visual profile and agent configuration editor (OT004)
 

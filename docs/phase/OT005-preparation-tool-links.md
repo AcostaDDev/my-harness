@@ -1,7 +1,7 @@
 # OT005 — Generic preparation and read-only existing tool aliases
 
-**Status:** D248 amendment approved, implemented and qualified after the owner's manual-preview failure;
-local reinstall and owner retest pending.
+**Status:** D248 amendment approved, implemented, qualified and installed after the owner's manual-preview failure;
+owner retest pending. Latest source commit: `3e2ad45`.
 Separate 0.1.5 release is authorized conditionally on the owner confirming that verification succeeds.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
 **Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
@@ -18,7 +18,7 @@ That commit includes the preserved task/priority documents and this implementati
 OT003 remains the published 0.1.4 release: implementation `437acf5`, release merge/tag `9985b0a` / `v0.1.4`, PR #3;
 its closing documentation reached develop at `a8efd10`. Its frozen evidence and published artifacts are unchanged.
 Package/API/UI metadata remains **0.1.4** during the local test; 0.1.5 release preparation awaits the owner's
-manual success confirmation. Source implementation commit: `e2d62fe`.
+manual success confirmation. Initial source implementation commit: `e2d62fe`; D248 follow-up: `3e2ad45`.
 
 The agreed delivery remains topic → `develop` → separate release PR/merge into `main` → **0.1.5** distribution.
 The owner subsequently requested stopping, reinstalling and starting the running service for their own manual test;
@@ -184,7 +184,7 @@ amendment. Read-only inspection with the new resolver accepts the actual interpr
 directory alias per chain; no interpreter, preparation command or provider was invoked. Further cases cover
 external link text/mode/target/broken/loop drift, confirmation and executor changes, the combined 40/41-link boundary,
 trailing slash/dot file targets, protected API preview/confirmation and D247 recovery compatibility. Full results and
-subsequent authorized local reinstall will be recorded below. No real-project success is claimed before the owner.
+the subsequent authorized local reinstall are recorded below. No real-project success is claimed before the owner.
 
 ### D248 verification
 
@@ -202,5 +202,27 @@ subsequent authorized local reinstall will be recorded below. No real-project su
   reading the API error envelope at the wrong key. The corrected envelope assertion passes in the full run.
 - Specification, architecture, inline JSON data description and both affected flows are in parity. No API model,
   ORM/migration, dependency, configuration format, recipe source/fingerprint or version change. UI tests/visual QA
-  and schema checks were not repeated for this backend-only amendment; the local installer will build/check the UI
-  and qualify the installed package before restart.
+  and schema checks were not repeated for this backend-only amendment; the local installer built/checked the UI
+  and qualified the installed package before restart, as recorded below.
+
+### D248 local installation and restart
+
+After the green full regression and source commit **`3e2ad45`**, continued the owner's authorized local test workflow.
+Verified the current listener/launcher identity and idle database state (seven DONE jobs, six STOPPED processes, no
+checkout lock, preparation operation or pending configuration activation). Stopped the launcher gracefully and checked
+that its server exited and released loopback 8013. Captured a fresh private canonical-table/TOML hash baseline.
+
+Ran the same offline clone upgrade with `--upgrade --writers-stopped --offline`, retaining all installation/data/
+configuration/cache locations and the prior READY generation. New generation **`gen-be6f2fbf38754254b94003eb3e174d8d`**
+is READY, with **0.1.4 metadata plus the D248 source correction**. The offline UI build/typecheck, exact package/
+checksum/license checks, isolated installed-wheel synthetic journey and dependency compatibility check passed.
+Installed `services/profile_preparation.py` matches source commit `3e2ad45` byte for byte. No migration was run.
+
+Started the installed service detached with a private log/new access-key file; startup completed and HTTP root
+returned **200**. Every SQLite table's canonical row hash and the private TOML path/content hash matched the stopped
+baseline both after installation and after startup. No original/saved project configuration or private environment
+was changed, no real preparation/provider/project command was invoked and no automatic retry or activation occurred.
+
+The owner can sign in with the new key and repeat **Review preparation plan**. Success of their real workflow is
+still unclaimed. Conditional release authorization is unchanged: only after they report success, prepare the separate
+0.1.5 distribution archive, integration/release PR to main and GitHub publication. No push/merge/tag/release was done.

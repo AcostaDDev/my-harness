@@ -21,9 +21,9 @@ The completed intake/configuration fix is documented in
 then **OT004 visual profile/agent editor → 0.1.6** (D246 supersedes D243's target/order). OT005 source is implemented
 and qualified on `fix/ot005-preparation-tool-links`; integration and separate 0.1.5 delivery remain pending. OT004
 is unimplemented. Resume from [OT005's evidence/delivery status](phase/OT005-preparation-tool-links.md) before
-starting the next one-off. Source commit `e2d62fe` is installed after an authorized offline reinstall/restart;
-the owner's manual preview failed on an external Homebrew tool-directory alias, so OT005 is reopened for the
-bounded amendment recorded in its evidence. Publication remains conditional on their eventual success report.
+starting the next one-off. The initial manual preview exposed an external Homebrew directory alias; the approved
+D248 amendment, source **`3e2ad45`**, is now qualified and installed after another authorized offline restart. The owner
+must retest; publication remains conditional on their success report. No real preparation was run by maintenance.
 [OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review (D244/D245), was released
 as **0.1.4** through PR #3 and its archive/checksum were verified after download.
 Resume P001-T001 after these one-offs are completed or explicitly rerouted. No phase task is completed by them.

@@ -308,6 +308,9 @@ structured commands/tool evidence against frozen documents/inventory; planning t
 `profile_preparation.py` reuses preparation operations, locks, leases and process identities for the generic
 `project-profile-preparation-1` contract, exact argv, JUnit, reconcilable technical commits and receipts. Activation
 precomposes and verifies exact saved references before exposing a runnable `ProjectContext`.
+`frontend/src/pages/PreparationReview.tsx` renders generic path/effect scope and kind-based/nested command steps
+separately from recipe file content/diffs/hashes (D249). The shared preparation helpers name those steps in both
+preview and journal and give own profiles generic network-mode wording. Request/consent/receipt authority is unchanged.
 D247 adds optional inline `read_only_tool_links` evidence to new generic plans/receipts. File-link chains outside
 `local_paths` resolve through at most 40 links to a declared frozen tool. D248's new `tool_link_policy` marker
 `external-directories-1` explicitly resolves and binds external directory aliases along that exact tool chain; parent

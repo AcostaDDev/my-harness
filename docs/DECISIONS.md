@@ -1357,3 +1357,20 @@ preserve the exact evidence; no silent rebinding, retry, environment accreditati
 Plans/receipts without the marker keep D247's strict parent-directory policy (or its historical predecessor), including
 explicit recovery. Existing evidence is not rewritten. The marker/evidence remain inline JSON under the existing
 contract; no ORM/schema, configuration format, API model, dependency or recipe fingerprint changes.
+
+## D249 — Complete generic preparation review within OT005
+
+Status: accepted within OT005's existing exact-preview criterion; no execution/configuration authority change.
+
+The owner's next manual screenshot shows that the plan now loads, but the UI prints `undefined` for file hashes and
+blank step labels. The recipe renderer assumed fixed file bytes and top-level argv/labels; the existing generic
+contract instead declares writable path/effect pairs and kind-based steps with nested commands. Include this bounded
+review correction in OT005/0.1.5 before declaring the manual workflow successful; it is not OT004's visual editor.
+
+Render generic write scope as possible effects, without inventing fixed content, diffs or hashes. Show private
+directories, executor selection/instructions/write scope, exact declared argv and command cwd/timeouts/environment,
+network/scripts and the technical commit. Give generic modes their own wording instead of Django wheel promises.
+Preserve recipe v1/v2 review, journal labels, raw evidence, exact preview hash/configuration binding, reason and consent,
+idempotency and separate activation. Only frontend presentation/catalogs and current parity/evidence change; no API,
+schema, saved profile, provider execution or earlier plan/receipt rewrite. Reinstall locally for the owner's retest;
+release remains conditional on their success report.

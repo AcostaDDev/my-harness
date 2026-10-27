@@ -312,6 +312,9 @@ aliases only along that tool chain (D248); checkout directory links, unbound tar
 protected-path links are refused. The 40-link ceiling counts both file and external directory aliases. This grants
 no writes or accreditation of the rest of an existing environment; stable environment evidence still comes only from declared `environment_paths`.
 Old plans/receipts retain their policy and frozen bytes.
+Generic preparation review shows writable path/effect pairs, the executor scope/instructions and exact nested commands
+with cwd/timeouts/environment; it does not fabricate recipe content, diffs or file hashes. Generic network modes have
+profile-specific wording. Fixed recipe review and reason/consent/hash/configuration gates remain unchanged (D249).
 
 Later editing preserves active authority until confirmed activation. Technical changes require committed current
 documents and new preparation; optional assistance uses frozen active clients and only authorized context. Applying

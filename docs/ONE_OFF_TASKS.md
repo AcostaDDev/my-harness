@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT005 amended source installed; owner retest and delivery pending; then OT004.
-**Next: owner retests OT005; on success, authorized 0.1.5 delivery; then OT004/0.1.6.**
+**Queue:** OT005 generic review display correction in progress after owner screenshot; then OT004.
+**Next: complete the OT005 generic plan review display (D249), reinstall/retest; then conditional 0.1.5 delivery.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -39,7 +39,10 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT005 — Read-only existing tool aliases in generic preparation
 
-**Status:** D247's initial local test failed on an external Homebrew directory alias. The owner-approved D248
+**Status:** D249's bounded generic-review display fix is implemented/qualified (213 frontend tests, typecheck/build
+passed) after the owner's screenshot showed missing steps/`undefined` file hashes. Local reinstall/retest is pending;
+no real preparation success is claimed.
+D247's initial local test failed on an external Homebrew directory alias. The owner-approved D248
 amendment is now qualified and installed: latest source commit **`3e2ad45`**, full pytest **2140 passed, 2 skipped,
 29 subtests passed**, real-checkout snapshot passed in read-only inspection. The latest authorized offline
 reinstall/restart preserved every database-table/private-TOML hash and returns HTTP 200 on loopback 8013.
@@ -57,7 +60,9 @@ resolve to the explicitly declared, byte-bound tool, without granting writes to 
 outside the private preparation write scope are therefore rejected by the whole-checkout snapshot, even when the
 plan only reuses that environment. Changing the executable mapping alone leaves those links in the scanned tree.
 **Implementation paths:** `services/profile_preparation.py`, shared preparation snapshot/tool
-helpers only where necessary, focused synthetic preparation/receipt tests, and current docs/parity artifacts.
+helpers only where necessary, focused synthetic preparation/receipt tests, and current docs/parity artifacts. D249
+adds the shared preparation page/helpers, focused frontend tests and current en/es catalogs for the exact review
+blocker; no visual profile editor or permission design is included.
 No recipe fingerprint/source rewrite, new dependency or configuration-format change. D247 records additive opt-in
 inline link evidence and historical receipt/recovery compatibility, with no API model or schema change.
 **Acceptance criteria:**

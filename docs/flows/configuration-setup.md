@@ -83,6 +83,12 @@ admission verification; recovery does not rediscover or refresh it. Old operatio
 policy, including D247 without external-directory support. This does not expand write/local/environment paths or
 certify undeclared environment contents.
 
+The generic review displays authorized write paths as possible effects, private process directories, the executor's
+selection/instructions/write scope, exact nested command argv plus cwd/timeouts/environment, network/scripts and
+technical commit (D249). It does not show invented fixed content/hashes. Recipe v1/v2 keeps its fixed-file review.
+Full evidence, reason and explicit consent still bind the exact preview/configuration; confirmation and activation
+remain separate. Changing this display never launches preparation.
+
 Later editing uses the same gates. Technical changes need current committed documents and a new receipt;
 nontechnical changes may retain an exact compatible receipt after current verification. Optional assistance
 freezes active clients and authorized context. The reviewer returns a proposal in read-only mode; the executor

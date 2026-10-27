@@ -23,7 +23,9 @@ and qualified on `fix/ot005-preparation-tool-links`; integration and separate 0.
 is unimplemented. Resume from [OT005's evidence/delivery status](phase/OT005-preparation-tool-links.md) before
 starting the next one-off. The initial manual preview exposed an external Homebrew directory alias; the approved
 D248 amendment, source **`3e2ad45`**, is now qualified and installed after another authorized offline restart. The owner
-must retest; publication remains conditional on their success report. No real preparation was run by maintenance.
+reported a loaded preview with missing generic step/file details. D249's bounded review display correction is now
+qualified (213 frontend tests and typecheck/build); reinstall/retest remains before conditional release. No real
+preparation was run by maintenance.
 [OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review (D244/D245), was released
 as **0.1.4** through PR #3 and its archive/checksum were verified after download.
 Resume P001-T001 after these one-offs are completed or explicitly rerouted. No phase task is completed by them.

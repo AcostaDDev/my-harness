@@ -1,7 +1,7 @@
 # OT005 — Generic preparation and read-only existing tool aliases
 
-**Status:** D248 amendment approved, implemented, qualified and installed after the owner's manual-preview failure;
-owner retest pending. Latest source commit: `3e2ad45`.
+**Status:** D248 is qualified/installed (`3e2ad45`). The owner's next screenshot loads the preview, exposing an
+incomplete generic review display; D249 is now source-qualified, awaiting local reinstall and owner retest.
 Separate 0.1.5 release is authorized conditionally on the owner confirming that verification succeeds.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
 **Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
@@ -226,3 +226,40 @@ was changed, no real preparation/provider/project command was invoked and no aut
 The owner can sign in with the new key and repeat **Review preparation plan**. Success of their real workflow is
 still unclaimed. Conditional release authorization is unchanged: only after they report success, prepare the separate
 0.1.5 distribution archive, integration/release PR to main and GitHub publication. No push/merge/tag/release was done.
+
+## Generic plan review display blocker (D249)
+
+The owner's screenshot now loads the preparation preview, so the previous link-resolution blocker is passed for
+that read. It does not establish successful preparation. File entries show `undefined` and the numbered step list
+is empty. The current renderer assumes recipe `sha256`/`diff`/`content`, `step.label`/`id` and top-level `step.argv`;
+generic plans instead supply `files = [{path, effect}]`, kind-based directories/executor/command/commit steps, and
+`step.command.argv`. Generic mode text also incorrectly falls back to Django wheel installation.
+
+Correct this bounded review surface under OT005's exact-confirmation acceptance (D249), preserving the existing
+execution contract and separate confirmation/activation gates. No real preparation is run by this correction.
+
+### D249 implementation and validation
+
+Added a shared review renderer which distinguishes the existing generic contract from fixed recipes. Generic paths
+show their possible write effect and explain that content is generated later; there are no fabricated file hashes,
+diffs or full-content panels. Kind-based steps name the private directories, executor, preparation/validation commands
+and technical commit. The executor's selection/reason/instructions/scope and each command's exact argv (including
+argument boundaries), cwd/timeout, tool mapping/environment/limits are reviewable. Generic network/script declarations,
+mode wording, plan evidence and consent use en/es text appropriate to an existing project. Journal step labels use the
+same helper. Recipe v1/v2 labels, direct argv, fixed content/diff/hash review and all request gates are preserved.
+
+- New regression initially reproduced the owner's `undefined` display in both languages (**2 expected failures**).
+- Full frontend suite: **213 passed** (10 new component/request cases), including both languages, escaped argv,
+  visible write effects/steps, generic modes, reason-plus-consent, renewed preview resets consent, exact saved
+  configuration/preview hash/idempotency key, no activation, generic active journal and all four recipe versions.
+- Typecheck and Vite build passed; the existing large-chunk advisory remains.
+- Synthetic Chrome review: Spanish/light/default viewport and English/dark in a **390px content container** on the
+  default viewport. Labels, scope, instructions and command arrays are readable; evidence expands with Return;
+  reason plus consent enables confirmation. No confirmation was clicked. The synthetic harness blocks all real API
+  actions; no actual provider, project command, service data or preparation was used for this visual QA. Temporary
+  QA entry files/server/tab were removed/closed before packaging.
+- Real mobile viewport/emulation, other browsers, screen readers, complete en/es/theme combinations and real
+  preparation remain unverified. No fresh full Python/schema regression was run for this frontend-only correction;
+  the D248 backend source is unchanged from its green 2140-case run. No API model/schema/generated types changed.
+- Reviewed frontend/catalog/current-document diff; `git diff --check` passed. Local offline reinstall/package checks
+  and the owner's repeat of the real review remain pending below; release authorization is still conditional.

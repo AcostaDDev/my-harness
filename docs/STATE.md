@@ -12,7 +12,8 @@ The owner confirmed **OT005 → 0.1.5** (generic-preparation tool-alias hotfix),
 profile/agent editor), before the unchanged Metrics Records task P001-T001 (D246 supersedes D243's target/order).
 OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005's initial manual preview failed
 on an external Homebrew directory alias; the owner-approved D248 amendment is now implemented, qualified and
-installed for their retest. Release remains gated on manual success. OT004 is unimplemented; no Metrics task is complete.
+installed. The owner's next screenshot exposed missing generic review details; D249 now corrects that display
+(213 frontend tests/typecheck/build passed), awaiting local reinstall and retest. Release remains gated on manual success. OT004 is unimplemented; no Metrics task is complete.
 
 **Resume after `/clear`:** OT005 source is on `fix/ot005-preparation-tool-links`, based on `develop` at `a8efd10`.
 Latest source commit **`3e2ad45`** adds exact external-directory evidence along declared tool chains, retaining the

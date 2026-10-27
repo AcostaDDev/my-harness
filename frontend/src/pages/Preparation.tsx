@@ -4,7 +4,8 @@ import type { S } from "../managed-api";
 import { useI18n } from "../Language";
 import type { MessageKey } from "../i18n.ts";
 import { isTypeScriptRecipe, pendingPreparationStep, preparationStatus, preparationStepLabel, recipeModes, recipeText } from "../preparation.ts";
-import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
+import { Evidence, Hash, Stale, usePoll } from "../ui";
+import { isGenericPreparation, PreparationReview } from "./PreparationReview";
 import { preparationChange } from "../project-profile";
 import { useWorkspace } from "../workspace";
 
@@ -78,13 +79,10 @@ export function Preparation({ configuration }: { configuration?: S["ProjectConfi
     </>}
     {preview && <div className="decision">
       <p>{rich("preparation.preview", { root: <code>{preview.plan.root}</code>, mode: preview.plan.mode })}{preview.plan.work_language && ` · ${t("preparation.work_language", { language: preview.plan.work_language })}`} · {rich("preparation.preview_hash", { hash: <Hash value={preview.plan.preview_sha256} /> })}</p>
-      <h3>{t("preparation.files")}</h3>
-      {preview.plan.files.map(file => <details key={String(file.path)}><summary><code>{String(file.path)}</code> · <Hash value={String(file.sha256)} /></summary><DiffBlock diff={String(file.diff ?? "")} label={t("preparation.new_file", { path: String(file.path) })} /><details><summary>{t("preparation.full_content")}</summary><pre>{String(file.content)}</pre></details></details>)}
-      <h3>{t("preparation.commands")}</h3>
-      <ol>{preview.plan.steps.map((step, n) => <li key={n}><strong>{preparationStepLabel(preview.plan.recipe, step, t)}</strong>{Array.isArray(step.argv) && <pre>{JSON.stringify(step.argv)}</pre>}</li>)}</ol>
-      <Evidence title={t("preparation.plan_evidence")} value={preview.plan} />
+      <PreparationReview plan={preview.plan} />
+      <Evidence title={t(isGenericPreparation(preview.plan) ? "preparation.plan_evidence_generic" : "preparation.plan_evidence")} value={preview.plan} />
       {configuration && <label>{t("docs.review.reason")}<input value={reason} onChange={e => setReason(e.target.value)} maxLength={1000} /></label>}
-      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("preparation.authorize")}</label>
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t(isGenericPreparation(preview.plan) ? "preparation.authorize_generic" : "preparation.authorize")}</label>
       <button disabled={busy || !confirmed || !!configuration && !reason.trim()} onClick={() => void operate(async () => {
         await (configuration ? confirmOnce : createOnce)(`/projects/${project}/preparation/confirm`, {
           change: preview.change, preview_sha256: preview.plan.preview_sha256,

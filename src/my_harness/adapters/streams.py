@@ -1,4 +1,5 @@
 """Incremental JSONL envelope parser. Raw bytes live in separate artifacts."""
+from collections import Counter, deque
 import json
 import hashlib
 
@@ -11,6 +12,73 @@ def strict_json(value):
     def reject(value):
         raise ValueError(f"Nonfinite JSON: {value}")
     return json.loads(value, parse_constant=reject)
+
+
+class OutputGuard:
+    """D251 `output-guard-1`: stop degenerate repetition in streamed Claude assistant text.
+
+    Only `text_delta` text counts. Native `tool_use` blocks (file contents travel as tool input) and
+    thinking are never inspected. Of the last WINDOW completed non-blank lines, at most DISTINCT
+    different lines means a loop; a single line longer than LINE_LIMIT characters also stops.
+    `<invoke` markers are counted as evidence of textual tool imitation, never as tool calls.
+    """
+    POLICY = 'output-guard-1'
+    WINDOW, DISTINCT, LINE_LIMIT = 400, 20, 262144
+
+    def __init__(self):
+        self.window = deque()
+        self.counts = Counter()
+        self.line = []
+        self.line_size = 0
+        self.characters = self.lines = self.native_tool_uses = self.textual_tool_markers = 0
+        self.marker_tail = ''
+        self.stop = None
+
+    def event(self, inner):
+        kind = inner.get('type')
+        block = inner.get('content_block')
+        if kind == 'content_block_start' and isinstance(block, dict) and block.get('type') == 'tool_use':
+            self.native_tool_uses += 1
+        delta = inner.get('delta')
+        if kind == 'content_block_delta' and isinstance(delta, dict) and delta.get('type') == 'text_delta':
+            if isinstance(delta.get('text'), str):
+                self.text(delta['text'])
+
+    def text(self, value):
+        self.characters += len(value)
+        scan = self.marker_tail + value
+        self.textual_tool_markers += scan.count('<invoke')
+        self.marker_tail = scan[-6:]
+        *complete, rest = value.split('\n')
+        for part in complete:
+            self.line.append(part)
+            self._line(''.join(self.line))
+            self.line, self.line_size = [], 0
+        self.line.append(rest)
+        self.line_size += len(rest)
+        if self.line_size > self.LINE_LIMIT and self.stop is None:
+            self.stop = self.summary('line_limit')
+
+    def _line(self, value):
+        value = value.strip()
+        if not value:
+            return
+        self.lines += 1
+        self.window.append(value)
+        self.counts[value] += 1
+        if len(self.window) > self.WINDOW:
+            old = self.window.popleft()
+            self.counts[old] -= 1
+            if not self.counts[old]:
+                del self.counts[old]
+        if self.stop is None and len(self.window) == self.WINDOW and len(self.counts) <= self.DISTINCT:
+            self.stop = self.summary('repetitive_output')
+
+    def summary(self, code=None):
+        return {'policy': self.POLICY, 'code': code or (self.stop or {}).get('code'),
+                'window': self.WINDOW, 'distinct_limit': self.DISTINCT, 'distinct_in_window': len(self.counts),
+                'text_characters': self.characters, 'text_lines': self.lines,
+                'native_tool_uses': self.native_tool_uses, 'textual_tool_markers': self.textual_tool_markers}
 
 
 class AgentStream:
@@ -26,6 +94,12 @@ class AgentStream:
         self.offset = 0
         # H6.4: counters derived from the same read (terminal-2 normalization).
         self.metrics = StreamMetrics(provider)
+        # Codex `exec --json` reports whole items, not partial text; only Claude deltas are guarded.
+        self.guard = OutputGuard() if provider == 'claude' else None
+
+    @property
+    def stop(self):
+        return self.guard.stop if self.guard is not None else None
 
     def feed(self, chunk):
         self.tail += chunk
@@ -76,6 +150,8 @@ class AgentStream:
                 self.payload = event["item"].get("text")
             if kind in {"turn.completed", "turn.failed"}:
                 self.terminals.append(event)
+        elif kind == "stream_event" and isinstance(event.get("event"), dict):
+            self.guard.event(event["event"])
         elif kind == "result":
             self.terminals.append(event)
             if type(event.get("is_error")) is not bool or event.get("subtype") not in {

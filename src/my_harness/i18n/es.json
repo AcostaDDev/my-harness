@@ -1041,6 +1041,7 @@
   "preparation.target_exists": "El destino {path} ya existe.",
   "preparation.target_ignored": "El destino {path} está ignorado por Git.",
   "preparation.uncertain_effect": "efecto incierto",
+  "preparation.heartbeat_lost": "la renovación del lease no se completó ({failures} fallos transitorios, último: {error}); se perdió la propiedad y los grupos de procesos se liquidan con una comprobación independiente de vida",
   "preparation.unexpected_environment_entry": "Entrada inesperada en el entorno",
   "preparation.unexpected_environment_symlink": "Enlace simbólico inesperado en el entorno",
   "preparation.unexpected_file": "Archivo inesperado: {key}",
@@ -1268,5 +1269,7 @@
   "profile_preparation.recovery": "Revisa una preparación enlazada tras confirmar el escritor detenido y el prefijo completado exacto.",
   "profile_preparation.executor": "El ejecutor de preparación no finalizó correctamente.",
   "profile_preparation.command": "Ha fallado un comando de preparación o su evidencia JUnit.",
+  "profile_preparation.executor_repetitive": "El ejecutor de preparación se detuvo por salida repetitiva (output-guard-1); su salida parcial se conserva como evidencia y no se emite recibo.",
+  "profile_preparation.executor_tools": "El ejecutor Claude de la preparación no tiene ninguna herramienta de escritura de archivos habilitada y permitida (Write, Edit o MultiEdit). Añade una a las herramientas y herramientas permitidas del agente ejecutor; Harness no concede ninguna automáticamente.",
   "configuration.invalid_edit": "El vínculo documental de la edición de configuración no es válido."
 }

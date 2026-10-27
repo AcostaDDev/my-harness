@@ -170,6 +170,32 @@ elif (mode == 'hang' or mode == 'child') and os.environ.get('PROBE_USAGE') == '1
         print(json.dumps(event), flush=True)
     time.sleep(60)
     sys.exit(0)
+elif mode == 'repetitive':
+    # OT006/D251: synthetic shape of the incident (not its stream). Text deltas imitate tool markup over and
+    # over, no native tool_use, no message_delta/result; only the adapter's output guard ends it.
+    start = {'type': 'message_start', 'message': {'id': 'msg_synthetic', 'model': 'claude-synthetic',
+             'usage': {'input_tokens': 2, 'cache_creation_input_tokens': 10, 'cache_read_input_tokens': 5,
+                       'output_tokens': 6}}}
+    for event in ({'type': 'system', 'subtype': 'init', 'session_id': 'synthetic'},
+                  {'type': 'stream_event', 'event': start},
+                  {'type': 'stream_event', 'event': {'type': 'content_block_start', 'index': 0,
+                                                     'content_block': {'type': 'text', 'text': ''}}}):
+        print(json.dumps(event), flush=True)
+    block = ['<invoke name="Write">', '<parameter name="file_path">app/main.go</parameter>',
+             '<parameter name="content">package main</parameter>', '</invoke>', '']
+    while True:
+        for line in block:
+            print(json.dumps({'type': 'stream_event', 'event': {'type': 'content_block_delta', 'index': 0,
+                             'delta': {'type': 'text_delta', 'text': line + '\n'}}}), flush=True)
+        time.sleep(.001)
+elif mode == 'long_text':
+    # D251 false-positive case: a long but varied streamed answer completes normally.
+    for number in range(int(os.environ.get('PROBE_LINES', '1500'))):
+        print(json.dumps({'type': 'stream_event', 'event': {'type': 'content_block_delta', 'index': 0,
+              'delta': {'type': 'text_delta', 'text': f'Step {number}: checked synthetic item {number * 7}\n}}\n'}}}))
+    print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'usage': None, 'duration_ms': 0,
+                      'result': json.dumps({'result': 'Prepared synthetic files'})}), flush=True)
+    sys.exit(0)
 elif mode == 'hang' or mode == 'child':
     if mode == 'child':
         child = subprocess.Popen([sys.executable, '-c',

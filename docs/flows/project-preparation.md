@@ -8,6 +8,13 @@ exact chain evidence and post-effect/receipt guards described in the configurati
 directory aliases along those exact tool chains while continuing to refuse checkout directory links. This leaves
 the recipe link policies and fingerprinted sources below unchanged.
 
+Generic preparation with a Claude executor that has write scope also requires one of `Write`, `Edit` or `MultiEdit`
+to be both enabled and allowed. Preview refuses otherwise, and an older queued plan fails before launch. During the
+executor step, `output-guard-1` stops repetitive streamed text and issues no receipt. A failed heartbeat is retried
+while the lease lasts. When ownership is lost, the adapter stops its group and leaves a partial `capture.json`, and
+the closing owner settles the stale `RUNNING` row from independent liveness before closing
+([D251](../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)).
+
 Recipes prepare the technical stack of a newly created project after its root documentation commit:
 Django ([D119](../DECISIONS.md#d119--django-recipe-preparation)) and TypeScript web
 ([D143](../DECISIONS.md#d143--typescript-web-recipe-1)). They apply only to new children registered by the service,
@@ -37,7 +44,7 @@ flowchart TD
     K --> R["Adopt the receipt and COMPLETED; release reservation and lock in one transaction"]
     R --> BIND["Resolve agent clients and rebind the compatible receipt from existing authority"]
     BIND --> J["Later jobs freeze exact project_environment_sha256; receipt guard before commands"]
-    W -. "failure / cancel / lease" .-> X["Stop the own group; keep bytes and journal; no replay"]
+    W -. "failure / cancel / lease / repetitive output" .-> X["Stop the own group; keep bytes, journal and partial capture; no replay"]
     X --> A["Prove the writer stopped and review a new linked intent"]
     A --> B{"Prefix, source and environment proven?"}
     B -- yes --> I

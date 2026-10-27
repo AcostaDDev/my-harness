@@ -72,6 +72,14 @@ fresh JUnit and makes a reconcilable technical commit when content changes. Fail
 a valid receipt. Activation independently verifies the saved configuration, tools/environment, documents, clean
 HEAD, receipt and absence of pending/uncertain work. P001 alone cannot admit tasks. Recipes remain optional.
 
+For new generic previews, existing file aliases outside `local_paths` can be read-only inputs only when their bounded
+chain resolves to an explicitly declared executable with frozen resolved path/hash (D247). Preview records exact
+chain paths, link text and modes; confirmation binds that evidence. Execution and post-step snapshots preserve it
+and recheck tool bytes, so changes fail without a receipt. Protected aliases, directory redirects, unrelated targets,
+broken links and loops are refused. The receipt carries the same evidence for activation/admission verification;
+recovery does not rediscover or refresh it. Old operations/receipts retain the original policy. This does not expand
+write/local/environment paths or certify undeclared environment contents.
+
 Later editing uses the same gates. Technical changes need current committed documents and a new receipt;
 nontechnical changes may retain an exact compatible receipt after current verification. Optional assistance
 freezes active clients and authorized context. The reviewer returns a proposal in read-only mode; the executor

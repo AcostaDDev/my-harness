@@ -66,6 +66,27 @@ def environment_entries(workspace, patterns):
     return {p: v for p, v in workspace.items() if p in roots or matches(p, patterns)}
 
 
+def tool_link(path, tools):
+    """D247: bounded file-link resolution, never traversing a directory symlink."""
+    chain = []
+    for _ in range(41):
+        with directory(path.parent) as fd:
+            info = os.stat(path.name, dir_fd=fd, follow_symlinks=False)
+            # Normalize '..' only after proving every parent is a real directory.
+            path = Path(os.path.normpath(path))
+            if stat.S_ISLNK(info.st_mode):
+                if len(chain) == 40:
+                    raise refuse('scope')
+                link = os.readlink(path.name, dir_fd=fd)
+                chain.append({'path': str(path), 'link': link, 'mode': stat.S_IMODE(info.st_mode)})
+                path = path.parent / link
+            else:
+                if (not stat.S_ISREG(info.st_mode) or not info.st_mode & 0o111
+                        or not any(str(path) == tool['resolved'] for tool in tools.values())):
+                    raise refuse('scope')
+                return {'chain': chain, 'resolved': str(path), 'mode': stat.S_IMODE(info.st_mode)}
+
+
 def refuse(key='invalid'):
     return RegistryError(409, 'profile_preparation_' + key, tr('profile_preparation.' + key))
 
@@ -214,8 +235,18 @@ class ProfilePreparation(ProjectPreparation):
         return data, profile, technical, {'scope': scope, **ref}, documentary.result['commit'], documents, payload
 
     @staticmethod
-    def _links(plan):
+    def _links(plan, *, discover=None):
+        # Absence retains the historical policy; recovery must not opt old plans in.
+        frozen = plan.get('read_only_tool_links')
+        if frozen is not None:
+            verify_tools(plan['tool_files'])
         def permitted(root, key, path):
+            if frozen is not None and not matches(key, plan['technical']['local_paths']):
+                evidence = tool_link(path, plan['tool_files'])
+                if discover is not None:
+                    discover[key] = evidence
+                    return True
+                return frozen.get(key) == evidence
             resolved = path.resolve(strict=True)
             if (matches(key, plan['technical']['local_paths'])
                     and any(str(resolved) == tool['resolved'] for tool in plan['tool_files'].values())):
@@ -309,7 +340,17 @@ class ProfilePreparation(ProjectPreparation):
                 'commit': {'message': 'harness: prepare project profile', 'author_name': writer.identity.name,
                            'author_email': writer.identity.email},
                 'files': [{'path': path, 'effect': 'may create or modify'} for path in technical['write_paths']]}
-        workspace = snapshot(root, self._links(plan))
+        # A linked recovery keeps the original policy/evidence, including old plans.
+        if previous_id:
+            previous = self.repository.require(session, previous_id)
+            if 'read_only_tool_links' in previous.plan:
+                plan['read_only_tool_links'] = previous.plan['read_only_tool_links']
+            workspace = snapshot(root, self._links(plan))
+        else:
+            plan['read_only_tool_links'] = {}
+            workspace = snapshot(root, self._links(plan, discover=plan['read_only_tool_links']))
+            if any(matches(p, profile.protected_paths) for p in plan['read_only_tool_links']):
+                raise refuse('scope')
         captured = writer.capture(project.context)
         trees = json.loads(captured.provenance_json)
         if previous_id:
@@ -379,6 +420,8 @@ class ProfilePreparation(ProjectPreparation):
         for path in before.keys() | after.keys():
             if before.get(path) == after.get(path):
                 continue
+            if path in plan.get('read_only_tool_links', {}):
+                raise refuse('scope')
             # New parent directories are harmless only if they lead to an explicitly granted file/prefix.
             if after.get(path, {}).get('directory') and any(p.startswith(path + '/') for p in plan['technical']['write_paths']):
                 continue
@@ -550,6 +593,8 @@ class ProfilePreparation(ProjectPreparation):
                    'environment_paths': plan['technical']['environment_paths'],
                    'environment': environment_entries(workspace, plan['technical']['environment_paths']),
                    'work_language': plan['work_language'], 'results': results}
+        if 'read_only_tool_links' in plan:
+            receipt['read_only_tool_links'] = plan['read_only_tool_links']
         return receipt
 
     def bind(self, project):
@@ -598,7 +643,11 @@ def verify_profile_receipt(root, receipt):
     # Complete path-set verification catches newly added protected files as well as changed/deleted ones.
     plan = {'technical': {'local_paths': receipt['local_paths'], 'environment_paths': receipt['environment_paths']},
             'tool_files': receipt['tools']}
+    if 'read_only_tool_links' in receipt:
+        plan['read_only_tool_links'] = receipt['read_only_tool_links']
     workspace = snapshot(root, ProfilePreparation._links(plan))
+    if any(p not in workspace or 'link' not in workspace[p] for p in receipt.get('read_only_tool_links', {})):
+        raise refuse('stale')
     if any('link' in v and matches(p, receipt['protected_paths']) for p, v in workspace.items()):
         raise refuse('stale')
     protected = {p: v['sha256'] for p, v in workspace.items() if 'sha256' in v and matches(p, receipt['protected_paths'])}

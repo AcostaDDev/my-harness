@@ -1239,7 +1239,7 @@ actions retain the session's authorization requirements. Documentation must repo
 
 ## D243 — Visual profile editing as OT004 before Metrics Records
 
-Status: accepted for implementation, not implemented.
+Status: accepted for implementation, not implemented. Release target/order superseded by D246; scope unchanged.
 
 The owner chose OT004 before Metrics Records, with its own patch after OT003: target 0.1.5 after OT003's 0.1.4.
 The contract in ONE_OFF_TASKS is authoritative; P001/P002 and the six Metrics Records tasks keep their scope.
@@ -1293,3 +1293,46 @@ advanced only by acknowledged own writes, never silently adopting a concurrent v
 This is UI orchestration over existing endpoints: no new API/schema, batch job, provider call or execution authority.
 Documents go to the same draft area as individual apply (private for onboarding). Profile adoption, documentary
 tree/commit, private configuration, preparation and activation keep separate confirmations and gates.
+
+## D246 — OT005 preparation tool aliases before the visual editor
+
+Status: accepted at the owner's explicit confirmation. Supersedes only D243's target/order, not its editor scope.
+
+After OT003 was published as 0.1.4, the operator encountered `Unexpected symlink: .venv/bin/python` while reviewing
+generic preparation. Read-only diagnosis traced it to the whole-checkout snapshot and `_links`' additional
+`local_paths` requirement for otherwise declared byte-bound tool aliases. The configured executable loader itself
+accepts symlinks. This is a new bounded preparation hotfix, not an amendment/rewrite of published OT003.
+
+Record **OT005 → 0.1.5**, before **OT004 → 0.1.6**, then resume the unchanged P001 Metrics Records plan. Both are
+outside the roadmap and retain separate topic/integration/release routes under D235/D239/D242. The proposed fix is
+limited to read-only pre-existing aliases of explicitly declared, resolved and content-bound tools, retaining
+write-scope, external-target, change-detection and receipt guarantees. It does not authorize arbitrary symlinks or
+adding an existing environment to writable scope. Exact compatibility/receipt handling remains implementation work.
+
+At the owner's request this session changes documentation only and leaves a handoff for another session after
+`/clear`. OT005 and OT004 are not implemented. No new code/test, version bump, commit, merge, push, publication,
+reinstallation, service restart, operator configuration change or real preparation/provider invocation is authorized
+by this documentation-only instruction. The next session must preserve the uncommitted task documents, review the
+handoff and work within OT005 before starting OT004; release/operation authorization must be established separately.
+
+## D247 — Frozen read-only tool-link evidence in generic preparation
+
+Status: accepted within OT005's implementation scope; no new write authority.
+
+The owner resumed OT005 after the documentation-only handoff and authorized implementation and a source commit.
+D246's separate release order/targets remain; publication, installation and operator actions are still separate.
+
+New generic previews may admit pre-existing file-link chains outside `local_paths` only when the final regular
+executable is an explicitly configured resolved/hash-bound tool. Resolve at most 40 file links with no directory
+symlink traversal. Capture the exact chain paths, link text and modes as `read_only_tool_links` in the plan and
+receipt. The whole-checkout snapshot remains bounded and never descends through directory links. Verify tools
+against their frozen evidence before accepting these links, including after executor/native-command effects.
+Existing private-local link rules and recipe sources remain unchanged.
+
+This is additive inline journal/receipt evidence under `project-profile-preparation-1`, with no schema, TOML or
+API request/response model change. Only plans/receipts carrying the new evidence opt in; older ones retain their
+old link policy and bytes, including linked recovery. No history is backfilled. New evidence is immutable through
+execution, recovery and receipt verification; missing, added or changed outside-local aliases are refused.
+Protected-path links remain refused. Read-only aliases never extend write/local/environment paths and do not
+accredit the rest of an existing environment: stable environment accreditation still uses `environment_paths`.
+The cooperative before/after guards detect persistent changes; they do not provide OS isolation or rollback.

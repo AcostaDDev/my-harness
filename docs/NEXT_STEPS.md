@@ -17,10 +17,14 @@ The completed intake/configuration fix is documented in
 [failed-intake-activation](phase/failed-intake-activation.md) and committed as
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
-[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT004's visual profile/agent editor for its own
-0.1.5 patch** (D243). [OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review
-(D244/D245), was released as **0.1.4** through PR #3 and its archive/checksum were verified after download.
-Resume P001-T001 after OT004 is completed or explicitly rerouted. Neither one-off completes a Metrics Records task.
+[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT005 preparation tool links hotfix → 0.1.5**,
+then **OT004 visual profile/agent editor → 0.1.6** (D246 supersedes D243's target/order). OT005 source is implemented
+and qualified on `fix/ot005-preparation-tool-links`; integration and separate 0.1.5 delivery remain pending. OT004
+is unimplemented. Resume from [OT005's evidence/delivery status](phase/OT005-preparation-tool-links.md) before
+starting the next one-off; the owner authorized the source commit, with publication/installation still separate.
+[OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review (D244/D245), was released
+as **0.1.4** through PR #3 and its archive/checksum were verified after download.
+Resume P001-T001 after these one-offs are completed or explicitly rerouted. No phase task is completed by them.
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before
 T002–T005 change runtime behavior. The target release is the patch version that follows the one-off releases

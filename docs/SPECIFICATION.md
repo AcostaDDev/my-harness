@@ -305,6 +305,12 @@ errors/uncertainty stop the sequence and report acknowledged progress without au
 profile and documentary commit remain separately confirmed (D245).
 The reviewer stays read-only; the executor has only the confirmed preparation scope and no general global writes.
 A receipt binds configuration, tools, commands, protected content and stable environment; failures do not qualify it.
+New generic preparation plans also bind pre-existing read-only file-link chains outside private local paths when
+these resolve to an explicitly declared, hash-bound executable (D247). Exact chain paths/link bytes/modes are
+preserved through preview, execution, recovery and receipt verification. Directory redirection, unbound targets,
+broken/looping chains and protected-path links are refused. This grants no writes or accreditation of the rest of
+an existing environment; stable environment evidence still comes only from declared `environment_paths`.
+Old plans/receipts retain their policy and frozen bytes.
 
 Later editing preserves active authority until confirmed activation. Technical changes require committed current
 documents and new preparation; optional assistance uses frozen active clients and only authorized context. Applying

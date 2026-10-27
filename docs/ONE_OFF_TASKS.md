@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT004 pending.
-**Next: OT004 — visual profile/agent editor for its own 0.1.5 patch; then NEXT_STEPS.md.**
+**Queue:** OT005 source complete, delivery pending; then OT004.
+**Next: complete OT005 delivery for 0.1.5 after authorization; then OT004 for 0.1.6; then NEXT_STEPS.md.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -37,13 +37,61 @@ installation are different states. Keep outstanding agreed delivery in this queu
 deferred with a recorded destination. D239's patch-per-one-off rule and D235's branch/release route apply.
 Recording a release target does not authorize a commit, merge, push, publication, service restart or installation.
 
+## OT005 — Read-only existing tool aliases in generic preparation
+
+**Status:** implemented and synthetically qualified in source (D247); integration and separate 0.1.5 delivery pending.
+The owner authorized continuation and a commit; publication/installation were not requested. Keep this section until
+the agreed delivery is completed or explicitly deferred (D242).
+**Priority:** before OT004 and P001-T001, explicitly confirmed by the owner (D246).
+**Classification:** bounded hotfix outside the roadmap; separate patch **0.1.5**, after released OT003/0.1.4.
+**Branch:** `fix/ot005-preparation-tool-links`, created from `develop` at `a8efd10`. The source commit includes the
+previous documentation handoff as requested; metadata remains 0.1.4 pending separate release preparation.
+**Delivery route:** topic → `develop` → separate release PR/merge into `main` → 0.1.5 distribution (D235/D239/D242).
+**Objective:** let generic preparation inspect an existing environment's read-only executable aliases when they
+resolve to the explicitly declared, byte-bound tool, without granting writes to that environment or arbitrary links.
+**Cause:** `_executable` admits executable symlinks and preparation binds their resolved target/hash, but
+`ProfilePreparation._links` also requires the alias to match `local_paths`. Existing `.venv/bin/python` aliases
+outside the private preparation write scope are therefore rejected by the whole-checkout snapshot, even when the
+plan only reuses that environment. Changing the executable mapping alone leaves those links in the scanned tree.
+**Implementation paths:** `services/profile_preparation.py`, shared preparation snapshot/tool
+helpers only where necessary, focused synthetic preparation/receipt tests, and current docs/parity artifacts.
+No recipe fingerprint/source rewrite, new dependency or configuration-format change. D247 records additive opt-in
+inline link evidence and historical receipt/recovery compatibility, with no API model or schema change.
+**Acceptance criteria:**
+
+- Add a synthetic regression for a pre-existing `.venv/bin/python`/`python3`/versioned-interpreter link chain outside
+  preparation `local_paths`, resolving to the declared frozen executable. Preview must remain read-only and not
+  require adding the environment to `write_paths`/`local_paths`, relocating it or deleting/recreating it.
+- Bound any exception to the explicitly declared resolved tool and its content evidence. Never follow directory
+  links, traverse arbitrary external trees or allow unrelated external targets, broken links, loops or changed tools.
+  Retain existing internal private-environment link behavior and snapshot limits.
+- Preserve link bytes/modes and the before/after write-scope guards: accepting a read-only input must not allow the
+  executor to rewrite that alias/environment or affect its external target. Reject retargeted links or changed
+  executable bytes through the appropriate existing guards; do not silently refresh hashes.
+- Verify the complete path: preview, execution checks, scope checks, receipt creation and receipt verification.
+  Review protected-link refusal and environment accreditation explicitly; fixing preview alone is insufficient.
+  Old snapshots/receipts and failed operations remain immutable; no automatic preparation/retry/activation is added.
+- Keep exact preview/confirmation, configuration/HEAD binding, work barriers and offline/network rules. If a wider
+  link/receipt/configuration contract is needed, record the design and compatibility decision before implementing it.
+- Record results/limits and update current flows/specification as implementation requires; regenerate OpenAPI/types
+  in the same task if an API contract changes. A release target is not a completed release or installation.
+
+**Validation:** focused offline generic-preparation, snapshot/tool, receipt/recovery and API tests with temporary
+Git/SQLite, synthetic executables and links; relevant regressions and release checks before delivery. No real
+provider, Docker/project commands, operator configuration edits or preparation execution without separate authorization.
+**Handoff/evidence:** [OT005-preparation-tool-links](phase/OT005-preparation-tool-links.md), with code map,
+implementation/compatibility evidence, exact checks/omissions and outstanding delivery steps.
+**Deliverables:** bounded fix, regression/compatibility evidence, current parity docs, and separately qualified
+0.1.5 delivery after authorization. Source implementation and commit are authorized; integration, version bump,
+release package qualification/publication and local upgrade/restart remain separately tracked in the evidence.
+
 ## OT004 — Visual profile and agent configuration editor
 
 **Status:** pending; priority and separate patch delivery chosen by the owner. Not implemented.
-**Depends on:** OT003's separate 0.1.4 delivery (completed); precedes P001-T001 Metrics Records (D243).
-**Classification:** bounded UX development outside the roadmap; separate patch **0.1.5**, after 0.1.4 (D239).
+**Depends on:** OT005's separate 0.1.5 hotfix; precedes P001-T001 Metrics Records (D243/D246).
+**Classification:** bounded UX development outside the roadmap; separate patch **0.1.6**, after OT005 (D239/D246).
 **Branch:** a separate `feat/ot004-visual-profile-editor` topic from `develop` when OT004 starts.
-**Delivery route:** its own topic → `develop` → separate release PR/merge into `main` → 0.1.5 distribution.
+**Delivery route:** its own topic → `develop` → separate release PR/merge into `main` → 0.1.6 distribution.
 **Objective:** make the existing profile/agent configuration accessible through interactive forms in project
 settings and the applicable global settings, with clear effective values, scope and save/activation behavior.
 **Allowed paths:** relevant `frontend/src/**`, `frontend/tests/**`, existing configuration service/API modules only
@@ -76,5 +124,5 @@ if required to expose supported fields, and current documentation/parity artifac
 configuration/API regressions if touched; visual QA in en/es, light/dark, desktop/mobile and keyboard navigation.
 No real agents/providers or changes to the operator's installed configuration.
 **Deliverables:** editor implementation, tests/parity, `docs/phase/OT004-visual-profile-editor.md`, and a separately
-qualified 0.1.5 delivery. Implementation details are resolved within the existing contract; inconsistencies are
+qualified 0.1.6 delivery. Implementation details are resolved within the existing contract; inconsistencies are
 raised before changing its permission design.

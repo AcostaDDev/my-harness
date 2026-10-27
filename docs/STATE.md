@@ -8,9 +8,18 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT004**, the visual profile/agent editor targeting its own 0.1.5 patch, before the unchanged
-Metrics Records task P001-T001 (D243). OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239).
-OT004 is planned, not implemented; no Metrics Records task is complete.
+The owner confirmed **OT005 → 0.1.5** (generic-preparation tool-alias hotfix), then **OT004 → 0.1.6** (visual
+profile/agent editor), before the unchanged Metrics Records task P001-T001 (D246 supersedes D243's target/order).
+OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005 is implemented in source
+with synthetic qualification in the linked evidence; its delivery remains pending. OT004 is not implemented; no Metrics
+Records task is complete.
+
+**Resume after `/clear`:** OT005 source is on `fix/ot005-preparation-tool-links`, based on `develop` at `a8efd10`.
+The owner authorized implementation and a commit. New generic preparation admits existing read-only file aliases of
+explicitly frozen tools and preserves exact chain evidence through execution/recovery/receipt checks (D247).
+See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). Integration, the separate 0.1.5
+release/version/package qualification/publication and any local installation are pending; keep OT005 in ONE_OFF_TASKS.
+Package/API/UI metadata remains 0.1.4. No service/configuration or real provider/preparation operation was performed.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
 through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The
@@ -210,12 +219,28 @@ release was performed. The owner-authorized offline local upgrade/restart subseq
 installed checks, HTTP/source/UI verification and unchanged conversation/proposal/configuration hashes are recorded
 in the task artifact. Frozen histories/catalogs remain unchanged.
 Released through PR #3 as 0.1.4, with full offline regression, package verification and matching GitHub downloads.
-OT003 was removed from ONE_OFF_TASKS only after publication/verification; OT004 remains next (D242/D243).
+OT003 was removed from ONE_OFF_TASKS only after publication/verification (D242). Subsequent preparation diagnosis
+and the owner's D246 priority decision now put OT005 before OT004.
 See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. No Metrics Records task is complete.
+
+## Source hotfix — read-only preparation tool aliases (OT005, target 0.1.5)
+
+Generic preparation now admits pre-existing read-only aliases outside private `local_paths` when their bounded
+file-link chains end at explicitly configured, resolved and hash-bound executables (D247). New plan/receipt evidence
+freezes exact chain text/modes and the alias path set. Preview, post-effect scope guards, linked recovery and receipt
+verification preserve that binding; directory redirects, unrelated/changed targets and protected links remain refused.
+Existing environments gain no write authority or undeclared stable-environment accreditation. Historical receipts
+and recovery keep their original link policy and bytes; recipe sources/fingerprints are unchanged.
+
+Source regression/qualification and limits are recorded in [the evidence](phase/OT005-preparation-tool-links.md).
+The owner authorized a source commit on the existing topic branch. Integration, separate version/package/release
+qualification and publication as 0.1.5, and any local upgrade/restart remain pending; metadata is still 0.1.4. Keep
+OT005 in ONE_OFF_TASKS under D242. OT004/0.1.6 and Metrics Records are unchanged and not implemented.
 
 ## Planned one-off — visual profile and agent configuration editor (OT004)
 
-The owner chose a separate 0.1.5 patch after OT003, before Metrics Records (D243). Existing basic global/profile
+The owner originally chose OT004 after OT003 (D243), then prioritized OT005 and moved this editor's separate target
+to **0.1.6**, still before Metrics Records (D246). Existing basic global/profile
 forms leave command/path/tool-capability settings in advanced TOML/JSON. OT004 will expose supported settings
 through interactive forms in project settings and applicable global settings, show scope/effective inheritance,
 and preserve fixed role restrictions and existing save/preparation/activation gates. The bounded task and

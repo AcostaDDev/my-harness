@@ -3,6 +3,9 @@
 For v9 own profiles, the [guided configuration flow](configuration-setup.md) adds profile adoption after context,
 private TOML save after the documentary commit, generic confirmed preparation and separate activation before tasks.
 The composition/recipe diagrams below describe the retained legacy lane; they do not bypass those v9 gates.
+New generic plans additionally freeze read-only aliases of declared tools outside local write scope (D247), with
+exact chain evidence and post-effect/receipt guards described in the configuration flow. This leaves the recipe
+link policies and fingerprinted sources below unchanged.
 
 Recipes prepare the technical stack of a newly created project after its root documentation commit:
 Django ([D119](../DECISIONS.md#d119--django-recipe-preparation)) and TypeScript web

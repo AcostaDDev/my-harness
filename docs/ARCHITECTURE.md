@@ -308,6 +308,11 @@ structured commands/tool evidence against frozen documents/inventory; planning t
 `profile_preparation.py` reuses preparation operations, locks, leases and process identities for the generic
 `project-profile-preparation-1` contract, exact argv, JUnit, reconcilable technical commits and receipts. Activation
 precomposes and verifies exact saved references before exposing a runnable `ProjectContext`.
+D247 adds optional inline `read_only_tool_links` evidence to new generic plans/receipts. File-link chains outside
+`local_paths` resolve through at most 40 links, checking parent directories with `O_NOFOLLOW`, to a declared frozen
+tool. Snapshots and post-effect guards reverify tool hashes and exact chain text/modes; receipt verification also
+checks the complete captured alias path set. Recovery preserves the original opt-in or historical policy. Protected
+links remain refused, stable-environment evidence is separate, and recipe fingerprints/sources are unchanged.
 
 Alembic 0026 adds three configuration tables (scope references, revisions and operations); 0027 makes registered
 composition/profile nullable for documentary intake. There are 54 tables. JSON journals extend existing operations

@@ -1454,7 +1454,8 @@ specific exception in the real incident was not recorded and remains unproven.
 
 ## D252 — Managed-run lease renewal, chunk journals and interrupted process evidence
 
-Status: accepted for OT007; target patch **0.1.8**, with source, release and installation tracked separately.
+Status: accepted for OT007; released and installed as patch **0.1.8** through
+[PR #7](https://github.com/AcostaDDev/my-harness/pull/7), merge/tag `c005298` / `v0.1.8`.
 Extends D251's runtime reliability treatment to the shared managed supervisor (task, phase, chat and definition
 lanes). No schema, dependency, configuration, API contract or frozen adapter/version change.
 

@@ -8,12 +8,25 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT007**: task-run lease renewal and stream journal pressure, the wider issue OT006 scoped
-out. Its owner-confirmed delivery target is **0.1.8**, on `fix/ot007-task-run-lease` from `b8e1a90`. Source is
-qualified (2185 pytest cases passed); integration, release and offline installation remain pending
-([evidence](phase/OT007-task-run-lease.md), D252).
-It comes before the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004/OT006 were
-released separately as 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/**0.1.7** (D239). No Metrics task is complete.
+The one-off queue is **empty**. **Next: P001-T001**, the unchanged Metrics Records accounting contract/evidence
+inventory. OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
+0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). No Metrics task is complete.
+
+**OT007 / 0.1.8 (D252):** managed-run heartbeat renewal retries transient failures within the existing lease;
+stream chunks journal their events in one transaction; closing owners retain interrupted captures and settle
+process rows from independent liveness. Fencing, checkout exclusion, explicit confirm-stopped and histories remain
+unchanged. Source `df4d7dd`, develop integration `a6c0f28`, [PR #7](https://github.com/AcostaDDev/my-harness/pull/7),
+release merge/tag **`c005298` / `v0.1.8`**. The
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.8) archive and checksum match local
+assets byte for byte from both draft and public downloads; all inner hashes pass. Final full pytest:
+**2185 passed, 2 skipped, 29 subtests**; 230 frontend tests, 10 unittest cases, typecheck/build, temporary schema,
+distribution and installed-wheel checks passed. [Evidence](phase/OT007-task-run-lease.md).
+
+**Current operator installation:** 0.1.8 installed offline from the verified public package into the default paths,
+generation **`gen-bb9bf97436d64ba5b20196784c1e229a`**, READY; earlier generations retained. Service and writers were
+absent beforehand and the service remains **stopped**. Data/configuration file hashes are unchanged; schema head
+`0027_profile_proposals` needed no migration. The failed OT006 preparation stays FAILED; no project retry or
+configuration change was made. Start the service explicitly with `scripts/start` when ready.
 
 **OT006 / 0.1.7 (D251):** the failed preparation launched its Claude executor with no tools (`--tools ''`) and asked
 it to write. Generic preparation now refuses such a writer at preview and before launch. `output-guard-1` stops
@@ -26,7 +39,7 @@ byte for byte from the public URLs. Full pytest: **2166 passed, 2 skipped, 29 su
 10 unittest cases, typecheck, temporary schema, distribution build/check and installed-wheel checks passed.
 [Evidence](phase/OT006-preparation-consumption.md).
 
-**Operator installation:** at the owner's request, 0.1.7 was installed offline from the public package into the
+**OT006 installation history:** at the owner's request, 0.1.7 was installed offline from the public package into the
 default paths (generation `gen-8570ad96…`, READY; earlier generations kept). Nothing was running beforehand. The
 database was already at schema head `0027`, so no migration ran. The service was **not started**; start it with
 `scripts/start`. The failed OT006 preparation remains `FAILED`, and retrying it needs `Write`/`Edit` configured for

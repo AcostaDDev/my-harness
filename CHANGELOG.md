@@ -33,6 +33,9 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [0.1.8] — 2026-10-27
 
+GitHub Release `v0.1.8` ([PR #7](https://github.com/AcostaDDev/my-harness/pull/7), tag on merge `c005298`), with
+the self-contained archive and checksum verified from the public download URLs.
+
 Patch release for OT007 (D252). Stop the service and writers before installing. No database migration,
 configuration, dependency, recipe, API contract or `cli-14` adapter-version change.
 

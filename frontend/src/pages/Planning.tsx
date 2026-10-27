@@ -15,6 +15,7 @@ import { EditProgress, MarkdownView } from "./Docs";
 import { recipeText } from "../preparation.ts";
 import { LiveActivity } from "../Activity";
 import { QuestionAnswers } from "./Answers";
+import { ProposalBatch } from "./ProposalBatch";
 
 // Conversational creation and planning in the UI (H6.2 E4) over the H6.5 API (D075).
 // The agent never writes: each draft is applied or edited with CAS on the hash shown, and the acceptance
@@ -85,7 +86,7 @@ function TurnList({ conversation }: { conversation: Conversation }) {
       <p className="turn-message">{turn.message}</p>
       {turn.status === "QUEUED" && turn.run_status === "RECOVERY_REQUIRED" && <p className="state state-attention">{rich("planning.turn.interrupted", { run })}</p>}
       {result?.answer && <p className="turn-answer">{result.answer}</p>}
-      {!!result?.drafts?.length && <p className="hint">{t("planning.turn.drafts")} {result.drafts.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>}
+      {!!result?.drafts?.length && <p className="hint">{t(turn.status === "ANSWERED" ? "planning.turn.drafts" : "planning.turn.rejected_drafts")} {result.drafts.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>}
       {result && "plan" in result && <p className="hint">{result.plan ? t("planning.turn.plan") : t("planning.turn.no_plan")}</p>}
       {reasons.length > 0 && <p className="state state-error">{reasons.join("; ")}</p>}
       <p className="hint">
@@ -235,6 +236,7 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
           {(proposed.length > 0 || c.proposals.length > 0) && <section className="panel" aria-labelledby="def-proposals">
             <h2 id="def-proposals">{t("planning.proposals")} <span className="count">{n("planning.proposals.pending", proposed.length)}</span></h2>
             {proposed.length === 0 && <p className="hint">{t("planning.proposals.empty")}</p>}
+            <ProposalBatch conversation={c} base={base} />
             {proposed.map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
             <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
           </section>}
@@ -835,6 +837,7 @@ function ImportConversation({ id, path, operation, kind }: { id: string; path?: 
         <section className="panel"><h3>{t("planning.conversation")}</h3><TurnList conversation={c} />
           {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint={t("onboarding.message_hint")} />}
         </section>
+        <ProposalBatch conversation={c} base={base} />
         {c.proposals.filter(p => p.status === "PROPOSED" || !c.created && p.kind === "profile" && p.status === "ACCEPTED").map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
         <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
         {operation?.status === "COMPLETED" && <ProjectProfile />}

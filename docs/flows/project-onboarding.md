@@ -91,6 +91,31 @@ persistence" diagram or template commands as a fallback. It asks about unknowns,
 blocking questions and their explicit deferrals are stored for the confirmation. A reviewer proposal does not prove
 its content is correct: semantic generation depends on human review and confirmation.
 
+Own-profile commands use logical names such as `python` or `docker` in each direct `argv[0]`; installed paths belong
+to the later private configuration. `tools` lists exactly those direct names, with nested/container requirements
+described under their direct tool. Invalid executable names identify the structural field/index without echoing
+candidate values. A rejected profile still fails the whole turn and creates no document/profile proposals. Its
+returned document list is labelled unavailable to apply; earlier valid proposals survive. Subsequent turns freeze
+the recorded failure reasons in `previous_turns`, without treating rejected output as an answer or rewriting the
+failed turn ([D241](../DECISIONS.md#d241--actionable-intake-profile-rejections)).
+
+For own-profile adoption, first review and apply the document proposals to the private drafts, then review/adopt
+the saved profile. A new profile draft is needed only for edits. Missing bound document paths and changed/extra paths
+produce specific adoption blockers; the candidate is revalidated only after the exact document base is present.
+This prevents the same absent documents from also producing an invalid-profile error. Informational `pending`
+notices remain recorded but do not block; blocking questions require resolution or explicit deferral. Confirmation
+repeats document, HEAD/inventory, context/version and candidate checks against its exact preview. No documents or
+profiles are silently applied, repaired or rebound (D244).
+
+The joint document review (also available in definition) reads all applicable pending draft proposals and their
+current draft contents. It displays each exact diff, allows excluding documents and requires one explicit consent
+for the selected proposal hashes/version. Before writing it rereads the conversation and every selected base.
+It then uses the existing per-document CAS apply route in order, advancing the expected version only for its own
+acknowledged writes. A conflict/error or lost response stops the sequence; acknowledged drafts remain applied,
+the unconfirmed item and unattempted paths are reported, and remaining proposals need a fresh explicit review.
+There is no atomic batch, rollback or automatic replay. Profile adoption and the later documentary commit stay
+separate. No API/schema change or provider call is introduced (D245).
+
 ## Answering the reviewer's questions
 
 The same workflow serves onboarding, the new-project definition ([flow](project-definition.md)) and phase planning

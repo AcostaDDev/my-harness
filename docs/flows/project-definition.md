@@ -48,6 +48,17 @@ Questions are answered in their own fields and sent, one, a selection or all tog
 turn ([answers](project-onboarding.md#answering-the-reviewers-questions)); they stay open until an answered turn
 stops asking them or they are deferred with a reason.
 
+Own-profile executable aliases, safe field-specific rejection diagnostics and previous-turn failure feedback follow
+the same [intake rules](project-onboarding.md#reverse-engineering-conversation). A rejected profile fails the complete
+turn without creating applicable documents; the UI distinguishes its returned document list from valid proposals.
+Only a new explicit message starts another reviewer call; earlier requests/catalogs remain frozen (D241).
+Own-profile adoption first requires applying the exact document proposals to drafts. Missing/changed documents have
+their own diagnostics; informational pending notices do not block, while unresolved nondeferred blocking questions
+do. Revalidation and exact confirmation follow the same onboarding adoption rules (D244).
+The joint review can apply selected current document proposals with one consent through the same per-document CAS
+routes. It excludes profile/plan/history proposals and stops on conflict or uncertainty, retaining acknowledged
+drafts and requiring a fresh review of the remainder; it never confirms the profile or root commit (D245).
+
 Acceptance is blocked by: missing mandatory documents, a ROADMAP without phases, P001 without objective and criteria,
 NEXT_STEPS without a valid `P001-TNNN` task, DECISIONS with repeated numbers, open blocking questions not deferred,
 or files outside the template.

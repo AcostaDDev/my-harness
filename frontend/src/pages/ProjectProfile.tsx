@@ -84,7 +84,7 @@ export function ProfileProposal({ conversation, proposal, base }: {
         })}>{t("profile.apply_fields")}</button></details>}
     <Evidence title={t("profile.evidence")} value={JSON.parse(proposal.content)} />
     <label>{t("docs.review.reason")}<input value={reason} onChange={e => { setReason(e.target.value); setPreview(undefined); }} maxLength={1000} /></label>
-    <button disabled={busy || !reason.trim() || mode === "form" && advanced !== JSON.stringify(form, null, 2)} onClick={() => void operate(async () => {
+    <button disabled={busy || !dirty || !reason.trim() || mode === "form" && advanced !== JSON.stringify(form, null, 2)} onClick={() => void operate(async () => {
       await confirmOnce(`${base}/profile/edit`, { proposal_id: proposal.id, proposal_sha256: proposal.proposal_sha256,
         expected_version: conversation.version, candidate, reason } satisfies S["ProfileEdit"]);
     })}>{t("profile.save_draft")}</button>

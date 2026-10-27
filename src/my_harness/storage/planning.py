@@ -487,6 +487,7 @@ class PlanningRepository:
                 answered = turn.status == 'ANSWERED'
                 history.append({'number': turn.number, 'status': turn.status, 'message': turn.message,
                                 'answer': turn.result['result']['answer'] if answered else None,
+                                'reasons': list((turn.result or {}).get('reasons', [])),
                                 'proposals': [{'number': p.number, 'kind': p.kind, 'path': p.path, 'status': p.status}
                                               for p in session.scalars(select(Proposal).where(Proposal.turn_id == turn.id)
                                                                        .order_by(Proposal.number))]})
@@ -603,27 +604,38 @@ class PlanningRepository:
         port = self._port(conversation, writer)
         inspection = port.inspect_definition(context, texts=True)
         texts = inspection.pop('texts')
-        if (inspection['invalid'] or inspection['foreign']
-                or inspection['drafts'] != payload['binding']['documents']):
+        expected_documents = payload['binding']['documents']
+        actual_documents = inspection['drafts']
+        missing = sorted(expected_documents.keys() - actual_documents.keys())
+        changed = sorted(path for path in actual_documents
+                         if path not in expected_documents or actual_documents[path] != expected_documents[path])
+        if missing:
+            blockers.append(tr('profile_proposal.documents_required', paths=', '.join(missing)))
+        if changed:
+            blockers.append(tr('profile_proposal.documents_changed', paths=', '.join(changed)))
+        if inspection['invalid'] or inspection['foreign']:
             blockers.append(tr('profile_proposal.stale'))
+        documents_ready = not (missing or changed or inspection['invalid'] or inspection['foreign'])
         if conversation.kind == 'onboarding':
             if read_inventory(context, _executable(writer)) != conversation.source['inventory']:
                 blockers.append(tr('profile_proposal.stale'))
         elif inspection['import_required']:
             blockers.append(tr('profile_proposal.stale'))
-        questions, pending = current_questions(session, conversation)
-        if any(question['blocking'] for question in questions) or pending:
+        questions, _ = current_questions(session, conversation)
+        if any(question['blocking'] and not question.get('deferred') for question in questions):
             blockers.append(tr('profile_proposal.questions'))
-        # The immutable proposal is re-parsed against the exact applied document bytes and source hashes.
-        from my_harness.services.profile_proposal import validate
-        frozen = {**turn.request['context'], 'drafts': [
-            {'path': path, 'sha256': text_hash(content)} for path, content in sorted(texts.items())]}
-        try:
-            checked = validate(payload['candidate'], frozen, [], context=context)
-            if checked != payload:
-                blockers.append(tr('profile_proposal.stale'))
-        except ValueError:
-            blockers.append(tr('profile_proposal.invalid'))
+        # A missing/changed documentary base is not an invalid candidate. Re-parse only once the exact
+        # document bytes are present; confirmation still repeats every guard before adopting anything.
+        if documents_ready:
+            from my_harness.services.profile_proposal import validate
+            frozen = {**turn.request['context'], 'drafts': [
+                {'path': path, 'sha256': text_hash(content)} for path, content in sorted(texts.items())]}
+            try:
+                checked = validate(payload['candidate'], frozen, [], context=context)
+                if checked != payload:
+                    blockers.append(tr('profile_proposal.stale'))
+            except ValueError:
+                blockers.append(tr('profile_proposal.invalid'))
         shown = {'conversation_id': conversation.id, 'proposal_id': proposal.id,
                  'expected_version': conversation.version, 'proposal_sha256': proposal.proposal_sha256,
                  'profile': payload, 'blockers': blockers, 'ready': not blockers,

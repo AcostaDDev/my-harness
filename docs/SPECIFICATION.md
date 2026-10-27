@@ -294,6 +294,15 @@ are not pending adoptable work; answered, uncertain or substantive intake work r
 Definition and onboarding can converse without a stack profile. Documentary context/static HEAD inventory precedes
 proposals with meaningful validations and evidence per command. Proposal adoption, documentary commit/P001,
 completed private tool configuration, bounded technical preparation and independent activation precede task admission.
+Profile adoption requires the exact bound documents already applied to drafts. Its preview identifies missing or
+changed document paths without labelling a valid candidate invalid solely because documents are not yet applied.
+Informational pending notices do not block adoption; blocking questions must be resolved or explicitly deferred
+with a reason. Frozen context/versions, HEAD/inventory, valid drafts/candidate and exact confirmation remain required
+([D244](DECISIONS.md#d244--ot003-includes-the-profile-adoption-blockers-found-in-manual-testing)).
+Definition/onboarding offer a joint review of current document proposals, with exact diffs, optional exclusions and
+one explicit consent to apply the selected documents to drafts. Existing per-document CAS actions run in order;
+errors/uncertainty stop the sequence and report acknowledged progress without automatic retry or rollback. The
+profile and documentary commit remain separately confirmed (D245).
 The reviewer stays read-only; the executor has only the confirmed preparation scope and no general global writes.
 A receipt binds configuration, tools, commands, protected content and stable environment; failures do not qualify it.
 

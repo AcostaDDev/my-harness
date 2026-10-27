@@ -1200,3 +1200,96 @@ ignored and nothing is inferred beyond the records; the run page keeps the compl
 
 Limits: drafts do not follow the user to another browser; states read from markers assume messages composed by this
 UI; the rail shows at most the latest 60 steps and keeps 1,500 relevant events in the page.
+
+## D241 — Actionable intake profile rejections
+
+Status: accepted. Implements OT003 without changing D224's profile contract or D102's failed-turn rules.
+
+Documentary profile commands use logical executable names in every direct `argv[0]`, with installed paths supplied
+later by private configuration. `tools` is exactly the set of direct executable names, not tools invoked inside a
+container or other command. Current intake prompts state this explicitly. A malformed executable name reports the
+structural command field/index and the correction, without reflecting candidate paths, arguments or environment.
+The existing strict parser remains authoritative and rejected output is never normalized or adopted automatically.
+
+New planning contexts include each previous turn's recorded failure reasons alongside its status, so a later
+reviewer can address the actual rejection. Failed answers still do not become prior valid answers or proposals.
+The UI labels document lists from rejected responses as unavailable to apply. Earlier answered proposals and open
+questions retain their existing behavior. No automatic retry, provider invocation, history rewrite, schema migration
+or API contract change is introduced. Frozen requests and catalogs keep their original bytes; only newly frozen
+contexts and current built-in prompt identities change.
+
+## D242 — Task ownership and delivery disposition before product changes
+
+Status: accepted at the owner's request. Clarifies D237/D239 and the completion rule for the one-off queue.
+
+Every product change must have a recorded owning phase/task or one-off ID before implementation, with an agreed
+delivery disposition: roadmap work under its phase or a bounded out-of-roadmap fix/development needing its own
+distribution. Record the topic branch, target version/route and unfinished delivery steps. Do not silently attach
+an unrelated change to the active phase or hide it among another task's implementation.
+
+Source implemented/tested, integrated into `develop`, release-merged into `main`, packaged/published and installed
+locally are separate states. A source-complete one-off with agreed delivery outstanding stays in ONE_OFF_TASKS
+until delivery is completed or the owner explicitly defers it to a recorded destination. This corrects the premature
+removal of OT003 from the queue; its source evidence and historical checks remain valid. OT003 owns the intake
+diagnostic/prompt/context/UI-label changes on `fix/intake-profile-diagnostics` and targets 0.1.4 outside P001.
+
+D235's topic → `develop` → release PR/merge into `main` route and D239's separate patch-per-one-off rule remain.
+A recorded target/priority is planning, not permission to commit, merge, push, publish, restart or install. Those
+actions retain the session's authorization requirements. Documentation must report the actual reached state.
+
+## D243 — Visual profile editing as OT004 before Metrics Records
+
+Status: accepted for implementation, not implemented.
+
+The owner chose OT004 before Metrics Records, with its own patch after OT003: target 0.1.5 after OT003's 0.1.4.
+The contract in ONE_OFF_TASKS is authoritative; P001/P002 and the six Metrics Records tasks keep their scope.
+OT004 is a separate topic and delivery, not an extension of OT003's fix.
+
+Extend the existing global/project versioned configuration editors with interactive forms for the currently
+supported profiles, commands, paths, environment and per-agent configuration/tool capabilities. Expose effective
+scope/inheritance and explain fixed provider/role restrictions, including the read-only reviewer. Applicable
+global defaults/reusable profiles and per-project values/overrides must be distinguishable. Preserve existing
+TOML interoperability, exact review/CAS, separate save/preparation/activation, immutable job settings and archive
+behavior. This accepts making supported settings visible, not inventing general permission grants or changing
+agent containment. Any required permission-contract change needs its own recorded design decision first.
+
+## D244 — OT003 includes the profile-adoption blockers found in manual testing
+
+Status: accepted at the owner's request, before OT003's commit/release. Extends OT003, not OT004 or P001.
+
+The profile-adoption preview must distinguish informational `pending` notices from blocking questions, consistently
+with the documentary acceptance rules and the UI's existing explanation. Notices are retained in the conversation
+but do not prevent adopting a profile. A blocking question prevents adoption until resolved by a later answered
+turn or explicitly deferred with its reason. Missing/changed applied documents, invalid/foreign drafts, changed
+HEAD/inventory, frozen context/versions, candidate validity and exact confirmation/CAS remain gates.
+
+When a proposal's bound documents have not been applied, identify the missing document paths and tell the operator
+to review/apply them to drafts first. Identify changed/extra document paths separately. Revalidate the immutable
+candidate against current document bytes only when that exact documentary base is present, so missing evidence is
+not misreported as a malformed candidate. This changes no proposal bytes, binds no replacement documents and
+grants no fallback or automatic adoption. Confirmation repeats all guards.
+
+The existing profile UI explains document application before profile adoption, and saving a new profile draft only
+for edits. An unchanged form does not enable redundant draft creation. The API keeps its response shape; OpenAPI
+and generated types document the corrected `blockers`/`ready` meanings. This follow-up is part of the same 0.1.4
+delivery and needs no provider invocation, historical rewrite, schema migration or new dependency.
+
+## D245 — OT003 includes one confirmation for selected document proposals
+
+Status: accepted at the owner's request, before OT003's commit/release. No OT004 implementation is included.
+
+Definition/onboarding show a joint review of all currently applicable document proposals, with exact diffs and a
+checkbox to exclude each document. One explicit confirmation covers only the selected reviewed proposal identities,
+hashes, document bases and conversation version. Profiles, plans and historical/closed proposals are excluded.
+Selection changes invalidate consent; a changed conversation requires a fresh review. The application rereads the
+conversation and all selected document bases before applying, then reuses the existing CAS apply endpoint in order.
+
+The sequence is not a filesystem transaction: stop at the first conflict/error or uncertain response. Report
+acknowledged applied documents separately from the stopped/unconfirmed item and remaining documents; retain earlier
+applied drafts and never retry, roll back or continue automatically. Reload reads authoritative per-document states;
+the operator explicitly reviews the remaining proposals again. Each subsequent apply uses the reviewed version
+advanced only by acknowledged own writes, never silently adopting a concurrent version.
+
+This is UI orchestration over existing endpoints: no new API/schema, batch job, provider call or execution authority.
+Documents go to the same draft area as individual apply (private for onboarding). Profile adoption, documentary
+tree/commit, private configuration, preparation and activation keep separate confirmations and gates.

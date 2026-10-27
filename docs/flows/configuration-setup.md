@@ -61,6 +61,10 @@ Activation still requires its exact preview/confirmation; no failed turn retries
 
 A new project talks from a brief; onboarding inventories a committed tree without executing it. The reviewer
 proposes tools, meaningful validations, command evidence and a technical plan after documentation/architecture.
+Before profile adoption, the operator reviews/applies the exact document proposals to drafts. Missing or changed
+documents are named as blockers. Informational pending notices do not block this adoption; unresolved nondeferred
+blocking questions do. Candidate revalidation waits for the exact applied documentary base and confirmation repeats
+all context/version/HEAD guards (D244). Saving another profile draft is only necessary for edits.
 Adopting a proposal does not save or activate TOML. The application makes the confirmed documentary commit,
 adopts P001, saves the completed profile, and presents a separate preparation plan with files, exact argv,
 dependencies, network and write scope. The executor prepares only that scope; the application validates, records

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "My Harness",
-    "version": "0.1.3"
+    "version": "0.1.4"
   },
   "paths": {
     "/api/session": {
@@ -25698,11 +25698,13 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Blockers"
+            "title": "Blockers",
+            "description": "Adoption blockers, including missing or changed applied documents and unresolved nondeferred blocking questions. Informational pending items do not block."
           },
           "ready": {
             "type": "boolean",
-            "title": "Ready"
+            "title": "Ready",
+            "description": "True only when the exact document base, candidate and frozen context pass adoption guards. This does not qualify preparation or activate configuration."
           },
           "configuration_state": {
             "type": "string",

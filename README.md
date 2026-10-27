@@ -12,7 +12,7 @@ models are reached through the official Codex and Claude Code CLIs with your own
 ## Status
 
 - **Pre-release.** The first local version is complete within the scope described below; the package declares
-  version `0.1.3`, the third patch of the first public release `0.1.0`, and is not published on PyPI. See the
+  version `0.1.4`, the fourth patch of the first public release `0.1.0`, and is not published on PyPI. See the
   [changelog](CHANGELOG.md) for the versioning policy.
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
@@ -124,15 +124,15 @@ scripts/install --allow-network
 
 ### 2b. Install from a release package
 
-Download `my-harness-0.1.3-distribution.tar.gz` and its `.sha256` from the
+Download `my-harness-0.1.4-distribution.tar.gz` and its `.sha256` from the
 [Releases page](https://github.com/AcostaDDev/my-harness/releases) (or with `curl` as below) into the same folder, then:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.3/my-harness-0.1.3-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.3/my-harness-0.1.3-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.3-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.3-distribution.tar.gz
-cd my-harness-0.1.3
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.4/my-harness-0.1.4-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.4/my-harness-0.1.4-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.4-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.4-distribution.tar.gz
+cd my-harness-0.1.4
 scripts/install --dist "$PWD" --allow-network
 ```
 

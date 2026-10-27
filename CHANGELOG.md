@@ -31,6 +31,29 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-10-27
+
+Patch release for OT003 (D241/D244/D245). Install the new package to update the service and UI; existing projects,
+configuration and histories are preserved. No configuration format, response-field, database schema or migration
+change. API descriptions and generated client comments reflect the corrected adoption guards.
+
+### Fixed
+
+- Intake profiles using installed executable paths now identify the command field and explain logical aliases;
+  definition/onboarding prompts clarify direct tool names, and subsequent turns receive prior failure reasons.
+- Profile adoption no longer treats informational pending notices as blockers and respects explicit deferrals of
+  blocking questions. Missing or changed applied document drafts have specific diagnostics instead of also being
+  reported as an invalid profile. Exact document/context/HEAD checks and confirmation remain required.
+- Documents returned by failed turns are labelled unavailable to apply. Profile guidance explains applying document
+  drafts before adoption; unchanged profile forms no longer enable redundant draft creation.
+
+### Added
+
+- A joint review of current definition/onboarding document proposals, with exact diffs, document exclusions and
+  one explicit confirmation to apply the selected proposals to drafts. Existing per-document CAS actions run in
+  order; conflicts or uncertain responses stop the sequence and report confirmed progress without automatic retry
+  or rollback. Profile adoption and the documentary commit keep their own confirmations.
+
 ## [0.1.3] — 2026-10-27
 
 Patch release for one-off task OT002 ([D240](docs/DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail),

@@ -41,8 +41,15 @@ The candidate contains name, profile, tools, evidence and rationale. Use a priva
 profile contains preparation and validations as exact shell-free argv/timeout_seconds with optional cwd/environment,
 allowed_command_prefixes, protected_paths, sensitive_paths, data_model_paths and executor_instructions; optional
 formatter_argv/formatter_paths must occur together and formatter_argv must end in --. Include JUnit evidence if relevant.
-Do not invent installed executable paths: tools lists each command's executable name and its version/environment
-requirement, deferred until the separately confirmed preparation. Missing requirements need questions, not guesses.
+Every argv[0] (preparation, validation, prefix and formatter) is a logical executable name matching
+[A-Za-z0-9][A-Za-z0-9._+-]{0,63}, such as python or docker; never an absolute/relative path or a shell.
+Even when the operator supplies installed paths, keep those paths out of argv[0] and tools.name: the separate private
+configuration maps logical names to installed executables. Do not infer or invent that mapping.
+tools must name exactly the distinct direct argv[0] values, once each, with deferred version/environment requirements.
+For example, ["docker", "compose", "exec", "web", "python", "manage.py", "test"] requires only docker in tools;
+python inside the container is an argument, not a second direct tool. Explain nested requirements in docker's requirement.
+Missing requirements need questions, not guesses. Prior failed turns include reasons: correct those defects before
+resubmitting, and never treat rejected output as applied drafts or an adopted profile.
 At least one functional validation must test, build or check the project; --version/help and successful no-ops do not count.
 Every preparation, validation, formatter and command prefix has exactly one evidence item: kind (preparation,
 validation, formatter or prefix), zero-based index (formatter: 0), purpose (prepare, test, build, check, format, execute),

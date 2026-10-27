@@ -28,6 +28,8 @@ agents; its work language is English.
 - Fixtures are always synthetic: no runs, credentials or private data. Exact versions; no new dependency without a
   recorded decision.
 - One bounded task at a time. Do not discard someone else's changes. Commit only when asked.
+- Before product changes, record the owning phase/task or one-off ID and its agreed delivery route. Track source
+  completion separately from integration, distribution and installation; do not drop pending delivery (D242).
 - Work on a topic branch from `develop` (`<kind>/<topic>`); `main` only receives release merges. Check the current
   branch at the start of a session
   ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
@@ -35,7 +37,7 @@ agents; its work language is English.
   recipe sources are not rewritten.
 - When finishing: relevant checks, reviewed diff and current STATE/NEXT_STEPS/ONE_OFF_TASKS. Record durable
   decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D230) and evidence in `docs/phase/`.
-  Remove completed one-off task sections after recording their evidence; keep that queue empty when idle.
+  Remove one-off sections after recording evidence and completing or explicitly deferring their agreed delivery.
   Say what was tested and what was not.
 
 ## Commands (from the root; offline after the first installation)

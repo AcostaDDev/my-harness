@@ -65,6 +65,15 @@ def test_unified_prompts_retire_old_folders_without_rewriting_frozen_catalogs():
     assert all(catalog[name].id != builtin_catalog()[name].id for name in names)
 
 
+@pytest.mark.parametrize('name', ['define-project-profile', 'onboard-project-profile'])
+def test_intake_prompts_explain_direct_executable_aliases_and_failed_turns(name):
+    template = builtin_catalog()[name]
+    assert all(term in template.template for term in ('Every argv[0]', 'tools.name',
+               'distinct direct argv[0]', 'separate private', 'Prior failed turns include reasons'))
+    frozen = dump_catalog(builtin_catalog())
+    assert dump_catalog(load_catalog(frozen)) == frozen
+
+
 @pytest.mark.parametrize('text', ['{{UNKNOWN}}', '{{INSTRUCTIONS', '{{ instructions }}', 'no variables', ''])
 def test_invalid_variables_refuse_draft_atomically(prompts, context, text):
     with pytest.raises(ValueError):

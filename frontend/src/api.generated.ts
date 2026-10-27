@@ -6229,9 +6229,15 @@ export interface components {
             profile: {
                 [key: string]: unknown;
             };
-            /** Blockers */
+            /**
+             * Blockers
+             * @description Adoption blockers, including missing or changed applied documents and unresolved nondeferred blocking questions. Informational pending items do not block.
+             */
             blockers: string[];
-            /** Ready */
+            /**
+             * Ready
+             * @description True only when the exact document base, candidate and frozen context pass adoption guards. This does not qualify preparation or activate configuration.
+             */
             ready: boolean;
             /**
              * Configuration State

@@ -2015,8 +2015,10 @@ class ProfileProposalPreviewRead(BaseModel):
     expected_version: int
     proposal_sha256: str
     profile: dict[str, Any]
-    blockers: list[str]
-    ready: bool
+    blockers: list[str] = Field(description='Adoption blockers, including missing or changed applied documents and '
+                               'unresolved nondeferred blocking questions. Informational pending items do not block.')
+    ready: bool = Field(description='True only when the exact document base, candidate and frozen context pass '
+                        'adoption guards. This does not qualify preparation or activate configuration.')
     configuration_state: Literal['PROFILE_REQUIRED', 'PROFILE_PROPOSED']
     preview_sha256: str
 

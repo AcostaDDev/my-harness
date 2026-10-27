@@ -1,13 +1,16 @@
 # OT005 — Generic preparation and read-only existing tool aliases
 
 **Status:** D248 is qualified/installed (`3e2ad45`). The owner's next screenshot loads the preview, exposing an
-incomplete generic review display; D249 is now qualified and installed (`be76164`), awaiting the owner's retest.
-Separate 0.1.5 release is authorized conditionally on the owner confirming that verification succeeds.
+incomplete generic review display; D249 is qualified/installed (`be76164`). The owner subsequently reached active
+preparation and explicitly authorized the separate 0.1.5 release; qualification/publication is in progress.
+The latest explicit release instruction supersedes the earlier conditional gate; live preparation completion is
+still unverified, as recorded below.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
 **Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
 **Decisions:** [D246](../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
 [D247](../DECISIONS.md#d247--frozen-read-only-tool-link-evidence-in-generic-preparation),
-[D248](../DECISIONS.md#d248--external-directory-aliases-only-along-frozen-tool-resolution).
+[D248](../DECISIONS.md#d248--external-directory-aliases-only-along-frozen-tool-resolution),
+[D249](../DECISIONS.md#d249--complete-generic-preparation-review-within-ot005).
 
 ## Resumption and delivery status
 
@@ -17,17 +20,17 @@ That commit includes the preserved task/priority documents and this implementati
 
 OT003 remains the published 0.1.4 release: implementation `437acf5`, release merge/tag `9985b0a` / `v0.1.4`, PR #3;
 its closing documentation reached develop at `a8efd10`. Its frozen evidence and published artifacts are unchanged.
-Package/API/UI metadata remains **0.1.4** during the local test; 0.1.5 release preparation awaits the owner's
-manual success confirmation. Initial source implementation commit: `e2d62fe`; D248 follow-up: `3e2ad45`.
+The source candidate now shares **0.1.5** across package/API/UI metadata and lockfiles. The separately installed
+operator build has **0.1.4 metadata plus OT005 code** and remains running; publication does not update or restart it.
+Initial source implementation: `e2d62fe`; D248: `3e2ad45`; D249 review: `be76164`.
 
 The agreed delivery remains topic → `develop` → separate release PR/merge into `main` → **0.1.5** distribution.
-The owner subsequently requested stopping, reinstalling and starting the running service for their own manual test;
-that local operation is complete as recorded below. After they report success, their instruction authorizes the
-0.1.5 archive, release PR to main and GitHub publication through the agreed route. Do not publish before that report.
-Integration, version/upgrade notes, 0.1.5 package qualification and release PR/tag/publication remain pending. Keep
-OT005 in ONE_OFF_TASKS until delivery is complete or explicitly deferred under D242. No push, merge, tag,
-publication, operator TOML edit, real preparation or provider invocation was performed. Do not rerun the operator's
-onboarding/preparation automatically.
+The owner-authorized local test reached an ACTIVE preparation and they explicitly requested release now. This
+supersedes the previous conditional success-report gate; it does not establish a completed real receipt/activation.
+Candidate 0.1.5 build/installed-wheel qualification passed; full final regression, integration and release are pending.
+Keep OT005 in ONE_OFF_TASKS until delivery is complete or explicitly deferred under D242. No operator configuration
+edit or maintenance-triggered real preparation/provider invocation is part of publication. Do not rerun the operator's
+onboarding/preparation or interrupt their active service.
 
 ## Observed failure and diagnosis
 
@@ -284,3 +287,37 @@ or project command was invoked; no authorization checkbox or confirmation was su
 
 The owner should reload, sign in and review the now-visible scope/executor/commands. Their actual preparation success
 is still pending; no archive/release PR/GitHub publication has been performed. OT005 remains in the delivery queue.
+
+## Explicit 0.1.5 release authorization
+
+The owner supplied a further screenshot showing active generic preparation: private directories DONE, executor
+STARTED and later command/commit steps PENDING. They explicitly requested integration into the development branch,
+a release PR to main, a distribution tar.gz and GitHub publication. This later instruction authorizes delivery now;
+it supersedes the previous request to await their further success report. It is evidence that preview/confirmation
+advanced into execution, **not** evidence of completed real commands, a successful receipt or activation. No private
+project path, operation identifier, command content or run data is copied into release fixtures/notes.
+
+Keep the installed service and its active preparation running. Release qualification uses only temporary synthetic
+fixtures and fake clients; no new real command/provider, service restart, configuration edit or local reinstall is
+part of publication. Prepare shared package/API/UI 0.1.5 metadata and lockfiles, OpenAPI/generated types, changelog
+and English/Spanish download instructions on the topic branch. Integrate only after checks, and build/check final
+publication artifacts from the release merge. Final PR/tag/archive/download verification evidence follows below.
+
+### 0.1.5 candidate qualification
+
+Shared 0.1.5 package/API/UI versions and lockfile project entries are prepared, with no dependency changes. Exported
+OpenAPI differs only in `info.version`; client type regeneration completed with no type diff. CHANGELOG and en/es
+README download/version instructions are in parity.
+
+`build_distribution.py --offline` built `.local/releases/ot005-0.1.5-candidate` using the existing offline caches.
+Typecheck/Vite build, exact distribution member/metadata/license/SHA256SUMS checks and `check_distribution.py`'s
+isolated installed-wheel synthetic UI/API/session/definition/task/commit/restart/error/restored-evidence journey
+passed. No Node is exposed to the installed synthetic service and no real provider is used. Frontend release suite:
+**213 passed**; unittest **10 passed**; fresh temporary SQLite upgrade-to-head/Alembic check passed with no new
+operations. The known large-chunk advisory remains. Final full pytest result and publication evidence follow.
+
+Final pre-integration release regression: `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`:
+**2140 passed, 2 skipped, 29 subtests passed**, zero failures, **332.47 seconds**. The same 11 known TestClient and
+intentional duplicate-ZIP warnings remain. Shared version/README/OpenAPI/client parity, local documentary links,
+reviewed diff and `git diff --check` passed. No source, dependency or validation exception was needed for release.
+The real-owner evidence remains ACTIVE preparation only; this qualification does not relabel it as completed.

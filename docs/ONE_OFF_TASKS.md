@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT005 amended backend/review UI installed; owner retest/delivery pending; then OT004.
-**Next: owner retests the complete OT005 review; on success, authorized 0.1.5 delivery; then OT004/0.1.6.**
+**Queue:** OT005 authorized 0.1.5 release in progress; then OT004.
+**Next: qualify/integrate/publish OT005 as 0.1.5 under the owner's explicit instruction; then OT004/0.1.6.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -43,13 +43,16 @@ Recording a release target does not authorize a commit, merge, push, publication
 correction. Backend qualification remains 2140 pytest cases passed (2 skipped, 29 subtests); frontend 213 tests,
 typecheck/build and installed-package checks passed. All 102 installed UI asset files match the qualified build,
 HTTP root/entry JS return 200 and database/TOML hashes were preserved through the offline upgrade/restart.
-The owner must reload/sign in and repeat the real review/preparation test. No real preparation has been run by
-maintenance; only their success report authorizes the archive, release PR to main and GitHub publication.
+The owner's latest screenshot shows an ACTIVE preparation (private directories DONE, executor STARTED) and
+explicitly authorizes integration into `develop`, release PR to main, the archive and GitHub publication now. This
+proves progress beyond preview, not completed preparation/receipt/activation. Release preparation is in progress;
+the active installed service is left running, with no maintenance-triggered real preparation.
 Keep this section until delivery is completed or explicitly deferred (D242).
 **Priority:** before OT004 and P001-T001, explicitly confirmed by the owner (D246).
 **Classification:** bounded hotfix outside the roadmap; separate patch **0.1.5**, after released OT003/0.1.4.
 **Branch:** `fix/ot005-preparation-tool-links`, created from `develop` at `a8efd10`. The source commit includes the
-previous documentation handoff as requested; metadata remains 0.1.4 pending separate release preparation.
+previous documentation handoff as requested; source candidate metadata is now 0.1.5. The installed build keeps
+0.1.4 metadata plus OT005 fixes and remains running; publication does not reinstall it.
 **Delivery route:** topic → `develop` → separate release PR/merge into `main` → 0.1.5 distribution (D235/D239/D242).
 **Objective:** let generic preparation inspect an existing environment's read-only executable aliases when they
 resolve to the explicitly declared, byte-bound tool, without granting writes to that environment or arbitrary links.
@@ -89,9 +92,9 @@ provider, Docker/project commands, operator configuration edits or preparation e
 **Handoff/evidence:** [OT005-preparation-tool-links](phase/OT005-preparation-tool-links.md), with code map,
 implementation/compatibility evidence, exact checks/omissions and outstanding delivery steps.
 **Deliverables:** bounded fix, regression/compatibility evidence, current parity docs, and separately qualified
-0.1.5 delivery after authorization. Source implementation and commit are authorized; integration, version bump,
-0.1.5 release package qualification/publication await the owner's manual success report. Local reinstall/restart
-has completed separately as recorded in the evidence; no real preparation was invoked by maintenance.
+0.1.5 delivery explicitly authorized now after the owner reached ACTIVE preparation. Candidate metadata/package
+qualification is prepared; final regression, integration, release PR/tag/archive/publication remain pending. Local
+reinstall/restart has completed separately as recorded in the evidence; no real preparation was invoked by maintenance.
 
 ## OT004 — Visual profile and agent configuration editor
 

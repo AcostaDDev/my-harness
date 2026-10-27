@@ -25,8 +25,9 @@ starting the next one-off. The initial manual preview exposed an external Homebr
 D248 amendment, source **`3e2ad45`**, is now qualified and installed after another authorized offline restart. The owner
 reported a loaded preview with missing generic step/file details. D249's bounded review display correction is now
 qualified (213 frontend tests and typecheck/build), installed as **`be76164`** with matching packaged/served UI assets
-and preserved data/configuration. The owner must reload/sign in and retest before conditional release. No real
-preparation was run by maintenance.
+and preserved data/configuration. The owner now reports an ACTIVE preparation and explicitly authorizes the
+separate 0.1.5 release; delivery is in progress, with no claim that the real preparation/receipt/activation completed.
+No real preparation was run by maintenance; leave the installed service running.
 [OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review (D244/D245), was released
 as **0.1.4** through PR #3 and its archive/checksum were verified after download.
 Resume P001-T001 after these one-offs are completed or explicitly rerouted. No phase task is completed by them.

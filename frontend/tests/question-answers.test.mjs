@@ -280,3 +280,21 @@ for (const language of ['en', 'es']) test(`onboarding puts the questions before 
     assert.deepEqual(env.posts(), []);
   } finally { env.close(); }
 });
+
+for (const language of ['en', 'es']) test(`failed-turn documents are labelled as rejected rather than applicable drafts (${language})`, async () => {
+  const env = environment(language);
+  try {
+    const answered = answeredTurn(1, []);
+    answered.result.result.drafts = [{ path: 'AGENTS.md', reason: 'Synthetic valid draft' }];
+    const failed = { ...answeredTurn(2, []), status: 'FAILED', run_status: 'STOPPED' };
+    failed.result = { status: 'FAILED', reasons: ['Synthetic invalid profile'], result: {
+      answer: 'Rejected synthetic output', drafts: [{ path: 'docs/ARCHITECTURE.md', reason: 'Rejected draft' }] } };
+    env.conversation = conversation({ turns: [answered, failed], questions: [] });
+    env.tree = () => el(I18nProvider, null, el(ProjectWorkspace, { project: 'own' }, el(ImportPage, { conversation: 'c1' })));
+    const html = await env.show();
+    assert.ok(html.includes(env.t('planning.turn.drafts')));
+    assert.ok(html.includes(env.t('planning.turn.rejected_drafts')));
+    assert.ok(html.includes('Synthetic invalid profile') && html.includes('docs/ARCHITECTURE.md'));
+    assert.deepEqual(env.posts(), []);
+  } finally { env.close(); }
+});

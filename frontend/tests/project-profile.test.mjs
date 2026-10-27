@@ -42,7 +42,7 @@ function environment(language = 'en') {
     if (path.endsWith('/form')) return Response.json({ form: body.form ?? JSON.parse(body.text), text: body.text ?? JSON.stringify(body.form) });
     if (path.endsWith('/preview')) {
       if (env.conflict) return Response.json({ detail: { code: 'stale_configuration_preview' } }, { status: 409 });
-      return Response.json({ sha256: hash('b'), changes: [{ diff: '+ synthetic profile' }], ready: true, preview_sha256: hash('b'), blockers: [], expected_version: 1 });
+      return Response.json({ sha256: hash('b'), changes: [{ diff: '+ synthetic profile' }], ready: true, preview_sha256: hash('b'), blockers: [], expected_version: 1, ...env.preview });
     }
     const key = options?.headers['Idempotency-Key'];
     assert.ok(key);
@@ -117,10 +117,40 @@ test('profile proposal adoption never writes configuration or runs preparation',
   const env = environment(), proposal = { id: 'proposal', content: JSON.stringify(profile()), proposal_sha256: hash('a') };
   const tree = env.tree(el(ProfileProposal, { proposal, conversation: { version: 1 }, base: '/projects/own/planning/conversation' }));
   try {
-    await env.render(tree); env.reason('Reviewed proposal'); await env.render(tree); env.click('profile.review_adoption'); await env.render(tree);
+    await env.render(tree); env.reason('Reviewed proposal'); await env.render(tree);
+    assert.equal(env.button('profile.save_draft').disabled, true, 'an unchanged profile needs no new draft');
+    env.click('profile.review_adoption'); await env.render(tree);
     env.tick(); await env.render(tree); env.click('profile.adopt'); await env.render(tree);
     const adopted = env.requests.find(r => r.path.endsWith('/profile/confirm'));
     assert.equal(adopted.body.proposal_id, 'proposal'); assert.equal(adopted.body.preview_sha256, hash('b'));
+    assert.ok(!env.requests.some(r => /\/(save|activate|preparation\/confirm)$/.test(r.path)));
+  } finally { env.close(); }
+});
+
+for (const language of ['en', 'es']) test(`document blockers survive the checkbox until a fresh ready preview (${language})`, async () => {
+  const env = environment(language), proposal = { id: 'proposal', content: JSON.stringify(profile()), proposal_sha256: hash('a') };
+  const conversation = { version: 1 };
+  const tree = env.tree(el(ProfileProposal, { proposal, conversation, base: '/projects/own/planning/conversation' }));
+  env.preview = { ready: false, blockers: [language === 'es' ? 'Primero aplica el documento AGENTS.md.' : 'First apply the AGENTS.md document.'] };
+  try {
+    let html = await env.render(tree);
+    assert.ok(html.includes(env.catalog['profile.adopt_hint']));
+    env.reason('Initial profile adoption'); await env.render(tree);
+    env.click('profile.review_adoption'); html = await env.render(tree);
+    assert.ok(html.includes(env.preview.blockers[0]));
+    env.tick(); await env.render(tree);
+    assert.equal(env.button('profile.adopt').disabled, true, 'a checkbox does not override document blockers');
+    assert.ok(!env.requests.some(r => r.path.endsWith('/profile/confirm') || r.path.endsWith('/profile/edit')));
+    // Applying documents changes the conversation version; the previous confirmation must not carry over.
+    conversation.version = 2;
+    env.preview = { ready: true, blockers: [], expected_version: 2, preview_sha256: hash('c') };
+    await env.render(tree);
+    env.click('profile.review_adoption'); await env.render(tree);
+    assert.equal(env.button('profile.adopt').disabled, true, 'the new preview requires a new explicit confirmation');
+    env.tick(); await env.render(tree); env.click('profile.adopt'); await env.render(tree);
+    const confirmed = env.requests.find(r => r.path.endsWith('/profile/confirm'));
+    assert.equal(confirmed.body.expected_version, 2);
+    assert.equal(confirmed.body.preview_sha256, hash('c'));
     assert.ok(!env.requests.some(r => /\/(save|activate|preparation\/confirm)$/.test(r.path)));
   } finally { env.close(); }
 });

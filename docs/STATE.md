@@ -8,9 +8,21 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue is empty: OT001 was released as `0.1.2` and OT002 as `0.1.3` (below,
-[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)). Work resumes with the unchanged Metrics
-Records task P001-T001.
+The queue contains **OT003 release delivery, then OT004**, before the unchanged Metrics Records task P001-T001.
+OT001 was released as `0.1.2` and OT002 as `0.1.3`; the agreed next separate patch targets are **0.1.4 for OT003**
+and **0.1.5 for OT004** (D239/D242/D243). Neither target is released.
+
+OT003's intake diagnostics and owner-approved adoption and joint-review follow-ups (D241/D244/D245) are implemented on
+`fix/intake-profile-diagnostics`; checks/status are in [the evidence](phase/OT003-intake-profile-diagnostics.md).
+The owner has now authorized the repository commit, 0.1.4 distribution, release PR/merge to main and GitHub
+publication. The candidate is prepared and under release qualification; integration/publication remain pending. A later operator turn was observed using the original
+OT003 prompt/failure context, and a later screenshot showed the corrected document blocker; this does not qualify a
+release. The owner-authorized offline update/restart after joint-review implementation completed successfully:
+the installed generation is READY, backend source matches, UI contains joint review, and the service answers on
+8013. Conversation/proposal/configuration hashes are unchanged; no new reviewer invocation or adoption occurred.
+See the task evidence. Local installation does not finish the agreed release delivery (D242).
+OT004's visual profile/agent editor is **planned, not implemented**, in its own task contract in ONE_OFF_TASKS.
+All product changes in the current working diff belong to OT003; the OT004/governance additions are planning only.
 
 ## Accumulated baseline
 
@@ -119,8 +131,9 @@ drafts for questions no longer asked offered for an explicit decision. Question,
 are unchanged. At the owner's request the release also uses the full window width and adds a sticky side rail
 (container query) whose live activity folds the run's recorded events into plain-language steps on the project, phase,
 task, run, chat and planning pages. Interface only: no API, schema or stored data change. Verified with offline suites,
-synthetic component/request tests and synthetic Chrome QA against an in-browser API mock; see the
-[work notes](phase/OT002-question-answers.md).
+synthetic component/request tests and synthetic Chrome QA against an in-browser API mock. Published as the GitHub
+Release `v0.1.3` (tag on the release merge `64c21d0`) with a self-contained package built and checked locally; see
+the [work notes](phase/OT002-question-answers.md).
 
 ## Patch 0.1.2 — live agent configuration (OT001)
 
@@ -183,3 +196,30 @@ paths/PATH in revision 4 and confirmed its activation; a further requested resta
 promoted revision 4 with both clients at 3600 seconds. No new provider invocation was started.
 Focused synthetic checks and limitations are recorded in
 [the fix artifact](phase/failed-intake-activation.md).
+
+## Bounded fix — intake profile rejection diagnostics (OT003; delivery pending)
+
+Current definition/onboarding prompts explain logical executable aliases and exact direct-tool membership. Invalid
+executable names now identify the command field/index without echoing candidate values; later planning contexts
+carry prior failure reasons. The UI labels rejected document lists as unavailable to apply. Strict validation,
+whole-turn failure, earlier proposals and explicit confirmations remain protected (D241).
+The owner included the adoption blockers found in manual testing before commit (D244): informational notices no
+longer prevent adoption, explicit blocking-question deferrals are respected, and missing/changed applied documents
+have specific diagnostics. The UI explains the document/adoption order and disables redundant saves of unchanged
+profiles. The owner also included a joint review of selected document proposals with one consent (D245), reusing
+per-document CAS and stopping/reporting acknowledged progress on error or uncertainty. Profile/commit confirmations
+remain separate. API descriptions/OpenAPI/types are in parity, with no response-shape or schema change.
+Focused offline synthetic checks and frontend build passed. No real provider, preparation, production-data write,
+release was performed. The owner-authorized offline local upgrade/restart subsequently completed successfully;
+installed checks, HTTP/source/UI verification and unchanged conversation/proposal/configuration hashes are recorded
+in the task artifact. Frozen histories/catalogs remain unchanged.
+See [OT003](phase/OT003-intake-profile-diagnostics.md). Source changes are complete; release qualification,
+integration and the agreed 0.1.4 distribution remain in ONE_OFF_TASKS (D242). No Metrics Records task is complete.
+
+## Planned one-off — visual profile and agent configuration editor (OT004)
+
+The owner chose a separate 0.1.5 patch after OT003, before Metrics Records (D243). Existing basic global/profile
+forms leave command/path/tool-capability settings in advanced TOML/JSON. OT004 will expose supported settings
+through interactive forms in project settings and applicable global settings, show scope/effective inheritance,
+and preserve fixed role restrictions and existing save/preparation/activation gates. The bounded task and
+acceptance/validation criteria are in ONE_OFF_TASKS. No OT004 product implementation or release is claimed.

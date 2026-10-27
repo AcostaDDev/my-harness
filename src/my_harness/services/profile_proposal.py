@@ -13,8 +13,26 @@ from my_harness.services.configuration import secretless, shape, PROFILE
 CONTRACT = 'project-profile-proposal-1'
 
 
-def invalid(key='invalid'):
-    return ContractError(tr('profile_proposal.' + key))
+def invalid(key='invalid', **values):
+    return ContractError(tr('profile_proposal.' + key, **values))
+
+
+def executable_names(value):
+    """Explain alias/path confusion without reflecting candidate values in diagnostics."""
+    commands = []
+    for kind in ('preparation', 'validations', 'allowed_command_prefixes'):
+        items = value.get(kind)
+        if not isinstance(items, list):
+            continue  # The normal parser diagnoses malformed command tables.
+        for index, item in enumerate(items):
+            argv = item.get('argv') if isinstance(item, dict) else item
+            commands.append((f'profile.{kind}[{index}]', argv))
+    if 'formatter_argv' in value:
+        commands.append(('profile.formatter_argv', value['formatter_argv']))
+    for field, argv in commands:
+        if (isinstance(argv, list) and argv and isinstance(argv[0], str)
+                and not local_config.COMMAND_NAME.fullmatch(argv[0])):
+            raise invalid('command_executable', field=field)
 
 
 def text(value, limit=4000):
@@ -41,6 +59,7 @@ def validate(candidate, frozen, drafts, *, context=None):
         secretless(candidate)
         shape(candidate['profile'], PROFILE)
         text(candidate['rationale'])
+        executable_names(candidate['profile'])
         profile = local_config._profile(candidate['name'], candidate['profile'], allow_formatter=True)
         if 'preparation_plan' in candidate:
             from my_harness.services.profile_preparation import validate_plan

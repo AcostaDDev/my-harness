@@ -10,7 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from my_harness.core.engine.context import IntakeContext
-from my_harness.core.engine.contracts import context_snapshot
+from my_harness.core.engine.contracts import ContractError, context_snapshot
 from my_harness.core.engine.definition import text_hash
 from my_harness.core.engine.serialization import restore_context
 from my_harness.services.profile_proposal import validate
@@ -18,6 +18,7 @@ from my_harness.storage.database import make_engine
 from my_harness.storage.managed import Conflict, SQLiteManagedRepository
 from my_harness.storage.models import ConfigurationOperationRow, RegisteredProjectRow
 from my_harness.storage.onboarding import OnboardingDrafts
+from my_harness.i18n import emission, message
 from test_definition import World, answer
 from test_managed_api import IDENTITY, VERSIONS, Ports, make_context, client
 from test_project_onboarding import checkout, git
@@ -174,6 +175,132 @@ def test_missing_context_asks_questions_without_a_fake_profile(intake):
     assert world.view(cid)['proposals'] == []
 
 
+@pytest.mark.parametrize('language', ['en', 'es'])
+def test_profile_adoption_requires_applied_documents_but_not_informational_pending_items(intake, language):
+    world, cid, _ = intake
+    notices = ['Review the initial profile.', 'Prepare the local environment after the documentary commit.']
+    world.turn(cid, response(pending=notices))
+    with emission(language):
+        shown = preview(world, cid)
+        assert shown['blockers'] == [message('profile_proposal.documents_required', language,
+                                             paths=', '.join(sorted(DOCS)))]
+        with pytest.raises(Conflict):
+            confirm(world, cid, shown)
+        # Applying one proposal is insufficient and must not be labelled as an invalid profile.
+        first = next(p for p in world.view(cid)['proposals'] if p['kind'] == 'draft')
+        world.apply(cid, first)
+        shown = preview(world, cid)
+        remaining = sorted(set(DOCS) - {first['path']})
+        assert shown['blockers'] == [message('profile_proposal.documents_required', language,
+                                             paths=', '.join(remaining))]
+        apply_documents(world, cid)
+        shown = preview(world, cid)
+        assert shown['ready'] and not shown['blockers']
+        adopted = confirm(world, cid, shown)
+        assert adopted['configuration_state'] == 'PROFILE_PROPOSED'
+    assert world.view(cid)['pending'] == notices
+    assert world.ports.roles() == ['definition'] and not world.ports.runner.calls
+    with Session(world.repo.engine) as session:
+        assert session.scalar(select(func.count()).select_from(ConfigurationOperationRow)) == 0
+
+
+def test_profile_adoption_blocks_open_questions_but_accepts_explicit_deferral(intake):
+    world, cid, _ = intake
+    world.turn(cid, response(questions=[{'text': 'Which deployment target?', 'blocking': True}],
+                             pending=['Preparation will be reviewed separately.']))
+    apply_documents(world, cid)
+    assert preview(world, cid)['blockers'] == [message('profile_proposal.questions', 'en')]
+    question = world.view(cid)['questions'][0]
+    world.planning.defer(cid, world.view(cid)['version'], question_id=question['id'],
+                         reason='Local development only; deployment is a later phase.')
+    shown = preview(world, cid)
+    assert shown['ready'], shown
+    assert confirm(world, cid, shown)['configuration_state'] == 'PROFILE_PROPOSED'
+
+
+def test_changed_private_document_has_a_document_diagnostic_and_preserves_profile(intake):
+    world, cid, kind = intake
+    world.turn(cid, response())
+    apply_documents(world, cid)
+    p = profile(world, cid)
+    area = world.context.root if kind == 'definition' else OnboardingDrafts.of(world.repo.engine, cid).base
+    (area / 'docs/ARCHITECTURE.md').write_text('# Explicit user edit after the proposal\n')
+    shown = preview(world, cid)
+    assert shown['blockers'] == [message('profile_proposal.documents_changed', 'en',
+                                        paths='docs/ARCHITECTURE.md')]
+    with pytest.raises(Conflict):
+        confirm(world, cid, shown)
+    assert profile(world, cid) == p
+
+
+def test_profile_edit_with_pending_notices_still_requires_documents_and_exact_adoption(intake):
+    world, cid, _ = intake
+    world.turn(cid, response(pending=['Prepare dependencies after adoption.']))
+    original = profile(world, cid)
+    changed = json.loads(original['content'])['candidate']
+    changed['rationale'] = 'Reviewed the documented Go toolchain for initial local development.'
+    with pytest.raises(Conflict):
+        world.planning.edit_profile(world.context, cid, original['id'], world.view(cid)['version'],
+            original['proposal_sha256'], changed, 'Reviewed initial profile', 'before-documents', writer=world.writer)
+    assert profile(world, cid) == original
+    apply_documents(world, cid)
+    edited = world.planning.edit_profile(world.context, cid, original['id'], world.view(cid)['version'],
+        original['proposal_sha256'], changed, 'Reviewed initial profile', 'after-documents', writer=world.writer)
+    assert profile(world, cid)['id'] == edited['proposal_id']
+    shown = preview(world, cid)
+    assert shown['ready']
+    assert confirm(world, cid, shown)['proposal_id'] == edited['proposal_id']
+    assert world.view(cid)['pending'] == ['Prepare dependencies after adoption.']
+    assert world.ports.roles() == ['definition'] and not world.ports.runner.calls
+
+
+@pytest.mark.parametrize('field', ['preparation', 'validations', 'allowed_command_prefixes', 'formatter_argv'])
+@pytest.mark.parametrize('language', ['en', 'es'])
+def test_executable_path_diagnostic_identifies_field_without_candidate_values(field, language):
+    p = candidate()
+    argv = ['/synthetic/private/bin/tool', '--synthetic-sensitive-argument']
+    if field == 'formatter_argv':
+        p['profile'].update(formatter_argv=argv, formatter_paths=['**/*.go'])
+        location = 'profile.formatter_argv'
+    else:
+        p['profile'][field] = [argv if field == 'allowed_command_prefixes' else
+                               {'argv': argv, 'timeout_seconds': 120}]
+        location = f'profile.{field}[0]'
+    with emission(language), pytest.raises(ContractError) as error:
+        validate(p, {}, [])
+    assert str(error.value) == message('profile_proposal.command_executable', language, field=location)
+    assert all(value not in str(error.value) for value in argv)
+
+
+def test_failed_profile_reason_reaches_next_turn_without_adopting_rejected_output(intake):
+    world, cid, _ = intake
+    rejected = response()
+    rejected['profile']['profile']['validations'][0]['argv'][0] = '/synthetic/private/bin/go'
+    _, failed = world.turn(cid, rejected)
+    assert failed['status'] == 'FAILED' and not world.view(cid)['proposals']
+    before = world.repo.get_run(failed['run_id']).history
+    _, recovered = world.turn(cid, response())
+    assert recovered['status'] == 'ANSWERED'
+    prompt = json.loads(world.ports.agents.requests[-1].prompt_snapshot_json)
+    previous = json.loads(prompt['parts'][0]['variables']['CONTEXT_JSON'])['previous_turns'][-1]
+    assert previous['reasons'] == failed['result']['reasons']
+    assert previous['answer'] is None and previous['proposals'] == []
+    assert world.repo.get_run(failed['run_id']).history == before
+    assert len(world.ports.agents.requests) == 2
+
+
+def test_container_tool_requirements_do_not_add_indirect_executables():
+    p = candidate()
+    p['profile']['validations'][0]['argv'] = ['docker', 'compose', 'exec', 'web', 'python', 'manage.py', 'test']
+    p['tools'] = [{'name': 'docker', 'requirement': 'Compose and an image containing Python and the test runner.'}]
+    frozen = {'project': {'layout': {'docs': 'docs', 'state': 'docs/STATE.md', 'next_steps': 'docs/NEXT_STEPS.md'}},
+              'drafts': [{'path': path, 'sha256': text_hash(content)} for path, content in DOCS.items()]}
+    assert validate(p, frozen, [])['candidate'] == p
+    p['tools'].append({'name': 'python', 'requirement': 'Inside the container only.'})
+    with pytest.raises(ContractError, match='direct argv'):
+        validate(p, frozen, [])
+
+
 def test_questions_cas_context_and_document_drift_block_adoption(intake):
     world, cid, kind = intake
     world.turn(cid, response(questions=[{'text': 'Which Go version?', 'blocking': True}]))
@@ -239,8 +366,7 @@ def test_http_intake_profile_contract_and_guards(intake, tmp_path):
         assert state['profile'] is None and state['configuration_state'] == 'PROFILE_REQUIRED'
         # Runtime seals the work language, unlike storage-only fixtures.
         world.context = http.app.state.runtime.project('intake').context
-        world.turn(cid, response())
-        apply_documents(world, cid)
+        world.turn(cid, response(pending=['Review preparation separately after the documentary commit.']))
         p = profile(world, cid)
         body = {'proposal_id': p['id'], 'proposal_sha256': p['proposal_sha256'],
                 'expected_version': world.view(cid)['version']}
@@ -249,6 +375,17 @@ def test_http_intake_profile_contract_and_guards(intake, tmp_path):
         http.headers.pop('X-My-Harness')
         assert http.post(base + '/profile/preview', json=body).status_code == 403
         http.headers['X-My-Harness'] = '1'
+        missing = http.post(base + '/profile/preview', json=body)
+        assert missing.status_code == 200 and not missing.json()['ready']
+        assert missing.json()['blockers'] == [message('profile_proposal.documents_required', 'en',
+                                                       paths=', '.join(sorted(DOCS)))]
+        blocked = http.post(base + '/profile/confirm', json={**body,
+            'preview_sha256': missing.json()['preview_sha256'], 'confirmed': True, 'reason': 'Before documents'},
+            headers={'Idempotency-Key': 'http-before-documents'})
+        assert blocked.status_code == 409
+        assert profile(world, cid)['status'] == 'PROPOSED'
+        apply_documents(world, cid)
+        body['expected_version'] = world.view(cid)['version']
         shown = http.post(base + '/profile/preview', json=body)
         assert shown.status_code == 200 and shown.json()['ready'], shown.text
         assert http.post(base + '/profile/confirm', json={**body, 'preview_sha256': shown.json()['preview_sha256'],

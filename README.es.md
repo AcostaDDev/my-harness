@@ -131,7 +131,11 @@ publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni dat
    el recibo y activa por separado. Solo entonces se habilita la primera tarea. Django/TypeScript son opcionales.
    [Recorrido completo](README.md#start-a-project).
 
-**Edición posterior:** configuración global desde la navegación y perfil desde el proyecto, por formulario/TOML.
+**Edición posterior:** configuración global desde la navegación y perfil desde el proyecto (resumen y Ajustes), por
+formulario/TOML. Los formularios guiados cubren agentes y sus capacidades de herramientas, perfiles reutilizables,
+composiciones y presets globales y, por proyecto, comandos del perfil (argumentos, directorio, tiempo límite,
+entorno, JUnit), prefijos, rutas protegidas/sensibles/de modelo de datos, formateador, rutas instaladas,
+autorización/límites y agentes, según lo que permita la etapa del proyecto; los ajustes sin control se conservan en TOML.
 La ayuda IA es opcional y usa clientes activos; aplicar una propuesta cambia el borrador. Diff, guardado,
 preparación y activación siguen separados. Global se aplica sin reiniciar (salvo lease/poll con el supervisor en
 marcha, que la vista previa indica); cambios técnicos de perfil, preparación nueva. Los conflictos conservan el

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "../Language";
 import type { MessageKey } from "../i18n.ts";
 import { managed, ManagedError } from "../managed-api";
@@ -10,9 +10,12 @@ import type { Action, Draft, LiveRefusal, Review } from "../configuration.ts";
 
 import { Link } from "../navigation";
 import { ConfigurationAssistance } from "./ConfigurationAssistance";
+import { AgentFields, CommandsFields, KeyValueField, LinesField, ProfileFields, SaveImpact, ToolCapabilities } from "../ProfileFields";
+import { COMMAND_NAME, ENTRY_NAME, domId, emptyCommands, emptyProfile, isObject, nameIssue, texts, without } from "../profile-form.ts";
+import type { Issues, Obj } from "../profile-form.ts";
 
 const ROOT = "/configuration";
-const idFor = (path: string) => `configuration-${path.replaceAll(".", "-")}`;
+const idFor = (path: string) => domId("configuration", path);
 // Never a valid model: MODEL_FORM requires a leading letter or digit.
 const OTHER = "_other";
 
@@ -119,6 +122,7 @@ export function ConfigurationFields({ draft, onChange, issues }: {
           {t(issues[`${prefix}.executable`] ?? "configuration.cli_hint")}</p>
         <div className="form-row">{input(`${prefix}.environment.USER`, "configuration.user")}
           {input(`${prefix}.environment.PATH`, "configuration.path")}{input(`${prefix}.environment.HOME`, "configuration.home")}</div>
+        <AgentExtras prefix={prefix} role={role} value={field(draft.form, prefix)} issues={issues} onChange={next => update(prefix, next)} />
       </fieldset>;
     })}
     <p className="hint">{t("configuration.executor_hint")}</p>
@@ -135,7 +139,152 @@ export function ConfigurationFields({ draft, onChange, issues }: {
       <div className="form-row">{input("service.lease_seconds", "configuration.lease", "number")}
         {input("service.poll_seconds", "configuration.poll", "number")}</div>
     </fieldset>
+    <GlobalCatalog form={draft.form} issues={issues} update={update} />
     <p className="hint">{t("configuration.advanced_hint")}</p>
+  </>;
+}
+
+/** Environment beyond USER/PATH/HOME, an optional version pin and the role's tool capabilities (OT004). */
+function AgentExtras({ prefix, role, value, issues, onChange }: {
+  prefix: string; role: "reviewer" | "executor"; value: unknown; issues: Issues; onChange: (value: Obj) => void;
+}) {
+  const { t } = useI18n();
+  const agent = isObject(value) ? value : {};
+  const version = idFor(`${prefix}.cli_version`);
+  return <>
+    <KeyValueField scope="configuration" prefix={`${prefix}.environment`} issues={issues} legend={t("editor.other_environment")}
+      hint="editor.environment_hint" value={agent.environment} exclude={["USER", "PATH", "HOME"]}
+      nameLabel="editor.variable" valueLabel="editor.value" onChange={environment => onChange({ ...agent, environment })} />
+    <label htmlFor={version}>{t("editor.cli_version")}</label>
+    <input id={version} value={String(agent.cli_version ?? "")} spellCheck={false} aria-invalid={!!issues[`${prefix}.cli_version`]}
+      aria-describedby={issues[`${prefix}.cli_version`] ? `${version}-hint` : undefined}
+      onChange={event => onChange(event.target.value ? { ...agent, cli_version: event.target.value } : without(agent, "cli_version"))} />
+    {issues[`${prefix}.cli_version`] && <p id={`${version}-hint`} className="field-error">{t(issues[`${prefix}.cli_version`])}</p>}
+    <ToolCapabilities scope="configuration" prefix={prefix} issues={issues} value={agent} roles={[role]} onChange={onChange} />
+  </>;
+}
+
+/** A new named entry: the name is checked before anything is added; nothing else changes. */
+function NewEntry({ id, label, names, pattern, ready = true, onAdd, children }: {
+  id: string; label: MessageKey; names: string[]; pattern: RegExp; ready?: boolean; onAdd: (name: string) => void; children?: ReactNode;
+}) {
+  const { t } = useI18n();
+  const [name, setName] = useState("");
+  const [problem, setProblem] = useState<MessageKey>();
+  function add() {
+    const issue = nameIssue(name, names, pattern);
+    setProblem(issue);
+    if (!issue && ready) { onAdd(name); setName(""); }
+  }
+  return <div className="form-row key-value-add">
+    <div><label htmlFor={id}>{t(label)}</label>
+      <input id={id} value={name} spellCheck={false} aria-invalid={!!problem} aria-describedby={problem ? `${id}-error` : undefined}
+        onChange={event => { setName(event.target.value); setProblem(undefined); }}
+        onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); add(); } }} /></div>
+    {children}
+    <button type="button" className="button-quiet" disabled={!ready} aria-label={`${t("editor.add_entry")} · ${t(label)}`} onClick={add}>{t("editor.add_entry")}</button>
+    {problem && <p id={`${id}-error`} className="field-error">{t(problem)}</p>}
+  </div>;
+}
+
+const within = (issues: Issues, prefix: string) => Object.keys(issues).some(key => key === prefix || key.startsWith(`${prefix}.`));
+
+/** Global reusable profiles, compositions and agent presets; projects with their own profile keep their copy. */
+function GlobalCatalog({ form, issues, update }: { form: Obj; issues: Issues; update: (path: string, value: unknown) => void }) {
+  const { t } = useI18n();
+  const profiles: Obj = isObject(form.profiles) ? form.profiles : {};
+  const compositions: Obj = isObject(form.compositions) ? form.compositions : {};
+  const presets: Obj = isObject(form.agent_presets) ? form.agent_presets : {};
+  const [profileChoice, setProfileChoice] = useState("");
+  const [providerChoice, setProviderChoice] = useState("");
+  const users = (name: string) => Object.entries(compositions).filter(([, item]) => isObject(item) && item.profile === name).map(([key]) => key);
+  const profileNames = [...new Set([...Object.keys(profiles), ...Object.values(compositions).map(item => isObject(item) ? String(item.profile ?? "") : "")])].filter(Boolean);
+  const set = (table: string, current: Obj, name: string, value: Obj | undefined) =>
+    update(table, value === undefined ? without(current, name) : { ...current, [name]: value });
+  return <>
+    <fieldset id={idFor("profiles")}><legend>{t("editor.profiles")}</legend>
+      <p className="hint">{t("editor.profiles_hint")}</p>
+      {Object.entries(profiles).map(([name, profile]) => <details key={name} className="catalog-entry" open={within(issues, `profiles.${name}`) || undefined}>
+        <summary>{name}</summary>
+        {isObject(profile) ? <ProfileFields scope="configuration" prefix={`profiles.${name}`} issues={issues} value={profile}
+          onChange={next => set("profiles", profiles, name, next)} /> : <p className="field-error">{t("editor.profile_invalid")}</p>}
+        {users(name).length > 0 && <p className="hint">{t("editor.profile_in_use", { names: users(name).join(", ") })}</p>}
+        <button type="button" className="button-quiet" disabled={users(name).length > 0}
+          onClick={() => set("profiles", profiles, name, undefined)}>{t("editor.remove_named", { name })}</button>
+      </details>)}
+      <NewEntry id="configuration-new-profile" label="editor.new_profile" names={profileNames} pattern={COMMAND_NAME}
+        onAdd={name => set("profiles", profiles, name, emptyProfile())} />
+    </fieldset>
+    <fieldset id={idFor("compositions")}><legend>{t("editor.compositions")}</legend>
+      <p className="hint">{t("editor.compositions_hint")}</p>
+      {Object.entries(compositions).map(([name, composition]) => {
+        const prefix = `compositions.${name}`;
+        const value: Obj = isObject(composition) ? composition : {};
+        const choice = idFor(`${prefix}.profile`);
+        return <details key={name} className="catalog-entry" open={within(issues, prefix) || undefined}>
+          <summary>{name} · {String(value.profile ?? "")}</summary>
+          {value.recipe ? <p className="hint">{t("editor.recipe_fixed", { recipe: String(value.recipe) })}</p> : <>
+            <label htmlFor={choice}>{t("editor.composition_profile")}</label>
+            <select id={choice} value={String(value.profile ?? "")} aria-invalid={!!issues[`${prefix}.profile`]}
+              onChange={event => set("compositions", compositions, name, { ...value, profile: event.target.value })}>
+              {[...new Set([String(value.profile ?? ""), ...Object.keys(profiles)])].map(option =>
+                <option key={option} value={option}>{option || t("editor.choose_profile")}</option>)}
+            </select>
+            {!(String(value.profile) in profiles) && <p className="hint">{t("editor.builtin_profile")}</p>}
+          </>}
+          <CommandsFields scope="configuration" prefix={prefix} issues={issues} readOnly={!!value.recipe} value={value}
+            profile={profiles[String(value.profile)]} onChange={next => set("compositions", compositions, name, next)} />
+          <button type="button" className="button-quiet" onClick={() => set("compositions", compositions, name, undefined)}>
+            {t("editor.remove_named", { name })}</button>
+        </details>;
+      })}
+      <NewEntry id="configuration-new-composition" label="editor.new_composition" names={Object.keys(compositions)} pattern={ENTRY_NAME}
+        ready={!!profileChoice} onAdd={name => set("compositions", compositions, name, { profile: profileChoice, ...emptyCommands() })}>
+        <div><label htmlFor="configuration-new-composition-profile">{t("editor.composition_profile")}</label>
+          <select id="configuration-new-composition-profile" value={profileChoice} onChange={event => setProfileChoice(event.target.value)}>
+            <option value="">{t("editor.choose_profile")}</option>
+            {profileNames.map(option => <option key={option} value={option}>{option}</option>)}
+          </select></div>
+      </NewEntry>
+    </fieldset>
+    <fieldset id={idFor("agent_presets")}><legend>{t("editor.presets")}</legend>
+      <p className="hint">{t("editor.presets_hint")}</p>
+      {Object.entries(presets).map(([name, preset]) => {
+        const prefix = `agent_presets.${name}`;
+        const value: Obj = isObject(preset) ? preset : {};
+        const roles = texts(value.roles);
+        const vocabulary = [...new Set([...(efforts[String(value.provider)] ?? []), ...texts(value.efforts)])];
+        const change = (next: Obj) => set("agent_presets", presets, name, next);
+        return <details key={name} className="catalog-entry" open={within(issues, prefix) || undefined}>
+          <summary>{name} · {String(value.provider ?? "")} · {roles.join(", ")}</summary>
+          <fieldset id={idFor(`${prefix}.roles`)} tabIndex={-1}><legend>{t("editor.roles")}</legend>
+            {(["reviewer", "executor"] as const).map(role => <label key={role} className="check"><input type="checkbox" checked={roles.includes(role)}
+              onChange={event => change({ ...value, roles: event.target.checked ? [...roles, role] : roles.filter(item => item !== role) })} />
+              {t(role === "reviewer" ? "settings.reviewer" : "settings.executor")}</label>)}
+            {issues[`${prefix}.roles`] && <p className="field-error">{t(issues[`${prefix}.roles`])}</p>}
+          </fieldset>
+          <AgentFields scope="configuration" prefix={prefix} issues={issues} value={value} roles={roles} onChange={change} />
+          <LinesField scope="configuration" prefix={`${prefix}.models`} issues={issues} label={t("editor.preset_models")}
+            hint="editor.preset_models_hint" value={value.models} onChange={models => change({ ...value, models })} />
+          <fieldset id={idFor(`${prefix}.efforts`)} tabIndex={-1} className="effort-list"><legend>{t("settings.efforts")}</legend>
+            {vocabulary.map(effort => <label key={effort} className="check"><input type="checkbox" checked={texts(value.efforts).includes(effort)}
+              onChange={event => change({ ...value, efforts: event.target.checked ? [...texts(value.efforts), effort] : texts(value.efforts).filter(item => item !== effort) })} />{effort}</label>)}
+            {issues[`${prefix}.efforts`] && <p className="field-error">{t(issues[`${prefix}.efforts`])}</p>}
+          </fieldset>
+          <label className="check"><input type="checkbox" checked={value.allow_open_executor === true}
+            onChange={event => change({ ...value, allow_open_executor: event.target.checked })} />{t("editor.allow_open")}</label>
+          <button type="button" className="button-quiet" onClick={() => set("agent_presets", presets, name, undefined)}>{t("editor.remove_named", { name })}</button>
+        </details>;
+      })}
+      <NewEntry id="configuration-new-preset" label="editor.new_preset" names={Object.keys(presets)} pattern={ENTRY_NAME}
+        ready={!!providerChoice} onAdd={name => set("agent_presets", presets, name, { provider: providerChoice, roles: [], models: [], efforts: [],
+          allow_open_executor: false, environment: { USER: "" } })}>
+        <div><label htmlFor="configuration-new-preset-provider">{t("settings.provider")}</label>
+          <select id="configuration-new-preset-provider" value={providerChoice} onChange={event => setProviderChoice(event.target.value)}>
+            <option value="">{t("configuration.choose")}</option><option value="codex">Codex</option><option value="claude">Claude</option>
+          </select></div>
+      </NewEntry>
+    </fieldset>
   </>;
 }
 
@@ -336,7 +485,8 @@ export function ConfigurationPage() {
             {Array.isArray(item.removed_fields) && item.removed_fields.length > 0 && <p className="state state-attention">
               {t("configuration.removed_fields", { fields: item.removed_fields.join(", ") })}</p>}
             <details><summary>{t("configuration.toml")}</summary><pre>{String(item.text)}</pre></details></div>)}
-          <p>{t("configuration.impact")}</p><Evidence title={t("configuration.activation_review")} value={review.preview} />
+          <p>{t("configuration.impact")}</p><SaveImpact preview={review.preview} />
+          <Evidence title={t("configuration.activation_review")} value={review.preview} />
           <label className="check"><input type="checkbox" checked={confirmed} disabled={frozen || stale} onChange={event => setConfirmed(event.target.checked)} />{t("configuration.confirm_save")}</label>
           <button type="button" disabled={frozen || stale || !confirmed} onClick={() => void run(() => submit(`${ROOT}/save`, { ...review.body, preview_sha256: review.preview.sha256 }))}>{t("configuration.save")}</button>
         </section>}

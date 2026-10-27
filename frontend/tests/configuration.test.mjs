@@ -76,7 +76,7 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
         { scope: 'project:own', diff: '+draft project', status: 'DRAFT' }], legacy_import: { format: 'local-config-8' } });
     if (path.endsWith('/preview')) {
       if (env.conflict) return Response.json({ detail: { code: 'stale_configuration_preview' } }, { status: 409 });
-      return Response.json({ kind: 'SAVE', sha256: sha('b'), impact: ['global'], changes: [{ text: body.text ?? JSON.stringify(body.form), diff: '+synthetic candidate', status: body.validated ? 'VALIDATED' : 'DRAFT' }] });
+      return Response.json({ kind: 'SAVE', sha256: sha('b'), impact: ['global'], changes: [{ text: body.text ?? JSON.stringify(body.form), diff: '+synthetic candidate', status: body.validated ? 'VALIDATED' : 'DRAFT' }, ...(env.derived ?? [])], ...env.savePreview });
     }
     const key = options?.headers?.['Idempotency-Key'];
     assert.ok(key, 'Every durable mutation keeps an idempotency key');
@@ -479,3 +479,99 @@ for (const language of ['en', 'es']) {
     } finally { env.close(); }
   });
 }
+
+const catalogForm = () => ({ ...form(),
+  profiles: { 'own.v1': { executor_instructions: 'Synthetic instructions', preparation: [], data_model_paths: [],
+    validations: [{ argv: ['tool', 'test'], timeout_seconds: 60 }], allowed_command_prefixes: [['tool', 'test']],
+    protected_paths: ['AGENTS.md'], sensitive_paths: ['.env'] } },
+  compositions: { own: { profile: 'own.v1', executables: { tool: '/synthetic/tool' }, environment: {}, authorize_profile_commands: true } },
+  agent_presets: { 'claude-exec': { provider: 'claude', roles: ['executor'], models: ['synthetic-model'], efforts: ['medium'],
+    allow_open_executor: false, timeout_seconds: 300, environment: { USER: 'synthetic' }, tools: ['Read'] } },
+  recipes: { 'typescript-web': { node_executable: '/synthetic/node', timeout_seconds: 60 } } });
+const find = (env, id) => { const element = env.host.elements.find(item => item.props?.id === id); assert.ok(element, id); return element.props; };
+const labelled = (env, label) => { const element = env.host.elements.find(item => item.type === 'button' && item.props['aria-label'] === label); assert.ok(element, label); return element.props; };
+
+for (const language of ['en', 'es']) test(`global profiles, compositions and presets are guided forms over the exact candidate (${language})`, async () => {
+  const initial = { ...base(), form: catalogForm() };
+  const env = environment(language, initial, { ...draft(initial), form: catalogForm() }), tree = env.tree();
+  try {
+    let html = await env.render(tree);
+    for (const key of ['editor.profiles', 'editor.compositions', 'editor.presets', 'editor.validations', 'editor.executables'])
+      assert.ok(html.includes(env.catalog[key]), key);
+    assert.ok(html.includes(env.catalog['editor.reviewer_fixed']), 'the reviewer explains its fixed read-only tools');
+    // Exact argv lines: a space stays inside one argument and nothing goes through a shell.
+    find(env, 'configuration-profiles-own-v1-validations-0-argv').onChange({ target: { value: 'tool\ntest\nname with space' } });
+    await env.render(tree);
+    find(env, 'configuration-compositions-own-executables-tool').onChange({ target: { value: '/synthetic/other-tool' } });
+    await env.render(tree);
+    env.preview(); html = await env.render(tree);
+    const preview = env.requests.find(request => request.path.endsWith('/configuration/preview'));
+    assert.deepEqual(preview.body.form.profiles['own.v1'].validations[0], { argv: ['tool', 'test', 'name with space'], timeout_seconds: 60 });
+    assert.equal(preview.body.form.compositions.own.executables.tool, '/synthetic/other-tool');
+    assert.deepEqual(preview.body.form.recipes, catalogForm().recipes, 'settings without a control are carried over');
+    assert.deepEqual(preview.body.form.agent_presets, catalogForm().agent_presets);
+    assert.ok(html.includes(env.catalog['editor.impact_title']) === false, 'no effects were reported by this preview');
+  } finally { env.close(); }
+});
+
+test('a provider change keeps tool lists visible until they are removed explicitly', async () => {
+  const env = environment(), tree = env.tree();
+  try {
+    await env.render(tree);
+    find(env, 'configuration-agents-executor-provider').onChange({ target: { value: 'codex' } });
+    let html = await env.render(tree);
+    assert.equal(JSON.parse(env.storage.get('harness-configuration-draft-v1')).form.agents.executor.tools[0], 'Read');
+    assert.ok(html.includes(en['editor.tools_unsupported']) && html.includes(en['editor.codex_fixed']));
+    env.preview(); html = await env.render(tree);
+    assert.ok(!env.requests.some(request => request.path.endsWith('/preview')), 'an unsupported capability blocks the preview');
+    assert.ok(html.includes(`<p class="field-error">${en['editor.tools_unsupported']}</p>`));
+    env.click('editor.remove_tools'); await env.render(tree);
+    const saved = JSON.parse(env.storage.get('harness-configuration-draft-v1')).form.agents.executor;
+    assert.equal(saved.tools, undefined); assert.equal(saved.environment.CUSTOM, 'preserve-me');
+    env.preview(); await env.render(tree);
+    assert.equal(env.requests.filter(request => request.path.endsWith('/preview')).length, 1);
+  } finally { env.close(); }
+});
+
+test('new entries are named explicitly and environment rows are added and removed by keyboard-reachable buttons', async () => {
+  const initial = { ...base(), form: catalogForm() };
+  const env = environment('en', initial, { ...draft(initial), form: catalogForm() }), tree = env.tree();
+  try {
+    await env.render(tree);
+    find(env, 'configuration-new-profile').onChange({ target: { value: 'own.v1' } }); await env.render(tree);
+    labelled(env, `${en['editor.add_entry']} · ${en['editor.new_profile']}`).onClick(); let html = await env.render(tree);
+    assert.ok(html.includes(en['editor.name_repeated']));
+    find(env, 'configuration-new-profile').onChange({ target: { value: 'second' } }); await env.render(tree);
+    labelled(env, `${en['editor.add_entry']} · ${en['editor.new_profile']}`).onClick(); await env.render(tree);
+    let stored = JSON.parse(env.storage.get('harness-configuration-draft-v1')).form;
+    assert.deepEqual(stored.profiles.second.validations, []);
+    // Removing a profile used by a composition is refused in place.
+    const used = env.host.elements.find(item => item.type === 'button' && item.props.children === 'Remove own.v1');
+    assert.equal(used.props.disabled, true);
+    find(env, 'configuration-agents-executor-environment-new-name').onChange({ target: { value: 'EXTRA' } });
+    find(env, 'configuration-agents-executor-environment-new-value').onChange({ target: { value: 'value' } });
+    await env.render(tree);
+    find(env, 'configuration-agents-executor-environment-new-name').onKeyDown({ key: 'Enter', preventDefault() {} });
+    await env.render(tree);
+    stored = JSON.parse(env.storage.get('harness-configuration-draft-v1')).form;
+    assert.equal(stored.agents.executor.environment.EXTRA, 'value');
+    labelled(env, 'Remove CUSTOM').onClick();
+    await env.render(tree);
+    stored = JSON.parse(env.storage.get('harness-configuration-draft-v1')).form;
+    assert.equal(stored.agents.executor.environment.CUSTOM, undefined); assert.equal(stored.agents.executor.environment.USER, 'synthetic');
+    assert.ok(env.requests.every(request => request.body === undefined), 'editing calls nothing');
+  } finally { env.close(); }
+});
+
+for (const language of ['en', 'es']) test(`a global save preview names the derived project copies and frozen work (${language})`, async () => {
+  const env = environment(language), tree = env.tree();
+  env.derived = [{ scope: 'project:own', diff: '+global reference', status: 'VALIDATED' }];
+  env.savePreview = { impact: ['global', 'project:own'], effects: { projects: [{ scope: 'project:own', preparation_required: false }], jobs: [{ id: 'job' }] } };
+  try {
+    await env.render(tree); env.preview(); const html = await env.render(tree);
+    assert.ok(html.includes(env.catalog['editor.impact_title']));
+    assert.ok(html.includes(env.catalog['editor.impact_derived'].replace('{scopes}', 'project:own')));
+    assert.ok(html.includes(env.catalog['editor.impact_frozen'].replace('{count}', '1')));
+    assert.ok(!html.includes(env.catalog['editor.impact_preparation']));
+  } finally { env.close(); }
+});

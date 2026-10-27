@@ -1,7 +1,7 @@
 # One-off tasks
 
 **Queue:** OT004 and OT006 pending.
-**Next: OT004 — visual profile/agent editor for 0.1.6; then OT006, then NEXT_STEPS.md.**
+**Next: OT004 — deliver the implemented visual profile/agent editor as 0.1.6; then OT006, then NEXT_STEPS.md.**
 
 OT006 records the later preparation incident and the handoff requested before `/clear`. This documentation-only
 request does not change D246's OT004 priority/version; agree any incident reprioritization and OT006 release target
@@ -43,7 +43,8 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT004 — Visual profile and agent configuration editor
 
-**Status:** pending; priority and separate patch delivery chosen by the owner. Not implemented.
+**Status:** source implemented and checked (D250, [evidence](phase/OT004-visual-profile-editor.md)); 0.1.6
+integration, release PR, archive and publication pending in the same session at the owner's request.
 **Depends on:** released OT005/0.1.5 (completed); precedes P001-T001 Metrics Records (D243/D246).
 **Classification:** bounded UX development outside the roadmap; separate patch **0.1.6**, after OT005 (D239/D246).
 **Branch:** a separate `feat/ot004-visual-profile-editor` topic from `develop` when OT004 starts.
@@ -90,9 +91,9 @@ raised before changing its permission design.
 explicitly reprioritizes it. Both precede P001-T001; no Metrics Records work is completed here.
 **Classification:** bounded runtime reliability/consumption incident outside the roadmap, separate from released
 OT005 and from P001's accounting feature work.
-**Branch:** handoff on `docs/ot006-preparation-consumption` from `develop` at `3876230`; preserve its uncommitted
-documentation. Create a `fix/ot006-preparation-consumption` topic from current `develop` for implementation,
-carrying forward this handoff if it has not yet been integrated.
+**Branch:** the handoff documentation was committed on `docs/ot006-preparation-consumption` (`6a1b721`) and
+integrated into develop (`f185265`). Create a `fix/ot006-preparation-consumption` topic from current `develop`
+for implementation.
 **Delivery route:** product delivery target/order must be agreed before implementation (D242); the existing
 topic → `develop` → separate release PR/merge into `main` → patch distribution policy applies (D235/D239).
 No version is assigned here; OT004's 0.1.6 is unchanged. Source, integration, publication and installation are

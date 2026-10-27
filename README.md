@@ -263,8 +263,12 @@ Each managed project gets `AGENTS.md` with `CLAUDE.md`/`GEMINI.md` wrappers, `RE
 
 ## Edit configuration later
 
-Open **Global configuration** from navigation or the project's **Configuration** editor. Form/TOML editing uses
-validation, diff and separate save/activation confirmations. Preview shows affected projects, tools, receipts,
+Open **Global configuration** from navigation or the project's **Configuration** editor (on its overview and in its
+Settings). Form/TOML editing uses validation, diff and separate save/activation confirmations. Guided forms cover
+agents and their tool capabilities, reusable profiles, compositions and presets globally, and per project the profile
+commands (arguments, directory, timeout, environment, JUnit), prefixes, protected/sensitive/data-model paths,
+formatter, installed executable paths, command authorization/limits and agents, as far as the project's stage allows.
+Fields marked invalid name what to correct; settings without a control are kept and stay editable in TOML. Preview shows affected projects, tools, receipts,
 commands and pending jobs. A global change derives private project copies and activates the whole set in the
 running service, waiting for current work when needed. A technical project change needs current committed documentation and a new preparation receipt before
 activation. A nontechnical change may reuse an exact compatible receipt after verification.

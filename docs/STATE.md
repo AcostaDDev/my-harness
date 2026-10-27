@@ -11,7 +11,8 @@ normally empty priority queue for bounded fixes/improvements outside roadmap pha
 The queue contains **OT004**, the visual profile/agent editor targeting its own **0.1.6** patch, then **OT006**,
 the later repetitive-preparation/ownership-loss incident (release target pending), before the
 unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005 were released separately as
-0.1.2/0.1.3/0.1.4/**0.1.5** (D239). OT004 is unimplemented; no Metrics task is complete.
+0.1.2/0.1.3/0.1.4/**0.1.5** (D239). OT004's source is implemented on its topic (D250); its 0.1.6 delivery is in
+progress. No Metrics task is complete.
 
 OT005 was integrated on develop at `b50070d`, released through
 [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), merge **`b0d035d`**, and tagged **`v0.1.5`**. The
@@ -21,12 +22,12 @@ checksum, downloaded and verified byte for byte. Full final pytest: **2140 passe
 [The evidence](phase/OT005-preparation-tool-links.md) records D247–D249 and the owner's ACTIVE-preparation report;
 completed real commands/receipt/activation are not claimed. OT005 was removed from the queue only after delivery.
 
-**Resume after `/clear`:** preserve the uncommitted handoff on `docs/ot006-preparation-consumption` and read
+**OT006 handoff:** committed and integrated into develop (`f185265`); read
 [OT006 evidence](phase/OT006-preparation-consumption.md). The later real preparation FAILED with `OwnershipLost`:
 one Claude session emitted 226,378 text characters with extensive repetition over about nine minutes, before any
 native command; its process group is now dead. Exact quota consumption and the repetition/lease root causes remain
-unproven. This request records evidence only; OT004 retains priority unless the owner reprioritizes OT006 and agrees
-its delivery target. Do not start Metrics Records or retry real preparation from this handoff.
+unproven. That request recorded evidence only; OT006 follows OT004 unless the owner reprioritizes it, and its delivery
+target is still to be agreed. Do not start Metrics Records or retry real preparation from this handoff.
 
 Publication did not replace/restart the operator installation: its separately installed source `be76164`
 contains the OT005 fixes with **0.1.4 metadata**, and the same loopback service remained running. Installing the
@@ -250,11 +251,14 @@ downloads. [Evidence and limits](phase/OT005-preparation-tool-links.md) include 
 local upgrades and the owner's progress into ACTIVE preparation. Publication did not restart/reinstall the service or
 invoke a real provider/project command. OT004/0.1.6 and Metrics Records remain unimplemented.
 
-## Planned one-off — visual profile and agent configuration editor (OT004)
+## Patch 0.1.6 — visual profile and agent configuration editor (OT004)
 
-The owner originally chose OT004 after OT003 (D243), then prioritized OT005 and moved this editor's separate target
-to **0.1.6**, still before Metrics Records (D246). Existing basic global/profile
-forms leave command/path/tool-capability settings in advanced TOML/JSON. OT004 will expose supported settings
-through interactive forms in project settings and applicable global settings, show scope/effective inheritance,
-and preserve fixed role restrictions and existing save/preparation/activation gates. The bounded task and
-acceptance/validation criteria are in ONE_OFF_TASKS. No OT004 product implementation or release is claimed.
+[D250](DECISIONS.md#d250--guided-profile-and-agent-forms-over-the-existing-configuration-contract): guided forms over
+the existing global/project tables. Globally: agent environment, version pin and tool capabilities, reusable
+profiles, compositions and agent presets (recipes stay TOML-only). Per project, in Settings and the overview: profile
+commands/JUnit/prefixes/paths/formatter/instructions, installed executables, command environment, authorization and
+limits, and the project's agent copies, as the stage allows (`check_candidate`). Tool lists only for a Claude
+executor; unsupported ones stay until explicitly removed. Client checks focus the field to correct; save reviews say
+whether a new preparation is required and which derived copies only change their global reference. Frontend only:
+no API, schema, format or dependency change. [Evidence](phase/OT004-visual-profile-editor.md) records 230 frontend
+tests, build and synthetic Chrome QA; the 0.1.6 delivery state is recorded there.

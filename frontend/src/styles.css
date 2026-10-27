@@ -601,3 +601,25 @@ pre.diff span { display: block; }
   .answers-bar { position: static; box-shadow: none; }
   .answers-bar .actions { width: 100%; }
 }
+
+/* OT004: guided profile, command and agent forms */
+.field-error { color: var(--danger); font-size: 13px; margin: 6px 0; }
+.project-configuration, .project-configuration fieldset, .project-configuration .form-row > *,
+.profile-fields, .commands-fields, .agent-fields { min-width: 0; }
+.lines-field textarea, .profile-fields textarea { width: 100%; }
+.project-configuration [aria-invalid="true"] { border-color: var(--danger); }
+.project-scope { background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+.project-scope p { margin: 4px 0; }
+.key-values .entry-list { margin: 8px 0 0; }
+.key-value { display: grid; grid-template-columns: minmax(120px, 220px) minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 4px 0; }
+.key-value label { margin: 0; font-weight: 400; overflow-wrap: anywhere; }
+.key-value .field-error, .key-value .hint { grid-column: 1 / -1; margin: 0; }
+.command-entry { background: var(--surface); }
+.item-actions { margin-top: 10px; }
+.catalog-entry { border-top: 1px solid var(--line); padding: 10px 0; }
+.catalog-entry > summary { cursor: pointer; font-weight: 650; overflow-wrap: anywhere; }
+.agent-role h3 { margin: 18px 0 0; }
+.save-impact ul { margin: 4px 0 12px; padding-left: 20px; }
+@media (max-width: 560px) { .key-value { grid-template-columns: minmax(0, 1fr); } }
+.profile-fields [readonly], .commands-fields [readonly], .agent-fields [readonly], .project-configuration input[readonly] {
+  background: var(--surface); border-style: dashed; }

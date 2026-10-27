@@ -15,8 +15,15 @@ const { configurationChange, preparationChange } = await import('../src/project-
 delete globalThis.__tsxHookHarness;
 const hash = c => c.repeat(64);
 const form = () => ({ format: 'project-config-1', profile_name: 'own-go', project: { id: 'own', root: '/synthetic/own' },
-  profile: { executor_instructions: 'Use Go', validations: [{ argv: ['go', 'test', './...'] }] },
-  commands: { executables: { go: '/synthetic/go' }, environment: { HOME: '/synthetic/own/.prepare/home', TMPDIR: '/synthetic/own/.prepare/tmp' } } });
+  global: { revision: 3, sha256: hash('9') },
+  profile: { executor_instructions: 'Use Go', preparation: [], validations: [{ argv: ['go', 'test', './...'], timeout_seconds: 600 }],
+    allowed_command_prefixes: [['go', 'test']], protected_paths: ['AGENTS.md'], sensitive_paths: ['.env'], data_model_paths: [] },
+  commands: { executables: { go: '/synthetic/go' }, environment: { HOME: '/synthetic/own/.prepare/home', TMPDIR: '/synthetic/own/.prepare/tmp' },
+    authorize_profile_commands: true, max_timeout_seconds: 1800, max_output_bytes: 1048576 },
+  policy: { planning_mode: 'agent', executor_mode: 'catalog', executor_models: ['synthetic-model'], executor_efforts: ['medium'] },
+  agents: { reviewer: { provider: 'codex', model: 'synthetic-model', effort: 'medium', timeout_seconds: 300, environment: { USER: 'synthetic' } },
+    executor: { provider: 'claude', timeout_seconds: 300, environment: { USER: 'synthetic' }, tools: ['Read', 'Edit'] } },
+  provenance: { source: 'profile-proposal', sha256: hash('a') } });
 const profile = () => ({ candidate: { name: 'own-go', profile: form().profile, tools: [{ name: 'go', requirement: 'Go synthetic' }] } });
 function environment(language = 'en') {
   const driver = hookHost(), storage = new Map(), requests = [], timers = [], results = new Map();
@@ -205,5 +212,61 @@ for (const language of ['en', 'es']) test(`an active own profile retains its man
     assert.ok(html.includes(env.catalog['assistance.edit_base']));
     assert.ok(html.includes(env.catalog['assistance.title']));
     assert.ok(env.requests.every(r => r.body === undefined));
+  } finally { env.close(); }
+});
+
+const props = (env, id) => { const element = env.host.elements.find(item => item.props?.id === id); assert.ok(element, id); return element.props; };
+const labelled = (env, label) => { const element = env.host.elements.find(item => item.type === 'button' && item.props['aria-label'] === label); assert.ok(element, label); return element.props; };
+const formRequests = env => env.requests.filter(r => r.path === '/api/managed/projects/own/configuration/form');
+
+for (const language of ['en', 'es']) test(`before the first activation only installed paths, environment and limits are editable (${language})`, async () => {
+  const env = environment(language), tree = env.tree();
+  try {
+    let html = await env.render(tree);
+    for (const key of ['editor.stage_initial', 'editor.agents_fixed', 'editor.profile_fixed', 'editor.fixed_names', 'editor.reviewer_fixed'])
+      assert.ok(html.includes(env.catalog[key]), key);
+    assert.equal(props(env, 'project-profile-profile-validations-0-argv').readOnly, true);
+    assert.equal(props(env, 'project-profile-agents-executor-tools').readOnly, true);
+    assert.ok(!env.host.elements.some(e => e.props?.id === 'project-profile-commands-executables-new-name'), 'tool names are fixed');
+    assert.ok(!env.host.elements.some(e => e.type === 'button' && e.props.children === env.catalog['editor.add_command'] && String(e.props['aria-label']).includes(env.catalog['editor.validations'])));
+    props(env, 'project-profile-commands-executables-go').onChange({ target: { value: '' } }); await env.render(tree);
+    env.reason('Complete tool paths'); await env.render(tree); env.click('profile.review_save'); html = await env.render(tree);
+    assert.equal(formRequests(env).length, 0, 'a missing installed path is reported before any request');
+    assert.ok(html.includes(env.catalog['configuration.required']));
+    props(env, 'project-profile-commands-executables-go').onChange({ target: { value: '/synthetic/go-1.30' } }); await env.render(tree);
+    env.reason('Complete tool paths'); await env.render(tree); env.click('profile.review_save'); await env.render(tree);
+    const sent = formRequests(env)[0].body.form;
+    assert.equal(sent.commands.executables.go, '/synthetic/go-1.30');
+    assert.deepEqual(sent.profile, form().profile); assert.deepEqual(sent.agents, form().agents); assert.deepEqual(sent.policy, form().policy);
+    assert.ok(!env.requests.some(r => /\/(save|activate|preparation\/confirm)$/.test(r.path)));
+  } finally { env.close(); }
+});
+
+for (const language of ['en', 'es']) test(`with the editing base the profile, commands and executor tools are guided forms (${language})`, async () => {
+  const env = environment(language);
+  const edit = { head: 'f'.repeat(40), documents: { 'AGENTS.md': hash('1') }, preparation_plan: { write_paths: [], local_paths: [] } };
+  env.state = { ...env.state, version: 2, status: 'READY', configuration_state: 'ACTIVE', active: { revision: 1, sha256: hash('a') },
+    saved: { revision: 1, sha256: hash('a') }, form: { ...form(), edit } };
+  env.preview = { effects: { projects: [{ scope: 'project:own', preparation_required: true }], jobs: [] } };
+  const tree = env.tree();
+  try {
+    let html = await env.render(tree);
+    assert.ok(html.includes(env.catalog['editor.stage_edit']));
+    assert.equal(props(env, 'project-profile-profile-validations-0-argv').readOnly, false);
+    labelled(env, `${env.catalog['editor.add_command']} · ${env.catalog['editor.validations']}`).onClick(); await env.render(tree);
+    props(env, 'project-profile-profile-validations-1-argv').onChange({ target: { value: 'go\nvet\n./...' } }); await env.render(tree);
+    env.reason('Add a vet validation'); await env.render(tree); env.click('profile.review_save'); html = await env.render(tree);
+    assert.equal(formRequests(env).length, 0, 'the new command still needs its timeout');
+    assert.ok(html.includes(env.catalog['configuration.positive']));
+    props(env, 'project-profile-profile-validations-1-timeout_seconds').onChange({ target: { value: '90' } }); await env.render(tree);
+    props(env, 'project-profile-agents-executor-tools').onChange({ target: { value: 'Read\nEdit\nWrite' } }); await env.render(tree);
+    assert.ok(!env.host.elements.some(e => e.props?.id === 'project-profile-agents-reviewer-tools' && e.type === 'textarea'), 'the reviewer has no tool lists');
+    env.reason('Add a vet validation'); await env.render(tree); env.click('profile.review_save'); html = await env.render(tree);
+    const sent = formRequests(env)[0].body.form;
+    assert.deepEqual(sent.profile.validations[1], { argv: ['go', 'vet', './...'], timeout_seconds: 90 });
+    assert.deepEqual(sent.agents.executor.tools, ['Read', 'Edit', 'Write']);
+    assert.deepEqual(sent.edit, edit); assert.deepEqual(sent.provenance, form().provenance); assert.deepEqual(sent.global, form().global);
+    assert.ok(html.includes(env.catalog['editor.impact_preparation']));
+    assert.ok(!env.requests.some(r => /\/(save|activate|preparation\/confirm)$/.test(r.path)), 'review alone saves nothing');
   } finally { env.close(); }
 });

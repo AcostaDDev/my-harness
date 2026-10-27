@@ -89,6 +89,18 @@ technical commit (D249). It does not show invented fixed content/hashes. Recipe 
 Full evidence, reason and explicit consent still bind the exact preview/configuration; confirmation and activation
 remain separate. Changing this display never launches preparation.
 
+Guided forms ([D250](../DECISIONS.md#d250--guided-profile-and-agent-forms-over-the-existing-configuration-contract))
+edit the same global/project tables as TOML. The global editor covers agents (other environment variables, version
+pin, tool capabilities), reusable profiles, compositions and agent presets; recipes stay TOML-only. The project
+editor, in the project's Settings and overview, edits profile commands (argv, cwd, timeout, environment, JUnit),
+prefixes, protected/sensitive/allowed/data-model paths, executor instructions, the formatter pair, installed paths,
+command environment, authorization/limits and the project's agent copies, as far as the stage allows: before the
+first activation only paths, environment, authorization and limits; later commands and agents, and the profile once
+the editing base is loaded. Tool lists exist only for a Claude Code executor; unsupported ones stay visible until
+removed explicitly. Client checks name the field to correct, the server stays authoritative, and save reviews state
+per project whether a new preparation is required, which derived copies change only their global reference and that
+admitted work keeps its frozen settings. Values without a control are carried over unchanged; editing calls nothing.
+
 Later editing uses the same gates. Technical changes need current committed documents and a new receipt;
 nontechnical changes may retain an exact compatible receipt after current verification. Optional assistance
 freezes active clients and authorized context. The reviewer returns a proposal in read-only mode; the executor

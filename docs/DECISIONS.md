@@ -1374,3 +1374,38 @@ Preserve recipe v1/v2 review, journal labels, raw evidence, exact preview hash/c
 idempotency and separate activation. Only frontend presentation/catalogs and current parity/evidence change; no API,
 schema, saved profile, provider execution or earlier plan/receipt rewrite. Reinstall locally for the owner's retest;
 release remains conditional on their success report.
+
+## D250 — Guided profile and agent forms over the existing configuration contract
+
+Status: accepted within OT004's scope (D243/D246); no permission, API, schema or configuration-format change.
+
+The owner resumed OT004 and authorized implementation, commits and its 0.1.6 delivery. The guided forms are UI over
+the existing `local-config-9` global and `project-config-1` project tables; they introduce no settings store.
+
+- **Global editor.** Agents keep their fields and also show other environment variables, an optional pinned client
+  version and their tool capabilities. Reusable `profiles`, `compositions` and `agent_presets` get add/edit/remove
+  forms. A profile still used by a composition cannot be removed from the form. Recipe compositions stay read-only
+  (their executables/authorization are fixed by the recipe) and `recipes` remain TOML-only, preserved unchanged.
+- **Project editor.** Mounted in the project's Settings as well as its overview, with the same save, preparation and
+  activation gates. Editability mirrors `check_candidate`: before the first activation the profile, agents and policy
+  stay those of the adopted proposal and admitted pair, and only installed paths of the proposal's tool names,
+  command environment, authorization and limits are editable. Later, commands and agents (not provider) are editable;
+  the profile requires the editing base bound to the committed documents. Policy is shown read-only (TOML edits it).
+  Project identity, global reference, provenance and editing base are carried over unchanged.
+- **Values.** Every control replaces only its own key, so values without a control survive form edits, conversion
+  and conflicts. Argv, patterns and tool lists are one exact value per line; blank lines are removed only on blur and
+  values containing a line break are read-only (edit them in TOML). Named values (environment, executables) are added
+  under a checked name and removed explicitly; existing names are not renamed in place.
+- **Capabilities.** Tool lists (`tools`, `allowed_tools`, `grantable_tools`) are offered only for a Claude Code
+  executor, described as explicit CLI tool permissions rather than a file/network/sandbox switch. The reviewer is
+  explained as fixed read-only and Codex as checkout-limited without lists. Lists made unsupported by a provider or
+  role change are kept visible, block validation and are removed only by an explicit action: never silently dropped
+  or granted.
+- **Validation and preview.** Client checks mirror the server's strict rules (shell-free argv with a logical name,
+  relative patterns/cwd, JUnit/formatter rules, absolute installed paths, exact authorization, limits, memory-disabled
+  Claude environment, version form) to focus the field to correct; the server remains authoritative. Projects check
+  only the sections their stage can change. Save reviews render the existing preview `effects`: per project whether a
+  new preparation is required, derived global copies (only their global reference changes) and admitted work kept
+  frozen. Editing calls nothing; save, preparation and activation keep their separate exact confirmations.
+
+Unchanged: the profile proposal editor in planning, legacy/query-only gates, OpenAPI/client types (version only).

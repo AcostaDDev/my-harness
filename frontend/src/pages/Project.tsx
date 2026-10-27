@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useI18n } from "../Language";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
-import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, usePoll } from "../ui";
+import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, Workbench, usePoll } from "../ui";
+import { LatestActivity } from "../Activity";
 import { useWorkspace } from "../workspace";
 import { ProjectProfile } from "./ProjectProfile";
 import { Preparation } from "./Preparation";
@@ -25,6 +26,7 @@ export function ProjectPage() {
     </PageHeader>
     <Stale error={detail.data ? detail.error ?? mode.error ?? phases.error ?? runs.error : undefined} />
     {mode.data?.refusal && <p className="state state-attention">{mode.data.refusal}</p>}
+    <Workbench label={t("activity.rail")} aside={<LatestActivity query={`/projects/${project}/runs?limit=1`} refresh={refresh} title={t("activity.title.project")} empty={t("activity.no_runs.project")} />}>
 
     {detail.data?.versions.project_recipe && !!phases.data?.length && <Preparation />}
 
@@ -52,6 +54,7 @@ export function ProjectPage() {
 
     {detail.data?.documents === "v2" && !phases.data?.length && <p><Link to={{ name: "onboarding", project }}>{t("project.onboard")}</Link></p>}
     {detail.data?.documents === "v2" && !phases.data?.length ? <Creation /> : detail.data?.configuration_state === "ACTIVE" ? <TaskForm /> : null}
+    </Workbench>
   </>;
 }
 

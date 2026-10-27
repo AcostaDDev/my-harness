@@ -8,11 +8,9 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-One entry is pending: **OT002 — question-first reviewer answers with individual/batch
-submission**, expected as `0.1.3` ([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)).
-Its implementation has not started; it includes actual use of Claude Code's frontend-design
-plugin in its implementation session. OT001 is complete and released as `0.1.2` (below).
-Complete the one-off queue before resuming the unchanged Metrics Records task P001-T001.
+The queue is empty: OT001 was released as `0.1.2` and OT002 as `0.1.3` (below,
+[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)). Work resumes with the unchanged Metrics
+Records task P001-T001.
 
 ## Accumulated baseline
 
@@ -111,6 +109,19 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
   above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
 
+## Patch 0.1.3 — question-first answers and live activity (OT002)
+
+[D240](DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail): in onboarding, definition and phase
+planning the reviewer's open questions come first, each with an answer field whose draft lives in browser local
+storage; one answer, a selection or all prepared answers are sent after an explicit review as one ordinary planning
+message (one turn), with states derived from the turns (draft, waiting, resolved, still asked, not reviewed) and
+drafts for questions no longer asked offered for an explicit decision. Question, blocking, deferral and adoption rules
+are unchanged. At the owner's request the release also uses the full window width and adds a sticky side rail
+(container query) whose live activity folds the run's recorded events into plain-language steps on the project, phase,
+task, run, chat and planning pages. Interface only: no API, schema or stored data change. Verified with offline suites,
+synthetic component/request tests and synthetic Chrome QA against an in-browser API mock; see the
+[work notes](phase/OT002-question-answers.md).
+
 ## Patch 0.1.2 — live agent configuration (OT001)
 
 [D238](DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary): a confirmed configuration set is staged
@@ -134,11 +145,12 @@ the frontend suites; no visual QA was run for these controls. Published as the G
 `e252fdc`) with a self-contained package built and checked locally
 ([work notes](phase/v0.1.1-model-selectors.md)).
 
-## Active phase — P001 Metrics Records (target 0.1.2)
+## Active phase — P001 Metrics Records (target: next patch after the one-off queue)
 
 Documentation initialized on 2026-10-27 at the user's request
 ([D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries)); reordered as P001 with target `0.1.2`
-by [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020).
+by [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020), then moved after the
+one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions).
 The [handoff](phase/P001-metrics-records.md) records the implemented `metrics-1` baseline, missing billing inputs,
 scope and verification matrix. [Reference notes](phase/P001-metrics-records-references.md) contain
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
@@ -146,7 +158,7 @@ independent USD/credit valuation and versioned reference records are planned, no
 [NEXT_STEPS](NEXT_STEPS.md) now contains the six pending task sections with dependencies, scope, acceptance,
 validation and deliverables; **next phase task is P001-T001**, the accounting contract/evidence inventory
 ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)). No task is complete and technical design remains pending
-T001. The installed/package version remains `0.1.1`; assigning a release target does not release it.
+T001. Assigning a release target does not release it.
 
 ## Planned phase — P002 Continuous Mode (target 0.2.0)
 

@@ -3,7 +3,8 @@ import { useI18n } from "../Language";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { PhaseCreate, PhaseDetail } from "../Phases";
-import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, usePoll, when } from "../ui";
+import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, Workbench, usePoll, when } from "../ui";
+import { LatestActivity } from "../Activity";
 import { useWorkspace } from "../workspace";
 import { TaskForm } from "./shared";
 
@@ -62,6 +63,8 @@ export function PhasePage({ code }: { code: string }) {
     </PageHeader>
     <Stale error={data ? phase.error : undefined} />
     {data && <PhaseRail status={data.status} />}
+    <Workbench label={t("activity.rail")} aside={<LatestActivity query={`/projects/${project}/runs?${new URLSearchParams({ phase: code, limit: "1" })}`} refresh={refresh}
+      title={t("activity.title.phase")} empty={t("activity.no_runs.phase")} />}>
     <section className="panel" aria-labelledby="phase-tasks">
       <h2 id="phase-tasks">{t("stats.tasks")}</h2>
       {!tasks.data ? <Loading /> : !tasks.data.items.length ? <Empty title={t("phases.tasks.empty")}>
@@ -88,5 +91,6 @@ export function PhasePage({ code }: { code: string }) {
       && <Suspense fallback={<Loading />}><PhasePlanPanel key={data.id} phase={data} stale={!!phase.error} /></Suspense>}
     {data && following && <p className="hint">{rich("phases.following", { phase: <Link to={{ name: "phase", project, phase: following }}>{following}</Link> })}</p>}
     {data && <PhaseDetail phase={data} stale={!!phase.error} />}
+    </Workbench>
   </>;
 }

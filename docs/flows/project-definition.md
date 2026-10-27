@@ -44,6 +44,10 @@ sequenceDiagram
     DB->>DB: P001 ACTIVE and documents adopted
 ```
 
+Questions are answered in their own fields and sent, one, a selection or all together, as one ordinary message per
+turn ([answers](project-onboarding.md#answering-the-reviewers-questions)); they stay open until an answered turn
+stops asking them or they are deferred with a reason.
+
 Acceptance is blocked by: missing mandatory documents, a ROADMAP without phases, P001 without objective and criteria,
 NEXT_STEPS without a valid `P001-TNNN` task, DECISIONS with repeated numbers, open blocking questions not deferred,
 or files outside the template.

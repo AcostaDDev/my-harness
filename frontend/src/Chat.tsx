@@ -4,7 +4,8 @@ import type { MessageKey } from "./i18n.ts";
 import { createOnce, managed, jobRequest, ManagedError } from "./managed-api";
 import type { S } from "./managed-api";
 import { Link, navigate } from "./navigation";
-import { Empty, Evidence, Loading, PageHeader, Stale, Status, message, usePoll } from "./ui";
+import { Empty, Evidence, Loading, PageHeader, Stale, Status, Workbench, message, usePoll } from "./ui";
+import { LiveActivity } from "./Activity";
 import { useWorkspace } from "./workspace";
 import { ChatCommand } from "./ChatCommand";
 import { commandNames, isCommand } from "./chat-commands";
@@ -98,7 +99,21 @@ function Conversation({ id }: { id: string }) {
     : error ? <p role="alert" className="state state-error">{error}</p> : <Loading>{t("chat.loading")}</Loading>;
   const v = conversation.version;
   const canSend = !busy && !error && (isCommand(text) || conversation.actions.includes("message"));
-  return <section className="panel" aria-labelledby="conversation-title">
+  const latest = conversation.turns.reduce<S["ChatTurnRead"] | undefined>((last, turn) => !last || turn.number > last.number ? turn : last, undefined);
+  const pending = conversation.proposals.filter(p => p.actions.includes("accept")).length;
+  return <Workbench label={t("chat.rail")} aside={<>
+    {latest ? <LiveActivity runId={latest.run_id} status={latest.run_status} refresh={refresh} title={t("activity.title.turn", { number: latest.number })} />
+      : <section className="activity" aria-labelledby="chat-activity"><div className="activity-head"><h2 id="chat-activity">{t("activity.title")}</h2></div>
+        <p className="hint">{t("activity.no_turns")}</p></section>}
+    <section className="rail-panel" aria-labelledby="chat-context">
+      <h2 id="chat-context">{t("chat.rail.context")}</h2>
+      <dl className="rail-stats">
+        <div className="rail-stat"><dt>{t("planning.rail.turns")}</dt><dd>{conversation.turns.length}</dd></div>
+        <div className={pending ? "rail-stat rail-stat-attention" : "rail-stat"}><dt>{t("chat.rail.proposals")}</dt><dd>{pending}</dd></div>
+      </dl>
+      <p className="hint">{conversation.phase ? rich("chat.context.phase", { phase: <Link className="mono" to={{ name: "phase", project, phase: conversation.phase.code }}>{conversation.phase.code}</Link> }) : t("chat.context.no_phase")}</p>
+    </section>
+  </>}><section className="panel" aria-labelledby="conversation-title">
     <h2 id="conversation-title">{conversation.title}</h2>
     <p className="hint">{conversation.phase ? <>{rich("chat.context.phase", { phase: <Link className="mono" to={{ name: "phase", project, phase: conversation.phase.code }}>{conversation.phase.code}</Link> })} <Status kind="phase" value={conversation.phase.status} /></> : t("chat.context.no_phase")} · {t("chat.context.version", { version: v })}</p>
     {conversation.task_run_id && <p className="hint">{rich("chat.context.task", { run: <Link to={{ name: "run-short", run: conversation.task_run_id }}>{t("trail.run", { id: conversation.task_run_id.slice(0, 8) })}</Link> })}</p>}
@@ -169,5 +184,5 @@ function Conversation({ id }: { id: string }) {
       <p className="hint">{t("chat.command.hint")}</p>
       <ChatCommand key={command.preview_sha256} command={command} />
     </section>}
-  </section>;
+  </section></Workbench>;
 }

@@ -24,7 +24,8 @@ is unimplemented. Resume from [OT005's evidence/delivery status](phase/OT005-pre
 starting the next one-off. The initial manual preview exposed an external Homebrew directory alias; the approved
 D248 amendment, source **`3e2ad45`**, is now qualified and installed after another authorized offline restart. The owner
 reported a loaded preview with missing generic step/file details. D249's bounded review display correction is now
-qualified (213 frontend tests and typecheck/build); reinstall/retest remains before conditional release. No real
+qualified (213 frontend tests and typecheck/build), installed as **`be76164`** with matching packaged/served UI assets
+and preserved data/configuration. The owner must reload/sign in and retest before conditional release. No real
 preparation was run by maintenance.
 [OT003](phase/OT003-intake-profile-diagnostics.md), including adoption and joint review (D244/D245), was released
 as **0.1.4** through PR #3 and its archive/checksum were verified after download.

@@ -1,7 +1,7 @@
 # OT005 — Generic preparation and read-only existing tool aliases
 
 **Status:** D248 is qualified/installed (`3e2ad45`). The owner's next screenshot loads the preview, exposing an
-incomplete generic review display; D249 is now source-qualified, awaiting local reinstall and owner retest.
+incomplete generic review display; D249 is now qualified and installed (`be76164`), awaiting the owner's retest.
 Separate 0.1.5 release is authorized conditionally on the owner confirming that verification succeeds.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
 **Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
@@ -263,3 +263,24 @@ same helper. Recipe v1/v2 labels, direct argv, fixed content/diff/hash review an
   the D248 backend source is unchanged from its green 2140-case run. No API model/schema/generated types changed.
 - Reviewed frontend/catalog/current-document diff; `git diff --check` passed. Local offline reinstall/package checks
   and the owner's repeat of the real review remain pending below; release authorization is still conditional.
+
+### D249 local reinstall and readiness
+
+Committed the source correction as **`be76164`** after the green frontend suite, reviewed diff and current task docs.
+Continued the authorized local test workflow: verified the live launcher/listener and idle state (seven DONE jobs,
+six STOPPED processes, no preparation, checkout lock or pending activation), stopped gracefully and captured a fresh
+private canonical SQLite-table/TOML hash baseline. No real job was run or replayed.
+
+The offline clone upgrade succeeded, retaining the previous generation and all data/configuration/cache locations.
+Generation **`gen-d55da990c2734752bd9038a02b1b2cf3`** is READY, with 0.1.4 metadata plus the OT005 source fixes.
+Exact artifact/license/checksum/member checks, isolated installed-wheel synthetic journey and `uv pip check` passed.
+All **102 installed UI asset files** match `frontend/dist` byte for byte; the backend preparation source is unchanged
+and matches the checkout. No migration, network download or configuration edit was performed.
+
+The detached installed service started on loopback 8013. HTTP root and its entry JS return **200**, and the served
+entry asset matches the qualified build. Every database-table/private-TOML hash matched the stopped baseline after
+installation and startup. A new private session key is available for the owner's login. No real preparation/provider
+or project command was invoked; no authorization checkbox or confirmation was submitted on the real project.
+
+The owner should reload, sign in and review the now-visible scope/executor/commands. Their actual preparation success
+is still pending; no archive/release PR/GitHub publication has been performed. OT005 remains in the delivery queue.

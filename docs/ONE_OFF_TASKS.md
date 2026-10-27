@@ -1,7 +1,7 @@
 # One-off tasks
 
-**Queue:** OT005 generic review display correction in progress after owner screenshot; then OT004.
-**Next: complete the OT005 generic plan review display (D249), reinstall/retest; then conditional 0.1.5 delivery.**
+**Queue:** OT005 amended backend/review UI installed; owner retest/delivery pending; then OT004.
+**Next: owner retests the complete OT005 review; on success, authorized 0.1.5 delivery; then OT004/0.1.6.**
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -39,15 +39,13 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT005 — Read-only existing tool aliases in generic preparation
 
-**Status:** D249's bounded generic-review display fix is implemented/qualified (213 frontend tests, typecheck/build
-passed) after the owner's screenshot showed missing steps/`undefined` file hashes. Local reinstall/retest is pending;
-no real preparation success is claimed.
-D247's initial local test failed on an external Homebrew directory alias. The owner-approved D248
-amendment is now qualified and installed: latest source commit **`3e2ad45`**, full pytest **2140 passed, 2 skipped,
-29 subtests passed**, real-checkout snapshot passed in read-only inspection. The latest authorized offline
-reinstall/restart preserved every database-table/private-TOML hash and returns HTTP 200 on loopback 8013.
-The owner must repeat the manual test; only their success report authorizes the archive, release PR to main and
-GitHub publication. Keep this section until delivery is completed or explicitly deferred (D242).
+**Status:** latest source **`be76164`** is installed: D247/D248 tool-chain fix plus D249's generic review display
+correction. Backend qualification remains 2140 pytest cases passed (2 skipped, 29 subtests); frontend 213 tests,
+typecheck/build and installed-package checks passed. All 102 installed UI asset files match the qualified build,
+HTTP root/entry JS return 200 and database/TOML hashes were preserved through the offline upgrade/restart.
+The owner must reload/sign in and repeat the real review/preparation test. No real preparation has been run by
+maintenance; only their success report authorizes the archive, release PR to main and GitHub publication.
+Keep this section until delivery is completed or explicitly deferred (D242).
 **Priority:** before OT004 and P001-T001, explicitly confirmed by the owner (D246).
 **Classification:** bounded hotfix outside the roadmap; separate patch **0.1.5**, after released OT003/0.1.4.
 **Branch:** `fix/ot005-preparation-tool-links`, created from `develop` at `a8efd10`. The source commit includes the

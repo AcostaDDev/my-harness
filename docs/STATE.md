@@ -13,16 +13,18 @@ profile/agent editor), before the unchanged Metrics Records task P001-T001 (D246
 OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005's initial manual preview failed
 on an external Homebrew directory alias; the owner-approved D248 amendment is now implemented, qualified and
 installed. The owner's next screenshot exposed missing generic review details; D249 now corrects that display
-(213 frontend tests/typecheck/build passed), awaiting local reinstall and retest. Release remains gated on manual success. OT004 is unimplemented; no Metrics task is complete.
+(213 frontend tests/typecheck/build passed) and is installed for another retest. Release remains gated on manual
+success. OT004 is unimplemented; no Metrics task is complete.
 
 **Resume after `/clear`:** OT005 source is on `fix/ot005-preparation-tool-links`, based on `develop` at `a8efd10`.
-Latest source commit **`3e2ad45`** adds exact external-directory evidence along declared tool chains, retaining the
-old policies for previous receipts (D247/D248). Full offline pytest: **2140 passed, 2 skipped, 29 subtests passed**.
-The authorized offline reinstall/restart is complete: installed source matches that commit, HTTP root is 200 and all
-SQLite table/private TOML hashes were preserved. Service is on loopback 8013; package/API/UI metadata is still 0.1.4.
-See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). The owner must retest preparation;
-only their success report authorizes the separate 0.1.5 archive/release PR/GitHub publication. Keep OT005 in the queue.
-No real provider or preparation was invoked by maintenance; no operator TOML edit, migration or publication occurred.
+Latest source commit **`be76164`** includes the D247/D248 exact tool-chain guards and D249's complete generic plan
+review (paths/effects, executor and nested commands). The unchanged backend last passed **2140 pytest cases,
+2 skipped, 29 subtests**; the frontend now passes **213 tests**, typecheck and build. The authorized offline
+reinstall/restart is complete: all **102 installed UI asset files** match the qualified build, served root/entry JS
+return 200 and all SQLite table/private TOML hashes were preserved. Service is on loopback 8013; metadata is still 0.1.4.
+See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). The owner must reload/sign in and
+retest preparation; only their success report authorizes the separate 0.1.5 archive/release PR/GitHub publication.
+Keep OT005 in the queue. No real provider/preparation, operator TOML edit, migration or publication was performed.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
 through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The
@@ -241,7 +243,8 @@ alias in the declared executable chain and keeps directory links inside the chec
 local restart preserved all data/configuration hashes and returned HTTP 200. Full results/limits are recorded in
 [the evidence](phase/OT005-preparation-tool-links.md). The owner must repeat their UI test; integration/version/package
 qualification and publication as 0.1.5 remain conditional on their success report. Keep OT005 in ONE_OFF_TASKS (D242).
-OT004/0.1.6 and Metrics Records remain unimplemented.
+D249's review display fix is also installed from `be76164` (213 frontend tests and installed UI asset checks passed).
+The owner must repeat the review before confirmation. OT004/0.1.6 and Metrics Records remain unimplemented.
 
 ## Planned one-off — visual profile and agent configuration editor (OT004)
 

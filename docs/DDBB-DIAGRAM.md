@@ -982,3 +982,31 @@ Own configuration authority is in scope references, while nullable registry comp
 Jobs seal project revision/hash and environment receipt in `versions_json`; earlier snapshots retain their bytes.
 A backup inventory covers all three tables plus referenced configuration/evidence. Restore keeps the existing
 query-only mark and execution disabled, without interpreting original paths as writable destinations.
+
+## Planned P001 accounting records (not implemented)
+
+Accepted [T001 design](phase/P001-T001-accounting-contract.md), D254–D257; implementation belongs to T003.
+**The operational schema remains 0027 with 54 tables.** Names below define planned logical responsibilities;
+no migration/table/column is created by T001. Existing metrics and configuration diagrams above describe production.
+
+| Planned table | Identity, contents and relationships |
+|---|---|
+| `usage_invocations` | Unique `(source_kind, source_id)`; managed-attempt UUID, preparation executor-step UUID or assistance-operation UUID. Optional native links are validated by source kind; no synthetic run. Scope, purpose/roles, frozen billing binding and lifecycle/expected-row coverage. |
+| `usage_captures` | Invocation FK + capture version + evidence digest unique; append-only allowlisted evidence, raw counters, normalization/provenance/completeness and capture time. No prompts/credentials or dependency on retained raw streams. |
+| `usage_components` | Capture FK + stable component key unique; invocation/model/request grain, exact model, disjoint quantities, optional parent/inclusion relation and unknown reasons. Alternative inclusive totals do not add together. |
+| `metrics_references` | Content-addressed immutable identity/tariff/bundle bytes, kind/version, SHA-256, source/observation/effective-period evidence and unit/conditions. Referenced rows survive retention. |
+| `valuation_cohorts` | Explicit operation/idempotency key, selection digest, binding/scenario, bounded progress and completion. A closed cohort fixes its expected membership and cannot advertise missing construction work as full coverage. |
+| `valuation_cohort_members` | Unique `(cohort, invocation, basis)`, with cohort/invocation FKs and optional selected valuation FK or explicit missing-evidence reason. Membership freezes at closure; the same valuation can be reused in several cohorts without duplicated amounts. |
+| `usage_valuations` | Capture/interpretation/calculator/profile/reference/basis/scenario identity unique; optional supersedes link. Immutable status/reasons, exact and rounded decimal-string totals/subtotals, rounding adjustment, discrepancy and coverage. Default admission-bound and explicit cohort alternatives are separate selections. |
+| `usage_valuation_lines` | Valuation FK + stable line key unique; component/reference links, disjoint quantity, rate, unit, modifiers, exact decimal-string amount and provenance. Never stored as SQLite REAL. |
+
+Global billing profiles will be owned by new immutable `local-config-10` revisions; project selectors by
+`project-config-2`. Existing configuration tables own those revisions, not a second activation authority.
+Invocation/valuation bindings retain sufficient profile/reference bytes and hashes for restored consultation.
+Native preparation executors currently use `managed_processes.preparation_id`, while configuration assistance
+uses `configuration_operations.payload.process`; neither implies a managed attempt. T003 must preserve these
+source boundaries and atomically record accounting alongside their native intent/result transactions.
+
+The new migration keeps `attempt_metrics`/`attempt_model_metrics`, frozen JSON/hashes and old API semantics intact.
+Snapshot-before-migration, explicit idempotent backfill/repricing, retention and format-3 backup/verification are
+part of T003. [Planned flow](flows/metrics-accounting.md); no on-read recalculation or query-only mutation.

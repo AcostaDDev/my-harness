@@ -322,3 +322,28 @@ a suggestion changes the draft. Legacy formats 1–8 retain original entry/hashe
 prepared converted profiles before activation. Configuration backup includes bytes/intents/evidence; query-only
 restore reads its bundle without original paths or clients and rejects editing, preparation, assistance and activation.
 See the [configuration flow](flows/configuration-setup.md) and [README](../README.md#configure).
+
+## 13. Accepted P001 accounting design (implementation pending)
+
+F13 currently uses `metrics-1` per-attempt metrics. [D254–D257](DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence)
+and the [T001 contract](phase/P001-T001-accounting-contract.md) define the additions for T002–T005; this section
+does not claim they are implemented. P001 targets **0.1.9 at phase closure**; P002 targets **0.2.0** (D253).
+
+- Account for native managed attempts, preparation executor steps and configuration-assistance calls, with
+  expected-row coverage and no fictitious attempts for deterministic operations. Failed/interrupted or unknown
+  calls are not free. Requested/effective models, terminal/constituent totals and inclusive delegated totals remain
+  distinct; incomplete partitions carry reasons rather than invented splits.
+- Separate reported estimates, exact local USD/credit valuations, subscription-equivalent scenarios and any future
+  confirmed billing evidence. P001 has no producer of confirmed bills or balances. No API credentials are required
+  to capture consumption; billing profiles cannot alter authentication. No universal credit/USD conversion or
+  subscription-fee allocation is inferred.
+- Freeze explicit billing profiles and immutable model/tariff references at admission, through new configuration
+  versions with existing save/activation gates. Preserve old bytes/hashes and jobs lacking billing bindings. Use
+  disjoint token categories, evidenced cache lifetimes/request tiers/modifiers and decimal-string amounts with
+  exact line arithmetic and one half-even rounding to 12 places per invocation valuation.
+- Unknown quantities, model, scheme, effective period or charges produce visible incomplete/unsupported results.
+  Group only compatible units/bases, count each invocation once, and show priced/unpriced/missing-row coverage.
+  Subscription equivalents remain counterfactual values, not additional charges or quota measurements.
+- Preserve histories, `metrics-1`, frozen summaries/catalogs and recipes. New interpretations/repricing are explicit
+  append-only operations; ordinary reads never price, backfill or fetch. Additive migration, retained evidence and
+  verified offline query-only archive consultation must ship together with data/flow/API/type/en-es parity.

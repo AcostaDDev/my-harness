@@ -1480,3 +1480,89 @@ lanes). No schema, dependency, configuration, API contract or frozen adapter/ver
 The owner explicitly authorized commit, integration/push, release PR/draft and verified archive/checksum, merge,
 publication/public verification, offline installation with the service stopped, and closure. This does not authorize
 real providers, a project retry or service start. Evidence: [OT007](phase/OT007-task-run-lease.md).
+
+## D253 — Phase release targets after 0.1.8
+
+Status: accepted at the owner's explicit confirmation during P001-T001.
+
+P001 Metrics Records targets **0.1.9**, published at phase closure; P002 Continuous Mode retains **0.2.0**,
+published at its closure. The initial request named 0.1.8, but OT007 already published that version; the owner
+confirmed 0.1.9 after this discrepancy was raised. Released tags/assets and their evidence are not rewritten.
+This fixes P001's current target under D239 and retains D233's specific allowance for additive metrics changes
+in that patch. Package/API/UI version metadata stays 0.1.8 until T006 qualifies the release candidate.
+
+Each phase task uses a topic branch from `develop`, with checked source integrated there. The owner authorized
+commit, merge where necessary and push for this session's task. That task delivery is separate from release PR,
+merge/tag on `main`, distribution verification/publication at closure, and local installation (D235/D242).
+T001 completes design only; it neither closes P001 nor publishes or installs anything.
+
+## D254 — Native invocation accounting and immutable evidence
+
+Status: accepted design in P001-T001; implementation pending T003–T004.
+
+The [accounting contract](phase/P001-T001-accounting-contract.md#4-record-grain-identity-and-completeness-d254)
+adds a shared invocation ledger keyed by native source kind/ID: managed attempt, generic preparation executor step,
+or configuration-assistance operation. Assistance/preparation retain their own journals without fabricated managed
+attempts. Deterministic work has no model invocation; expected but result-less invocations stay visible in coverage.
+Intent identity is persisted before launch; absent process evidence alone does not prove zero consumption.
+
+Versioned captures, evidence interpretations and model/request components are append-only and digest-bound. Terminal
+totals, constituent messages, model partitions and inclusive delegated parents are alternative views, not amounts
+to add together. Unknown model association, partition, inclusion or final usage leaves an explicit incomplete case.
+Requested model/effort never certifies reported selection. `metrics-1` and its historical semantics remain intact;
+new normalization is `usage-accounting-1`. D251/D252 fencing and independent stopped-writer rules remain authoritative.
+
+## D255 — Versioned billing profiles and offline reference binding
+
+Status: accepted design in P001-T001; implementation pending T002–T005.
+
+Global `local-config-10` will own named `billing-profile-1` definitions/defaults; `project-config-2` may select them
+per configured role. Existing versions retain bytes/hashes and load with unknown billing metadata. New-format save
+and activation remain explicit CAS confirmations with D238 boundaries; billing-only metadata must not invalidate
+otherwise compatible technical receipts. Admission/assistance/preparation freeze the resolved profile and reference
+bytes/digests. Existing queued jobs/plans without a binding stay unknown, not rebound to current settings.
+
+Model identity and tariff references are separate content-addressed `metrics-reference-1` documents, pinning exact
+identifiers, product/scheme/unit, source/locale/observation, effective interval or explicit unknown, conditions and
+structured overrides. T002 packages immutable seed data; T003 stores referenced bytes; T005 offers explicit bounded
+JSON import through configuration. No network refresh on reads or calculation. Conflicting identity/content or
+unresolved applicability cannot silently select a tariff. Subscription-equivalent scenarios are labelled separately
+from API USD, Enterprise USD, credits and reported estimates. Billing metadata never changes CLI authentication;
+there is no invoice/balance integration, billed-amount editor or universal credit/USD conversion in P001.
+
+## D256 — Disjoint quantities and exact decimal valuations
+
+Status: accepted design in P001-T001; implementation pending T002–T005.
+
+The [calculation contract](phase/P001-T001-accounting-contract.md#6-normalization-calculation-and-discrepancy-d256)
+defines `valuation-1`: disjoint uncached input, cache reads, writes by evidenced lifetime, output and separately
+evidenced tool charges. Reasoning remains inside output. Claude excludes cache from raw input; the established
+Codex CLI baseline includes reads, while nonzero-write semantics remain uncharacterized. Responses API write
+partition documentation is not evidence of CLI emission and cannot change `metrics-1` in place.
+
+Rates/amounts use decimal strings and bounded Decimal arithmetic with precision 160; exact line sums are rounded
+once per invocation to 12 places with ROUND_HALF_EVEN. Aggregation sums persisted rounded totals exactly. Modifiers
+are reference/category-specific, never inferred from effort or speed. Missing TTL, request tier, model, scheme or
+charge evidence yields complete/incomplete/unsupported results with coverage and stable reasons; no zero/default
+tariff fallback. Comparable reported estimates keep a signed delta and evidence-based precision tolerance; unknown
+bases are not comparable. Existing float records are preserved. Full details and synthetic boundary/rounding cases
+are in the contract; T001's arithmetic checks are documentation evidence, not an implemented calculator.
+
+## D257 — Additive accounting history, explicit cohorts and archive parity
+
+Status: accepted design in P001-T001; implementation pending T003–T006.
+
+New invocation/capture/component/reference/valuation/cohort tables are additive; T001 changes neither schema nor
+API. T003 uses D150 snapshot-before-migration, native-source transactions and unique digest keys. Legacy results,
+metrics/configuration hashes, run projection, frozen summaries/catalogs and recipes are never overwritten. Preserve
+`metrics-backfill`; add explicit, previewed accounting backfill/repricing with bounded cohorts and reports.
+New interpretations/values append records. Ordinary totals use original admission-bound valuations; explicit
+analysis selects one closed cohort, counting each invocation once. No implicit latest-price selection or GET-time
+backfill/recalculation. Incomplete cohort construction cannot advertise full coverage.
+
+Retention preserves sufficient accounting evidence and all referenced bytes. T003 adds backup format 3 with digest
+and native-link verification; older formats retain their supported matching-schema contract. Old archive upgrades
+need a documented explicit copy/new-bundle path, not in-place query-only mutation. Restored consultation works
+without roots, clients, network or executable authority. T004 adds bounded decimal-string API contracts alongside
+unchanged legacy fields; T005 keeps en/es and archive controls in parity. All planned data/flows are labelled
+unimplemented until the corresponding task provides code and evidence.

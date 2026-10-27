@@ -1,8 +1,10 @@
 # OT004 — Visual profile and agent configuration editor
 
-**Status:** source implemented and checked on `feat/ot004-visual-profile-editor`; 0.1.6 delivery in progress (below).
+**Status:** released as **0.1.6** on 2026-10-27 through [PR #5](https://github.com/AcostaDDev/my-harness/pull/5),
+merge/tag `0319b66` / `v0.1.6`. GitHub archive/checksum downloaded and verified; OT004 delivery complete.
 **Priority/target:** separate patch **0.1.6** after OT005/0.1.5, before OT006 and P001 Metrics Records (D246).
-**Task contract:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot004--visual-profile-and-agent-configuration-editor).
+**Release task contract:** [OT004 at the immutable v0.1.6 tag](https://github.com/AcostaDDev/my-harness/blob/v0.1.6/docs/ONE_OFF_TASKS.md#ot004--visual-profile-and-agent-configuration-editor).
+Current queue: [ONE_OFF_TASKS](../ONE_OFF_TASKS.md).
 **Decisions:** [D243](../DECISIONS.md#d243--visual-profile-editing-as-ot004-before-metrics-records),
 [D246](../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
 [D250](../DECISIONS.md#d250--guided-profile-and-agent-forms-over-the-existing-configuration-contract).
@@ -89,6 +91,41 @@ client type regeneration produced no diff. No dependency change.
   `scripts/check_distribution.py --cache-dir .local/uv-cache`: exact members, metadata, licenses and `SHA256SUMS`;
   isolated installed wheel UI/assets/API, session, definition/task/commit/restart, errors and restored evidence OK.
 - Local links/anchors of the changed documents: 157 checked, none broken; `git diff --check` clean.
+
+## Delivery state
+
+- Topic commits: implementation `99ff5f0`, release preparation `1364a18`; integrated into develop by `bd0787b`
+  (topic deleted) and develop pushed. [PR #5](https://github.com/AcostaDDev/my-harness/pull/5), develop → main, is
+  open, mergeable and clean.
+- The session's first attempt to merge PR #5 was refused by its permission classifier (merge without review); it was
+  not retried or worked around until the owner explicitly authorized the merge (below).
+- main is an ancestor of develop with no main-only commits, so the future merge commit's tree equals `bd0787b`'s
+  tree. The final distribution was therefore built offline from a clean detached worktree of `bd0787b`
+  (`build_distribution.py --offline`, existing caches) and passed `check_distribution.py` again: exact members,
+  metadata, licenses and `SHA256SUMS`; isolated installed-wheel UI/API/session/definition/task/commit/restart/error/
+  restored-evidence journey. The temporary worktree was removed.
+- `my-harness-0.1.6-distribution.tar.gz`: **3,684,914 bytes**, SHA-256
+  **`85118b567993f040c542876e1381a12c23948a7999e1273ff997a35a05780e55`**; root `my-harness-0.1.6/` with the same
+  **13 files** as 0.1.5's layout, every file passing its `SHA256SUMS` entry after extraction.
+- A **draft** GitHub Release `v0.1.6` (target `main`) first carried the archive and its `.sha256`; both were
+  downloaded and matched the local files byte for byte before publication.
+
+## Published 0.1.6
+
+The owner then explicitly asked the session to merge PR #5, publish the release and record it.
+
+- PR #5 merged with a merge commit at **`0319b66b1a0c6de0c5f84db2f85d35a300e7414f`**: parent one is the 0.1.5 release
+  `b0d035d`, parent two the develop integration `bd0787b`, and its tree equals `bd0787b`'s tree exactly, so the
+  archive built from that tree is the release artifact without rebuilding.
+- The draft was published as [GitHub Release v0.1.6](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.6)
+  (not draft or prerelease); tag `v0.1.6` points to the release merge `0319b66`.
+- The public `curl` downloads from the README URLs verify against the published `.sha256`, match the local archive
+  and checksum byte for byte, and all 13 archived files pass `SHA256SUMS`.
+- develop was fast-forwarded to the release merge and pushed; this closing documentation is integrated on develop
+  separately, so the tagged source is not rewritten. OT004 is removed from ONE_OFF_TASKS; OT006 is next.
+
+No local installation, service restart or operator configuration change was part of this delivery: upgrading an
+installation to 0.1.6 is a separate operator action with stopped service/writers.
 
 ## Not covered
 

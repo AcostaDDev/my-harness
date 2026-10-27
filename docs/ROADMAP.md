@@ -14,9 +14,10 @@ OT003 was released as 0.1.4 outside the roadmap. The owner subsequently confirme
 hotfix → 0.1.5**, before **OT004 visual profile editor → 0.1.6**, then P001
 ([D246](DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor) supersedes D243's target/order;
 D239/D242 still govern separate patch deliveries). OT005 was released as **0.1.5** through PR #4, with its archive
-and checksum verified after download. OT004 remains unimplemented and next in [ONE_OFF_TASKS](ONE_OFF_TASKS.md).
-OT006 subsequently records a real repetitive-preparation/ownership-loss incident, pending after OT004 with no
-release target yet; its evidence-only handoff does not change D246's priority or authorize a production retry.
+and checksum verified after download. OT004 was released as **0.1.6** through PR #5 (tag `v0.1.6`), with its
+archive and checksum verified after download.
+OT006 records a later real repetitive-preparation/ownership-loss incident and is now next in the one-off queue, with no
+release target yet; its evidence-only handoff does not authorize a production retry.
 See [OT005 release evidence](phase/OT005-preparation-tool-links.md); no Metrics task is complete.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit

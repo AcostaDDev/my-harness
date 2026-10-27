@@ -317,7 +317,12 @@ D247 adds optional inline `read_only_tool_links` evidence to new generic plans/r
 access still uses `O_NOFOLLOW`, and directory links inside the checkout remain refused. File/directory links share
 the ceiling; no external directory is enumerated. Plans without the marker retain the strict D247 resolver. Snapshots
 and post-effect guards reverify tool hashes and exact chain text/modes; receipt verification also checks the complete
-captured alias path set. Recovery preserves the original opt-in/policy marker or historical policy. Protected links
+captured alias path set. Recovery preserves the original opt-in/policy marker or historical policy. D251: preview and
+launch require a usable Claude file-writing tool for an executor with write scope (shared `inventory`/`write_tools`
+with the argv). `streams.OutputGuard` (`output-guard-1`) stops degenerate repetitive Claude text. The preparation
+agent journal records each chunk's events in one transaction. Heartbeat failures are retried within the lease and
+reported at settlement. An interrupted invocation leaves `capture.json`, which the closing owner settles from
+independent group liveness. Protected links
 remain refused, stable-environment evidence is separate, and recipe fingerprints/sources are unchanged.
 
 Alembic 0026 adds three configuration tables (scope references, revisions and operations); 0027 makes registered

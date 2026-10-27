@@ -341,8 +341,10 @@ def test_real_cli_transport_journals_preparation_process_without_run_or_attempt(
     service, _, _, _, _, tool = generic
     from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
     probe = str(Path(__file__).with_name('cli_process_probe.py'))
+    # D251: a Claude writer needs a usable file-writing tool; Codex writes through its sandbox.
+    writer = {'tools': ('Read', 'Write'), 'allowed_tools': ('Read', 'Write')} if provider == 'claude' else {}
     configurations = {role: CLIConfig(provider, (sys.executable, probe, provider, 'success'),
-                         '0.163.0' if provider == 'codex' else '2.1.304', (), 10)
+                         '0.163.0' if provider == 'codex' else '2.1.304', (), 10, **(writer if role == 'executor' else {}))
                       for role in ('reviewer', 'executor')}
     root = service.runtime.project('child').context.root
     def agent(self, project):
@@ -1008,3 +1010,149 @@ def test_tool_file_link_cannot_hide_a_directory_requirement(generic, suffix):
     (binaries / 'python3.14').symlink_to(str(tool) + suffix)
     with pytest.raises(RegistryError):
         service.preview('child', body)
+
+
+# OT006/D251: writer tools, repetitive output, lease renewal and interrupted evidence. Synthetic streams only.
+
+def cli_agent(monkeypatch, tool, mode, *, tools=('Read', 'Write', 'Edit'), allowed=('Read', 'Write', 'Edit'),
+              environment=()):
+    from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+    probe = str(Path(__file__).with_name('cli_process_probe.py'))
+    configs = {'reviewer': CLIConfig('claude', (sys.executable, probe, 'claude', mode), '2.1.304', environment, 30),
+               'executor': CLIConfig('claude', (sys.executable, probe, 'claude', mode), '2.1.304', environment, 30,
+                                     tools=tools, allowed_tools=allowed)}
+    monkeypatch.setattr(ProfilePreparation, '_agent',
+                        lambda self, project: CLIProcessAdapter(configs, tool.parent / f'{mode}-captures'))
+
+
+def lease(service, monkeypatch, seconds):
+    monkeypatch.setattr(service.runtime, 'config', replace(service.runtime.config, lease_seconds=seconds))
+
+
+def executor_process(service, operation_id):
+    with Session(service.runtime.engine) as session:
+        process = session.scalar(select(Process).where(Process.preparation_id == operation_id,
+                                                       Process.spec['adapter_version'].as_string() == 'cli-14'))
+        session.expunge_all()
+        return process
+
+
+@pytest.mark.parametrize('tools,allowed', [((), ()), (('Read', 'Write'), ('Read',)), (('Read',), ('Read', 'Write'))])
+def test_claude_writer_without_usable_write_tool_is_refused_before_confirmation(generic, monkeypatch, tools, allowed):
+    service, body, _, _, _, tool = generic
+    cli_agent(monkeypatch, tool, 'success', tools=tools, allowed=allowed)
+    with pytest.raises(RegistryError) as refused:
+        service.preview('child', body)
+    assert refused.value.code == 'profile_preparation_executor_tools'
+    with Session(service.runtime.engine) as session:
+        assert session.scalar(select(func.count()).select_from(Operation)) == 0
+
+
+def test_previously_confirmed_toolless_writer_fails_before_any_launch(generic, monkeypatch):
+    service, _, _, _, _, tool = generic
+    cli_agent(monkeypatch, tool, 'success', tools=(), allowed=())
+    # A plan queued before D251 had no tool check; simulate it by bypassing only the preview check.
+    monkeypatch.setattr(ProfilePreparation, '_writer_tools', staticmethod(lambda agent, technical: None))
+    op = confirm(generic)
+    monkeypatch.undo()
+    cli_agent(monkeypatch, tool, 'success', tools=(), allowed=())
+    assert service.run_once() == op['id']
+    result = service.repository.read(op['id'])
+    assert result['status'] == 'FAILED' and result['receipt'] is None
+    assert 'Write, Edit or MultiEdit' in result['diagnostic']
+    assert executor_process(service, op['id']) is None
+    assert not (tool.parent / 'success-captures').exists()
+
+
+def test_repetitive_preparation_executor_is_stopped_and_never_accredited(generic, monkeypatch):
+    service, _, _, _, _, tool = generic
+    cli_agent(monkeypatch, tool, 'repetitive')
+    op = confirm(generic)
+    assert service.run_once() == op['id']
+    result = service.repository.read(op['id'])
+    assert result['status'] == 'FAILED' and result['receipt'] is None
+    assert 'output-guard-1' in result['diagnostic']
+    process = executor_process(service, op['id'])
+    assert process.status == 'STOPPED' and process.capture['status'] == 'repetitive'
+    assert process.capture['group_state'] == 'dead' and process.capture['final_usage_observed'] is False
+    assert process.capture['output_guard']['code'] == 'repetitive_output'
+    assert process.capture['output_guard']['native_tool_uses'] == 0
+    assert Path(process.capture['artifacts']['stdout']['path']).stat().st_size == process.capture['artifacts']['stdout']['size']
+    steps = {s['spec']['kind']: s['status'] for s in result['steps']}
+    assert steps['executor'] == 'STARTED' and steps['commit'] == 'PENDING'
+    with Session(service.runtime.engine) as session:
+        assert session.get(Lock, result['plan']['root']) is None
+
+
+def test_stream_events_are_journaled_per_chunk_not_per_record(generic, monkeypatch):
+    from my_harness.storage.preparation import PreparationAgentJournal
+    service, _, executor, _, _, tool = generic
+    cli_agent(monkeypatch, tool, 'long_text', environment=(('PROBE_LINES', '1500'),))
+    transactions = []
+    original = PreparationAgentJournal.process_updates
+    def counted(self, step_id, items):
+        transactions.append(len(items))
+        return original(self, step_id, items)
+    monkeypatch.setattr(PreparationAgentJournal, 'process_updates', counted)
+    op = confirm(generic)
+    assert service.run_once() == op['id']
+    result = service.repository.read(op['id'])
+    # The probe edits nothing, so the native command finds no Go files; the executor step itself completed.
+    assert next(s for s in result['steps'] if s['spec']['kind'] == 'executor')['status'] == 'DONE'
+    events = [e for e in result['events'] if e['kind'] == 'executor_agent_event']
+    assert len(events) == 1501 and sum(transactions) >= 1501 + 3
+    assert len(transactions) < len(events) / 10
+    assert executor_process(service, op['id']).capture['output_guard']['code'] is None
+
+
+def test_transient_heartbeat_failure_is_retried_within_the_lease(generic, monkeypatch):
+    import time
+    from sqlalchemy.exc import OperationalError
+    service, _, executor, *_ = generic
+    lease(service, monkeypatch, 3)
+    original, calls = service.repository.heartbeat, []
+    def heartbeat(operation_id, token, seconds):
+        calls.append(time.monotonic())
+        if len(calls) == 1:
+            raise OperationalError('UPDATE', {}, Exception('database is locked'))
+        return original(operation_id, token, seconds)
+    monkeypatch.setattr(service.repository, 'heartbeat', heartbeat)
+    effect = executor.effect
+    # The synthetic executor outlives one whole lease; only renewed ownership can accredit its step.
+    executor.effect = lambda root: (time.sleep(4.5), effect(root))
+    result = finish(generic)
+    assert len(calls) >= 3
+    settled = next(e for e in result['events'] if e['kind'] == 'settled')
+    assert settled['payload']['heartbeat'] == {'failures': 1, 'last_error': 'OperationalError', 'lost': False}
+
+
+def test_lost_lease_stops_streaming_executor_and_settles_interrupted_evidence(generic, monkeypatch):
+    from sqlalchemy.exc import OperationalError
+    service, _, _, _, _, tool = generic
+    lease(service, monkeypatch, 1.5)
+    cli_agent(monkeypatch, tool, 'hang', environment=(('PROBE_USAGE', '1'),))
+    def heartbeat(operation_id, token, seconds):
+        raise OperationalError('UPDATE', {}, Exception('database is locked'))
+    monkeypatch.setattr(service.repository, 'heartbeat', heartbeat)
+    op = confirm(generic)
+    assert service.run_once() == op['id']  # The probe sleeps 60 s; lease loss must end it much earlier.
+    result = service.repository.read(op['id'])
+    assert result['status'] == 'FAILED' and result['receipt'] is None
+    assert 'OperationalError' in result['diagnostic'] and 'ownership was lost' in result['diagnostic']
+    settled = next(e for e in result['events'] if e['kind'] == 'settled')
+    assert settled['payload']['heartbeat']['failures'] >= 1
+    process = executor_process(service, op['id'])
+    # Settled by the closing owner from independent liveness, with the adapter's partial capture.
+    assert process.status == 'STOPPED' and process.capture['status'] == 'interrupted'
+    assert process.capture['interruption'] == 'OwnershipLost' and process.capture['settled_by'] == 'closing_owner'
+    assert process.capture['group_state'] == process.capture['reported_group_state'] == 'dead'
+    # Message-start counters stay reported as unfinished; nothing is completed or summed into a total.
+    assert process.capture['final_usage_observed'] is False
+    assert process.capture['artifacts']['stdout']['size'] > 0
+    interrupted = [e for e in result['events'] if e['kind'] == 'process_interrupted']
+    assert len(interrupted) == 1 and interrupted[0]['payload']['partial_capture'] is True
+    assert next(s for s in result['steps'] if s['spec']['kind'] == 'executor')['status'] == 'STARTED'
+    with Session(service.runtime.engine) as session:
+        assert session.get(Lock, result['plan']['root']) is None
+    # Recovery still needs the explicit, unchanged confirm-stopped/successor route; nothing replays.
+    assert service.run_once() is None

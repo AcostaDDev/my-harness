@@ -31,7 +31,7 @@ from my_harness.i18n import emission, message, tr
 from my_harness.recipes import django, django_2, typescript_web, typescript_web_2
 from my_harness.services.project_creation import directory, identity
 from my_harness.services.project_registry import RegistryError, digest
-from my_harness.storage.managed import Conflict
+from my_harness.storage.managed import Conflict, OwnershipLost
 from my_harness.storage.models import (
     CheckoutLockRow as Lock, RegisteredProjectRow as Project, ManagedJobRow as Job, ManagedRunRow as Run,
     ProjectBootstrapRow as Bootstrap, ProjectPreparationOperationRow as Operation,
@@ -794,12 +794,23 @@ class ProjectPreparation:
     def _run_claimed(self, claim):
         operation_id, token = claim
         stopping = ThreadEvent()
+        renewal = {'failures': 0, 'last_error': None, 'lost': False}
         def heartbeat():
-            while not stopping.wait(self.runtime.config.lease_seconds / 3):
+            interval = self.runtime.config.lease_seconds / 3
+            wait = interval
+            while not stopping.wait(wait):
                 try:
                     self.repository.heartbeat(operation_id, token, self.runtime.config.lease_seconds)
-                except Exception:
+                    wait = interval
+                except OwnershipLost:
+                    renewal['lost'] = True
                     return
+                except Exception as exc:
+                    # D251: a transient failure (for example SQLite busy under stream writes) is retried
+                    # promptly while the lease lasts; the ownership guard itself is unchanged.
+                    renewal['failures'] += 1
+                    renewal['last_error'] = type(exc).__name__
+                    wait = min(interval, 1.0)
         thread = Thread(target=heartbeat, daemon=True, name='preparation-heartbeat')
         thread.start()
         receipt, error = None, None
@@ -838,6 +849,7 @@ class ProjectPreparation:
             thread.join()
             with self.managed._write() as session:
                 row = self.repository.require(session, operation_id)
+                self.repository.interrupted(session, row)
                 row.owner_closed = True
                 self.repository.event(session, row, 'owner_closed')
                 try:
@@ -853,12 +865,17 @@ class ProjectPreparation:
                     row.diagnostic = tr('preparation.cancelled_bytes')
                 else:
                     row.status = 'FAILED' if stopped and row.status == 'ACTIVE' else 'RECOVERY_REQUIRED'
-                    row.diagnostic = tr('preparation.stopped', reason=(
-                        str(error) if isinstance(error, (ValueError, JournalError))
-                        else type(error).__name__ if error else tr('preparation.uncertain_effect')))
+                    if isinstance(error, OwnershipLost) and (renewal['failures'] or renewal['lost']):
+                        reason = tr('preparation.heartbeat_lost', failures=renewal['failures'],
+                                    error=renewal['last_error'] or type(error).__name__)
+                    else:
+                        reason = (str(error) if isinstance(error, (ValueError, JournalError))
+                                  else type(error).__name__ if error else tr('preparation.uncertain_effect'))
+                    row.diagnostic = tr('preparation.stopped', reason=reason)
                 if stopped:
                     session.execute(delete(Lock).where(Lock.preparation_id == row.id))
-                self.repository.event(session, row, 'settled', {'status': row.status, 'diagnostic': row.diagnostic})
+                self.repository.event(session, row, 'settled', {'status': row.status, 'diagnostic': row.diagnostic,
+                    **({'heartbeat': renewal} if renewal['failures'] or renewal['lost'] else {})})
             if receipt and error is None:
                 self.bind(self.runtime.project(operation['project_id']))
         return operation_id

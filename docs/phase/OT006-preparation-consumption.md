@@ -1,7 +1,10 @@
 # OT006 — Preparation consumption and ownership-loss incident
 
-**Status:** evidence/handoff only, recorded 2026-10-27 at the owner's request before clearing context.
-No runtime fix, retry, recovery confirmation, installation or new provider invocation was performed during diagnosis.
+**Status:** causes established and fix implemented on `fix/ot006-preparation-consumption`
+([D251](../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)), target
+patch **0.1.7**; see [Resolution](#resolution-d251) and [Delivery state](#delivery-state). The sections down to
+"Resume after context reset" are the original handoff (2026-10-27), kept as recorded. No retry, recovery confirmation,
+installation or new provider invocation was performed during diagnosis or the fix.
 Task contract: [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot006--repetitive-preparation-executor-output-and-ownership-loss).
 Documentation topic: `docs/ot006-preparation-consumption`, from develop `3876230`.
 
@@ -122,3 +125,148 @@ this incident. `OwnershipLost` is a Harness ownership diagnostic, not a provider
 
 Checks for this handoff: read-only database/artifact aggregation, source comparison and independent group-liveness
 check; documentation diff/link checks. No product tests, model calls or production mutations were needed or run.
+
+## Resolution (D251)
+
+**Release target.** On 2026-10-27 the owner asked the session to continue with OT006 and, once it was done, open
+the GitHub pull request, build the `.tar.gz` and upload it. Under D239 that makes OT006 patch **0.1.7**, on the
+existing topic → `develop` → release PR → `main` route (D235). Merging the PR and publishing the release follow the
+0.1.6 precedent: each needs its own explicit owner instruction.
+
+### Additional read-only observations
+
+The operator database was opened again with `mode=ro`, and only argv flags and aggregates were read. No prompt, raw
+stream, project name or identifier was printed or copied.
+
+| Observation | Value |
+| --- | --- |
+| Executor CLI / adapter | Claude Code 2.1.311 / `cli-14`, `timeout_seconds` 3600 |
+| Executor `--tools` / `--allowedTools` | `''` / `''`: **no tool at all** |
+| Permission mode | `dontAsk` |
+| Frozen plan | 6 write paths, 24 dependency entries, no network destinations |
+| Journal events | 19,488 total (17,299 agent events, 2,180 byte events) |
+| Largest gap between consecutive events | 2.48 s (directories step), at most 0.79 s while streaming |
+| Last event before closing | 18:00:53.398, then `owner_closed` 18:00:53.832 |
+
+The stream writer kept journaling until about 50 ms before the persisted lease deadline. With the default 30 s
+lease, the last successful renewal was about 18:00:23. Journaling never stalled, so the lease expired because
+renewal stopped while streaming went on.
+
+### Established causes
+
+1. **Repetitive text (established).** Generic preparation asked a Claude executor to write six confirmed paths but
+   launched it with an empty tool inventory. The only way it could "act" was to write tool-call markup as text.
+   That text (1,795 `<invoke` markers, 11 distinct lines, no native `tool_use`) is the textual imitation recorded
+   above. Nothing in preview or launch checked that the writer had a usable write tool, and nothing bounded output
+   apart from the 3,600 s timeout. A model or effort change would not have fixed it: no tools existed.
+2. **Ownership loss (mechanism reproduced; incident exception unrecorded).** `_run_claimed`'s heartbeat thread
+   returned on its **first** exception, so one transient failure ended renewal and the lease expired one lease
+   later. The next guarded journal write or cancel check raised `OwnershipLost`. The adapter then stopped the group
+   and re-raised before `process_finished`, which left the stale `RUNNING` row with no capture. Each stream record
+   was its own write transaction (about 35 per second here). A synthetic SQLite experiment (WAL, one tight writer
+   loop, scratch files only) showed how this can happen: with a 1 s busy timeout, 3 of 15 competing heartbeat-style
+   writes failed with `database is locked`; with the product's 5 s timeout, single waits reached 5.36 s. The
+   specific exception in the real incident was not recorded, so SQLite busy remains the most plausible trigger, not
+   a proven one. Against the old service code, the new synthetic test with one injected `OperationalError`
+   reproduces the incident's exact diagnostic, `Preparation stopped: OwnershipLost`.
+3. **Quota.** Exact consumption is still unknown. The initial counters and character counts above remain the only
+   evidence; the fix changes nothing in how usage is accounted.
+
+### Accepted design and implementation
+
+Recorded in D251; no schema, migration, API, configuration-format, dependency or `cli-14` change.
+
+- `adapters/cli_agents.py`: `inventory()` is shared with argv construction, and `write_tools()` /
+  `executor_write_tools()` report the usable `Write`/`Edit`/`MultiEdit`. Stream events are flushed per read chunk
+  through `process_updates` when the journal supports it. The process spec records `output_guard`. A guard stop
+  ends the group with status `repetitive`. Captures add `output_guard` and `final_usage_observed`. After a spawn,
+  an exception writes `capture.json` (status `interrupted`) beside the attempt's artifacts.
+- `adapters/streams.py`: `OutputGuard` (`output-guard-1`, 400-line window with at most 20 distinct lines, or one
+  line over 262,144 characters). It counts Claude `text_delta` text only and keeps native tool uses and textual
+  markers as separate counts.
+- `services/profile_preparation.py`: `_writer_tools` refuses at preview and again before launch, and a guard stop
+  maps to `profile_preparation_executor_repetitive`.
+- `services/project_preparation.py`: the heartbeat retries non-ownership failures within one second while the lease
+  lasts. Settlement records `heartbeat` and a `preparation.heartbeat_lost` diagnostic, then calls
+  `interrupted()` before `owner_closed`.
+- `storage/preparation.py`: `PreparationAgentJournal.process_updates` (one guarded transaction per chunk) and
+  `PreparationRepository.interrupted` (independent group liveness, kept partial capture, never replaces a stored
+  capture, `process_interrupted` event).
+- en/es catalogs: `preparation.heartbeat_lost`, `profile_preparation.executor_tools`,
+  `profile_preparation.executor_repetitive`.
+- Parity: D251, CHANGELOG 0.1.7, ARCHITECTURE and `docs/flows/project-preparation.md`. Data model, OpenAPI paths
+  and client types are unchanged (OpenAPI only carries the new `info.version`).
+
+### Synthetic regression tests
+
+`tests/product/test_output_guard.py` (new, 18 cases) covers:
+
+- stopping the repeated tool imitation exactly when the window fills;
+- split deltas and split markers;
+- five legitimate long shapes that are not stopped: numbered lines, code with repeated braces, native tool input,
+  blank lines and thinking;
+- the single-line limit;
+- Codex having no guard;
+- the writer inventory matrix, including grantable tools and scoped rules;
+- a real CLI-transport repetitive stream stopped with a dead group, kept artifacts, initial-only usage and
+  `final_usage_observed=false`;
+- a long varied stream that completes;
+- an interrupted invocation that leaves `capture.json` while the fenced journal row stays stale `RUNNING`.
+
+`tests/product/test_profile_preparation.py` gains 9 cases:
+
+- a Claude writer without a usable write tool is refused at preview (3 variants);
+- an older queued plan fails before any launch;
+- the repetitive preparation executor is stopped, with no receipt and the lock released;
+- 1,501 stream records are journaled in fewer than a tenth as many transactions;
+- one transient heartbeat failure is retried and the preparation completes (it fails on the old code);
+- permanent renewal failure stops a streaming executor promptly and settles `STOPPED` from independent liveness
+  with its partial capture (it fails on the old code with a bare `OwnershipLost`).
+
+The existing Claude transport test now configures explicit `Read`/`Write` executor tools. Every fixture is
+synthetic; nothing from the real stream, prompt or project was copied.
+
+### Checks
+
+All checks ran offline on macOS ARM64 / Python 3.14 with temporary SQLite, Git and processes.
+
+- Full pytest (`-n 4`): **2166 passed, 2 skipped, 29 subtests passed**, 0 failed (353 s). An earlier full run had
+  one failure, `test_exported_openapi_matches_runtime_without_database_side_effects`, only because the version bump
+  landed during that run. The module then passed alone (10/10), and the final run above started after every change.
+- Focused suites: new output-guard tests 18/18 and the new preparation cases 9/9. Run against the old
+  `project_preparation.py`, both heartbeat tests fail, which shows they detect the defect.
+- `python3 -m unittest discover -s tests -p 'test_*.py'`: 10 passed. Frontend `node --test`: **230 passed**; `tsc`
+  typecheck passed.
+- Fresh temporary SQLite `alembic upgrade head` + `alembic check`: no new upgrade operations.
+- `scripts/export_openapi.py` differs only in `info.version` (0.1.7); `generate:types` produced no diff.
+- `git diff --check` clean.
+
+## Delivery state
+
+- Topic `fix/ot006-preparation-consumption` from develop `f7f3917`: fix `6c88977` and this release
+  preparation commit (shared version **0.1.7** in `pyproject.toml`, `api/app.py`, `frontend/package.json`/lock,
+  the `uv.lock` project entry, exported OpenAPI, CHANGELOG and en/es README download instructions). No dependency
+  change.
+- Route in this session, on the owner's request: merge into develop (`--no-ff`) and push it, open a release pull
+  request develop → main, build `my-harness-0.1.7-distribution.tar.gz` offline from a clean worktree of the develop
+  integration commit, run `check_distribution.py`, and upload the archive and its `.sha256` to a **draft** GitHub
+  Release `v0.1.7` targeting `main`, then verify both by downloading them. The PR number, archive size and SHA-256
+  are listed in the PR description and the draft release.
+- **Outstanding** (each on its own explicit owner instruction, as for 0.1.6): merge the PR with a merge commit,
+  publish the draft so tag `v0.1.7` points at that merge, verify the public downloads, and record closing evidence
+  here. Then remove OT006 from ONE_OFF_TASKS. Installing 0.1.7 on the operator machine is a separate action with
+  the service and writers stopped.
+
+## Not covered
+
+- No real provider, real preparation retry, recovery confirmation of the failed operation, service restart or
+  installation. The failed operation stays `FAILED` exactly as recorded; its linked successor would now be refused
+  at preview until the operator configures a write tool for the Claude executor.
+- The guard watches Claude text only. Codex partial text is not streamed by `exec --json`, and thinking loops are not
+  inspected. The thresholds are engineering bounds checked against synthetic cases, not tuned on provider data.
+- Task runs were not changed. Their journal still writes once per stream record. `LocalSupervisor`'s heartbeat
+  also stops after its first exception, but unlike preparation it sets `heartbeat_failed`, so the next journal call
+  stops the attempt with an explicit diagnostic. Its exposure to transient SQLite busy is the same wider issue and
+  is left for a separately scoped task.
+- Why the original SQLite write failed (or whether something else raised) is unproven. Real account quota
+  attribution is still impossible to infer.

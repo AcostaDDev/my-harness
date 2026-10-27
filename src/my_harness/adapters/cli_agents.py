@@ -20,7 +20,7 @@ from threading import Event, Lock, Thread
 import time
 
 from my_harness.adapters.processes import CancellationResult, identity, liveness, stop_group
-from my_harness.adapters.streams import AgentStream
+from my_harness.adapters.streams import AgentStream, OutputGuard
 from my_harness.adapters.cli_compatibility import (CompatibilityError, MINIMUM, POLICY_SHA256,
                                                       eligible, guard_contract, launch_identity, version_tuple)
 from my_harness.core.engine.contracts import AgentResult, freeze
@@ -48,6 +48,8 @@ ROLES = {"executor": "executor", "planner": "reviewer", "reviewer": "reviewer", 
          "chat": "reviewer", "bootstrap": "reviewer", "definition": "reviewer", "planning": "reviewer",
          "configuration": "reviewer"}
 READ_TOOLS = ("Read", "Glob", "Grep")
+# D251: Claude file-writing tools. A writer without one enabled and allowed can only imitate tool calls in text.
+WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
 SHAPES = {
     "configuration": {"text": "complete candidate TOML", "rationale": "reasoned explanation", "questions": []},
     "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
@@ -131,6 +133,26 @@ class CLIConfig:
                 raise ValueError(tr('agents.invalid_explicit_tool_permission'))
         if self.provider == "codex" and (self.tools or self.allowed_tools or self.grantable_tools):
             raise ValueError(tr('agents.codex_has_no_explicit'))
+
+
+def inventory(config, extra_tools=()):
+    """Claude writer `--tools`/`--allowedTools`: grantable tools stay absent until an explicit
+    baseline rule or a persisted grant enables them for this attempt."""
+    gated = {rule.split('(', 1)[0] for rule in config.grantable_tools}
+    enabled = {rule.split('(', 1)[0] for rule in tuple(config.allowed_tools) + tuple(extra_tools)}
+    tools = tuple(tool for tool in config.tools if tool not in gated or tool in enabled)
+    allowed = tuple(dict.fromkeys(tuple(config.allowed_tools) + tuple(extra_tools)))
+    return tools, allowed
+
+
+def write_tools(config):
+    """D251: file-writing tools a Claude writer can actually use without grants; None for Codex,
+    whose workspace-write sandbox is the write authority."""
+    if config.provider != 'claude':
+        return None
+    tools, allowed = inventory(config)
+    permitted = {rule.split('(', 1)[0] for rule in allowed}
+    return [tool for tool in WRITE_TOOLS if tool in tools and tool in permitted]
 
 
 def access_for(role):
@@ -230,12 +252,7 @@ def argv_for(config, context, request):
         # Read-only reviewer: file tools confined to the checkout, structured result.
         tail = ("--restricted", "--json-schema", freeze(reader_schema(request)))
     else:
-        # Tools declared grantable are absent from the inventory until this attempt
-        # has an explicit matching baseline rule or a persisted grant.
-        gated = {rule.split('(', 1)[0] for rule in config.grantable_tools}
-        enabled = {rule.split('(', 1)[0] for rule in tuple(config.allowed_tools) + tuple(extra_tools)}
-        tools = tuple(tool for tool in config.tools if tool not in gated or tool in enabled)
-        allowed = tuple(dict.fromkeys(tuple(config.allowed_tools) + tuple(extra_tools)))
+        tools, allowed = inventory(config, extra_tools)
         tail = ()
     return config.executable + (
         "--print", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
@@ -324,6 +341,9 @@ class CLIProcessAdapter:
             # Invocation loop owns signals/reaping to avoid concurrent PID races.
             return CancellationResult(True, "pending")
 
+    def executor_write_tools(self):
+        return write_tools(self.agents["executor"])
+
     def bind_preparation(self, journal, versions):
         """Separate D218 lane; the confirmed plan owns CLI identity instead of a managed run."""
         if self.journal is not None or self.frozen_versions() != versions:
@@ -335,6 +355,30 @@ class CLIProcessAdapter:
         with self.lock:
             for _, cancelled in self.active.values():
                 cancelled.set()
+
+    @staticmethod
+    def _guard_evidence(parser):
+        # Message-start usage is an initial counter; only a terminal result carries final usage.
+        return {"output_guard": parser.guard.summary() if parser.guard is not None else None,
+                "final_usage_observed": len(parser.terminals) == 1}
+
+    def _interrupted(self, directory, error, parser, process, started, started_at, sizes, hashes, group_state):
+        """D251: the journal may refuse writes (lost ownership), so the partial capture goes beside the
+        attempt's own artifacts. It is evidence of an interrupted attempt, never a completed result."""
+        capture = {"status": "interrupted", "interruption": type(error).__name__, "started_at": started_at,
+                   "wall_duration_seconds": time.monotonic() - started, "observed": parser.observed,
+                   "normalization": METRICS_CAPTURE, "stream_metrics": parser.metrics.summary(),
+                   **self._guard_evidence(parser),
+                   "artifacts": {name: {"path": str(directory / f"{name}.bin"), "size": sizes[name],
+                                        "sha256": hashes[name].hexdigest()} for name in sizes},
+                   "exit_code": process.returncode, "group_state": group_state}
+        try:
+            with (directory / "capture.json").open("x") as file:
+                file.write(freeze(capture))
+                file.flush()
+                os.fsync(file.fileno())
+        except (OSError, TypeError, ValueError):
+            pass  # Never mask the original failure; the raw artifacts remain.
 
     def invoke(self, context, request):
         if self.journal is None:
@@ -403,6 +447,7 @@ class CLIProcessAdapter:
                 'guard_contract': 'validated-local-request',
                 'version_source': self.binding_versions.get(f'{agent}_cli_version_source', 'legacy-assertion'),
                 'discovery_source': self.binding_versions.get(f'{agent}_cli_discovery', 'explicit'),
+                "output_guard": OutputGuard.POLICY if config.provider == "claude" else None,
                 "requested": {"model": request.selection.model, "effort": request.selection.effort,
                               "fresh_session": True}}
         self.journal.process_intent(request.id, spec)
@@ -411,9 +456,24 @@ class CLIProcessAdapter:
         process = None
         gate_read, gate_write = os.pipe()
         cancelled = Event()
-        parser = AgentStream(config.provider, lambda kind, data: self.journal.process_update(request.id, kind, data))
+        pending = []
+        parser = AgentStream(config.provider, lambda kind, data: pending.append((kind, data)))
+        batch = getattr(self.journal, "process_updates", None)
+
+        def flush():
+            # D251: a journal that supports it records each read chunk's events in one transaction.
+            items = pending[:]
+            pending.clear()
+            if items and batch is not None:
+                batch(request.id, items)
+            else:
+                for kind, data in items:
+                    self.journal.process_update(request.id, kind, data)
+
         status_override = None
         write_error = []
+        hashes = {name: hashlib.sha256() for name in ("stdout", "stderr")}
+        sizes = {name: 0 for name in hashes}
         try:
             process = subprocess.Popen((sys.executable, str(Path(__file__).with_name("process_gate.py")),
                                         str(gate_read), *argv), cwd=context.root, env=dict(config.environment),
@@ -448,8 +508,6 @@ class CLIProcessAdapter:
             writer = Thread(target=write_prompt, daemon=True)
             writer.start()
             deadline = time.monotonic() + config.timeout_seconds
-            hashes = {name: hashlib.sha256() for name in ("stdout", "stderr")}
-            sizes = {name: 0 for name in hashes}
             drain_deadline = None
             with selectors.DefaultSelector() as selector, (directory / "stdout.bin").open("xb") as out, (directory / "stderr.bin").open("xb") as err:
                 files = {"stdout": out, "stderr": err}
@@ -472,8 +530,8 @@ class CLIProcessAdapter:
                         files[name].write(chunk)
                         files[name].flush()
                         os.fsync(files[name].fileno())
-                        self.journal.process_update(request.id, "stream_bytes", {"stream": name,
-                            "offset": sizes[name], "size": len(chunk), "sha256": hashlib.sha256(chunk).hexdigest()})
+                        pending.append(("stream_bytes", {"stream": name, "offset": sizes[name], "size": len(chunk),
+                                                         "sha256": hashlib.sha256(chunk).hexdigest()}))
                         sizes[name] += len(chunk)
                         hashes[name].update(chunk)
                         if name == "stdout":
@@ -485,12 +543,19 @@ class CLIProcessAdapter:
                                 status_override = "invalid"
                                 stop_group(process)
                                 drain_deadline = time.monotonic() + 0.3
+                            if parser.stop is not None and status_override is None:
+                                # D251: degenerate output stops the owned group; bytes stay as evidence.
+                                status_override = "repetitive"
+                                stop_group(process)
+                                drain_deadline = time.monotonic() + 0.3
+                        flush()
                     if drain_deadline is not None and time.monotonic() >= drain_deadline:
                         # Remaining readable bytes have been drained by the iteration above.
                         break
                 process.poll()
                 writer.join(timeout=0.3)
             status, payload = parser.finish(process.returncode)
+            flush()
             status = status_override or status
             if payload is not None and request.role == "executor" and "permission_denials" in parser.observed:
                 data = json.loads(payload)
@@ -506,6 +571,7 @@ class CLIProcessAdapter:
             metadata = {"status": status, "started_at": started_at,
                         "wall_duration_seconds": time.monotonic() - started, "observed": parser.observed,
                         "normalization": METRICS_CAPTURE, "stream_metrics": parser.metrics.summary(),
+                        **self._guard_evidence(parser),
                         "artifacts": {name: {"path": str(directory / f"{name}.bin"), "size": sizes[name],
                                              "sha256": hashes[name].hexdigest()} for name in sizes},
                         "exit_code": process.returncode, "group_state": group_state}
@@ -515,10 +581,11 @@ class CLIProcessAdapter:
             return AgentResult(payload if status == "complete" else None, len(parser.terminals) == 1,
                                process.returncode, error=None if status == "complete" else f"CLI {status}",
                                status=status, metadata_json=freeze(metadata))
-        except BaseException:
+        except BaseException as exc:
             # Persistence/parse errors never allow an untracked live writer to continue.
             if process is not None:
-                stop_group(process)
+                group_state = stop_group(process).group_state
+                self._interrupted(directory, exc, parser, process, started, started_at, sizes, hashes, group_state)
             raise
         finally:
             for fd in (gate_read, gate_write):

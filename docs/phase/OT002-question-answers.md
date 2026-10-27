@@ -83,6 +83,15 @@ it against the plugin's list of templated defaults:
   phones; keyboard only: typing, Tab/Space to select, Enter on the review button moving focus to the review heading,
   visible focus rings.
 
+- Release package: `scripts/build_distribution.py --offline` from the tree of `v0.1.3`, then
+  `scripts/check_distribution.py --cache-dir .local/uv-cache` (exact members, metadata, licenses, `SHA256SUMS`,
+  isolated wheel journey: OK; without the repository cache the isolated install cannot find the wheels offline).
+  `my-harness-0.1.3-distribution.tar.gz` has the same layout as 0.1.2, SHA-256
+  `1496547a9fb8d2d11d0031e2410bc50db62c984fe3cf19e4738964185a4bcc91`.
+- Released through pull request #2 (`develop` → `main`, merge commit `64c21d0`, lightweight tag `v0.1.3`) and
+  published as the GitHub Release `v0.1.3`; the downloaded asset matches its `.sha256` and the local build byte for
+  byte.
+
 ## Not run or not covered
 
 - No real service, database or provider was used for the visual QA; the mock reproduces documented shapes, not a

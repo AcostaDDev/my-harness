@@ -119,8 +119,9 @@ drafts for questions no longer asked offered for an explicit decision. Question,
 are unchanged. At the owner's request the release also uses the full window width and adds a sticky side rail
 (container query) whose live activity folds the run's recorded events into plain-language steps on the project, phase,
 task, run, chat and planning pages. Interface only: no API, schema or stored data change. Verified with offline suites,
-synthetic component/request tests and synthetic Chrome QA against an in-browser API mock; see the
-[work notes](phase/OT002-question-answers.md).
+synthetic component/request tests and synthetic Chrome QA against an in-browser API mock. Published as the GitHub
+Release `v0.1.3` (tag on the release merge `64c21d0`) with a self-contained package built and checked locally; see
+the [work notes](phase/OT002-question-answers.md).
 
 ## Patch 0.1.2 — live agent configuration (OT001)
 

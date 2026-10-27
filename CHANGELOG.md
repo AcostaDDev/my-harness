@@ -31,6 +31,25 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.7] — 2026-10-27
+
+Patch release for OT006 (D251). Install the new package after stopping the service and writers; projects,
+configuration and histories are preserved. No configuration format, API contract, database schema, migration,
+dependency, recipe or `cli-14` adapter-version change.
+
+### Fixed
+
+- Generic preparation no longer launches a Claude executor that has write scope but no usable file-writing tool.
+  Preview refuses it with an en/es diagnostic naming `Write`, `Edit` or `MultiEdit`, and plans queued earlier fail
+  before launch. Tools are never granted automatically.
+- Repetitive streamed Claude text is bounded by `output-guard-1`, which stops the owned process group, keeps the raw
+  output as evidence and issues no receipt.
+- Preparation lease renewal retries transient failures within the lease instead of stopping after the first one,
+  and records why renewal failed. Stream events are journaled once per read chunk, which reduces write pressure.
+- Interrupted executor attempts leave a partial capture beside their artifacts. The closing owner settles their
+  process rows from an independent liveness check instead of leaving a stale `RUNNING` row. Captures say whether
+  final usage was observed.
+
 ## [0.1.6] — 2026-10-27
 
 Patch release for OT004 (D250). Install the new package after stopping the service and writers; projects,

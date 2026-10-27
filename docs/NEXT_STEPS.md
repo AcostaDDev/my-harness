@@ -17,9 +17,10 @@ The completed intake/configuration fix is documented in
 [failed-intake-activation](phase/failed-intake-activation.md) and committed as
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
-[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT004 visual profile/agent editor → 0.1.6**, then
-**OT006 repetitive preparation/ownership loss**, whose target remains pending (D246's OT004 assignment is unchanged).
-Both are unimplemented; [OT006's sanitized incident handoff](phase/OT006-preparation-consumption.md) records the
+[ONE_OFF_TASKS](ONE_OFF_TASKS.md) currently takes precedence: **OT006 repetitive preparation/ownership loss**, whose
+target remains pending. OT004's visual profile/agent editor was released as **0.1.6** through
+[PR #5](https://github.com/AcostaDDev/my-harness/pull/5), merge/tag `0319b66` / `v0.1.6`
+([evidence](phase/OT004-visual-profile-editor.md)). OT006 is unimplemented; [OT006's sanitized incident handoff](phase/OT006-preparation-consumption.md) records the
 later FAILED real preparation and the limits of quota attribution. Its registration authorizes no runtime retry.
 OT005's tool-chain/preparation-review fix was released
 as **0.1.5** through [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), merge/tag `b0d035d` / `v0.1.5`;
@@ -27,7 +28,7 @@ the self-contained archive/checksum were downloaded from GitHub and verified byt
 [OT005 evidence](phase/OT005-preparation-tool-links.md). The owner explicitly authorized publication after reaching
 ACTIVE preparation; a completed real receipt/activation is not claimed. Publication left the installed service running.
 [OT003](phase/OT003-intake-profile-diagnostics.md) was released as **0.1.4** through PR #3. OT005 was removed from
-the queue after delivery verification; resume P001-T001 after both pending one-offs are completed or explicitly rerouted. No phase
+the queue after delivery verification; resume P001-T001 after OT006 is completed or explicitly rerouted. No phase
 task is completed by these one-offs.
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before

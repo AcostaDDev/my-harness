@@ -8,11 +8,17 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT004**, the visual profile/agent editor targeting its own **0.1.6** patch, then **OT006**,
-the later repetitive-preparation/ownership-loss incident (release target pending), before the
-unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005 were released separately as
-0.1.2/0.1.3/0.1.4/**0.1.5** (D239). OT004's source is implemented on its topic (D250); its 0.1.6 delivery is in
-progress. No Metrics task is complete.
+The queue contains **OT006**, the repetitive-preparation/ownership-loss incident (release target pending), before
+the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004 were released separately as
+0.1.2/0.1.3/0.1.4/0.1.5/**0.1.6** (D239). No Metrics task is complete.
+
+OT004 (D250) was integrated on develop at `bd0787b`, released through
+[PR #5](https://github.com/AcostaDDev/my-harness/pull/5), merge **`0319b66`**, and tagged **`v0.1.6`**. The
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.6) includes the self-contained archive and
+checksum, downloaded and verified byte for byte. Full pytest: **2140 passed, 2 skipped, 29 subtests** (`-n 4`; two
+earlier default-worker runs under heavy unrelated load each hit one different pre-existing timing race, recorded in
+the evidence); **230 frontend tests**, 10 unittest cases, typecheck/build, temporary schema and installed-wheel checks
+passed. OT004 was removed from the queue only after delivery. Publication did not install or restart anything.
 
 OT005 was integrated on develop at `b50070d`, released through
 [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), merge **`b0d035d`**, and tagged **`v0.1.5`**. The
@@ -26,8 +32,7 @@ completed real commands/receipt/activation are not claimed. OT005 was removed fr
 [OT006 evidence](phase/OT006-preparation-consumption.md). The later real preparation FAILED with `OwnershipLost`:
 one Claude session emitted 226,378 text characters with extensive repetition over about nine minutes, before any
 native command; its process group is now dead. Exact quota consumption and the repetition/lease root causes remain
-unproven. That request recorded evidence only; OT006 follows OT004 unless the owner reprioritizes it, and its delivery
-target is still to be agreed. Do not start Metrics Records or retry real preparation from this handoff.
+unproven. That request recorded evidence only; OT006 is now next, and its delivery target is still to be agreed. Do not start Metrics Records or retry real preparation from this handoff.
 
 Publication did not replace/restart the operator installation: its separately installed source `be76164`
 contains the OT005 fixes with **0.1.4 metadata**, and the same loopback service remained running. Installing the
@@ -249,7 +254,7 @@ or blank steps, retaining recipe review and the existing confirmation/activation
 Released as **0.1.5** through PR #4 and tag `v0.1.5` on `b0d035d`, with qualified final artifacts and matching GitHub
 downloads. [Evidence and limits](phase/OT005-preparation-tool-links.md) include the synthetic matrix, full checks,
 local upgrades and the owner's progress into ACTIVE preparation. Publication did not restart/reinstall the service or
-invoke a real provider/project command. OT004/0.1.6 and Metrics Records remain unimplemented.
+invoke a real provider/project command. OT004 followed as 0.1.6; Metrics Records remains unimplemented.
 
 ## Patch 0.1.6 — visual profile and agent configuration editor (OT004)
 
@@ -261,4 +266,5 @@ limits, and the project's agent copies, as the stage allows (`check_candidate`).
 executor; unsupported ones stay until explicitly removed. Client checks focus the field to correct; save reviews say
 whether a new preparation is required and which derived copies only change their global reference. Frontend only:
 no API, schema, format or dependency change. [Evidence](phase/OT004-visual-profile-editor.md) records 230 frontend
-tests, build and synthetic Chrome QA; the 0.1.6 delivery state is recorded there.
+tests, build, full regression, distribution checks and synthetic Chrome QA. Released as **0.1.6** (PR #5, tag
+`v0.1.6` on `0319b66`) with verified GitHub downloads.

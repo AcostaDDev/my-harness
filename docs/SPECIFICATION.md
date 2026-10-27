@@ -275,6 +275,9 @@ Global `local-config-9` and own `project-config-1` are private versioned files o
 activate are separate exact-preview confirmations. SQLite owns revision references; CAS and durable intentions
 support reconciliation without replacing earlier snapshots. Global changes cover derived project copies and
 require restart; project changes activate between tasks with current evidence and no pending/uncertain writers.
+Empty failed intake conversations with no output, draft changes or surviving proposals/edits are not
+pending adoptable work; answered, uncertain or substantive intake work retains the barrier
+([D236](DECISIONS.md#d236--empty-failed-intake-turns-are-not-pending-configuration-work)).
 
 Definition and onboarding can converse without a stack profile. Documentary context/static HEAD inventory precedes
 proposals with meaningful validations and evidence per command. Proposal adoption, documentary commit/P001,

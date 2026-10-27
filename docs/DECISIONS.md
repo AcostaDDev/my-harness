@@ -1071,3 +1071,22 @@ The repository is public since 2026-10-27, and GitHub protects `main`: changes n
 approvals, as there is a single maintainer), the rule also applies to administrators, and force pushes and deletion
 are refused. A release is therefore a pull request from `develop` to `main` merged with **Create a merge commit**,
 which is the `--no-ff` merge above; squash or rebase would break the shared history with `develop`.
+
+
+## D236 — Empty failed intake turns are not pending configuration work
+
+Status: accepted.
+
+Clarification of the D221 work barrier: a definition/onboarding conversation whose
+turns all ended FAILED with no result, unchanged observations and no observed drafts
+is not adoptable work when it also has no known drafts, edit log, deferrals or
+proposals. Its historical rows remain intact; the next explicit turn freezes the
+then-active configuration through the normal path. This permits an operator to
+confirm and activate a corrected client timeout after an empty intake failure.
+
+Answered, queued, unknown or unobserved turns, partial results, observed/known
+drafts, edit history, deferrals and proposals keep the conversation barrier. Job,
+writer/checkout, preparation, acceptance, commit-intent and phase-operation barriers
+remain independent and unchanged. Save, activation preview, confirmation and restart
+remain separate; this exception neither activates configuration nor retries a model.
+No API, schema, frozen format, source snapshot or previous run is rewritten.

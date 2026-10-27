@@ -131,3 +131,19 @@ explicit bounded authorization, retaining stop conditions, READY and recovery gu
 pending; this is not implemented
 ([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
+
+## Bounded fix — activation after empty intake failure
+
+On `fix/failed-intake-activation`, the work barrier no longer classifies a fully
+failed, observed-unchanged, empty definition/onboarding conversation as adoptable
+pending work. Real/uncertain jobs, answered turns, drafts, edits, deferrals,
+proposals and other barriers remain protected (D236). Frozen histories are unchanged.
+This source correction is separate from P001 Metrics Records; no P001 task is complete.
+An explicitly authorized offline local upgrade installed the correction and
+restarted the service, preserving configuration and historical rows; no release
+was published. After the operator confirmed the normal activation preview, a second
+restart promoted saved revision 3. The operator then restored the explicit client
+paths/PATH in revision 4 and confirmed its activation; a further requested restart
+promoted revision 4 with both clients at 3600 seconds. No new provider invocation was started.
+Focused synthetic checks and limitations are recorded in
+[the fix artifact](phase/failed-intake-activation.md).

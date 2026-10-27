@@ -35,6 +35,14 @@ CAS, exact preview hashes and idempotency keys guard intentions before atomic fi
 not change active authority. Global activation covers derived private project copies and takes effect on restart;
 project activation takes effect between tasks after the work barrier and receipt checks. Saving alone does neither.
 
+Empty failed definition/onboarding turns do not count as pending adoptable work
+([D236](../DECISIONS.md#d236--empty-failed-intake-turns-are-not-pending-configuration-work)):
+every turn must be FAILED with no result, unchanged observations and no observed drafts,
+and the conversation must have no known drafts, edit log, deferrals or proposals.
+Existing jobs, uncertain writers and all other work barriers still block. Historical
+turns stay immutable; a later explicit message uses newly frozen active clients.
+Activation still requires its exact preview/confirmation and restart; no failed turn retries automatically.
+
 A new project talks from a brief; onboarding inventories a committed tree without executing it. The reviewer
 proposes tools, meaningful validations, command evidence and a technical plan after documentation/architecture.
 Adopting a proposal does not save or activate TOML. The application makes the confirmed documentary commit,

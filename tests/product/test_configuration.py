@@ -549,6 +549,83 @@ def test_global_activation_includes_unregistered_definition_roots(setup, context
         activate(repo)
 
 
+def failed_intake(repo, context, kind):
+    """Two finished, unchanged synthetic failures; no provider or worker is invoked."""
+    from test_managed import submit
+    from my_harness.storage.models import ManagedJobRow, PlanningConversationRow, PlanningTurnRow
+    now = repo.managed._now()
+    with repo.managed._write() as session:
+        session.add(PlanningConversationRow(id='failed-intake', root=str(context.root), kind=kind,
+            title='Synthetic intake', known={}, deferred={}, log=[], actor={}, version=2,
+            created_at=now, updated_at=now))
+    for number in (1, 2):
+        job = submit(repo.managed, context, key=f'failed-turn-{number}')
+        with repo.managed._write() as session:
+            session.get(ManagedJobRow, job.id).status = 'DONE'
+            session.add(PlanningTurnRow(id=f'failed-turn-{number}', conversation_id='failed-intake',
+                number=number, run_id=job.run_id, status='FAILED', message='Synthetic', request={},
+                request_sha256='a' * 64, result={'status': 'FAILED', 'result': None,
+                    'observed': {'before': {'drafts': {}}, 'after': {'drafts': {}}, 'unchanged': True}},
+                actor={}, created_at=now, finished_at=now))
+
+
+@pytest.mark.parametrize('kind', ['definition', 'onboarding'])
+def test_empty_failed_intake_allows_timeout_activation_without_rewriting_history(setup, context, kind):
+    repo, data, _ = setup
+    failed_intake(repo, context, kind)
+    from my_harness.storage.models import PlanningTurnRow, PlanningConversationRow
+    with Session(repo.managed.engine) as session:
+        before = [(t.id, t.status, t.result) for t in session.scalars(select(PlanningTurnRow))]
+    data['agents']['reviewer']['timeout_seconds'] = 3600
+    save(repo, [change(repo, dumps(data))])
+    operation = activate(repo)
+    assert repo.read()['pending']['revision'] == 1
+    repo.promote_pending(activation_id=operation['id'], key='restart', restarted=True)
+    assert repo.read()['active']['revision'] == 1
+    with Session(repo.managed.engine) as session:
+        assert [(t.id, t.status, t.result) for t in session.scalars(select(PlanningTurnRow))] == before
+        assert session.get(PlanningConversationRow, 'failed-intake').version == 2
+
+
+@pytest.mark.parametrize('blocker', ['answered', 'queued', 'unknown', 'no_observation', 'changed',
+    'partial_result', 'observed_draft', 'known', 'edit_log', 'deferred', 'proposal'])
+def test_failed_intake_exception_keeps_adoptable_or_uncertain_work_blocked(setup, context, blocker):
+    repo, data, _ = setup
+    failed_intake(repo, context, 'onboarding')
+    from my_harness.storage.models import PlanningConversationRow, PlanningTurnRow, PlanningProposalRow
+    with repo.managed._write() as session:
+        conversation = session.get(PlanningConversationRow, 'failed-intake')
+        turn = session.get(PlanningTurnRow, 'failed-turn-1')
+        result = copy.deepcopy(turn.result)
+        if blocker in ('answered', 'queued', 'unknown'):
+            turn.status = blocker.upper()
+        elif blocker == 'no_observation':
+            result['observed'] = None
+        elif blocker == 'changed':
+            result['observed']['unchanged'] = False
+        elif blocker == 'partial_result':
+            result['result'] = {'answer': 'Synthetic rejected output'}
+        elif blocker == 'observed_draft':
+            for side in ('before', 'after'):
+                result['observed'][side]['drafts'] = {'AGENTS.md': 'b' * 64}
+        elif blocker == 'known':
+            conversation.known = {'AGENTS.md': 'b' * 64}
+        elif blocker == 'edit_log':
+            conversation.log = [{'source': 'api', 'path': 'AGENTS.md'}]
+        elif blocker == 'deferred':
+            conversation.deferred = {'question': {'reason': 'Synthetic deferral'}}
+        else:
+            session.add(PlanningProposalRow(id='synthetic-proposal', conversation_id=conversation.id,
+                turn_id=turn.id, number=1, kind='draft', path='AGENTS.md', content='Synthetic',
+                reason='Synthetic', content_sha256='a' * 64, proposal_sha256='b' * 64,
+                status='PROPOSED', version=1, created_at=repo.managed._now()))
+        turn.result = result
+    save(repo, [change(repo, dumps(data))])
+    with pytest.raises(ConfigurationConflict, match='pending_work'):
+        activate(repo)
+    assert repo.read()['pending'] is None
+
+
 def test_editor_errors_follow_visual_language(setup):
     from my_harness.i18n import emission
     with emission('es'), pytest.raises(ValueError, match='TOML de configuración inválido'):

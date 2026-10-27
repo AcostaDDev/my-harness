@@ -281,6 +281,9 @@ inherit that value: they receive their own `HOME`/`TMPDIR` inside the child.
 publishes private files with atomic replacement. `configuration_editing.py` derives private project copies and
 impact previews; `configuration_assistance.py` freezes active clients, context, process ownership and result.
 `configuration_import.py` explicitly converts legacy sources without replacing legacy authority before preparation.
+The shared registry work barrier excludes only empty, observed-unchanged failed intake conversations
+with no surviving drafts, edits, deferrals or proposals (D236). Job/writer and adoptable-work gates remain;
+activation never retries or rewrites earlier turns.
 
 `IntakeContext` carries documentary capabilities without an executable profile. `profile_proposal.py` validates
 structured commands/tool evidence against frozen documents/inventory; planning tables retain proposal versions.

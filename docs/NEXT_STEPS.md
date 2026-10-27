@@ -10,6 +10,11 @@ Decisions: [D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-bounda
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) and
 [D234](DECISIONS.md#d234--p001-task-plan-in-next_steps).
 
+A separate bounded intake/configuration fix is documented in
+[failed-intake-activation](phase/failed-intake-activation.md); it does not complete or
+reorder any Metrics Records task. Its source checks and operational deployment
+status are separate from this phase.
+
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before
 T002–T005 change runtime behavior. The target release is `0.1.2`; the current package is still `0.1.1`.
 

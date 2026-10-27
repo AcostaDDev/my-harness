@@ -120,7 +120,8 @@ first idle boundary, withdrawing itself if the candidate no longer composes. Adm
 Task admission now binds the receipt selected for the frozen project revision, fixing refused tasks after derived or
 agent-only revisions. Additive API (state `APPLY_PENDING`, `live_activation`, preview `apply`/`restart_fields`/
 `waiting`, save `removed_fields`, structured 409 corrections); no schema or format change. Verified with offline
-suites and synthetic en/es Chrome QA; see the [work notes](phase/OT001-live-agent-configuration.md).
+suites and synthetic en/es Chrome QA. Published as the GitHub Release `v0.1.2` (tag on the release merge `c606116`)
+with a self-contained package built and checked locally; see the [work notes](phase/OT001-live-agent-configuration.md).
 
 ## Patch 0.1.1 — model selectors
 

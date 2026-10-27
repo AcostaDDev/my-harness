@@ -130,6 +130,12 @@ Run:
   **Apply when current work finishes** with “A project creation in progress” and applied by the page's polling
   after the work was released, with the same session. In Spanish, a reviewer-model change waited the same way, and
   removing the probe before the boundary withdrew it with both corrections while revision 4 stayed active.
+- Release package: `scripts/build_distribution.py` (offline) from the tree of `v0.1.2`, then
+  `scripts/check_distribution.py` (exact members, metadata, licenses, `SHA256SUMS`, isolated wheel journey: OK).
+  `my-harness-0.1.2-distribution.tar.gz` has the same layout as 0.1.1, SHA-256
+  `c214972b456cc79e6ea65cc8da020f08167cd150cfc165d16d4a471bf5e4f89c`.
+- Released through pull request #1 (`develop` → `main`, merge commit `c606116`, lightweight tag `v0.1.2`) and published
+  as the GitHub Release `v0.1.2`; the downloaded asset matches its `.sha256` and the local build byte for byte.
 
 Not run or not covered:
 

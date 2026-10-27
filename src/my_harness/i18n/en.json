@@ -1041,6 +1041,7 @@
   "preparation.target_exists": "The destination {path} already exists.",
   "preparation.target_ignored": "The destination {path} is ignored by Git.",
   "preparation.uncertain_effect": "uncertain effect",
+  "preparation.heartbeat_lost": "lease renewal did not succeed ({failures} transient failures, last: {error}); ownership was lost and process groups are settled from independent liveness",
   "preparation.unexpected_environment_entry": "Unexpected environment entry",
   "preparation.unexpected_environment_symlink": "Unexpected environment symlink",
   "preparation.unexpected_file": "Unexpected file: {key}",
@@ -1268,5 +1269,7 @@
   "profile_preparation.recovery": "Review a linked preparation after confirming the writer stopped and the exact completed prefix.",
   "profile_preparation.executor": "The preparation executor did not complete successfully.",
   "profile_preparation.command": "A preparation command or its JUnit evidence failed.",
+  "profile_preparation.executor_repetitive": "The preparation executor was stopped for repetitive output (output-guard-1); its partial output is kept as evidence and no receipt is issued.",
+  "profile_preparation.executor_tools": "The Claude preparation executor has no enabled and allowed file-writing tool (Write, Edit or MultiEdit). Add one to the executor agent's tools and allowed tools; Harness grants none automatically.",
   "configuration.invalid_edit": "The documentary binding of the configuration edit is invalid."
 }

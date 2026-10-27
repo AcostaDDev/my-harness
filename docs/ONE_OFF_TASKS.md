@@ -1,10 +1,11 @@
 # One-off tasks
 
-**Queue:** OT006 pending.
-**Next: OT006 — repetitive preparation output and ownership loss; agree its release target first; then NEXT_STEPS.md.**
+**Queue:** OT006 source complete for **0.1.7**; delivery pending (PR merge, release publication).
+**Next: OT006 delivery — merge the release PR and publish the draft v0.1.7 only on explicit owner instruction; then
+NEXT_STEPS.md.**
 
 OT004 was released as **0.1.6** ([evidence](phase/OT004-visual-profile-editor.md)) and removed after its published
-downloads were verified. OT006 records the later preparation incident; agree its delivery target before product changes.
+downloads were verified. OT006's fix (D251) is integrated into develop; its agreed patch delivery is still open.
 
 Read after [STATE](STATE.md), before [NEXT_STEPS](NEXT_STEPS.md). This queue is for
 bounded fixes, improvements and design changes outside a complete roadmap phase.
@@ -42,18 +43,22 @@ Recording a release target does not authorize a commit, merge, push, publication
 
 ## OT006 — Repetitive preparation executor output and ownership loss
 
-**Status:** pending investigation/fix; sanitized read-only evidence recorded, no implementation.
+**Status:** source complete and integrated into develop
+([evidence](phase/OT006-preparation-consumption.md#resolution-d251),
+[D251](DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)); delivery
+pending.
 **Depends on:** OT005 source/release baseline; OT004 was delivered first as 0.1.6. OT006 precedes P001-T001; no
 Metrics Records work is completed here.
 **Classification:** bounded runtime reliability/consumption incident outside the roadmap, separate from released
 OT005 and from P001's accounting feature work.
-**Branch:** the handoff documentation was committed on `docs/ot006-preparation-consumption` (`6a1b721`) and
-integrated into develop (`f185265`). Create a `fix/ot006-preparation-consumption` topic from current `develop`
-for implementation.
-**Delivery route:** product delivery target/order must be agreed before implementation (D242); the existing
-topic → `develop` → separate release PR/merge into `main` → patch distribution policy applies (D235/D239).
-No version is assigned here (0.1.6 is OT004's published release). Source, integration, publication and installation are
-all pending; this request authorizes evidence/task documentation only, not a retry or new provider invocation.
+**Branch:** handoff `docs/ot006-preparation-consumption` (`6a1b721`, integrated by `f185265`); implementation and
+release preparation on `fix/ot006-preparation-consumption`, merged into develop (see the evidence's delivery state).
+**Delivery route:** agreed 2026-10-27: patch **0.1.7** (D239) via topic → `develop` → release PR → `main` (D235).
+Done: source, integration into develop, release PR opened, the self-contained archive and its checksum uploaded to a
+**draft** GitHub Release `v0.1.7`. Outstanding: merge the PR, tag the merge and publish the draft (each on explicit
+owner instruction), verify the public downloads, record closing evidence and then remove this section. Installing
+0.1.7 on the operator machine is a separate operator action with stopped service/writers. No retry of the failed
+real preparation is authorized.
 **Objective:** establish why the generic preparation executor emitted repetitive text without completing its
 work, prevent unbounded useless generation, and diagnose/fix lease loss with truthful terminal process evidence.
 **Evidence/handoff:** [OT006 incident notes](phase/OT006-preparation-consumption.md), including exact aggregate

@@ -307,6 +307,13 @@ class ProfilePreparation(ProjectPreparation):
     def _agent(self, project):
         return self.runtime.config.ports_factory(project.context, project.versions)[0]
 
+    @staticmethod
+    def _writer_tools(agent, technical):
+        """D251: a Claude executor asked to write needs a usable file-writing tool; none is granted silently."""
+        from my_harness.adapters.cli_agents import CLIProcessAdapter
+        if technical['write_paths'] and isinstance(agent, CLIProcessAdapter) and agent.executor_write_tools() == []:
+            raise refuse('executor_tools')
+
     def preview(self, project_id, body, *, session=None):
         if session is None:
             with Session(self.runtime.engine) as read:
@@ -350,6 +357,7 @@ class ProfilePreparation(ProjectPreparation):
         tools = {name: {'path': path, 'resolved': str(Path(path).resolve(strict=True)),
                         'sha256': file_hash(Path(path).resolve(strict=True))} for name, path in commands.executables}
         agent = self._agent(project)
+        self._writer_tools(agent, technical)
         agent_versions = agent.frozen_versions()
         steps = [{'kind': 'directories', 'paths': [str(Path(environment[k]).relative_to(root)) for k in ('HOME', 'TMPDIR')]}]
         steps.append({'kind': 'executor', 'selection': technical['executor_selection'],
@@ -505,6 +513,8 @@ class ProfilePreparation(ProjectPreparation):
                 project.context.path(path).mkdir(parents=True, mode=0o700, exist_ok=True)
         elif kind == 'executor':
             adapter = self._agent(project)
+            # Plans confirmed before D251 are refused here, before any launch.
+            self._writer_tools(adapter, plan['technical'])
             bound = PreparationAgentJournal(self.repository, operation_id, token)
             adapter.bind_preparation(bound, plan['agent_versions'])
             # The executor needs technical inputs, not the private editor document/agent environments or
@@ -524,6 +534,8 @@ class ProfilePreparation(ProjectPreparation):
                 result = adapter.invoke(project.context, request)
             finally:
                 adapter.close()
+            if result.status == 'repetitive':
+                raise refuse('executor_repetitive')
             if (result.error or not result.terminal_observed or result.exit_code != 0
                     or result.status not in (None, 'complete') or not result.payload_json):
                 raise refuse('executor')

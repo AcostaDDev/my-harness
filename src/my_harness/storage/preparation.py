@@ -1,5 +1,7 @@
 """Preparation ownership/journal. No run, attempt or managed-event surrogate."""
 from datetime import datetime, timedelta
+import json
+from pathlib import Path
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -92,6 +94,31 @@ class PreparationRepository:
         with Session(self.managed.engine) as session:
             return self.owned(session, operation_id, token).cancel_requested
 
+    def interrupted(self, session, row):
+        """D251: the closing owner settles its own unfinished processes before `owner_closed`.
+
+        The state comes from an independent group-liveness check, never from lease expiry or the stale row;
+        a partial capture the adapter left beside its artifacts is kept as reported. A stored capture is never
+        replaced, and nothing here completes a step or turns partial counters into totals."""
+        for process in session.scalars(select(Process).where(Process.preparation_id == row.id,
+                                                             Process.status == 'RUNNING')):
+            if process.capture is not None or process.identity is None:
+                continue
+            state = liveness(process.identity, group=True)
+            partial = None
+            artifacts = (process.spec or {}).get('artifacts')
+            if isinstance(artifacts, str):
+                try:
+                    partial = json.loads((Path(artifacts) / 'capture.json').read_text())
+                except (OSError, ValueError):
+                    partial = None
+            capture = partial if isinstance(partial, dict) else {'status': 'interrupted'}
+            process.capture = {**capture, 'reported_group_state': capture.get('group_state'), 'group_state': state,
+                               'settled_by': 'closing_owner'}
+            process.status = 'STOPPED' if state == 'dead' else 'UNCERTAIN'
+            self.event(session, row, 'process_interrupted', {'process_id': process.id, 'status': process.status,
+                                                             'group_state': state, 'partial_capture': partial is not None})
+
     @staticmethod
     def stopped(session, row):
         if row.process_owner and not row.owner_closed and liveness(row.process_owner) != 'dead':
@@ -157,19 +184,24 @@ class PreparationAgentJournal(PreparationJournal):
             self.repository.event(session, row, 'executor_intended', {'step_id': step_id, 'spec': spec})
 
     def process_update(self, step_id, kind, payload):
+        self.process_updates(step_id, ((kind, payload),))
+
+    def process_updates(self, step_id, items):
+        """D251: one guarded transaction per read chunk instead of one per parsed stream record."""
         with self.repository.managed._write() as session:
             row = self.repository.owned(session, self.operation_id, self.token)
             process = session.get(Process, step_id)
             if process is None or process.preparation_id != row.id:
                 raise Conflict('Unknown preparation executor process')
-            if kind == 'process_spawned':
-                if process.status != 'PENDING' or process.identity is not None:
-                    raise Conflict('Process identity cannot change')
-                process.identity, process.status = payload, 'RUNNING'
-            elif kind == 'process_finished':
-                process.capture = payload
-                process.status = 'STOPPED' if payload.get('group_state') == 'dead' else 'UNCERTAIN'
-            self.repository.event(session, row, 'executor_' + kind, {'step_id': step_id, **payload})
+            for kind, payload in items:
+                if kind == 'process_spawned':
+                    if process.status != 'PENDING' or process.identity is not None:
+                        raise Conflict('Process identity cannot change')
+                    process.identity, process.status = payload, 'RUNNING'
+                elif kind == 'process_finished':
+                    process.capture = payload
+                    process.status = 'STOPPED' if payload.get('group_state') == 'dead' else 'UNCERTAIN'
+                self.repository.event(session, row, 'executor_' + kind, {'step_id': step_id, **payload})
 
 
 def admit(session, root, versions, purpose):

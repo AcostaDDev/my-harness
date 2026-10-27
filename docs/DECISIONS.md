@@ -1409,3 +1409,45 @@ the existing `local-config-9` global and `project-config-1` project tables; they
   frozen. Editing calls nothing; save, preparation and activation keep their separate exact confirmations.
 
 Unchanged: the profile proposal editor in planning, legacy/query-only gates, OpenAPI/client types (version only).
+
+## D251 — Writer tool admission, bounded repetitive output and lease-renewal evidence
+
+Status: accepted within OT006's scope; released as patch 0.1.7 under D239. No schema, migration, API contract,
+configuration format, dependency or adapter version (`cli-14`) change.
+
+OT006's failed real preparation launched its Claude executor with `--tools ''` and `--allowedTools ''` while asking
+it to write files. With no usable tool, the model streamed text imitating tool markup (`<invoke`/`parameter` tags)
+until Harness lost the preparation lease. Separately, the heartbeat thread exited on its first exception, so one
+transient write failure (for example SQLite busy while every stream record was a separate write transaction) ended
+renewal for good. A synthetic reproduction of that path yields the incident's exact `OwnershipLost` diagnostic. The
+specific exception in the real incident was not recorded and remains unproven.
+
+- **Writer tools.** A generic preparation whose executor has write scope and is a Claude CLI needs at least one of
+  `Write`, `Edit` or `MultiEdit` both in the launch inventory and in the allowed rules, computed exactly as the argv
+  (grantable tools stay absent without an explicit rule). Otherwise preview refuses with
+  `profile_preparation_executor_tools`, and a plan queued earlier fails before any launch. Nothing is granted
+  automatically. Codex keeps its workspace-write sandbox. Task executors and other roles are unchanged.
+- **Output guard `output-guard-1`.** Claude assistant `text_delta` text is split into lines. Across the last 400
+  completed non-blank lines, 20 or fewer distinct lines stop the owned process group (`repetitive_output`), and so
+  does one unterminated line over 262,144 characters (`line_limit`). Native `tool_use` input (where file contents
+  travel), thinking and Codex items, which `exec --json` does not stream as partial text, are not inspected. The
+  attempt ends with status `repetitive`; generic preparation reports `profile_preparation_executor_repetitive` and
+  issues no receipt. The capture keeps the raw artifacts and reports guard counters: text characters/lines,
+  native tool uses and textual `<invoke` markers, kept apart. There is no retry, model/effort change or wider
+  permission.
+- **Usage honesty.** Captures add `final_usage_observed`: false unless one terminal result arrived. Message-start
+  counters stay reported as initial values, never completed or summed into a total; `metrics-1` is unchanged.
+- **Lease renewal.** The fencing guard (`owned()`) is unchanged. A non-ownership heartbeat exception is counted and
+  retried within one second while the lease lasts; only `OwnershipLost` ends renewal. Settlement records
+  `{failures, last_error, lost}` and, when ownership was lost, a diagnostic naming the renewal failure instead of a
+  bare `OwnershipLost`. The lease length is not increased.
+- **Write pressure.** The preparation agent journal writes each read chunk's events (bytes plus parsed records) in
+  one guarded transaction instead of one per record. Event content and order are unchanged. The managed run
+  journal still writes per record; that wider question is left to a later task.
+- **Interrupted evidence.** When an invocation raises after spawning (for example lost ownership), the adapter stops
+  its group and writes `capture.json` (status `interrupted`) beside its artifacts, because the fenced journal may
+  refuse the write. The closing owner then settles its own still-`RUNNING` process rows before `owner_closed`. It
+  sets status from an independent group-liveness check (`STOPPED`/`UNCERTAIN`), keeps the reported state and that
+  partial capture, never replaces a stored capture and never completes a step. Lease expiry or a stale row is
+  never treated as proof that a writer stopped. Recovery still uses the existing confirm-stopped/linked-successor
+  route.

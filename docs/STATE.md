@@ -8,9 +8,17 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT006**, the repetitive-preparation/ownership-loss incident (release target pending), before
-the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004 were released separately as
-0.1.2/0.1.3/0.1.4/0.1.5/**0.1.6** (D239). No Metrics task is complete.
+The queue contains **OT006**, the repetitive-preparation/ownership-loss fix. Its source is complete for patch
+**0.1.7** (D251), and it stays queued until delivery, ahead of the unchanged Metrics Records task P001-T001 (D246).
+OT001/OT002/OT003/OT005/OT004 were released separately as 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6 (D239). No Metrics
+task is complete.
+
+**OT006 / 0.1.7 (D251):** the failed preparation launched its Claude executor with no tools (`--tools ''`) and asked
+it to write. Generic preparation now refuses such a writer at preview and before launch. `output-guard-1` stops
+repetitive streamed Claude text. Lease renewal retries transient failures and reports them. Stream events are
+journaled once per chunk. Interrupted attempts keep a partial capture, and the closing owner settles their stale
+`RUNNING` rows from independent liveness. Release PR and draft release state, plus checks, are in
+[the evidence](phase/OT006-preparation-consumption.md#delivery-state). Nothing was retried, installed or restarted.
 
 OT004 (D250) was integrated on develop at `bd0787b`, released through
 [PR #5](https://github.com/AcostaDDev/my-harness/pull/5), merge **`0319b66`**, and tagged **`v0.1.6`**. The
@@ -28,11 +36,9 @@ checksum, downloaded and verified byte for byte. Full final pytest: **2140 passe
 [The evidence](phase/OT005-preparation-tool-links.md) records D247–D249 and the owner's ACTIVE-preparation report;
 completed real commands/receipt/activation are not claimed. OT005 was removed from the queue only after delivery.
 
-**OT006 handoff:** committed and integrated into develop (`f185265`); read
-[OT006 evidence](phase/OT006-preparation-consumption.md). The later real preparation FAILED with `OwnershipLost`:
-one Claude session emitted 226,378 text characters with extensive repetition over about nine minutes, before any
-native command; its process group is now dead. Exact quota consumption and the repetition/lease root causes remain
-unproven. That request recorded evidence only; OT006 is now next, and its delivery target is still to be agreed. Do not start Metrics Records or retry real preparation from this handoff.
+**OT006 handoff (historical):** the later real preparation FAILED with `OwnershipLost` after one Claude session
+emitted 226,378 text characters of repetitive text. Its causes are now established in
+[the evidence](phase/OT006-preparation-consumption.md#established-causes); the failed operation is preserved as is.
 
 Publication did not replace/restart the operator installation: its separately installed source `be76164`
 contains the OT005 fixes with **0.1.4 metadata**, and the same loopback service remained running. Installing the

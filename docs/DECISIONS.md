@@ -1566,3 +1566,29 @@ need a documented explicit copy/new-bundle path, not in-place query-only mutatio
 without roots, clients, network or executable authority. T004 adds bounded decimal-string API contracts alongside
 unchanged legacy fields; T005 keeps en/es and archive controls in parity. All planned data/flows are labelled
 unimplemented until the corresponding task provides code and evidence.
+
+## D258 — Pinned reference cases and the pure valuation boundary
+
+Status: accepted implementation detail in P001-T002, within D255/D256; operational integration pending T003–T005.
+
+`metric_references.py` validates separate canonical `metrics-reference-1` identity/tariff documents and content-addressed
+bundles. Tariffs enumerate exact condition combinations, request intervals, category rates/factors, already included
+adjustments and exclusions. The reference language is data only. Overrides require a new sourced reference; no ad hoc
+factor, implicit Standard case, network refresh or mutable model-name identity is used. Ambiguous overlapping versions
+cannot share a bundle; a different unknown-period observation uses another bundle, preserving the original bytes.
+
+The packaged `metrics-2026-10-27-v1.json` derives from the immutable T001 observation, including its source URLs/digest.
+It covers the eight suggested models plus Terra, with known conditions/unknown historical effective periods retained.
+It does not certify current prices, account eligibility, agreement terms or historical tariff validity. Explicit
+retrospective scenarios retain an unknown-period warning; ordinary historical valuations remain incomplete.
+
+`valuation.py` takes JSON-safe `usage-accounting-1` evidence, a `valuation-scenario-1` input and a validated pinned
+bundle. The scenario is a pure calculation input, not a new operational configuration format. The caller must supply
+a reconciled single view or disjoint request/model partition, model-response provenance and reported/asserted
+conditions; T003 owns capture reconciliation and frozen billing-profile binding. Responses API semantics remain
+separate from Codex CLI semantics. Charged tools use independently evidenced quantities/references, never client
+activity counts. Exact Decimal lines and once-per-invocation rounding follow D256. Result digests, line evidence,
+unknown reasons and separate estimate comparisons support later immutable persistence; no operational caller,
+database, API, configuration, frontend, version bump, distribution publication or installation is added here.
+
+Evidence and task delivery: [P001-T002](phase/P001-T002-reference-calculator.md).

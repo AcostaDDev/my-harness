@@ -1,0 +1,3239 @@
+{
+  "format": "metrics-reference-1",
+  "references": [
+    {
+      "document": {
+        "canonical_model": "gpt-6-sol",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6-sol"
+          }
+        ]
+      },
+      "id": "07c08ceb188b5c895ab5b6d889bf666e6751627df2c6abba7e58f52f27c707cb"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6.1-terra",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6.1-terra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "0cb971e50562c1f70a87eab051562fbc38615ba500fde08aa18a73853d84ce48"
+    },
+    {
+      "document": {
+        "canonical_model": "claude-sonnet-5-5",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "claude-sonnet-5-5",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/models/overview"
+          }
+        ]
+      },
+      "id": "12f932e59d58f9863129cbc0009623ff42f95f97abcfec7c0b65941841aceb40"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_1h": {
+                "amount": "4",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_5m": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "claude-sonnet-5-5",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "anthropic_api_usd",
+        "semantics": [
+          "claude-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "es",
+            "url": "https://platform.claude.com/docs/es/about-claude/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "17e31c5518f33a139b9eba794766f5b0e0ff24a908ff8bb62b385119a2081323"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6.1-terra",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6.1-terra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "2a4834f799162cb74a59a305537bf780ac73979dade7fb98029763dfd53ba9ff"
+    },
+    {
+      "document": {
+        "bases": [
+          "enterprise_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6.1-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "agreement",
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_enterprise_usd",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "31774fe3b549c8dfb299a2220b40bc7575e91b474b708c8ac570cb7559fa18ca"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_1h": {
+                "amount": "20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_5m": {
+                "amount": "12.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "claude-fable-5-1",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "anthropic_api_usd",
+        "semantics": [
+          "claude-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "es",
+            "url": "https://platform.claude.com/docs/es/about-claude/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "4bb544e0fe864bc8876ab7b7b22db19362230d520a1dd3566ab99dade841f777"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "uncached_input",
+                  "write_12h",
+                  "write_30m"
+                ],
+                "key": "long_input",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+                "value": "2"
+              },
+              {
+                "categories": [
+                  "output"
+                ],
+                "key": "long_output",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+                "value": "1.5"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "standard-long",
+            "prompt_from": 272001,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.01",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "0.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "0.125",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-low",
+            "prompt_from": 0,
+            "prompt_to": 272000,
+            "rates": {
+              "cache_read": {
+                "amount": "0.01",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "0.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "0.125",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-luna",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "openai_api_usd",
+        "semantics": [
+          "codex-cli-1",
+          "responses-api-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6-luna"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "56036da2fcdf0467699d7ba280573ee4ffcc86386b414a18df86cbe4ab4e7a9d"
+    },
+    {
+      "document": {
+        "bases": [
+          "enterprise_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.05",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.05",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.05",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6.1-terra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "agreement",
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_enterprise_usd",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "5e5d8dcf6f37e329eba6544d050972ea534a04cd634b292f86e5ead523fc18a8"
+    },
+    {
+      "document": {
+        "bases": [
+          "enterprise_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-astra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "agreement",
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_enterprise_usd",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "651818a9eef3e660d86bfcddb51045a920cdc467e034048ae44501f5d63b2ab2"
+    },
+    {
+      "document": {
+        "bases": [
+          "enterprise_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.01",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.01",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.01",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-luna",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "agreement",
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_enterprise_usd",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "652c4ce294666a23ed7f0af53898ed04e632f0c7b67e58c54bb1cabf69f78992"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "uncached_input",
+                  "write_12h",
+                  "write_30m"
+                ],
+                "key": "long_input",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6-sol",
+                "value": "2"
+              },
+              {
+                "categories": [
+                  "output"
+                ],
+                "key": "long_output",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6-sol",
+                "value": "1.5"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "standard-long",
+            "prompt_from": 272001,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": null,
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-low",
+            "prompt_from": 0,
+            "prompt_to": 272000,
+            "rates": {
+              "cache_read": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": null,
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "openai_api_usd",
+        "semantics": [
+          "codex-cli-1",
+          "responses-api-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6-sol"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "690e127a63a0d72fec948c65fa742632eff6c693f8f95165e3df9bf96e2e70d4"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-high",
+            "prompt_from": 100001,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.05",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_1h": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_5m": {
+                "amount": "0.625",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-low",
+            "prompt_from": 0,
+            "prompt_to": 100000,
+            "rates": {
+              "cache_read": {
+                "amount": "0.01",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "0.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_1h": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_5m": {
+                "amount": "0.125",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "claude-haiku-5-5",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "anthropic_api_usd",
+        "semantics": [
+          "claude-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "es",
+            "url": "https://platform.claude.com/docs/es/about-claude/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "6a72e779d0089ff3fa13e76634f8516a49fe647e925c5719f551869c6b8468b2"
+    },
+    {
+      "document": {
+        "bases": [
+          "subscription_equivalent",
+          "token_credit"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "2.5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "2.5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "2.5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6.1-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_work_codex_credit",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/es-es/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "chatgpt_work_codex_credit"
+      },
+      "id": "7cdd18d85ee5f870e2683a416b34ae3023734017d975b9f1616847df2c7f934b"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "uncached_input",
+                  "write_12h",
+                  "write_30m"
+                ],
+                "key": "long_input",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+                "value": "2"
+              },
+              {
+                "categories": [
+                  "output"
+                ],
+                "key": "long_output",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+                "value": "1.5"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "standard-long",
+            "prompt_from": 272001,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "12.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-low",
+            "prompt_from": 0,
+            "prompt_to": 272000,
+            "rates": {
+              "cache_read": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "12.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-astra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "openai_api_usd",
+        "semantics": [
+          "codex-cli-1",
+          "responses-api-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6-astra"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "7d637515534cb46033506f6d30b061616cf945264a38ec516c9b2d254d226f06"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-sol",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "7db27077880127c5f27ea1469cb37039e0b2c8588d57b3c7379909a405cf5a76"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6.1-terra",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6.1-terra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6.1-terra"
+          }
+        ]
+      },
+      "id": "8b155fb1a7da777a888adb8e81faabec34e853fac83b736e1a2c125d02598eeb"
+    },
+    {
+      "document": {
+        "bases": [
+          "enterprise_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "agreement": "published_terms",
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "agreement",
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_enterprise_usd",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "8e0b5a24defbca62dc071e93bad8a8679e2b66dfe303378182223de7ea45877c"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "uncached_input",
+                  "write_12h",
+                  "write_30m"
+                ],
+                "key": "long_input",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+                "value": "2"
+              },
+              {
+                "categories": [
+                  "output"
+                ],
+                "key": "long_output",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+                "value": "1.5"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "standard-long",
+            "prompt_from": 272001,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-low",
+            "prompt_from": 0,
+            "prompt_to": 272000,
+            "rates": {
+              "cache_read": {
+                "amount": "0.10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "10",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6.1-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "openai_api_usd",
+        "semantics": [
+          "codex-cli-1",
+          "responses-api-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "943d9c27511565172ca1ed4f0fc081536f704d2c4cac2230e11b8a19e3b121dc"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-astra",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-astra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "94db7ac7fa5af4134f22b714ef45ef40dbb5bcb7172db849f14e397d1e703b40"
+    },
+    {
+      "document": {
+        "canonical_model": "claude-fable-5-1",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "claude-fable-5-1",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/models/overview"
+          }
+        ]
+      },
+      "id": "9aa833423f396e67ee2553ae8bdd070bf64df98ba734e902a87958e197d43a83"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-astra",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-astra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6-astra"
+          }
+        ]
+      },
+      "id": "9cad8cca9d321e4f0e30345c89ee175f869f05238f7148576b6ff9f1887ad1ed"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-astra",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-astra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "a1df0c32e27f9082e5ef4c9836511e21301bc944d10761187070e0bbb2a3d5bf"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6.1-sol",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6.1-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "a50496f4f28a4328899257d0ceddc27939b187e48fa547f1317bf97d00153b95"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-luna",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-luna",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "a8f29aaaa1050f16fdc98c654209ba0df08d1e3305c44f4d717ba6a5ec74d5ff"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6.1-sol",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6.1-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+          }
+        ]
+      },
+      "id": "aec70e60d5bfce8d3712b7e72e0fe94fbddc82e4773d4f707114ed041bb58a29"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6.1-sol",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6.1-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "af6865b4a97a3ce7b9986d82cbeee8090a6bbaf690851d451e565ed58d69375d"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "uncached_input",
+                  "write_12h",
+                  "write_30m"
+                ],
+                "key": "long_input",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6.1-terra",
+                "value": "2"
+              },
+              {
+                "categories": [
+                  "output"
+                ],
+                "key": "long_output",
+                "source": "https://developers.openai.com/api/docs/models/gpt-6.1-terra",
+                "value": "1.5"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "standard-long",
+            "prompt_from": 272001,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.05",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "1.25",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard-low",
+            "prompt_from": 0,
+            "prompt_to": 272000,
+            "rates": {
+              "cache_read": {
+                "amount": "0.05",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "1",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_12h": {
+                "amount": "2.50",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_30m": {
+                "amount": "1.25",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6.1-terra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "openai_api_usd",
+        "semantics": [
+          "codex-cli-1",
+          "responses-api-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6.1-terra"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "afe0ed5f29d7aca71a0ca903acd5aef66c59deae5028c3e4ba55b2ac135e6fb9"
+    },
+    {
+      "document": {
+        "canonical_model": "claude-haiku-5-5",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "claude-haiku-5-5",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/models/overview"
+          }
+        ]
+      },
+      "id": "b209f3ca9765a34025e35b8b4376cda46fc6654111bc05d66da4da696789e28b"
+    },
+    {
+      "document": {
+        "bases": [
+          "subscription_equivalent",
+          "token_credit"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "125",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "125",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "1.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "125",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6.1-terra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_work_codex_credit",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/es-es/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "chatgpt_work_codex_credit"
+      },
+      "id": "b4a521aaf93a853729e678505d8e11ecd80b8a9e9eb5ebd758ca84f7d7a1f557"
+    },
+    {
+      "document": {
+        "bases": [
+          "subscription_equivalent",
+          "token_credit"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "12.5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2.5",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "12.5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2.5",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "12.5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "2.5",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-luna",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_work_codex_credit",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/es-es/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "chatgpt_work_codex_credit"
+      },
+      "id": "bcdfed1a983e204a2f12e424ecf96f959d57152a2647eeb086024e187a202235"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-luna",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-luna",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "openai_api",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://developers.openai.com/api/docs/models/gpt-6-luna"
+          }
+        ]
+      },
+      "id": "ca2caf66e733d51b85bdf76b0e854fc0674f52b812e2c9e79b1aa50a20504a43"
+    },
+    {
+      "document": {
+        "canonical_model": "claude-opus-5-5",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "claude-opus-5-5",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/models/overview"
+          }
+        ]
+      },
+      "id": "d4c42dab5983f8c2f08de75465e20f7c262f023cc9c128cdf89bdb908ab72f95"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-luna",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-luna",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "e130a7a9e6143ff43e41cb0f35bb8579291a289152089bcabee5a891df6afd67"
+    },
+    {
+      "document": {
+        "bases": [
+          "subscription_equivalent",
+          "token_credit"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "50",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_work_codex_credit",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/es-es/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "chatgpt_work_codex_credit"
+      },
+      "id": "ef490146b40e1b5296f9d224a41d0a95fb739e87658fc7a17ac1f9a2773e010f"
+    },
+    {
+      "document": {
+        "canonical_model": "gpt-6-sol",
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "format": "metrics-reference-1",
+        "identity_rule": "exact",
+        "kind": "model_identity",
+        "model": "gpt-6-sol",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "enterprise_codex",
+        "provider": "codex",
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/models"
+          }
+        ]
+      },
+      "id": "f406834226ab6078bf835e01e50d724c6f62a1ea557827e94c58e929987d8dca"
+    },
+    {
+      "document": {
+        "bases": [
+          "subscription_equivalent",
+          "token_credit"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "fast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "2"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "fast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "1250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "scheme_eligible",
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "1250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          },
+          {
+            "conditions": {
+              "eligibility": "ultrafast_eligible",
+              "geography": "global",
+              "speed": "ultrafast"
+            },
+            "factors": [
+              {
+                "categories": [
+                  "cache_read",
+                  "output",
+                  "uncached_input"
+                ],
+                "key": "speed",
+                "source": "https://learn.chatgpt.com/docs/agent-configuration/speed",
+                "value": "6"
+              }
+            ],
+            "included_adjustments": [],
+            "key": "ultrafast",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "25",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "1250",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "250",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "cache_writes_no_separate_charge",
+          "client_tool_activity",
+          "no_api_long_context_surcharge",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "gpt-6-astra",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "openai_first_party",
+        "product": "work_codex",
+        "provider": "codex",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "eligibility",
+          "geography",
+          "speed"
+        ],
+        "scheme": "chatgpt_work_codex_credit",
+        "semantics": [
+          "codex-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/en/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://help.openai.com/es-es/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://learn.chatgpt.com/docs/agent-configuration/speed"
+          }
+        ],
+        "unit": "chatgpt_work_codex_credit"
+      },
+      "id": "f53495edbad256baea21c4858a4f5020d9de183ea60ce4f32765e2b41ef2135a"
+    },
+    {
+      "document": {
+        "bases": [
+          "api_usd",
+          "subscription_equivalent"
+        ],
+        "cases": [
+          {
+            "conditions": {
+              "geography": "global",
+              "speed": "standard"
+            },
+            "factors": [],
+            "included_adjustments": [],
+            "key": "standard",
+            "prompt_from": 0,
+            "prompt_to": null,
+            "rates": {
+              "cache_read": {
+                "amount": "0.20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "output": {
+                "amount": "20",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "uncached_input": {
+                "amount": "4",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_1h": {
+                "amount": "8",
+                "quantity": 1000000,
+                "unit": "token"
+              },
+              "write_5m": {
+                "amount": "5",
+                "quantity": 1000000,
+                "unit": "token"
+              }
+            }
+          }
+        ],
+        "effective_from": null,
+        "effective_period_unknown": true,
+        "effective_to": null,
+        "exclusions": [
+          "client_tool_activity",
+          "reasoning_already_in_output"
+        ],
+        "format": "metrics-reference-1",
+        "kind": "tariff",
+        "model": "claude-opus-5-5",
+        "observed_at": "2026-10-27T21:06:53Z",
+        "platform": "anthropic_first_party",
+        "product": "claude_api",
+        "provider": "claude",
+        "quantity_basis": "disjoint_tokens",
+        "required_conditions": [
+          "geography",
+          "speed"
+        ],
+        "scheme": "anthropic_api_usd",
+        "semantics": [
+          "claude-cli-1"
+        ],
+        "sources": [
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "en",
+            "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+          },
+          {
+            "evidence_digest": "2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8",
+            "locale": "es",
+            "url": "https://platform.claude.com/docs/es/about-claude/pricing"
+          }
+        ],
+        "unit": "USD"
+      },
+      "id": "f5c1e1c810786c6caba43505b6b707e0d4211ef2dca5977168d6372804b4adbb"
+    }
+  ]
+}

@@ -341,14 +341,18 @@ SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm
 are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
 version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.
 
-## 12. Accepted P001 accounting architecture (not implemented)
+## 12. P001 accounting architecture (pure calculator implemented; integration pending)
 
 [T001 contract](phase/P001-T001-accounting-contract.md), D254–D257. Production remains `terminal-2`/`metrics-1`,
-schema 0027, global v9/project v1 and backup format 2. T002–T005 will implement these boundaries:
+schema 0027, global v9/project v1 and backup format 2. T002 implements the first boundary below;
+T003–T005 will implement the remaining operational boundaries:
 
 - A standard-library pure calculator and separate immutable JSON identity/tariff references under `core/engine/`,
   packaged for offline use. Digest-bound inputs, decimal-string rates/amounts, exact disjoint lines and one
   ROUND_HALF_EVEN quantization to 12 places; no network or billing API in calculation or reads.
+  Implemented in `metric_references.py` / `valuation.py`, with separate packaged JSON under `engine/references/`
+  (D258). Loading validates canonical digests and declarative rate cases; calculation consumes already selected
+  disjoint evidence and explicit scenario conditions, without interpreting raw CLI events or persisting anything.
 - A source-keyed invocation ledger alongside existing journals. `managed.py` supplies managed attempts;
   `profile_preparation.py`/`storage/preparation.py` supply executor-step identity and process capture;
   `configuration_assistance.py` supplies its native operation/request identity. Intent/completion writes are atomic
@@ -367,4 +371,4 @@ schema 0027, global v9/project v1 and backup format 2. T002–T005 will implemen
 
 See the [planned data responsibilities](DDBB-DIAGRAM.md#planned-p001-accounting-records-not-implemented) and
 [planned accounting flow](flows/metrics-accounting.md). Implementing tasks update actual schema/flows/OpenAPI/types;
-these design sections do not predeclare runtime support.
+the remaining design sections do not predeclare operational support.

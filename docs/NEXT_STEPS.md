@@ -1,7 +1,10 @@
 # P001 — Metrics Records (target 0.1.2)
 
 **Status:** active phase; six tasks pending, implementation not started.
-**Next: P001-T001 — Accounting contract and evidence inventory.**
+**Next phase task: P001-T001 — Accounting contract and evidence inventory.**
+
+Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
+resume this unchanged phase plan when that queue is empty.
 
 Objective and exit criteria: [ROADMAP](ROADMAP.md#p001--metrics-records).
 Scope and code map: [phase handoff](phase/P001-metrics-records.md).
@@ -10,10 +13,9 @@ Decisions: [D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-bounda
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) and
 [D234](DECISIONS.md#d234--p001-task-plan-in-next_steps).
 
-A separate bounded intake/configuration fix is documented in
-[failed-intake-activation](phase/failed-intake-activation.md); it does not complete or
-reorder any Metrics Records task. Its source checks and operational deployment
-status are separate from this phase.
+The completed intake/configuration fix is documented in
+[failed-intake-activation](phase/failed-intake-activation.md) and committed as
+`ef77229`. It does not complete or reorder any Metrics Records task.
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before
 T002–T005 change runtime behavior. The target release is `0.1.2`; the current package is still `0.1.1`.

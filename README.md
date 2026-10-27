@@ -394,6 +394,9 @@ scripts/dev
 The npm command also fills `.local/npm-cache`, which the Python tests with real Node/npm use offline for the
 TypeScript fixture; with an empty cache they stop at *Environment preparation failed* and pytest names the cause.
 Work happens on topic branches from `develop`; `main` only carries releases (see [CONTRIBUTING](CONTRIBUTING.md)).
+Read [state](docs/STATE.md), then [one-off tasks](docs/ONE_OFF_TASKS.md), before the phase's
+[next steps](docs/NEXT_STEPS.md). The normally empty one-off queue holds bounded fixes/improvements;
+complete and remove those entries with durable evidence before resuming phase work.
 
 `scripts/dev` checks the tool versions, migrates a development database (`.local/harness.sqlite3`) after backing it
 up, and starts the API on `:8013` and Vite on `http://127.0.0.1:5173`; it accepts `--database` and `--config`.
@@ -426,7 +429,8 @@ message catalogs), `frontend/` (React/TypeScript UI), `tests/` (synthetic tests 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) and the agent instructions in [AGENTS.md](AGENTS.md) before changing
 anything. Project documents:
 
-- [Roadmap](docs/ROADMAP.md), [state](docs/STATE.md) and [next steps](docs/NEXT_STEPS.md).
+- [State](docs/STATE.md), [one-off tasks](docs/ONE_OFF_TASKS.md) (priority queue outside phases),
+  [next steps](docs/NEXT_STEPS.md) (active phase) and [roadmap](docs/ROADMAP.md).
 - [Specification](docs/SPECIFICATION.md): requirements and business rules; [architecture](docs/ARCHITECTURE.md):
   stack, modules, patterns and conventions; [data diagram](docs/DDBB-DIAGRAM.md): the SQLite schema.
 - [Flows](docs/flows/task-run.md): task runs, phases, creation, onboarding, preparation, agents, CLI compatibility,

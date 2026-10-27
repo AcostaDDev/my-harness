@@ -1090,3 +1090,29 @@ writer/checkout, preparation, acceptance, commit-intent and phase-operation barr
 remain independent and unchanged. Save, activation preview, confirmation and restart
 remain separate; this exception neither activates configuration nor retries a model.
 No API, schema, frozen format, source snapshot or previous run is rewritten.
+
+
+## D237 — One-off development queue before phase work
+
+Status: accepted.
+
+At the owner's request, `docs/ONE_OFF_TASKS.md` is a manual development priority
+queue, read after STATE and before NEXT_STEPS. It holds bounded fixes, improvements
+and design changes that do not require a complete roadmap phase. It is normally
+empty; an empty queue means resume the active phase's existing next task.
+
+Entries use stable phase-independent OTNNN IDs and NEXT_STEPS-style scope,
+acceptance, checks and deliverables. Work stays one bounded task at a time. Before
+removing a completed entry, record checks, omissions and outcomes in
+`docs/phase/OTNNN-<topic>.md`, retain durable decisions in this log and reconcile
+current documents. Then remove its whole task section and update Queue/Next;
+completed records do not accumulate in the queue and IDs are not reused.
+Blocked work remains explicit rather than silently yielding to the roadmap.
+
+This does not add a phase, alter Metrics Records/Continuous Mode numbering or
+introduce a managed-project document, parser, API or automatic scheduler. The
+harness is not run on this repository. OT001 records the requested live agent
+configuration behavior for a later session; the concrete technical design remains
+to be settled in that task and is not already implemented or an amendment to
+D222/D223/D227 in this documentation-only change. D236's failed-intake fix is
+already committed and must not be implemented again as pending work.

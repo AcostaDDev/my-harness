@@ -3,6 +3,16 @@
 No managed blocks: this repository is developed by hand and is not registered in a harness. The work done before the
 first public snapshot is summarized below as the starting baseline; its decisions are in [DECISIONS](DECISIONS.md).
 
+## Work routing
+
+Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
+normally empty priority queue for bounded fixes/improvements outside roadmap phases
+([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)). Currently
+**OT001 — live application of agent configuration** is pending; its technical design
+and implementation are not complete. Finish that bounded work before resuming the
+unchanged Metrics Records task P001-T001. The empty failed-intake activation fix
+is already committed as `ef77229` and is not queued again.
+
 ## Accumulated baseline
 
 What exists and works at the first public snapshot, verified offline with temporary Git repositories, SQLite and
@@ -120,7 +130,7 @@ scope and verification matrix. [Reference notes](phase/P001-metrics-records-refe
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
 independent USD/credit valuation and versioned reference records are planned, not implemented.
 [NEXT_STEPS](NEXT_STEPS.md) now contains the six pending task sections with dependencies, scope, acceptance,
-validation and deliverables; **next is P001-T001**, the accounting contract/evidence inventory
+validation and deliverables; **next phase task is P001-T001**, the accounting contract/evidence inventory
 ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)). No task is complete and technical design remains pending
 T001. The installed/package version remains `0.1.1`; assigning a release target does not release it.
 

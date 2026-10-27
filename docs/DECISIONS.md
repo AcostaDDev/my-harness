@@ -1045,3 +1045,24 @@ to avoid competing plans. The layout follows the explicit task sections in the b
 NEXT_STEPS (with P012 as another example), adapted to this repository's English work language. The base archive
 was consulted read-only for structure; none of its run data, private evidence, managed blocks or closed snapshots
 is imported or modified, and the new plan does not require access to that checkout.
+
+## D235 — Release branch, integration branch and topic branches
+
+Status: accepted.
+
+Development moves off `main` so that `main` only carries published versions:
+
+- `main` receives one `--no-ff` merge from `develop` per release, with the version bump and changelog already on
+  `develop`. That merge commit gets the tag `vX.Y.Z`, and the distribution package is built and checked from it
+  (D230). `git log --first-parent main` therefore lists releases. No work is committed directly to `main`.
+- `develop` is the integration branch and the target of pull requests. Phase tasks, documentation and fixes land
+  there once their checks pass.
+- Each bounded task uses a short-lived topic branch from `develop`, named `<kind>/<topic>` with `feat`, `fix`,
+  `docs`, `chore` or `test` (for example `feat/p001-t001-accounting-contract`), merged into `develop` and then
+  deleted.
+- A fix for a published version branches from its tag, is released through `main` like any version and is merged
+  back into `develop`.
+
+GitHub's default branch stays `main`, so visitors see the released state. Commits already pushed to `main` after
+`v0.1.1` are not rewritten; the next release merge brings `main` forward. Agents check the current branch at the
+start of a session and never work on `main`.

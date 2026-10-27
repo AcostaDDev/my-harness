@@ -211,9 +211,10 @@ npm --prefix frontend run build
 
 Migration checks need an appropriately prepared temporary database; do not create/migrate the user's instance just
 to run a check. See README for the actual type-regeneration and distribution commands rather than inventing new ones.
-The [v0.1.1 notes](v0.1.1-model-selectors.md) record 40 Python test failures reproduced on both release trees on that
-machine, with the environment cause unresolved. Establish the current baseline and report failures honestly; do not
-treat them as an automatic waiver or claim the suite is already clean.
+The 40 Python failures first recorded in the [v0.1.1 notes](v0.1.1-model-selectors.md) came from an unfilled
+`.local/npm-cache` ([npm cache baseline](test-npm-cache-baseline.md)); with the README's development setup the full
+suite passed (2048 passed, 2 skipped). Establish the current baseline and report failures honestly; do not treat
+them as an automatic waiver or claim the suite is clean without running it.
 
 At closure, record exact checks and counts, remaining unsupported billing cases, source/reference versions, changed
 contracts and any real evidence separately from synthetic checks. Update STATE/NEXT_STEPS and roadmap status only

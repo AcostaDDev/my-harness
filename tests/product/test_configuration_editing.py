@@ -79,6 +79,12 @@ def test_later_agent_change_reuses_original_receipt_without_restart(journey):
     assert runtime.setup.state()['mode'] == 'READY'
     assert runtime.project_configuration.active_receipt('own', runtime.setup.repository.read('project:own')['active']) == original
     assert len(journey[6].calls) == 1
+    # Later tasks are admitted with the retained receipt and the new revision (D227, D238).
+    admitted = http.post(BASE + '/runs', json={'task_id': 'P001-T001', 'phase_id': 'P001', 'text': 'Later reviewer'},
+                         headers={'Idempotency-Key': 'later-reviewer-task'})
+    assert admitted.status_code == 202, admitted.text
+    versions = json.loads(runtime.repository.get_run(admitted.json()['run_id']).versions_json)
+    assert versions['project_configuration_revision'] == '2'
 
 
 def test_technical_edit_requires_new_preparation_and_retains_prior_evidence(journey):
@@ -122,11 +128,21 @@ def test_global_edit_derives_private_references_and_promotes_whole_set(journey):
     result = http.post(GLOBAL + '/activate', json={**body, 'preview_sha256': shown.json()['sha256']},
         headers={'Idempotency-Key': 'global-later-active'})
     assert result.status_code == 200, result.text
-    assert runtime.setup.state()['mode'] == 'RESTART_REQUIRED'
+    # D238: the idle set switches in the same process, global and derived project references together.
+    assert runtime.setup.state()['mode'] == 'READY'
+    assert http.get(BASE + '/configuration').json()['active']['revision'] == 2
+    assert http.get(BASE).json()['configuration_state'] == 'ACTIVE'
+    assert runtime.config.registrar.identity.name == 'Later synthetic author'
+    assert runtime.setup.loaded == {**{k: state['saved'][k] for k in ('scope', 'revision', 'sha256')},
+                                    'status': 'VALIDATED'}
+    admitted = http.post(BASE + '/runs', json={'task_id': 'P001-T001', 'phase_id': 'P001', 'text': 'After switch'},
+                         headers={'Idempotency-Key': 'after-live-switch'})
+    assert admitted.status_code == 202, admitted.text
+    versions = json.loads(runtime.repository.get_run(admitted.json()['run_id']).versions_json)
+    assert versions['project_configuration_revision'] == '2'
     with TestClient(app_for(journey[7])) as restarted:
         assert restarted.get(GLOBAL).json()['mode'] == 'READY'
         assert restarted.get(BASE + '/configuration').json()['active']['revision'] == 2
-        assert restarted.get(BASE).json()['configuration_state'] == 'ACTIVE'
 
 
 class FakeAssistance:
@@ -236,7 +252,7 @@ def test_assistance_rejects_unknown_context_and_security_boundaries(assistance):
     assert not fake.calls
 
 
-def test_agent_revision_with_pending_job_keeps_frozen_versions_and_refuses_activation(journey):
+def test_agent_revision_with_pending_job_keeps_frozen_versions_and_waits_for_it(journey):
     http, runtime = activated(journey)
     admitted = http.post(BASE + '/runs', json={'task_id': 'P001-T001', 'phase_id': 'P001', 'text': 'Synthetic task'},
         headers={'Idempotency-Key': 'frozen-task'})
@@ -246,19 +262,33 @@ def test_agent_revision_with_pending_job_keeps_frozen_versions_and_refuses_activ
     form = state['form']; form['agents']['reviewer']['model'] = 'next-reviewer'
     shown, _ = save_edit(http, form)
     assert shown['effects']['jobs'] and shown['effects']['admitted_jobs_keep_frozen_configuration']
-    state = http.get(BASE + '/configuration').json()
-    response = http.post(BASE + '/configuration/activation/preview', json={
-        'revision': state['saved']['revision'], 'sha256': state['saved']['sha256'],
-        'expected_version': state['version'], 'reason': 'Review later activation'})
-    assert response.status_code == 409, response.text
+    body = later_activation(http)
+    scheduled = http.post(BASE + '/configuration/activate', json=body, headers={'Idempotency-Key': 'wait-active'})
+    assert scheduled.status_code == 200, scheduled.text
+    assert scheduled.json()['result']['state'] == 'APPLY_PENDING'
+    assert scheduled.json()['result']['waiting'] == [f"job:{before.job_id if hasattr(before, 'job_id') else 1}"] or \
+        scheduled.json()['result']['waiting'][0].startswith('job:')
+    # D238: the queued job keeps its frozen versions; the switch waits and never rebinds it.
+    assert runtime.apply_pending() == 'APPLY_PENDING'
     after = runtime.repository.get_run(admitted.json()['run_id'])
     assert after.versions_json == before.versions_json and after.history == before.history
     assert runtime.project('own').context.policy.reviewer_model != 'next-reviewer'
+    assert runtime.setup.repository.read('project:own')['status'] == 'APPLY_PENDING'
+    # Explicitly ending the queued work is the boundary; the next check switches the set.
+    claim = runtime.repository.claim(lease_seconds=30)
+    runtime.repository.refuse(claim, 'Synthetic refusal before effects')
+    assert runtime.apply_pending() == 'ACTIVE'
+    assert runtime.project('own').context.policy.reviewer_model == 'next-reviewer'
+    assert runtime.repository.get_run(admitted.json()['run_id']).versions_json == before.versions_json
 
 
 def test_global_cancel_preserves_all_authorities_and_allows_revising_derived_draft(journey):
     http, runtime = activated(journey)
     before = http.get(BASE + '/configuration').json()['active']
+    # Queued work keeps the live set pending (D238) so that it can be cancelled.
+    admitted = http.post(BASE + '/runs', json={'task_id': 'P001-T001', 'phase_id': 'P001', 'text': 'Keep pending'},
+        headers={'Idempotency-Key': 'keep-pending'})
+    assert admitted.status_code == 202, admitted.text
     form = http.get(GLOBAL).json()['form']; form['git']['author_name'] = 'Candidate one'
     store(http, form, key='global-one')
     form['git']['author_name'] = 'Candidate two'
@@ -270,6 +300,9 @@ def test_global_cancel_preserves_all_authorities_and_allows_revising_derived_dra
     scheduled = http.post(GLOBAL + '/activate', json={**body, 'preview_sha256': shown.json()['sha256']},
         headers={'Idempotency-Key': 'schedule-global'})
     assert scheduled.status_code == 200, scheduled.text
+    pending = http.get(GLOBAL).json()
+    assert pending['mode'] == 'APPLY_PENDING'
+    assert pending['live_activation']['state'] == 'APPLY_PENDING' and pending['live_activation']['waiting']
     draft = request_for(http.get(GLOBAL).json(), form)
     draft['validated'] = False
     shown = http.post(GLOBAL + '/preview', json=draft)

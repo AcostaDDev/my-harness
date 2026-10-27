@@ -1,4 +1,4 @@
-# P001 — Metrics Records (target 0.1.2)
+# P001 — Metrics Records (target: next patch after the one-off queue)
 
 **Status:** active phase; six tasks pending, implementation not started.
 **Next phase task: P001-T001 — Accounting contract and evidence inventory.**
@@ -18,7 +18,8 @@ The completed intake/configuration fix is documented in
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
 The sections below are the current task plan, not implemented features. T001 settles the technical contract before
-T002–T005 change runtime behavior. The target release is `0.1.2`; the current package is still `0.1.1`.
+T002–T005 change runtime behavior. The target release is the patch version that follows the one-off releases
+([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)); OT001 shipped `0.1.2`.
 
 ## Shared constraints
 
@@ -183,7 +184,7 @@ desktop/mobile, keyboard navigation and query-only archive. Record tested surfac
 
 **Status:** pending.
 **Depends on:** completed T001–T005 and their evidence.
-**Objective:** qualify P001 against its exit criteria and prepare the documented `0.1.2` result and P002 handoff.
+**Objective:** qualify P001 against its exit criteria and prepare the documented release result and P002 handoff.
 **Allowed paths:** current docs, focused qualification tests/scripts and, when preparing the release candidate,
 the existing shared package/API/UI version locations and lockfiles. Product fixes remain bounded, documented work.
 **Acceptance criteria:**
@@ -192,7 +193,7 @@ the existing shared package/API/UI version locations and lockfiles. Product fixe
   valuation → aggregates/API/UI → retention → backup/query-only restore without real account data or calls.
 - Run relevant regression and compatibility checks, record exact results and compare any existing failures with
   the baseline; unresolved failures/unsupported billing cases remain visible rather than silently accepted.
-- Prepare upgrade notes and consistent `0.1.2` candidate version metadata only after the implemented result is
+- Prepare upgrade notes and consistent candidate version metadata for the target patch only after the implemented result is
   qualified. Use existing local build/check procedures if offline dependencies are available; otherwise state what
   remains unverified. Building does not authorize network installation, commit, tag, push or publication.
 - Reconcile specification, architecture, data/flows, API/types, operator documentation, source/reference versions

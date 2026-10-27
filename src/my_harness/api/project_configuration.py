@@ -68,6 +68,9 @@ def project_configuration_router(runtime):
         except JournalError:
             raise problem(409, 'project_preparation_changed', tr('setup.conflict')) from None
         except Conflict as error:
+            if getattr(error, 'details', None):
+                from my_harness.api.configuration import conflict
+                raise conflict(error) from None
             raise problem(409, getattr(error, 'code', 'profile_conflict'), tr('setup.conflict')) from None
         except LookupError:
             raise problem(404, 'profile_not_found', tr('setup.not_found')) from None
@@ -120,6 +123,8 @@ def project_configuration_router(runtime):
             # resolution keeps task admission closed until it can be recomposed; replay only reinstalls.
             project = runtime.registry.registrar.refresh(runtime.project(project_id), force=True)
             runtime.install(service.install_active(project))
+            # A set that waits for current work is switched at the next idle boundary (D238).
+            runtime.try_apply_pending()
             return result
         return call(project_id, apply)
 

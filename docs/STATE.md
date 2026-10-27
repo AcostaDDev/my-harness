@@ -8,12 +8,11 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-Two entries are pending, in order: **OT001 — live application of agent configuration**,
-then **OT002 — question-first reviewer answers with individual/batch submission**.
-Their implementation is not complete; OT002 includes actual use of Claude Code's
-frontend-design plugin in its later implementation session. Complete the one-off
-queue before resuming the unchanged Metrics Records task P001-T001. The empty
-failed-intake activation fix is already committed as `ef77229` and is not queued again.
+One entry is pending: **OT002 — question-first reviewer answers with individual/batch
+submission**, expected as `0.1.3` ([D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)).
+Its implementation has not started; it includes actual use of Claude Code's frontend-design
+plugin in its implementation session. OT001 is complete and released as `0.1.2` (below).
+Complete the one-off queue before resuming the unchanged Metrics Records task P001-T001.
 
 ## Accumulated baseline
 
@@ -96,8 +95,9 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   receipt, initializes only an absent database, keeps instance locks/signals and serves the packaged UI without Node.
 - Authenticated `/setup` works without TOML or inference. Global v9/project v1 private TOML versions live outside
   checkouts; SQLite owns saved/active/pending references and recoverable CAS intentions. Form/TOML editors show
-  exact diffs; saving and activating are separate. Global activation requires restart; project activation happens
-  between tasks after preparation/receipt checks and the work barrier.
+  exact diffs; saving and activating are separate. Since `0.1.2` a confirmed global or project set applies in the
+  running service at an idle boundary (D238); only worker-loop service fields under a running supervisor and legacy
+  import promotion still need a restart.
 - Creation from documents and onboarding from a static committed inventory can start without a stack composition.
   The reviewer proposes a profile after context; confirmed documentary commit/P001, saved tool paths, bounded
   preparation, fresh validation receipt and separate activation precede the first task. Other stacks are supported;
@@ -110,6 +110,17 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - Installed first-use checks use fake Claude and Go tools, disposable projects and temporary Git/SQLite on macOS
   ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
   above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
+
+## Patch 0.1.2 — live agent configuration (OT001)
+
+[D238](DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary): a confirmed configuration set is staged
+completely (client preflight, every registered project) before confirmation and applied in the running service
+without restart or new login; with current work it waits as **Apply when current work finishes** and switches at the
+first idle boundary, withdrawing itself if the candidate no longer composes. Admitted work keeps its frozen settings.
+Task admission now binds the receipt selected for the frozen project revision, fixing refused tasks after derived or
+agent-only revisions. Additive API (state `APPLY_PENDING`, `live_activation`, preview `apply`/`restart_fields`/
+`waiting`, save `removed_fields`, structured 409 corrections); no schema or format change. Verified with offline
+suites and synthetic en/es Chrome QA; see the [work notes](phase/OT001-live-agent-configuration.md).
 
 ## Patch 0.1.1 — model selectors
 

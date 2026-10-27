@@ -966,7 +966,10 @@ Operation states: INTENDED, FILES_WRITTEN, SAVED, RECOVERY_REQUIRED, CONFLICT, A
 ACTIVATE, PROMOTE, CANCEL, RECOVER and ASSIST. Intent records and exact request hashes precede file effects;
 idempotent replay does not repeat commands or model calls. Assistance has its own process journal without a
 fictitious managed run. Global SAVE can include derived project copies or a legacy-import provenance snapshot.
-Activation records exact receipt evidence; it never rebuilds historical receipts.
+Activation records exact receipt evidence; it never rebuilds historical receipts. A live activation (D238) keeps
+its set in `pending_revision`/`pending_operation_id` with `payload.apply = live` until the idle-boundary PROMOTE;
+a candidate that no longer composes is withdrawn by a PROMOTE whose `result.state` is FAILED, with structured
+corrections. No new table or column.
 
 Profile proposals reuse planning proposals (`kind=profile`) with frozen binding/document evidence. Generic
 preparation reuses project preparation operations/steps/receipts with a contract discriminator, not a task run.

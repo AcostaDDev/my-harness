@@ -12,7 +12,7 @@ models are reached through the official Codex and Claude Code CLIs with your own
 ## Status
 
 - **Pre-release.** The first local version is complete within the scope described below; the package declares
-  version `0.1.1`, a patch of the first public release `0.1.0`, and is not published on PyPI. See the
+  version `0.1.2`, the second patch of the first public release `0.1.0`, and is not published on PyPI. See the
   [changelog](CHANGELOG.md) for the versioning policy.
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
@@ -124,15 +124,15 @@ scripts/install --allow-network
 
 ### 2b. Install from a release package
 
-Download `my-harness-0.1.1-distribution.tar.gz` and its `.sha256` from the
+Download `my-harness-0.1.2-distribution.tar.gz` and its `.sha256` from the
 [Releases page](https://github.com/AcostaDDev/my-harness/releases) (or with `curl` as below) into the same folder, then:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.1/my-harness-0.1.1-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.1/my-harness-0.1.1-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.1-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.1-distribution.tar.gz
-cd my-harness-0.1.1
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.2-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.2-distribution.tar.gz
+cd my-harness-0.1.2
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -205,8 +205,12 @@ keeps work blocked and opens setup; selecting a missing file does not create it.
    without inference or authentication. Sign in to each provider separately; never paste credentials here.
 3. **Validate and preview diff**, review the exact candidate and confirm **Save reviewed version**. Saving creates
    private TOML versions outside checkouts; it does not activate them.
-4. **Review activation of saved version**, confirm the exact versions, stop with Ctrl-C, and repeat `scripts/start`
-   with the same installation path/port. The application verifies and activates the pending set on restart.
+4. **Review activation of saved version** and confirm the exact versions. The preview checks the selected clients
+   (version/help) and every registered project first and names any setting to correct. The service applies the
+   change without restarting and keeps your session: immediately when no work is running, otherwise it shows
+   **Apply when current work finishes** and switches as soon as the listed work ends or is resolved. Only changes
+   to the supervisor's lease/poll settings while it runs need a restart (`Ctrl-C`, then `scripts/start` with the same
+   installation path/port); the preview says so before you confirm.
 
 The form needs no Django/TypeScript composition or hand-written TOML. **TOML** exposes advanced settings;
 conversion is validated on the server. Storage is chosen at startup and cannot be moved by this editor.
@@ -259,13 +263,14 @@ Each managed project gets `AGENTS.md` with `CLAUDE.md`/`GEMINI.md` wrappers, `RE
 
 Open **Global configuration** from navigation or the project's **Configuration** editor. Form/TOML editing uses
 validation, diff and separate save/activation confirmations. Preview shows affected projects, tools, receipts,
-commands and pending jobs. A global change derives private project copies and requires activation of the set and
-restart. A technical project change needs current committed documentation and a new preparation receipt before
+commands and pending jobs. A global change derives private project copies and activates the whole set in the
+running service, waiting for current work when needed. A technical project change needs current committed documentation and a new preparation receipt before
 activation. A nontechnical change may reuse an exact compatible receipt after verification.
 
 Optional AI assistance uses the currently active clients and only the context you authorize. Applying its suggestion
 changes the draft; saving, preparing and activating still need their own confirmations. It cannot edit your machine's
-global settings. Pending/active work or an uncertain writer can block activation. Stop and resolve that work explicitly.
+global settings. A confirmed change waits for running, queued or uncertain work, which keeps its frozen settings;
+it is never cancelled or retried for you. Cancel the pending change from the same page if you prefer.
 
 Conflicts retain your browser-tab candidate and exact request; review the current base before retrying. Reloading or
 polling never resends a confirmation. External file edits do not reload authority. Recovery inspects recorded bytes

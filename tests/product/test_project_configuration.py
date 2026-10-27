@@ -271,7 +271,15 @@ def test_activation_rejects_stale_prepared_authority(journey, fault):
         assert response.status_code == 409, response.text
         return
     refused = http.post(BASE + '/configuration/activate', json=body, headers={'Idempotency-Key': 'stale-activation'})
-    assert refused.status_code == 409, refused.text
+    if fault == 'pending':
+        # D238: an uncertain checkout owner is current work; the confirmed set waits for it, never switches.
+        assert refused.status_code == 200, refused.text
+        assert refused.json()['result']['state'] == 'APPLY_PENDING'
+        assert refused.json()['result']['waiting'][0].startswith('job:preparation:')
+        assert runtime.apply_pending() == 'APPLY_PENDING'
+        assert repo.read('project:own')['status'] == 'APPLY_PENDING'
+    else:
+        assert refused.status_code == 409, refused.text
     assert repo.read('project:own')['active'] is None
     assert isinstance(runtime.project('own').context, IntakeContext)
 

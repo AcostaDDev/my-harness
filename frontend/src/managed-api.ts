@@ -8,8 +8,10 @@ export class ManagedError extends Error {
   code?: string;
   /** Human diagnostic of the service, in the language it was emitted; absent when the service sent none. */
   diagnostic?: string;
-  constructor(status: number, message: string, code?: string, diagnostic?: string) {
-    super(message); this.status = status; this.code = code; this.diagnostic = diagnostic;
+  /** Structured corrections of a refused live configuration candidate (D238), when the service sent them. */
+  details?: unknown[];
+  constructor(status: number, message: string, code?: string, diagnostic?: string, details?: unknown[]) {
+    super(message); this.status = status; this.code = code; this.diagnostic = diagnostic; this.details = details;
   }
 }
 export async function managed<T>(path: string, body?: unknown, key?: string, method = "POST"): Promise<T> {
@@ -24,7 +26,8 @@ export async function managed<T>(path: string, body?: unknown, key?: string, met
       : data?.detail === undefined || data?.detail === null ? undefined : JSON.stringify(data.detail);
     // Without a diagnostic the message is the status and code only; the interface adds its own text.
     const code = data?.detail?.code ?? "request_failed";
-    throw new ManagedError(response.status, `${response.status} · ${code}${diagnostic === undefined ? "" : `: ${diagnostic}`}`, data?.detail?.code, diagnostic);
+    throw new ManagedError(response.status, `${response.status} · ${code}${diagnostic === undefined ? "" : `: ${diagnostic}`}`, data?.detail?.code, diagnostic,
+      Array.isArray(data?.detail?.details) ? data.detail.details : undefined);
   }
   return response.json() as Promise<T>;
 }

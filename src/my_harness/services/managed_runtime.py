@@ -6,10 +6,12 @@ names them by identifier and never supplies paths, commands or selections.
 The supervisor has a writer thread and a chat thread over snapshots in the Uvicorn process,
 both with `LocalSupervisor.run_once`; the queue, the exclusion and the recovery stay in
 SQLite. Shutting down the service does not release a half-done job: its lease expires and it stays
-RECOVERY_REQUIRED until an explicit confirmation.
+RECOVERY_REQUIRED until an explicit confirmation. A confirmed live configuration set (D238) is staged
+completely and installed at an idle boundary; the worker loops read the factories on every claim.
 """
 
 from collections.abc import Callable, Mapping
+import copy
 from dataclasses import dataclass, replace
 import importlib
 import logging
@@ -139,6 +141,7 @@ class SupervisorWorker:
     def __init__(self, supervisor: LocalSupervisor, poll_seconds: float):
         self.supervisor = supervisor
         self.poll_seconds = poll_seconds
+        self.idle: Callable | None = None  # D238: boundary hook of the writer lane
         self.wake, self.stopping = Event(), Event()
         self.thread: Thread | None = None
         self.chat_thread: Thread | None = None
@@ -166,6 +169,11 @@ class SupervisorWorker:
                     self.last_error = f"{type(exc).__name__}: {exc}"
                 logger.exception("Managed job stopped; explicit reconciliation required.")
                 claimed = None
+            if claimed is None and lane == 'writer' and self.idle is not None:
+                try:
+                    self.idle()
+                except Exception:  # the pending set stays visible; nothing is retried on its behalf
+                    logger.exception("Pending configuration could not be applied.")
             if claimed is None:
                 self.wake.wait(self.poll_seconds)
                 self.wake.clear()
@@ -200,6 +208,9 @@ class ManagedRuntime:
         self.migrations_dir: Path | None = None
         self.projects: dict[str, ManagedProject] = {}
         self._projects_lock = Lock()
+        self._apply_lock = Lock()
+        # Projects whose active configuration could not be installed (documentary capabilities only).
+        self.degraded: dict[str, str] = {}
 
     def start(self) -> None:
         from my_harness.storage.backup import is_read_only_archive
@@ -265,17 +276,203 @@ class ManagedRuntime:
             if self.setup is not None and not self.setup.legacy:
                 try:
                     self.install(self.project_configuration.install_active(bound))
-                except (ValueError, OSError):
+                except (ValueError, OSError) as exc:
                     # Keep documentary capabilities; admission must revalidate the active reference.
+                    self.degraded[project.id] = getattr(exc, 'code', 'project_configuration_invalid')
                     self.install(bound)
         if self.setup is not None:
             self.repository.write_guard = self.setup.require_ready
+            if not self.setup.legacy and not is_read_only_archive(self.engine):
+                self.setup.repository.restart_fields = self._restart_fields
+                self.setup.repository.live_verifier = self._stage
         if config.supervisor:
-            supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,
-                                         commit_factory=config.commit_factory)
-            self.worker = SupervisorWorker(supervisor, config.poll_seconds)
-            self.worker.preparation = self.preparation
-            self.worker.start()
+            self._start_worker(config)
+        if self.setup is not None:
+            self.try_apply_pending()
+
+    def _start_worker(self, config: ManagedConfig) -> None:
+        # The factories are read on every claim, so a live switch reaches both lanes (D238).
+        ports = (lambda context, versions: self.config.ports_factory(context, versions))
+        commit = ((lambda context, versions: self.config.commit_factory(context, versions))
+                  if config.commit_factory is not None else None)
+        supervisor = LocalSupervisor(self.repository, ports, lease_seconds=config.lease_seconds, commit_factory=commit)
+        self.worker = SupervisorWorker(supervisor, config.poll_seconds)
+        self.worker.preparation = self.preparation
+        if self.setup is not None:
+            self.worker.idle = self.apply_pending
+        self.worker.start()
+
+    # --- live configuration (D238) ---------------------------------------------------------
+
+    def _restart_fields(self, session, data) -> list[str]:
+        """Global fields this process cannot switch; an empty list means a live set."""
+        from my_harness.services.configuration import parse
+        from my_harness.services.configuration_import import imported
+        setup = self.setup
+        if setup is None or setup.legacy or imported(session) and not setup.loaded:
+            return ['configuration_import']
+        if self.worker is None:
+            return []  # a stopped supervisor starts with the new values at the switch
+        loaded = (parse(setup.repository.document('global', setup.loaded['revision']), 'global')['service']
+                  if setup.loaded else {})
+        defaults = {'lease_seconds': 30.0, 'poll_seconds': 0.5}
+        return [f'service.{key}' for key in ('supervisor', 'lease_seconds', 'poll_seconds')
+                if data['service'].get(key, defaults.get(key)) != loaded.get(key, defaults.get(key))]
+
+    def _stage(self, references):
+        """Complete candidate runtime: global composer, exact client preflight and every registered project.
+
+        Built outside write transactions and never installed here. Refusals name the project/role, the
+        code and its correction; a project that already fails with the active authority does not block.
+        """
+        from my_harness.core.engine.journal import JournalError
+        from my_harness.services import local_config as legacy
+        from my_harness.services.configuration import parse
+        from my_harness.services.managed import guarded_writer
+        from my_harness.services.project_configuration import ProjectConfiguration
+        from my_harness.services.project_preparation import ProjectPreparation
+        from my_harness.services.project_registry import ProjectRegistry, RegistryError
+        from my_harness.storage.configuration import ConfigurationConflict
+        setup = self.setup
+        refs = {ref['scope']: ref for ref in references}
+        reference = refs.get('global') or setup.repository.read('global')['active']
+        if reference is None:
+            raise ConfigurationConflict('active_global_configuration_required')
+        def refusal(exc, **where):
+            code = getattr(exc, 'code', None) or getattr(exc.__context__, 'code', None) or 'configuration_invalid'
+            return {'project': None, 'role': None, **where, 'code': code, 'diagnostic': str(exc)[:500]}
+        candidate = copy.deepcopy(parse(setup.repository.document('global', reference['revision']), 'global'))
+        candidate.setdefault('compositions', {})
+        try:
+            config = legacy._build(candidate, setup.directory / 'global.toml', allow_empty_compositions=True,
+                                   editor=True)[0]
+            _validate(config, self.database, self.migrations_dir)
+            config = config.registrar.resolve_config(config)
+        except (ValueError, OSError) as exc:
+            raise ConfigurationConflict('live_configuration_refused', [refusal(exc)]) from None
+        details = []
+        # Both roles are probed even without registered projects: a wrong path never becomes active.
+        for role, declaration in config.registrar.agents.items():
+            try:
+                config.registrar._resolve_agents({role: declaration})
+            except (ValueError, OSError) as exc:
+                details.append(refusal(exc, role=role, setting=f'agents.{role}'))
+        config = replace(config, commit_factory=guarded_writer(config.commit_factory, self.repository.guard))
+        staging = copy.copy(self)
+        staging.config, staging.projects, staging._projects_lock, staging.degraded = config, {}, Lock(), {}
+        staging.registry = ProjectRegistry(staging)
+        staging.registry.unavailable = {}
+        staging.project_configuration = ProjectConfiguration(staging)
+        staging.preparation = ProjectPreparation(staging)
+        failing = set(self.registry.unavailable) | set(self.degraded)
+        global_reference = refs.get('global')
+        for item in staging.registry.repository.rows():
+            if item['status'] != 'ACTIVE':
+                continue
+            scope = 'project:' + item['id']
+            try:
+                staging.registry._conflicts(item['id'], Path(item['root']), registered=True)
+                project = config.registrar.install(
+                    staging.registry._compose(item['row'], (item['version'], item['row_sha256'])))
+            except RegistryError as exc:
+                staging.registry.unavailable[item['id']] = str(exc)
+                details.append(refusal(exc, project=item['id'], setting=scope, already_failing=item['id'] in failing))
+                continue
+            project = staging.preparation.bind(project)
+            try:
+                project = staging.project_configuration.install_active(
+                    project, reference=refs.get(scope), global_reference=global_reference)
+            except (ValueError, OSError, JournalError) as exc:
+                staging.degraded[item['id']] = getattr(exc, 'code', 'project_configuration_invalid')
+                details.append(refusal(exc, project=item['id'], setting=scope, already_failing=item['id'] in failing))
+            staging.install(project)
+        if any(not item.get('already_failing') for item in details):
+            raise ConfigurationConflict('live_configuration_refused', details)
+        staging.loaded = ({**{key: global_reference[key] for key in ('scope', 'revision', 'sha256')},
+                           'status': 'VALIDATED'} if global_reference else setup.loaded)
+        return staging
+
+    def _snapshot(self):
+        return (self.config, self.projects, self.registry.unavailable, self.degraded, self.setup.loaded,
+                self.setup.startup_error)
+
+    def _restore(self, snapshot) -> None:
+        with self._projects_lock:
+            (self.config, self.projects, self.registry.unavailable, self.degraded, self.setup.loaded,
+             self.setup.startup_error) = snapshot
+
+    def _install_staging(self, staging) -> None:
+        """Pointer swaps only, under the promotion's write barrier: no client or file is touched."""
+        with self._projects_lock:
+            self.config, self.projects = staging.config, staging.projects
+            self.registry.unavailable, self.degraded = staging.registry.unavailable, staging.degraded
+            self.setup.loaded, self.setup.startup_error = staging.loaded, None
+
+    def try_apply_pending(self) -> str | None:
+        """Request-path variant: an apply problem never fails the read or the confirmation that triggered it."""
+        try:
+            return self.apply_pending()
+        except Exception:  # the pending set stays visible; the next boundary check tries again
+            logger.exception("Pending configuration could not be applied.")
+            return None
+
+    def apply_pending(self) -> str | None:
+        """Promote a confirmed live set at the first idle boundary (D238).
+
+        Returns None without a live set, APPLY_PENDING while current work remains, ACTIVE or FAILED.
+        Never terminates, retries or rebinds work; a failed candidate leaves the active set in place.
+        """
+        from sqlalchemy import select
+        from sqlalchemy.orm import Session
+        from my_harness.storage.backup import is_read_only_archive
+        from my_harness.storage.configuration import ConfigurationConflict, live
+        from my_harness.storage.models import ConfigurationOperationRow, ConfigurationScopeRow
+        setup = self.setup
+        if setup is None or setup.legacy or self.repository is None or is_read_only_archive(self.engine):
+            return None
+        if not self._apply_lock.acquire(blocking=False):
+            return None
+        try:
+            with Session(self.engine) as session:
+                activation_id = session.scalar(select(ConfigurationScopeRow.pending_operation_id).where(
+                    ConfigurationScopeRow.pending_operation_id.is_not(None)).limit(1))
+                activation = session.get(ConfigurationOperationRow, activation_id) if activation_id else None
+                if not live(activation):
+                    return None
+                references = activation.payload['references']
+            if setup.repository.waiting(references):
+                return 'APPLY_PENDING'
+            key = f'live:{activation_id}'
+            def withdraw(code, details=None):
+                try:
+                    setup.repository.fail_pending(activation_id=activation_id, key=key, code=code, details=details)
+                except ConfigurationConflict:
+                    return None  # cancelled or replaced concurrently: nothing left to withdraw
+                return 'FAILED'
+            try:
+                staging = self._stage(references)
+            except ConfigurationConflict as exc:
+                return withdraw(exc.code, exc.details)
+            previous = self._snapshot()
+            try:
+                setup.repository.promote_pending(activation_id=activation_id, key=key,
+                                                 on_commit=lambda: self._install_staging(staging))
+            except ConfigurationConflict as exc:
+                self._restore(previous)
+                # New work or an unresolved journal operation appeared: wait for the next boundary.
+                if exc.code in ('configuration_has_pending_work', 'configuration_recovery_required'):
+                    return 'APPLY_PENDING'
+                if exc.code in ('pending_configuration_changed', 'unknown_pending_configuration_activation'):
+                    return None
+                return withdraw(exc.code)
+            except BaseException:
+                self._restore(previous)
+                raise
+            if self.worker is None and self.config.supervisor:
+                self._start_worker(self.config)
+            return 'ACTIVE'
+        finally:
+            self._apply_lock.release()
 
     def stop(self) -> None:
         if self.worker is not None:

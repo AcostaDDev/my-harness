@@ -11,7 +11,8 @@ Follow [SECURITY.md](SECURITY.md) for suspected vulnerabilities.
 
 Before making a substantial change, describe the problem in an issue. Branch from
 `develop` with a `<kind>/<topic>` name (`feat`, `fix`, `docs`, `chore` or `test`)
-and open the pull request against `develop`: `main` only receives release merges
+and open the pull request against `develop`: `main` is protected and only receives
+release pull requests from `develop`, merged as merge commits
 ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
 Keep pull requests focused, explain the resulting behavior and report the checks
 performed and any omissions. Read the repository's agent instructions and current project

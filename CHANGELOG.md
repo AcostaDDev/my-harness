@@ -18,7 +18,8 @@ All notable changes to My Harness are recorded here. The format follows
   migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase closure and opening under a
   bounded authorization ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
   [roadmap](docs/ROADMAP.md)). Both are planned, not released.
-- A version is released by merging `develop` into `main` with `--no-ff`, tagging that merge commit
+- A version is released through a pull request from `develop` to the protected `main`, merged as a merge commit
+  (`--no-ff`), tagging that merge commit
   ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)) and attaching to a GitHub
   Release the self-contained package `my-harness-<version>-distribution.tar.gz` (a `my-harness-<version>/` folder
   with the wheel, sdist, `pylock.toml`, `distribution-1.json`, `SHA256SUMS` and `scripts/` for

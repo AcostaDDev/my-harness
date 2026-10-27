@@ -7,11 +7,13 @@ first public snapshot is summarized below as the starting baseline; its decision
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
-([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)). Currently
-**OT001 — live application of agent configuration** is pending; its technical design
-and implementation are not complete. Finish that bounded work before resuming the
-unchanged Metrics Records task P001-T001. The empty failed-intake activation fix
-is already committed as `ef77229` and is not queued again.
+([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
+Two entries are pending, in order: **OT001 — live application of agent configuration**,
+then **OT002 — question-first reviewer answers with individual/batch submission**.
+Their implementation is not complete; OT002 includes actual use of Claude Code's
+frontend-design plugin in its later implementation session. Complete the one-off
+queue before resuming the unchanged Metrics Records task P001-T001. The empty
+failed-intake activation fix is already committed as `ef77229` and is not queued again.
 
 ## Accumulated baseline
 

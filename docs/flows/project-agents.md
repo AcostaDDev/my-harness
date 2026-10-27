@@ -34,7 +34,10 @@ The browser sends only preset ids and the reviewer selection. Executables, tools
 TOML. Choosing another preset does not preselect the reviewer's model and effort; both fields are cleared. In
 `catalog` mode, the executor's models and efforts are subsets of the preset. `open` mode requires the preset's
 permission: the model is free text with an accepted shape and the effort belongs to the subset that preset allows;
-catalog models are references. The reviewer decides the concrete selection and its reason per task and revision.
+catalog models are references. The UI shows the executor's models as checkboxes: the preset's models in `catalog` mode,
+otherwise the packaged suggestions for the executor's provider plus any model added by hand, and always the models
+already in the policy ([D231](../DECISIONS.md#d231--packaged-model-suggestions-and-small-ui-patch-releases)). The
+reviewer decides the concrete selection and its reason per task and revision.
 
 Preview and confirmation reuse `/registry/preview` and `/registry/apply`: CAS, and repeating the same preview does not
 increment another version. The hash binds the row, the selection, both full presets and the versions. An absent or

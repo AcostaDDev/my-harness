@@ -13,18 +13,18 @@ const preset = (id, provider, role, model) => ({
 });
 const draft = {
   project_id: 'synthetic', root: '/synthetic/project', composition: 'declared',
-  planning_mode: 'agent', executor_mode: 'catalog', executor_models: 'executor-model',
+  planning_mode: 'agent', executor_mode: 'catalog', executor_models: ['executor-model'],
   executor_efforts: ['low'], max_revision_cycles: '0', tag_kind: 'lightweight',
   bootstrap_enabled: false, permission_authority: '', agent_mode: 'project',
   reviewer_preset: 'reader', reviewer_model: 'reviewer-model', reviewer_effort: 'low', executor_preset: 'writer',
 };
-function render(format, action, language = 'en', presets = true) {
+function render(format, action, language = 'en', presets = true, overrides = {}) {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = () => assert.fail('Rendering must not call the service');
   globalThis.localStorage = { getItem: () => language };
   try {
     return renderToStaticMarkup(createElement(I18nProvider, null, createElement(DraftFields, {
-      draft, action, onChange: () => {}, options: {
+      draft: { ...draft, ...overrides }, action, onChange: () => {}, options: {
         format, roots: ['/synthetic'], compositions: [], bootstrap_enabled: true,
         executor_effort_vocabulary: ['low'], reviewer_provider: 'claude', executor_provider: 'codex',
         agent_presets: presets ? [preset('reader', 'claude', 'reviewer', 'reviewer-model'),
@@ -71,4 +71,23 @@ test('v9 creation and registration offer context-first profiles without a requir
     assert.match(html, /Define profile from project context/);
     assert.match(html, /value="reader"/);
   }
+});
+
+test('inherited agents offer packaged executor models as checkboxes and keep chosen ones', () => {
+  const html = render('local-config-9', 'register', 'en', true, { agent_mode: 'inherited', executor_models: ['gpt-6-sol', 'synthetic-extra'] });
+  for (const model of ['gpt-6.1-sol', 'gpt-6-sol', 'gpt-6-astra', 'gpt-6-luna', 'synthetic-extra'])
+    assert.match(html, new RegExp(`type="checkbox"[^>]*/>${model.replaceAll('.', '\\.')}</label>`));
+  assert.match(html, /checked=""\/>gpt-6-sol</); assert.match(html, /checked=""\/>synthetic-extra</);
+  assert.doesNotMatch(html, /checked=""\/>gpt-6\.1-sol</); assert.doesNotMatch(html, /claude-opus-5-5/);
+  assert.doesNotMatch(html, /<textarea[^>]*>synthetic-extra/);
+  assert.match(html, /Another model accepted by the CLI/);
+  assert.match(render('local-config-9', 'register', 'es', true, { agent_mode: 'inherited' }), /Otro modelo que acepte la CLI/);
+});
+
+test('a project preset in catalog mode bounds the executor checkboxes to its own models', () => {
+  const html = render('local-config-8', 'register');
+  assert.match(html, /checked=""\/>executor-model</);
+  assert.doesNotMatch(html, /gpt-6/); assert.doesNotMatch(html, /Another model accepted by the CLI/);
+  const open = render('local-config-8', 'register', 'en', true, { executor_mode: 'open' });
+  assert.match(open, /gpt-6-luna/); assert.match(open, /Another model accepted by the CLI/);
 });

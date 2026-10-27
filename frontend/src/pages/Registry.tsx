@@ -8,6 +8,7 @@ import { useI18n } from "../Language";
 import { LocalizedError } from "../i18n.ts";
 import type { Language, MessageKey } from "../i18n.ts";
 import { WorkLanguageChoice, WorkLanguagePreview } from "../WorkLanguage";
+import { modelOptions } from "../configuration.ts";
 
 // Project registry (H6.2 E2, D054/D076). The operator TOML sets what runs; here only root, composition and
 // policy are chosen. Every change goes through a preview bound to its hash and version, and trust in the
@@ -18,7 +19,7 @@ type Defaulted = "tag_kind" | "documents" | "bootstrap_enabled";
 type Change = Omit<S["RegistryChangeInput"], Defaulted> & Partial<Pick<S["RegistryChangeInput"], Defaulted>>;
 type Draft = {
   project_id: string; root: string; composition: string; planning_mode: "agent" | "deterministic";
-  executor_mode: "catalog" | "open"; executor_models: string; executor_efforts: string[]; max_revision_cycles: string;
+  executor_mode: "catalog" | "open"; executor_models: string[]; executor_efforts: string[]; max_revision_cycles: string;
   tag_kind: "lightweight" | "annotated"; bootstrap_enabled: boolean; permission_authority: string;
   agent_mode: "inherited" | "project"; reviewer_preset: string; reviewer_model: string; reviewer_effort: string; executor_preset: string;
   // D167: chosen once on registration/creation; undefined shows (and sends) the global default.
@@ -43,7 +44,7 @@ const FIELDS: Record<string, MessageKey> = {
 
 function emptyDraft(options: S["RegistryRead"]): Draft {
   return { project_id: "", root: options.roots.length === 1 ? `${options.roots[0]}/` : "", composition: options.format === "local-config-9" ? "" : options.compositions[0]?.name ?? "",
-    planning_mode: "agent", executor_mode: "catalog", executor_models: "", executor_efforts: [], max_revision_cycles: "",
+    planning_mode: "agent", executor_mode: "catalog", executor_models: [], executor_efforts: [], max_revision_cycles: "",
     tag_kind: "lightweight", bootstrap_enabled: false, permission_authority: "",
     agent_mode: "inherited", reviewer_preset: "", reviewer_model: "", reviewer_effort: "", executor_preset: "" };
 }
@@ -54,7 +55,7 @@ function draftOf(row: Record<string, unknown>): Draft {
   return { project_id: String(row.id), root: String(row.root), composition: row.composition == null ? "" : String(row.composition),
     planning_mode: policy.planning_mode === "deterministic" ? "deterministic" : "agent",
     executor_mode: policy.executor_mode === "open" ? "open" : "catalog",
-    executor_models: ((policy.executor_models ?? []) as string[]).join("\n"),
+    executor_models: (policy.executor_models ?? []) as string[],
     executor_efforts: (policy.executor_efforts ?? []) as string[],
     max_revision_cycles: policy.max_revision_cycles == null ? "" : String(policy.max_revision_cycles),
     tag_kind: row.tag_kind === "annotated" ? "annotated" : "lightweight",
@@ -82,7 +83,7 @@ function changeOf(draft: Draft, action: Change["action"], expected: number, work
       reviewer: { preset_id: draft.reviewer_preset, model: draft.reviewer_model, effort: draft.reviewer_effort },
       executor: { preset_id: draft.executor_preset } } } : {}),
     policy: { planning_mode: draft.planning_mode, executor_mode: draft.executor_mode,
-      executor_models: draft.executor_models.split(/[\n,]/).map(v => v.trim()).filter(Boolean),
+      executor_models: draft.executor_models,
       executor_efforts: draft.executor_efforts, ...(cycles ? { max_revision_cycles: Number(cycles) } : {}) },
     tag_kind: draft.tag_kind, documents: "v2", bootstrap_enabled: draft.bootstrap_enabled,
     permission_authority: authority,
@@ -166,6 +167,17 @@ export function DraftFields({ draft, options, action, onChange }: {
   const executor = (options.agent_presets ?? []).find(p => p.id === draft.executor_preset && p.roles.includes("executor"));
   const projectAgents = draft.agent_mode === "project";
   const efforts = projectAgents ? executor?.efforts ?? [] : options.executor_effort_vocabulary;
+  // In catalog mode a project preset bounds the models (checked again by the server); otherwise the packaged
+  // suggestions for the executor's provider are offered and any other model can be added.
+  const presetBound = projectAgents && draft.executor_mode === "catalog";
+  const executorModels = presetBound ? modelOptions(undefined, executor?.models ?? [], draft.executor_models)
+    : modelOptions(projectAgents ? executor?.provider : options.executor_provider ?? undefined, executor?.models ?? [], draft.executor_models);
+  const [otherModel, setOtherModel] = useState("");
+  function addModel() {
+    const model = otherModel.trim();
+    if (model && !draft.executor_models.includes(model)) set("executor_models", [...draft.executor_models, model]);
+    setOtherModel("");
+  }
   return <>
     {action === "register" && <div className="form-row">
       <label>{t("registry.project_id")}<input value={draft.project_id} onChange={e => set("project_id", e.target.value)} required maxLength={64}
@@ -197,7 +209,7 @@ export function DraftFields({ draft, options, action, onChange }: {
       {PRESET_FORMATS.includes(options.format ?? "") ? <>
         <label>{t("settings.agents")}<select value={draft.agent_mode} onChange={e => onChange({ ...draft,
           agent_mode: e.target.value as Draft["agent_mode"], reviewer_preset: "", reviewer_model: "", reviewer_effort: "",
-          executor_preset: "", executor_models: "", executor_efforts: [], executor_mode: "catalog" })}>
+          executor_preset: "", executor_models: [], executor_efforts: [], executor_mode: "catalog" })}>
           <option value="inherited">{t("registry.agents.inherited")}</option><option value="project">{t("registry.agents.project")}</option>
         </select></label>
         {!projectAgents && <p className="hint">{t("registry.agents.inherited_hint")}</p>}
@@ -218,7 +230,7 @@ export function DraftFields({ draft, options, action, onChange }: {
             </select></label>
           </div>
           <label>{t("registry.executor_preset")}<select required value={draft.executor_preset} onChange={e => onChange({ ...draft,
-            executor_preset: e.target.value, executor_models: "", executor_efforts: [], executor_mode: "catalog" })}>
+            executor_preset: e.target.value, executor_models: [], executor_efforts: [], executor_mode: "catalog" })}>
             <option value="">{t("registry.choose_preset")}</option>
             {(options.agent_presets ?? []).filter(p => p.roles.includes("executor")).map(p => <option key={p.id} value={p.id}>{p.provider} · {p.id}</option>)}
           </select></label>
@@ -234,8 +246,15 @@ export function DraftFields({ draft, options, action, onChange }: {
         <label>{t("registry.revision_cycles")}<input type="number" min={0} max={20} value={draft.max_revision_cycles} placeholder="3"
           onChange={e => set("max_revision_cycles", e.target.value)} /></label>
       </div>
-      <label>{t("registry.executor_catalog", { provider: projectAgents ? executor?.provider ?? t("registry.choose_preset_short") : options.executor_provider ?? t("registry.no_provider") })}
-        <textarea rows={2} value={draft.executor_models} onChange={e => set("executor_models", e.target.value)} spellCheck={false} /></label>
+      <p className="legend">{t("registry.executor_catalog", { provider: projectAgents ? executor?.provider ?? t("registry.choose_preset_short") : options.executor_provider ?? t("registry.no_provider") })}</p>
+      <div className="effort-list">{executorModels.map(model => <label key={model} className="check">
+        <input type="checkbox" checked={draft.executor_models.includes(model)} onChange={e => set("executor_models",
+          e.target.checked ? executorModels.filter(v => v === model || draft.executor_models.includes(v)) : draft.executor_models.filter(v => v !== model))} />{model}</label>)}</div>
+      {!presetBound && <div className="form-row">
+        <label>{t("registry.other_model")}<input value={otherModel} maxLength={128} spellCheck={false} onChange={e => setOtherModel(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addModel(); } }} /></label>
+        <div className="actions"><button type="button" className="button-quiet" disabled={!otherModel.trim()} onClick={addModel}>{t("registry.add_model")}</button></div>
+      </div>}
       <p className="legend">{t("registry.executor_efforts")}</p>
       <div className="effort-list">{efforts.map(effort => <label key={effort} className="check">
         <input type="checkbox" checked={draft.executor_efforts.includes(effort)} onChange={e => set("executor_efforts",
@@ -271,7 +290,7 @@ function RegistryForm({ options, action, initial, expected, onApplied }: {
   const { t, preferences } = useI18n();
   const work = draft.work_language ?? preferences?.default_work_language;
   function edit(next: Draft) { generation.current += 1; setDraft(next); setPreview(undefined); op.clear(); }
-  const ready = (options.format === "local-config-9" || draft.composition) && draft.executor_efforts.length && draft.executor_models.trim()
+  const ready = (options.format === "local-config-9" || draft.composition) && draft.executor_efforts.length && draft.executor_models.length
     && (action === "update" || (draft.project_id.trim() && draft.root.trim() && work));
   return <form onSubmit={e => {
     e.preventDefault();
@@ -392,7 +411,7 @@ function NewDirectoryForm({ options, root, refresh }: {
   const { t, rich, preferences } = useI18n();
   const work = draft.work_language ?? preferences?.default_work_language;
   function invalidate() { generation.current++; setPreview(undefined); setTrusted(false); }
-  const ready = draft.project_id.trim() && name && (options.format === "local-config-9" || draft.composition) && draft.executor_models.trim() && draft.executor_efforts.length && work;
+  const ready = draft.project_id.trim() && name && (options.format === "local-config-9" || draft.composition) && draft.executor_models.length && draft.executor_efforts.length && work;
   return <section className="panel" aria-labelledby="new-directory"><h2 id="new-directory">{t("creation.new")}</h2>
     <form onSubmit={e => { e.preventDefault(); void op.run(async () => {
       const current = generation.current;

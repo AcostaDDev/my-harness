@@ -8,7 +8,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 
 | Layer | Choice and exact version |
 |---|---|
-| Core | Python 3.14.4, standard library, package `my-harness` 0.1.0 (`uv_build==0.12.19`) |
+| Core | Python 3.14.4, standard library, package `my-harness` 0.1.1 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
 | Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0027_profile_proposals`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |

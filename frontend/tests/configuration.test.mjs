@@ -326,6 +326,30 @@ test('setup routing resolves archive first and blocks operational workspace befo
   }
 });
 
+test('reviewer model offers the packaged catalog per provider and keeps a hand-written model', async () => {
+  const env = environment(), tree = env.tree();
+  const model = () => JSON.parse(env.storage.get('harness-configuration-draft-v1')).form.agents.reviewer.model;
+  const select = () => env.host.elements.find(item => item.type === 'select' && item.props.id === 'configuration-agents-reviewer-model');
+  try {
+    let html = await env.render(tree);
+    // A saved model outside the catalog stays visible and editable under "Other".
+    assert.equal(select().props.value, '_other'); assert.match(html, /value="gpt-6\.1-sol"/); assert.doesNotMatch(html, /claude-opus-5-5/);
+    assert.match(html, /id="configuration-agents-reviewer-model-other"[^>]*value="explicit-model"/);
+    env.input('configuration-agents-reviewer-provider', 'claude'); html = await env.render(tree);
+    assert.equal(model(), 'explicit-model'); assert.match(html, /value="claude-opus-5-5"/); assert.doesNotMatch(html, /gpt-6\.1-sol/);
+    env.input('configuration-agents-reviewer-model', 'claude-opus-5-5'); html = await env.render(tree);
+    assert.equal(model(), 'claude-opus-5-5'); assert.equal(select().props.value, 'claude-opus-5-5');
+    assert.doesNotMatch(html, /reviewer-model-other/);
+    // A packaged model does not carry over to another provider.
+    env.input('configuration-agents-reviewer-provider', 'codex'); await env.render(tree);
+    assert.equal(model(), ''); assert.equal(select().props.value, '');
+    env.input('configuration-agents-reviewer-model', '_other'); html = await env.render(tree);
+    assert.equal(model(), ''); assert.match(html, /reviewer-model-other/);
+    env.input('configuration-agents-reviewer-model-other', 'synthetic-new-model'); await env.render(tree);
+    assert.equal(model(), 'synthetic-new-model');
+  } finally { env.close(); }
+});
+
 test('draft validation, permission preservation and positive/path field errors', () => {
   const value = draft(base()); value.form.agents.reviewer.timeout_seconds = 0;
   value.form.git.executable = 'relative'; value.form.registration.roots = ['relative'];

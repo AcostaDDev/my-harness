@@ -56,7 +56,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
             sessions.stop()
             engine.dispose()
 
-    app = FastAPI(title="My Harness", version="0.1.0", lifespan=lifespan,
+    app = FastAPI(title="My Harness", version="0.1.1", lifespan=lifespan,
                   docs_url=None, redoc_url=None)
     app.state.sessions = sessions
     app.state.language = sessions.language

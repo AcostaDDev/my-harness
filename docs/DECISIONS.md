@@ -966,3 +966,24 @@ the engine version `harness-local-<engine>` frozen in job contracts.
 
 The repository has no hosted CI. The offline suites and package checks listed in the README run locally before each
 change, and the release package is built and verified locally from the tagged commit.
+
+## D231 — Packaged model suggestions and small UI patch releases
+
+Status: accepted.
+
+Model choice in the UI starts from a list packaged with the interface, per provider, next to the effort vocabulary:
+Codex `gpt-6.1-sol`, `gpt-6-sol`, `gpt-6-astra`, `gpt-6-luna`; Claude Code `claude-opus-5-5`, `claude-sonnet-5-5`,
+`claude-haiku-5-5`, `claude-fable-5-1`. The list only suggests: it is not a capability check, it never queries a
+client or provider (D173) and it does not change formats, hashes or the API. Models stay free text with the accepted
+shape and the server keeps validating them.
+
+- The reviewer's model in the global setup is a selector of the provider's suggestions with an **Other** choice
+  that keeps a hand-written model. A saved model outside the list stays visible and editable; a suggested model is
+  cleared when the provider changes, while a hand-written one is kept.
+- The executor's models in a project policy are checkboxes. In `catalog` mode with a project preset they are the
+  preset's models, as the server requires; otherwise they are the suggestions for the executor's provider plus any
+  model added by hand. Models already in the policy are always shown checked. The reviewer still chooses one of the
+  checked models per task and revision (D052).
+
+Updating the list is a release of the interface. A patch release (`0.x.y`) may carry such small interface
+improvements as well as defect fixes, provided it changes no configuration format, API contract or stored data.

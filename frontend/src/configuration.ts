@@ -60,6 +60,15 @@ export function changeField(form: Form, path: string, value: unknown): Form {
 export const efforts: Record<string, string[]> = {
   codex: ["minimal", "low", "medium", "high", "xhigh", "max", "ultra"], claude: ["low", "medium", "high", "xhigh", "max"],
 };
+// D231: packaged suggestions only. Any other valid model is still typed by hand; the server validates the form.
+export const models: Record<string, string[]> = {
+  codex: ["gpt-6.1-sol", "gpt-6-sol", "gpt-6-astra", "gpt-6-luna"],
+  claude: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5", "claude-fable-5-1"],
+};
+/** Packaged models for the provider, then any extra offered or already chosen, without duplicates and in order. */
+export function modelOptions(provider: string | undefined, ...extra: string[][]): string[] {
+  return [...new Set([...(models[provider ?? ""] ?? []), ...extra.flat()])];
+}
 export function errors(draft: Draft): Record<string, MessageKey> {
   const result: Record<string, MessageKey> = {};
   if (!draft.reason.trim()) result.reason = "configuration.required";

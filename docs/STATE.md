@@ -7,7 +7,7 @@ first public snapshot is summarized below as the starting baseline; its decision
 
 What exists and works at the first public snapshot, verified offline with temporary Git repositories, SQLite and
 processes, fake agents and synthetic data unless stated otherwise. First local version complete within the scope
-described in the [supported scope](../README.md#supported-scope-and-limits); package `0.1.0`, not yet released.
+described in the [supported scope](../README.md#supported-scope-and-limits); package `0.1.1`; `0.1.0` is published as a GitHub Release.
 The real validation originally deferred in D151 now has the bounded evidence below.
 
 - **Engine.** Package `my_harness` with an explicit context per project, frozen task contracts, planning by the
@@ -96,6 +96,16 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - Installed first-use checks use fake Claude and Go tools, disposable projects and temporary Git/SQLite on macOS
   ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
   above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
+
+## Patch 0.1.1 — model selectors
+
+Interface-only patch before P001
+([D231](DECISIONS.md#d231--packaged-model-suggestions-and-small-ui-patch-releases)): the global setup chooses the
+reviewer's model from packaged suggestions per provider with a hand-written **Other**, and project policies choose the
+executor's models with checkboxes (preset models in `catalog` mode, otherwise suggestions plus models added by hand).
+No configuration format, API contract or schema changes; only the shared version string moves to `0.1.1`. Covered by
+the frontend suites; no visual QA was run for these controls. Building, checking and publishing the `0.1.1` release
+package are separate steps ([work notes](phase/v0.1.1-model-selectors.md)).
 
 ## Active phase — P001 Optional continuous mode between phases
 

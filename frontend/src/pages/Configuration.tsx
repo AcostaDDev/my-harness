@@ -5,7 +5,7 @@ import { managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import { Alert, DiffBlock, Evidence, Fields, Loading, PageHeader, Stale, message, usePoll } from "../ui";
 import { baseChanged, candidate, change, changeField, efforts, errors, field, initialDraft, modeLabels,
-  readAction, readDraft, sendAction, storeDraft } from "../configuration.ts";
+  modelOptions, readAction, readDraft, sendAction, storeDraft } from "../configuration.ts";
 import type { Action, Draft, Review } from "../configuration.ts";
 
 import { Link } from "../navigation";
@@ -13,6 +13,30 @@ import { ConfigurationAssistance } from "./ConfigurationAssistance";
 
 const ROOT = "/configuration";
 const idFor = (path: string) => `configuration-${path.replaceAll(".", "-")}`;
+// Never a valid model: MODEL_FORM requires a leading letter or digit.
+const OTHER = "_other";
+
+/** Packaged models of the provider; "Other" keeps a hand-written one, and a saved unknown model stays visible. */
+function ModelChoice({ id, provider, value, problem, onChange }: {
+  id: string; provider: string; value: string; problem?: MessageKey; onChange: (value: string) => void;
+}) {
+  const { t } = useI18n();
+  const known = modelOptions(provider);
+  const [other, setOther] = useState(false);
+  const custom = other || (!!value && !known.includes(value));
+  return <div>
+    <label htmlFor={id}>{t("settings.model")}</label>
+    <select id={id} value={custom ? OTHER : value} aria-invalid={!!problem} aria-describedby={problem ? `${id}-error` : undefined}
+      onChange={event => { const choice = event.target.value; setOther(choice === OTHER); onChange(choice === OTHER ? "" : choice); }}>
+      <option value="">{t("configuration.choose_model")}</option>
+      {known.map(model => <option key={model} value={model}>{model}</option>)}
+      <option value={OTHER}>{t("configuration.other_model")}</option>
+    </select>
+    {custom && <input id={`${id}-other`} aria-label={t("configuration.custom_model")} value={value} spellCheck={false}
+      onChange={event => onChange(event.target.value)} />}
+    {problem && <p id={`${id}-error`} className="field-error">{t(problem)}</p>}
+  </div>;
+}
 
 export function ConfigurationFields({ draft, onChange, issues }: {
   draft: Draft; onChange: (draft: Draft) => void; issues: Record<string, MessageKey>;
@@ -48,11 +72,19 @@ export function ConfigurationFields({ draft, onChange, issues }: {
         <div className="form-row"><div><label htmlFor={idFor(`${prefix}.provider`)}>{t("settings.provider")}</label>
           <select id={idFor(`${prefix}.provider`)} value={provider} aria-invalid={!!issues[`${prefix}.provider`]}
             aria-describedby={issues[`${prefix}.provider`] ? `${idFor(`${prefix}.provider`)}-error` : undefined}
-            onChange={event => update(`${prefix}.provider`, event.target.value)}>
+            onChange={event => {
+              // A packaged model of the previous provider does not carry over; a hand-written one does.
+              const model = String(field(draft.form, `${prefix}.model`) ?? "");
+              const form = changeField(draft.form, `${prefix}.provider`, event.target.value);
+              onChange({ ...draft, form: role === "reviewer" && modelOptions(provider).includes(model)
+                && !modelOptions(event.target.value).includes(model) ? changeField(form, `${prefix}.model`, "") : form });
+            }}>
             <option value="">{t("configuration.choose")}</option><option value="codex">Codex</option><option value="claude">Claude</option>
           </select>{issues[`${prefix}.provider`] && <p id={`${idFor(`${prefix}.provider`)}-error`} className="field-error">{t(issues[`${prefix}.provider`])}</p>}
         </div>
-          {role === "reviewer" && <>{input(`${prefix}.model`, "settings.model")}<div>
+          {role === "reviewer" && <><ModelChoice key={provider} id={idFor(`${prefix}.model`)} provider={provider}
+            value={String(field(draft.form, `${prefix}.model`) ?? "")} problem={issues[`${prefix}.model`]}
+            onChange={value => update(`${prefix}.model`, value)} /><div>
             <label htmlFor={idFor(`${prefix}.effort`)}>{t("settings.effort")}</label>
             <select id={idFor(`${prefix}.effort`)} value={String(field(draft.form, `${prefix}.effort`) ?? "")}
               aria-invalid={!!issues[`${prefix}.effort`]} aria-describedby={issues[`${prefix}.effort`] ? "configuration-effort-error" : undefined}

@@ -12,8 +12,8 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 
 ## Estado
 
-Versión previa a la primera publicación: la primera versión local está completa en el alcance declarado, el
-paquete declara `0.1.0`, candidata a primera versión pública, y no está en PyPI ([changelog](CHANGELOG.md)).
+Versión previa a 1.0: la primera versión local está completa en el alcance declarado, el
+paquete declara `0.1.1`, parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
 herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
 protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos.
@@ -67,15 +67,15 @@ scripts/install --allow-network
 
 ### 2b. Instalar desde un paquete publicado
 
-Descarga `my-harness-0.1.0-distribution.tar.gz` y su `.sha256` de la
+Descarga `my-harness-0.1.1-distribution.tar.gz` y su `.sha256` de la
 [página Releases](https://github.com/AcostaDDev/my-harness/releases) (o con `curl` como abajo) en la misma carpeta y ejecuta:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.0/my-harness-0.1.0-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.0/my-harness-0.1.0-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.0-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.0-distribution.tar.gz
-cd my-harness-0.1.0
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.1/my-harness-0.1.1-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.1/my-harness-0.1.1-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.1-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.1-distribution.tar.gz
+cd my-harness-0.1.1
 scripts/install --dist "$PWD" --allow-network
 ```
 

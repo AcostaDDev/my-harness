@@ -8,9 +8,11 @@ All notable changes to My Harness are recorded here. The format follows
 - One version string is shared by the Python package (`pyproject.toml`), the API (`/openapi.json`) and the UI
   package (`frontend/package.json`). A release changes all three together.
 - The project is pre-1.0: a minor release (`0.x.0`) may change the configuration, the API or the UI, and its notes
-  say what to do. Patch releases (`0.x.y`) only fix defects. Data compatibility does not depend on the version
-  number: every release keeps reading older databases and histories, and the SQLite schema is upgraded only by
-  `my-harness migrate`, which takes a verified snapshot first.
+  say what to do. Patch releases (`0.x.y`) fix defects and may carry small interface improvements that change no
+  configuration format, API contract or stored data
+  ([D231](docs/DECISIONS.md#d231--packaged-model-suggestions-and-small-ui-patch-releases)). Data compatibility does
+  not depend on the version number: every release keeps reading older databases and histories, and the SQLite schema
+  is upgraded only by `my-harness migrate`, which takes a verified snapshot first.
 - `0.2.0` is reserved for the optional continuous mode described in the [roadmap](docs/ROADMAP.md).
 - A version is released by tagging its commit and attaching to a GitHub Release the self-contained package
   `my-harness-<version>-distribution.tar.gz` (a `my-harness-<version>/` folder with the wheel, sdist,
@@ -19,6 +21,20 @@ All notable changes to My Harness are recorded here. The format follows
   to PyPI, and built artifacts are never committed to the repository.
 
 ## [Unreleased]
+
+## [0.1.1] — 2026-10-27
+
+Interface-only patch release: no configuration format, API contract or database change. Upgrade by installing the
+new package; existing configurations, models and projects are kept as they are.
+
+### Changed
+
+- The reviewer's model in the global setup is chosen from a selector of models for its provider, with **Other…**
+  to type any model the CLI accepts. A saved model outside the list stays visible and editable.
+- A project's executor models are checkboxes instead of a free-text list: the preset's models in catalog mode, or
+  the suggested models for the executor's provider plus any model added by hand. The reviewer keeps choosing one of
+  the checked models for each task.
+- Patch releases may include small interface improvements like these (versioning policy above).
 
 ## [0.1.0] — 2026-10-27
 

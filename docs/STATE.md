@@ -8,8 +8,8 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The one-off queue is **empty**. **Next: P001-T002**, versioned references and the pure calculator.
-P001-T001 accounting design/inventory is complete; runtime implementation has not started.
+The one-off queue is **empty**. **Next: P001-T003**, capture, storage and historical compatibility.
+P001-T001 design and P001-T002's isolated calculator/packaged references are complete; operational integration is pending.
 OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). P001 targets **0.1.9 at phase closure**; P002 targets
 **0.2.0 at its closure** (D253).
@@ -215,14 +215,22 @@ one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-ve
 The [handoff](phase/P001-metrics-records.md) records the implemented `metrics-1` baseline, missing billing inputs,
 scope and verification matrix. [Reference notes](phase/P001-metrics-records-references.md) contain
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
-independent USD/credit valuation and versioned reference records are planned, not implemented.
+independent USD/credit valuation now has an isolated pure library and pinned references; capture/storage/API/UI
+integration and versioned database records remain planned.
 [NEXT_STEPS](NEXT_STEPS.md) contains the six task sections with dependencies, scope, acceptance,
 validation and deliverables ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)).
 **P001-T001 is complete as design/inventory only**; [its contract](phase/P001-T001-accounting-contract.md) and
 D254–D257 define native invocation accounting, evidence limits, immutable references/billing profiles, exact Decimal
-valuation, compatibility and synthetic acceptance cases. Planned data/flows are explicitly unimplemented; schema
-0027, metrics-1 and runtime version 0.1.8 are unchanged. **Next: P001-T002**; five implementation/qualification tasks
-remain. T001 source delivery is `docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge;
+valuation, compatibility and synthetic acceptance cases. **P001-T002 is complete** as `metrics-reference-1` identity/
+tariff documents, offline validation and pure `valuation-1` calculation (D258), without operational callers.
+[T002 evidence](phase/P001-T002-reference-calculator.md) records supported scenarios, exact checks and delivery.
+Final T002 checks: 2283 pytest cases passed, 2 skipped, 29 subtests; 102 focused calculator/core cases, 10 unittest
+cases and 230 frontend tests passed, as did typecheck/build, exact distribution and isolated installed-wheel checks.
+All evidence is synthetic/offline; no real provider or billing validation was performed.
+Planned persistence/flows remain unimplemented; schema 0027, metrics-1 and runtime version 0.1.8 are unchanged.
+**Next: P001-T003**; four implementation/qualification tasks remain. T001 source delivery is
+`docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge; T002 uses
+`feat/p001-t002-reference-calculator` → `develop`/`origin`;
 release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.
 Static links, design/source consistency and independent arithmetic are checked; application suites/provider calls
 are not T001 evidence. Exact checks/delivery are recorded in the task contract.

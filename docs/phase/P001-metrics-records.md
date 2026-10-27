@@ -1,12 +1,13 @@
 # P001 — Metrics Records
 
-Status: active phase; initialized on 2026-10-27. T001 design is complete; runtime implementation has not started.
+Status: active phase; initialized on 2026-10-27. T001 design and T002 pure calculator/references are complete;
+operational capture/storage/configuration/API/UI integration remains pending.
 Current target: **0.1.9 at P001 closure** (D253); the original 0.1.2 assignment was superseded by D239.
 Authority: [D232](../DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries) for accounting scope;
 [D233](../DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) for phase order;
 [D253](../DECISIONS.md#d253--phase-release-targets-after-018) for current closure releases (P002 remains 0.2.0).
 The task plan and statuses live in [NEXT_STEPS](../NEXT_STEPS.md), as recorded by
-[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001 is complete, with five tasks pending, starting at T002.
+[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001/T002 are complete, with four tasks pending, starting at T003.
 The accepted [T001 contract](P001-T001-accounting-contract.md) and D254–D257 resolve the candidate design questions
 below. This handoff retains scope/baseline/history; its earlier candidate language is not a competing design.
 This handoff is intended to let an agent start without the conversation that motivated it.
@@ -29,8 +30,9 @@ Read, in order:
 4. [DDBB-DIAGRAM](../DDBB-DIAGRAM.md), [task flow](../flows/task-run.md),
    [configuration flow](../flows/configuration-setup.md), [migration flow](../flows/database-migration.md) and
    [archive consultation](../flows/backup-consultation.md).
-5. [Reference notes](P001-metrics-records-references.md), then the source files below. Recheck live sources at
-   implementation time; a retrieval date is not a tariff's effective date.
+5. [Reference notes](P001-metrics-records-references.md), the accepted T001 observation and
+   [T002 implementation/evidence](P001-T002-reference-calculator.md), then the source files below.
+   Source refresh creates a separate pinned version; a retrieval date is not a tariff's effective date.
 
 This repository is edited by hand, not by running My Harness on itself. Work in English, one bounded task at a time;
 inspect concurrent changes before editing. Do not launch real clients/providers, install dependencies over the
@@ -177,7 +179,7 @@ DECISIONS sections; do not silently turn these candidate fields into a contract.
 
 The full task sections, dependencies, acceptance criteria, validation and deliverables are maintained in
 [NEXT_STEPS](../NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
-not another task-status record. **Next: T002**, using the accepted accounting contract. These identifiers belong
+not another task-status record. **Next: T003**, using the accepted accounting contract and T002 pure boundary. These identifiers belong
 to the current phase, not the pre-release H6.4 milestones.
 
 1. [P001-T001 — Accounting contract and evidence inventory](../NEXT_STEPS.md#p001-t001--accounting-contract-and-evidence-inventory).

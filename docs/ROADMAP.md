@@ -21,14 +21,15 @@ OT006's repetitive-preparation/ownership-loss fix was released and installed as 
 renewal/journal follow-up was released and installed as **0.1.8** through
 [PR #7](https://github.com/AcostaDDev/my-harness/pull/7); its draft/public downloads and installation were verified
 ([evidence](phase/OT007-task-run-lease.md)). The one-off queue is empty; P001-T001 is now complete as design/inventory
-and P001-T002 is next. No production retry was made.
+and P001-T002 is complete as an isolated calculator/reference library; P001-T003 is next. No production retry was made.
 See [OT005 release evidence](phase/OT005-preparation-tool-links.md); one-off deliveries are separate from Metrics work.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex
 clients; keep the accounting concepts extensible without adding another execution provider.
-**Status:** active phase; T001 design/inventory complete, five pending tasks in [NEXT_STEPS](NEXT_STEPS.md), starting
-with P001-T002. Runtime implementation has not started. [T001](phase/P001-T001-accounting-contract.md) and D254–D257
+**Status:** active phase; T001 design/inventory and T002 pure calculator/references complete; four pending tasks in
+[NEXT_STEPS](NEXT_STEPS.md), starting with P001-T003. Operational capture/storage/API/UI integration remains pending.
+[T002 evidence](phase/P001-T002-reference-calculator.md), D258. [T001](phase/P001-T001-accounting-contract.md) and D254–D257
 settle the technical contract, source limits and synthetic acceptance matrix; data/flows remain labelled planned
 until their implementing tasks. D234 still owns the six-task plan.
 

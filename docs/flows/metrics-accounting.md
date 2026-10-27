@@ -3,6 +3,8 @@
 **Accepted design, not implemented.** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence)
 and the [T001 contract](../phase/P001-T001-accounting-contract.md) govern T002–T005. Current production behavior
 remains `terminal-2` / `metrics-1` and schema 0027; this diagram introduces no running workflow.
+T002 implements only the isolated pure calculator/reference library ([evidence](../phase/P001-T002-reference-calculator.md),
+D258). The diagram's native capture, frozen binding, persistence and reads are still pending; it has no operational caller yet.
 
 ```mermaid
 flowchart TD

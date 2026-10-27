@@ -13,7 +13,7 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 ## Estado
 
 Versión previa a 1.0: la primera versión local está completa en el alcance declarado, el
-paquete declara `0.1.1`, parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
+paquete declara `0.1.2`, segundo parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
 herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
 protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos.
@@ -67,15 +67,15 @@ scripts/install --allow-network
 
 ### 2b. Instalar desde un paquete publicado
 
-Descarga `my-harness-0.1.1-distribution.tar.gz` y su `.sha256` de la
+Descarga `my-harness-0.1.2-distribution.tar.gz` y su `.sha256` de la
 [página Releases](https://github.com/AcostaDDev/my-harness/releases) (o con `curl` como abajo) en la misma carpeta y ejecuta:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.1/my-harness-0.1.1-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.1/my-harness-0.1.1-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.1-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.1-distribution.tar.gz
-cd my-harness-0.1.1
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.2/my-harness-0.1.2-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.2-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.2-distribution.tar.gz
+cd my-harness-0.1.2
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -118,8 +118,9 @@ publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni dat
 4. **Configura.** Sin configuración la UI abre `/setup`: identidad Git, clientes/PATH/USER, modelo/esfuerzo del
    revisor, raíces autorizadas y supervisor. Buscar clientes sugiere rutas; comprobar versión/ayuda no llama a
    modelos. Inicia sesión en `codex`/`claude` fuera del harness y no pegues credenciales. Valida, revisa el diff
-   y confirma **guardar**; después revisa y confirma **activar**, para con Ctrl-C y vuelve a ejecutar
-   `scripts/start` (con la clave nueva). Guardar no activa: el reinicio promueve el conjunto verificado.
+   y confirma **guardar**; después revisa y confirma **activar**. La vista previa comprueba los clientes y los
+   proyectos registrados y señala qué corregir; el servicio aplica el cambio sin reiniciar ni pedir otra clave, al
+   momento o, si hay trabajo en curso, **cuando termine** ese trabajo. Guardar no activa.
    [Primer arranque](README.md#first-run), [configuración](README.md#configure).
 5. Crea o registra sin composición de stack obligatoria. Conversa sobre documentos/arquitectura o inventario HEAD;
    revisa/aplica borradores y adopta el perfil propio propuesto. Confirma el commit documental/P001, completa las
@@ -129,13 +130,14 @@ publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni dat
 
 **Edición posterior:** configuración global desde la navegación y perfil desde el proyecto, por formulario/TOML.
 La ayuda IA es opcional y usa clientes activos; aplicar una propuesta cambia el borrador. Diff, guardado,
-preparación y activación siguen separados. Global requiere reinicio; cambios técnicos de perfil, preparación nueva.
-Los conflictos conservan el candidato de la pestaña; recargar no reenvía confirmaciones. Jobs pendientes o un
-escritor incierto pueden bloquear activación. [Edición](README.md#edit-configuration-later).
+preparación y activación siguen separados. Global se aplica sin reiniciar (salvo lease/poll con el supervisor en
+marcha, que la vista previa indica); cambios técnicos de perfil, preparación nueva. Los conflictos conservan el
+candidato de la pestaña; recargar no reenvía confirmaciones. Un cambio confirmado espera a los jobs en curso o a un
+escritor incierto, que conservan sus ajustes congelados; puedes cancelarlo. [Edición](README.md#edit-configuration-later).
 
 **TOML anteriores:** formatos 1–8 conservan entrada/hashes. Importarlos al editor es explícito; los perfiles
 convertidos necesitan documentación comprometida, plan y preparación nuevos antes de activar todo y reiniciar sin
-la fuente externa. Esta conversión de configuración es distinta de incorporar un repositorio con código.
+la fuente externa (la promoción de una importación sigue requiriendo reinicio). Esta conversión de configuración es distinta de incorporar un repositorio con código.
 Los [ejemplos manuales](examples/local_config.minimal.example.toml) siguen siendo opcionales.
 
 Con el supervisor habilitado, cada intento encolado usa tu cuenta/cuota del proveedor. El login de clientes se hace

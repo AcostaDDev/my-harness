@@ -181,9 +181,17 @@ def admit(session, root, versions, purpose):
         from my_harness.adapters.preparation import verify_receipt
         from my_harness.services.project_registry import digest
         receipt = session.scalar(select(Operation.receipt).where(Operation.root == root, Operation.status == 'COMPLETED'))
-        if (not receipt or versions.get('project_environment_sha256') != digest(receipt)
-                or (versions.get('project_recipe') and versions.get('recipe_config_sha256') != receipt['recipe_config_sha256'])
-                or (versions.get('project_configuration') and versions.get('project_configuration_sha256')
-                    != receipt.get('configuration', {}).get('sha256'))):
+        if versions.get('project_configuration'):
+            # The exact evidence selected for the frozen revision: its own receipt, or the one a confirmed
+            # activation retained for a nontechnical or derived revision (D227, D238).
+            from my_harness.services.configuration_editing import selected_receipt
+            row = selected_receipt(session, 'project:' + str(versions.get('project_registry_id')), {
+                'revision': int(versions.get('project_configuration_revision') or 0),
+                'sha256': versions.get('project_configuration_sha256')})
+            receipt = row.receipt if row is not None and row.root == root and row.status == 'COMPLETED' else None
+            if not receipt or versions.get('project_environment_sha256') != digest(receipt):
+                raise Conflict(tr('preparation.required_tasks'))
+        elif (not receipt or versions.get('project_environment_sha256') != digest(receipt)
+                or versions.get('recipe_config_sha256') != receipt['recipe_config_sha256']):
             raise Conflict(tr('preparation.required_tasks'))
         verify_receipt(Path(root), receipt)

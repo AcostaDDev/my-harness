@@ -20,6 +20,7 @@ from my_harness.storage.database import make_engine
 from my_harness.storage.managed import SQLiteManagedRepository
 from my_harness.storage.models import ConfigurationOperationRow as Operation, RegisteredProjectRow
 from my_harness.storage.schema import require_schema
+from test_cli_diagnostics import probe_config
 
 
 def dumps(data):
@@ -44,7 +45,10 @@ def setup(migrated_database, tmp_path):
     root.mkdir(mode=0o700)
     state = tmp_path / 'state'
     state.mkdir()
-    cli = {'timeout_seconds': 10, 'environment': {'USER': pwd.getpwuid(os.getuid()).pw_name}}
+    # A synthetic version/help probe: live activation (D238) preflights both roles before switching.
+    probe_cli = probe_config(tmp_path)
+    cli = {'timeout_seconds': 10, 'executable': list(probe_cli.executable),
+           'environment': {'USER': pwd.getpwuid(os.getuid()).pw_name, **dict(probe_cli.environment)}}
     agents = {'reviewer': {**copy.deepcopy(cli), 'provider': 'codex', 'model': 'synthetic', 'effort': 'medium'},
               'executor': {**copy.deepcopy(cli), 'provider': 'codex'}}
     data = {'format': 'local-config-9', 'service': {'state_dir': str(state), 'supervisor': False},

@@ -3071,6 +3071,12 @@ export interface components {
             }[] | null;
             /** Restart Required */
             restart_required?: boolean | null;
+            /** Apply */
+            apply?: ("live" | "restart") | null;
+            /** Restart Fields */
+            restart_fields?: string[] | null;
+            /** Waiting */
+            waiting?: string[] | null;
             /** Roots */
             roots?: string[] | null;
             /** Evidence */
@@ -3096,7 +3102,7 @@ export interface components {
              * Mode
              * @enum {string}
              */
-            mode: "UNCONFIGURED" | "INVALID" | "READY" | "RESTART_REQUIRED" | "RECOVERY_REQUIRED" | "READ_ONLY_ARCHIVE";
+            mode: "UNCONFIGURED" | "INVALID" | "READY" | "APPLY_PENDING" | "RESTART_REQUIRED" | "RECOVERY_REQUIRED" | "READ_ONLY_ARCHIVE";
             /** Status */
             status: string;
             /** Version */
@@ -3141,6 +3147,7 @@ export interface components {
             pending_versions: {
                 [key: string]: number;
             };
+            live_activation?: components["schemas"]["LiveActivationRead"] | null;
         };
         /** ConfigurationRecovery */
         ConfigurationRecovery: {
@@ -4323,6 +4330,54 @@ export interface components {
             work_language_source: "registration" | "creation" | "toml" | "migration";
             /** Work Language Sha256 */
             work_language_sha256: string;
+        };
+        /**
+         * LiveActivationRead
+         * @description D238: a confirmed live set waiting for current work, or the last switch that could not be staged.
+         */
+        LiveActivationRead: {
+            /** Activation Id */
+            activation_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "APPLY_PENDING" | "FAILED";
+            /**
+             * Waiting
+             * @default []
+             */
+            waiting: string[];
+            /**
+             * Restart Fields
+             * @default []
+             */
+            restart_fields: string[];
+            /** Code */
+            code?: string | null;
+            /**
+             * Details
+             * @default []
+             */
+            details: components["schemas"]["LiveRefusalRead"][];
+        };
+        /** LiveRefusalRead */
+        LiveRefusalRead: {
+            /** Project */
+            project?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Setting */
+            setting?: string | null;
+            /** Code */
+            code: string;
+            /** Diagnostic */
+            diagnostic?: string | null;
+            /**
+             * Already Failing
+             * @default false
+             */
+            already_failing: boolean;
         };
         /** ManagedAttemptRead */
         ManagedAttemptRead: {

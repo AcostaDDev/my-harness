@@ -104,11 +104,7 @@ class ProjectRegistryRepository:
     @staticmethod
     def _configuration_blockers(session, root):
         """V5: work that is still acceptable cannot survive the composition change."""
-        from my_harness.storage.models import (
-            ChatConversationRow, ChatProposalRow, ManagedCommitRow, PlanningConversationRow,
-            PlanningProposalRow, PlanningTurnRow, ProjectBootstrapRow, ProjectImportRow,
-        )
-        from my_harness.storage.planning import PlanningRepository
+        from my_harness.storage.models import ManagedCommitRow, ProjectBootstrapRow, ProjectImportRow
         from my_harness.storage.models import ProjectPreparationOperationRow as Preparation
         blockers = [tr('registry.blocker_preparation', id=value) for value in session.scalars(
             select(Preparation.id).where(Preparation.root == root, Preparation.reserved.is_(True)))]
@@ -117,7 +113,20 @@ class ProjectRegistryRepository:
         blockers += [tr('registry.blocker_commit', id=value) for value in session.scalars(
             select(ManagedCommitRow.operation_id).join(Run, Run.id == ManagedCommitRow.run_id)
             .where(Run.root == root, ManagedCommitRow.status == 'INTENT'))]
-        blockers += [tr('registry.blocker_proposal', id=value) for value in session.scalars(
+        blockers += ProjectRegistryRepository._documentary_blockers(session, root)
+        for model in (ProjectBootstrapRow, ProjectImportRow):
+            blockers += [tr('registry.blocker_documents', id=value) for value in session.scalars(
+                select(model.id).where(model.root == root, model.status != 'COMPLETED'))]
+        return sorted(blockers)
+
+    @staticmethod
+    def _documentary_blockers(session, root):
+        """Chat proposals and substantive intake conversations: no job, but bound to the composition."""
+        from my_harness.storage.models import (
+            ChatConversationRow, ChatProposalRow, PlanningConversationRow, PlanningProposalRow, PlanningTurnRow,
+        )
+        from my_harness.storage.planning import PlanningRepository
+        blockers = [tr('registry.blocker_proposal', id=value) for value in session.scalars(
             select(ChatProposalRow.id).join(ChatConversationRow,
                                            ChatConversationRow.id == ChatProposalRow.conversation_id)
             .where(ChatConversationRow.root == root, ChatProposalRow.status == 'PROPOSED'))]
@@ -135,10 +144,7 @@ class ProjectRegistryRepository:
             if (not PlanningRepository._drafts_created(session, conversation) and turns
                     and not empty_failures):
                 blockers.append(tr('registry.blocker_conversation', id=conversation.id))
-        for model in (ProjectBootstrapRow, ProjectImportRow):
-            blockers += [tr('registry.blocker_documents', id=value) for value in session.scalars(
-                select(model.id).where(model.root == root, model.status != 'COMPLETED'))]
-        return sorted(blockers)
+        return blockers
 
     def configuration_blockers(self, root):
         with self._read() as session:

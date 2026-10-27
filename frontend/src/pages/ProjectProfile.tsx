@@ -9,6 +9,7 @@ import { configurationChange } from "../project-profile";
 import type { Form } from "../project-profile";
 import { ConfigurationAssistance } from "./ConfigurationAssistance";
 import { Preparation } from "./Preparation";
+import { Link } from "../navigation";
 
 type Candidate = S["ConfigurationCandidate"];
 const STAGES: Record<string, MessageKey> = {
@@ -136,6 +137,8 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
   return <section className="panel">
     <h2>{t("profile.configuration")}</h2><p role="status">{t("profile.stage")} <strong>{STAGES[state.configuration_state] ? t(STAGES[state.configuration_state]) : state.configuration_state}</strong> · {state.status}</p>
     {state.candidate_state && state.candidate_state !== state.configuration_state && <p role="status">{t("configuration.candidate")} · {STAGES[state.candidate_state] ? t(STAGES[state.candidate_state]) : state.candidate_state}</p>}
+    {state.status === "APPLY_PENDING" && <p role="status" className="state state-attention">{t("configuration.mode.apply_pending")}{" "}
+      <Link to={{ name: "configuration" }}>{t("configuration.live.see_pending")}</Link></p>}
     <Stale error={error} /><ProfileReplay />
     <p>{t("profile.order")}</p>
     {state.version !== cas.version && <p role="alert" className="state state-attention">{t("profile.conflict")}</p>}

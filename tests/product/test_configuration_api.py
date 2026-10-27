@@ -13,7 +13,7 @@ from my_harness.api.app import create_app
 from my_harness.services.managed_runtime import ManagedConfig
 from my_harness.storage.backup import RESTORED_USER_VERSION
 from my_harness.storage.configuration import ConfigurationConflict
-from my_harness.storage.models import ConfigurationOperationRow as Operation
+from my_harness.storage.models import ConfigurationOperationRow as Operation, ProjectCreationOperationRow
 from test_configuration import setup, dumps  # noqa: F401
 from test_cli_diagnostics import config as fake_cli, calls  # noqa: F401
 
@@ -56,8 +56,22 @@ def schedule(http):
     return result.json()
 
 
-def test_first_setup_separates_save_activation_and_restart(setup, monkeypatch):
+def hold(repo, reserved=True):
+    """Synthetic current work: a reserved project creation is a waiting reason of a live set (D238)."""
+    with repo.managed._write() as session:
+        row = session.get(ProjectCreationOperationRow, 'held')
+        if row is None:
+            now = repo.managed._now()
+            session.add(ProjectCreationOperationRow(id='held', idempotency_key='held', request_sha256='0' * 64,
+                version=1, project_id='held', directory_name='held', target='/nonexistent/held', reserved=reserved,
+                authority={}, intent={}, intent_sha256='0' * 64, status='RECOVERY_REQUIRED', created_at=now, updated_at=now))
+        else:
+            row.reserved = reserved
+
+
+def test_first_setup_separates_save_and_live_activation(setup, monkeypatch):
     repo, data, root = setup
+    original = subprocess.Popen
     monkeypatch.setattr(subprocess, 'Popen', lambda *a, **k: pytest.fail('Passive setup launched a process'))
     first = app_for(repo)
     with TestClient(first) as http:
@@ -73,11 +87,18 @@ def test_first_setup_separates_save_activation_and_restart(setup, monkeypatch):
         assert http.get(BASE).json()['form'] == data
         assert http.post(BASE + '/save', json={**body, 'preview_sha256': sha},
                          headers={**LOCAL, 'Idempotency-Key': 'save'}).json() == saved
+        # Activation preview and switch are the explicit steps that preflight the selected clients.
+        monkeypatch.setattr(subprocess, 'Popen', original)
         operation = schedule(http)
-        assert http.get(BASE).json()['mode'] == 'RESTART_REQUIRED'
-        assert http.get('/api/managed/supervisor').json()['configuration_mode'] == 'RESTART_REQUIRED'
+        assert operation['result']['state'] == 'APPLY_PENDING'  # accepted for the idle boundary, here immediate
+        state = http.get(BASE).json()
+        assert state['mode'] == 'READY' and state['active']['revision'] == 1 and state['pending'] is None
+        assert state['live_activation'] is None
+        assert http.get('/api/managed/supervisor').json()['configuration_mode'] == 'READY'
+        assert first.state.runtime.config.registrar.format == 'local-config-9'
         assert first.state.runtime.worker is None
-        assert http.post('/api/managed/registry/preview', json={}, headers=LOCAL).status_code == 409
+        # The same process and session now reach domain validation; no restart or new key.
+        assert http.post('/api/managed/registry/preview', json={}, headers=LOCAL).status_code == 422
         assert http.get(BASE + '/operations/' + operation['id']).json() == operation
     second = app_for(repo)
     with TestClient(second) as http:
@@ -185,12 +206,17 @@ def test_pending_cancel_and_tampered_immutable_fail_closed(setup):
     app = app_for(repo)
     with TestClient(app) as http:
         store(http, data)
+        hold(repo)
         activation = schedule(http)
         state = http.get(BASE).json()
+        assert state['mode'] == 'APPLY_PENDING' and state['live_activation']['waiting'] == ['project_creation']
+        assert state['active'] is None and state['pending']['revision'] == 1
         result = http.post(BASE + '/cancel', json={'activation_id': activation['id'],
             'expected_version': state['version'], 'reason': 'Cancel synthetic activation'},
             headers={**LOCAL, 'Idempotency-Key': 'cancel'})
         assert result.status_code == 200 and http.get(BASE).json()['mode'] == 'UNCONFIGURED'
+        hold(repo, reserved=False)
+        assert app.state.runtime.apply_pending() is None  # a cancelled set is never applied later
         # The database write barrier also checks authority, beyond the HTTP guard.
         with pytest.raises(ConfigurationConflict):
             with app.state.runtime.repository._write():
@@ -305,6 +331,7 @@ def test_failed_startup_promotion_preserves_pending_and_avoids_consumers(setup, 
     repo, data, root = setup
     with TestClient(app_for(repo)) as http:
         store(http, data)
+        hold(repo)
         operation = schedule(http)
     immutable = next(root.rglob('1-*.toml'))
     immutable.write_text('format="local-config-9"')

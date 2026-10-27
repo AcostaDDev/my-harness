@@ -66,7 +66,11 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
     }
     if (path === '/api/managed/configuration/operations/interrupted') return Response.json({ id: 'interrupted', kind: 'SAVE' });
     if (path.endsWith('/recovery/preview')) return Response.json({ operation_id: 'interrupted', sha256: sha('e'), observed: [{ path: 'global.toml', sha256: sha('a') }] });
-    if (path.endsWith('/activation/preview')) return Response.json({ kind: 'ACTIVATE', sha256: sha('d'), references: body.references, impact: ['global'], restart_required: true });
+    if (path.endsWith('/activation/preview')) {
+      if (env.refuseActivation) return Response.json({ detail: { code: 'live_configuration_refused', diagnostic: 'Synthetic refusal',
+        details: [{ project: null, role: 'executor', setting: 'agents.executor', code: 'discovery_path', diagnostic: 'Configure an explicit PATH' }] } }, { status: 409 });
+      return Response.json({ kind: 'ACTIVATE', sha256: sha('d'), references: body.references, impact: ['global'], ...(env.activationPreview ?? { restart_required: true }) });
+    }
     if (path.endsWith('/import/preview')) return Response.json({ kind: 'SAVE', sha256: sha('b'), impact: ['global', 'project:own'],
       changes: [{ scope: 'global', text: JSON.stringify(form()), diff: '+converted global', status: 'VALIDATED' },
         { scope: 'project:own', diff: '+draft project', status: 'DRAFT' }], legacy_import: { format: 'local-config-8' } });
@@ -95,6 +99,11 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
       return Response.json(result);
     }
     if (path.endsWith('/activate')) {
+      if (env.liveWaiting) {
+        env.state.pending = env.state.saved; env.state.pending_activation_id = 'pending-activation'; env.state.mode = 'APPLY_PENDING'; env.state.version++;
+        env.state.live_activation = { activation_id: 'pending-activation', state: 'APPLY_PENDING', waiting: env.liveWaiting, restart_fields: [], code: null, details: [] };
+        const result = { id: 'activation', status: 'APPLIED', result: { state: 'APPLY_PENDING' } }; completed.set(key, result); return Response.json(result);
+      }
       env.state.pending = env.state.saved; env.state.pending_activation_id = 'pending-activation'; env.state.mode = 'RESTART_REQUIRED'; env.state.version++;
       const result = { id: 'activation', status: 'RESTART_REQUIRED' }; completed.set(key, result); return Response.json(result);
     }
@@ -422,6 +431,51 @@ for (const language of ['en', 'es']) {
       assert.ok(html.includes(env.catalog['configuration.import_prepare']));
       assert.match(html, /projects\/own/);
       assert.equal(env.requests.filter(request => /detect|check-clients|activate/.test(request.path)).length, 0);
+    } finally { env.close(); }
+  });
+}
+
+for (const language of ['en', 'es']) {
+  test(`a live set shows its policy, waits for named current work and stays cancellable (${language})`, async () => {
+    const saved = { ...base(), mode: 'READY', status: 'READY', version: 2, blockers: [],
+      saved: { scope: 'global', revision: 2, sha256: sha('c'), status: 'VALIDATED' }, active: { scope: 'global', revision: 1, sha256: sha('a'), status: 'VALIDATED' },
+      actual_sha256: sha('c'), form: form(), text: JSON.stringify(form()) };
+    const env = environment(language, saved), tree = env.tree();
+    env.activationPreview = { restart_required: false, apply: 'live', waiting: ['job:7', 'job:preparation:p1', 'acceptance:run-1'] };
+    env.liveWaiting = ['job:7'];
+    try {
+      await env.render(tree);
+      env.click('configuration.activation_preview'); let html = await env.render(tree);
+      assert.ok(html.includes(env.catalog['configuration.live.will_wait']));
+      assert.ok(html.includes(env.catalog['configuration.waiting.preparation'].replace('{id}', 'p1')));
+      assert.ok(html.includes(env.catalog['configuration.waiting.acceptance'].replace('{id}', 'run-1')));
+      assert.ok(!html.includes(env.catalog['configuration.restart_hint']));
+      env.tick('configuration.confirm_activation'); await env.render(tree); env.click('configuration.activate'); html = await env.render(tree);
+      assert.ok(html.includes(env.catalog['configuration.mode.apply_pending']));
+      assert.ok(html.includes(env.catalog['configuration.live.when_idle']));
+      assert.ok(html.includes(env.catalog['configuration.waiting.job'].replace('{id}', '7')));
+      assert.ok(env.requests.every(request => !request.path.endsWith('/restart')));
+      env.tick('configuration.confirm_cancel'); await env.render(tree); env.click('configuration.cancel'); await env.render(tree);
+      assert.equal(env.requests.find(request => request.path.endsWith('/cancel')).body.activation_id, 'pending-activation');
+    } finally { env.close(); }
+  });
+
+  test(`a refused or failed live candidate names the setting to correct (${language})`, async () => {
+    const failed = { ...base(), mode: 'READY', status: 'READY', version: 3, blockers: [],
+      saved: { scope: 'global', revision: 2, sha256: sha('c'), status: 'VALIDATED' }, active: { scope: 'global', revision: 1, sha256: sha('a'), status: 'VALIDATED' },
+      actual_sha256: sha('c'), form: form(), text: JSON.stringify(form()),
+      live_activation: { activation_id: 'withdrawn', state: 'FAILED', waiting: [], restart_fields: [], code: 'live_configuration_refused',
+        details: [{ project: 'own', role: null, setting: 'project:own', code: 'project_preparation_changed', diagnostic: null, already_failing: false }] } };
+    const env = environment(language, failed), tree = env.tree();
+    env.refuseActivation = true;
+    try {
+      let html = await env.render(tree);
+      assert.ok(html.includes(env.catalog['configuration.live.failed'].replace('{id}', 'withdrawn')));
+      assert.match(html, /own · project_preparation_changed/);
+      env.click('configuration.activation_preview'); html = await env.render(tree);
+      assert.ok(html.includes(env.catalog['configuration.live.refused']));
+      assert.match(html, /agents\.executor · discovery_path · Configure an explicit PATH/);
+      assert.equal(env.requests.filter(request => request.path.endsWith('/activate')).length, 0);
     } finally { env.close(); }
   });
 }

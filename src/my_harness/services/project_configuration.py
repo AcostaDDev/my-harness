@@ -312,20 +312,26 @@ class ProjectConfiguration:
             data = parse(self.repository.document('project:' + project_id, reference['revision']), 'project:' + project_id)
             return prepared(session, 'project:' + project_id, data, reference=reference).receipt
 
-    def install_active(self, project):
+    def install_active(self, project, *, reference=None, global_reference=None):
+        """Install the active revision, or stage an explicit candidate reference of a live set (D238)."""
         state = self.repository.read('project:' + project.id)
-        if not state['active']:
+        reference = reference or state['active']
+        if not reference:
             return project
-        if state['status'] != 'READY':
+        # While a live set is pending, the active revision remains the authority; a staged first
+        # activation has no active revision yet.
+        allowed = ('READY', 'APPLY_PENDING', *(('UNCONFIGURED',) if reference is not state['active'] else ()))
+        if state['status'] not in allowed:
             raise ConfigurationConflict('project_configuration_changed')
-        data = parse(self.repository.document(state['scope'], state['active']['revision']), state['scope'])
-        receipt = self.active_receipt(project.id, state['active'])
+        data = parse(self.repository.document(state['scope'], reference['revision']), state['scope'])
+        receipt = self.active_receipt(project.id, reference)
         if not receipt:
             raise ConfigurationConflict('project_preparation_required')
         try:
-            self.runtime.preparation.generic().verify_configuration(project, receipt, active=True)
+            self.runtime.preparation.generic().verify_configuration(project, receipt, active=True,
+                reference=reference, global_reference=global_reference)
         except (ValueError, OSError, JournalError):
             raise ConfigurationConflict('project_preparation_changed') from None
-        composed = self.runtime.registry.registrar.compose_profile(project, data, receipt, state['active'])
+        composed = self.runtime.registry.registrar.compose_profile(project, data, receipt, reference)
         self.runtime.registry.registrar._receipts[project.context.root] = receipt
         return self.runtime.registry.registrar.install(composed)

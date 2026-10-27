@@ -273,10 +273,16 @@ and never prove inference or undocumented client effects. Local credentials stay
 
 Global `local-config-9` and own `project-config-1` are private versioned files outside checkouts. Save, prepare and
 activate are separate exact-preview confirmations. SQLite owns revision references; CAS and durable intentions
-support reconciliation without replacing earlier snapshots. Global changes cover derived project copies and
-require restart; project changes activate between tasks with current evidence and no pending/uncertain writers.
-Empty failed intake conversations with no output, draft changes or surviving proposals/edits are not
-pending adoptable work; answered, uncertain or substantive intake work retains the barrier
+support reconciliation without replacing earlier snapshots. Global changes cover derived project copies; a
+confirmed set applies in the running service without restart or new login ([D238](DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary)): before confirmation
+the preview stages the complete candidate (client preflight with exact PATH/environment and every registered
+project) and names refused settings. With no current work it switches at once; otherwise it shows **Apply when
+current work finishes** with the waiting jobs, preparations, phase operations, acceptances, commits or assistance,
+and switches at the first idle boundary, while admitted work keeps its frozen settings and new work uses the active
+set until then. A failed switch is withdrawn and leaves the previous set active. Only worker-loop service fields
+under a running supervisor or a legacy import need restart, named before confirming. Project changes keep their
+documentary barriers. Empty failed intake conversations with no output, draft changes or surviving proposals/edits
+are not pending adoptable work; answered, uncertain or substantive intake work retains the project barrier
 ([D236](DECISIONS.md#d236--empty-failed-intake-turns-are-not-pending-configuration-work)).
 
 Definition and onboarding can converse without a stack profile. Documentary context/static HEAD inventory precedes

@@ -9,7 +9,7 @@ import { managed } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { Tests } from "../Tests";
-import { DiffLines, Evidence, Fields, Hash, Loading, PageHeader, Pagination, Stale, Status, message, when } from "../ui";
+import { DiffLines, Evidence, Fields, Hash, Loading, PageHeader, Pagination, Stale, Status, Workbench, message, when } from "../ui";
 
 type Props = {
   run: S["ManagedRunRead"]; project?: string; error?: string;
@@ -18,11 +18,13 @@ type Props = {
   jobOffset: number; offset: number; cycleOffset: number;
   setJobOffset: (n: number) => void; setOffset: (n: number) => void; setCycleOffset: (n: number) => void;
   decisions?: ReactNode; permissions?: ReactNode; jobActions?: (job: S["ManagedJobRead"]) => ReactNode;
+  /** Right rail (the live feed of RunPage); a restored copy has none. */
+  aside?: ReactNode;
 };
 
 /** Shared evidence presentation. Operational controls are supplied only by RunPage. */
 export function RunEvidence({ run, project, error, jobs, attempts, cycles, events,
-  jobOffset, offset, cycleOffset, setJobOffset, setOffset, setCycleOffset, decisions, permissions, jobActions }: Props) {
+  jobOffset, offset, cycleOffset, setJobOffset, setOffset, setCycleOffset, decisions, permissions, jobActions, aside }: Props) {
   const { t, n, rich } = useI18n();
   const documentRun = run.purpose === "document_export" || run.purpose === "bootstrap";
   const outcome = documentRun ? (run.purpose === "bootstrap" ? t("run.outcome.bootstrap") : t("run.outcome.export"))
@@ -36,6 +38,7 @@ export function RunEvidence({ run, project, error, jobs, attempts, cycles, event
     {!project && <p className="path"><code>{run.root}</code></p>}
     <Stale error={error} />
     {run.history.stop && <p className="state state-attention">{t("run.stop", { stage: run.history.stop.stage, reason: run.history.stop.reason })}</p>}
+    <Workbench aside={aside} label={t("activity.rail")}>
 
     <section className="panel" aria-labelledby="run-summary">
       <h2 id="run-summary">{t("stats.summary")}</h2>
@@ -96,6 +99,7 @@ export function RunEvidence({ run, project, error, jobs, attempts, cycles, event
       {!events && <p className="hint">{t("common.not_recorded")}</p>}
       <ol className="events">{events?.map(e => <li key={e.sequence}><p><strong>{e.sequence}</strong> {e.kind} {when(e.recorded_at)}</p><Evidence title={t("run.event.evidence")} value={e.payload} /></li>)}</ol>
     </details>
+    </Workbench>
   </>;
 }
 

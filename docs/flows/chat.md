@@ -31,7 +31,8 @@ sequenceDiagram
     API->>DB: normal task in the active phase (plan, execution, review, commit)
 ```
 
-Questions do not take the checkout lock; accepted tasks follow the [task flow](task-run.md). Command names are
+Questions do not take the checkout lock; accepted tasks follow the [task flow](task-run.md). The side panel of a conversation follows
+its latest turn's run live ([reading a run](task-run.md#reading-a-run)). Command names are
 protocol tokens with historical Spanish names (`/estado` status, `/siguiente` next task, `/lote` batch, `/cerrar`
 close, `/exportar` export, `/abrir-fase` open phase, `/tarea` task) and are not translated; the `/tarea` answer follows the interface language and the proposed task
 text follows the work language ([D169](../DECISIONS.md#d169--sealed-language-directive-generated-documents-in-the-work-language)).

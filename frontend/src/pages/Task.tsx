@@ -2,7 +2,8 @@ import { lazy, Suspense, useState } from "react";
 import { useI18n } from "../Language";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
-import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll } from "../ui";
+import { Empty, Loading, PageHeader, Pagination, Stale, Status, Workbench, usePoll } from "../ui";
+import { LatestActivity } from "../Activity";
 import { useWorkspace } from "../workspace";
 import { RunTable, TaskForm } from "./shared";
 
@@ -21,6 +22,8 @@ export function TaskPage({ phase, task }: { phase: string; task: string }) {
       <p>{rich("task.lede", { phase: <Link className="mono" to={{ name: "phase", project, phase }}>{phase}</Link> })}</p>
     </PageHeader>
     <Stale error={runs.data ? runs.error : undefined} />
+    <Workbench label={t("activity.rail")} aside={<LatestActivity query={`/projects/${project}/runs?${new URLSearchParams({ phase, task, limit: "1" })}`} refresh={refresh}
+      title={t("activity.title.latest")} empty={t("activity.no_runs.task")} />}>
     <section className="panel" aria-labelledby="task-runs">
       <h2 id="task-runs">{t("runs.table")}</h2>
       {!runs.data ? <Loading /> : !runs.data.items.length && !offset
@@ -30,5 +33,6 @@ export function TaskPage({ phase, task }: { phase: string; task: string }) {
     </section>
     {latest && <Suspense fallback={<Loading />}><TaskMetrics project={project} phase={phase} task={task} refresh={refresh} /></Suspense>}
     <TaskForm phase={phase} task={task} title={latest ? t("task.queue_again") : t("task.queue")} />
+    </Workbench>
   </>;
 }

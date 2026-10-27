@@ -91,6 +91,48 @@ persistence" diagram or template commands as a fallback. It asks about unknowns,
 blocking questions and their explicit deferrals are stored for the confirmation. A reviewer proposal does not prove
 its content is correct: semantic generation depends on human review and confirmation.
 
+## Answering the reviewer's questions
+
+The same workflow serves onboarding, the new-project definition ([flow](project-definition.md)) and phase planning
+conversations ([D240](../DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail)). The UI only composes
+an ordinary planning message; the API, the questions and their blocking rules are unchanged.
+
+```mermaid
+flowchart TD
+    A["Answered turn: questions and pending items"] --> B["Question cards before the conversation and its free composer"]
+    B --> C["Type an answer: draft in this browser, keyed by project, conversation and question id; no request"]
+    C --> D{"Explicit review: one answer, the selection or all prepared"}
+    D --> E["Exact message: marker [q:id12], kind, question text and answer, then optional context"]
+    E --> F{"Within 20,000 characters, same conversation version, no queued turn?"}
+    F -- no --> G["Not sent: shorten or deselect, review again or wait; drafts kept"]
+    F -- yes --> H["POST …/messages once: expected_version and Idempotency-Key"]
+    H --> I["QUEUED turn carrying the markers: answers shown as waiting, read only"]
+    I --> J{"Turn outcome"}
+    J -- "ANSWERED, question gone" --> K["Resolved after your answers; an unchanged draft is dropped"]
+    J -- "ANSWERED, still asked" --> L["Answered in turn N, still asked: editable again"]
+    J -- "FAILED / UNKNOWN / REFUSED" --> M["Not reviewed: the draft stays to send again"]
+    A -. "new question set" .-> N["Drafts for questions no longer asked: include as earlier answers or discard"]
+```
+
+Each question has its own answer field. Typing saves a draft only in this browser (local storage), so drafts survive
+polling, reloads, navigation and request errors without calling a model. Nothing is sent until the user opens a
+review of one answer, the selected answers or all prepared ones; the review shows the exact message and its size and
+sends it as one planning message, so one turn and one reviewer call, never one call per question. Empty or unselected
+answers are not sent and are not deferrals. The message names each question by a language-neutral marker made of the
+first 12 hex characters of its id (the hash of its text) and repeats its text, so the reviewer and later turns can
+tell which question each answer belongs to.
+
+The service still derives the questions from the latest answered turn: sending answers does not close a blocker or
+make the confirmation available, and a blocking question is only resolved by a later answered turn that no longer asks
+it, or deferred explicitly with a reason. Deferral stays a separate control. The UI reads the turn messages to show
+each question's state: draft, waiting in a queued turn, resolved after an answered turn, still asked after an answer,
+or not reviewed when the carrying turn failed. A changed question set never moves a draft to another question: drafts
+for questions no longer asked are listed for an explicit decision. A review becomes stale when the conversation
+version changes and must be checked again; while a turn is queued no submission is possible, and a repeated click
+reuses the same request and key. The 20,000-character limit of a planning message applies to the whole composed
+message: an oversized batch is refused as a whole, not cut or split. Confirmed conversations show their questions
+without answer controls.
+
 Drafts are stored in `onboarding-drafts/<id>/` next to the SQLite database. Changes before invoking prevent the
 call; changes to the export or the draft area during the turn discard the answer. The original README and the rest
 of the checkout stay untouched when a confirmed proposal is applied: only the private draft changes. The template

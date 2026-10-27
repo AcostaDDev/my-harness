@@ -7,6 +7,7 @@ import { Permissions } from "../Permissions";
 import { href, runRoute } from "../router.ts";
 import { Empty, Loading, message, usePoll } from "../ui";
 import { RunEvidence } from "./RunEvidence";
+import { LiveActivity } from "../Activity";
 import { useWorkspace } from "../workspace";
 
 /** `/runs/:id`: resolves the canonical run URL and replaces it in the history. */
@@ -82,6 +83,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
   return <RunEvidence run={run} project={project} error={error} jobs={jobs} attempts={attempts} cycles={cycles}
     events={events} jobOffset={jobOffset} offset={offset} cycleOffset={cycleOffset}
     setJobOffset={setJobOffset} setOffset={setOffset} setCycleOffset={setCycleOffset}
+    aside={<LiveActivity runId={run.id} version={run.version} status={run.status} refresh={refresh} />}
     decisions={run.purpose === "task" && ["revalidate", "retry_executor", "commit"].some(a => run.actions.includes(a as S["RunActionCreate"]["action"])) && <section className="decision decision-attention" aria-labelledby="run-decision">
       <h2 id="run-decision">{t("run.decision")}</h2>
       <div className="actions">

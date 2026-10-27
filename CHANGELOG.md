@@ -31,6 +31,32 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-10-27
+
+Patch release for one-off task OT002 ([D240](docs/DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail),
+[D239](docs/DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)). Interface only: no configuration format,
+API contract, database schema or stored data changes. Upgrade by installing the new package; existing
+configurations, projects, conversations and histories are kept.
+
+### Added
+
+- The reviewer's questions in onboarding, project definition and phase planning come first, each with its own answer
+  field. Answers are saved as drafts in the browser while you type and sent only after reviewing the exact message:
+  one answer, the selected ones or all prepared answers go in one message, which is one reviewer turn. Each question
+  shows whether it is a draft, waiting for the reviewer, resolved, still asked or not reviewed; drafts for questions
+  the reviewer stopped asking are kept for you to include or discard. Deferring a blocking question stays a separate
+  action with a reason.
+- A live activity panel shows what the agent is doing in the latest run of a task, phase or project, in a run, and
+  in the latest turn of a chat or planning conversation: files read and edited, commands, searches, validations,
+  messages and the text being written, as the run records them.
+
+### Changed
+
+- Pages use the full window width. Project, phase, task, run, chat and conversation pages place the live activity
+  and a short status beside the main content on wide screens and below it on narrow ones.
+- The free message box of a documentary conversation is labelled as a message other than the answers and says so.
+- Run states `ANSWERING` and `DISCOVERING` have their own labels.
+
 ## [0.1.2] — 2026-10-27
 
 Patch release for one-off task OT001 ([D238](docs/DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary),

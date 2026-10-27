@@ -108,6 +108,14 @@ when the stop is confirmed becomes `INTERRUPTED` with no automatic retry.
   [D144](../DECISIONS.md#d144--run-projection-run-projection-1)).
 - The run page polls the visible page of cycles together with the detail; the chat `/tests` command uses the latest
   cycle.
+- Live activity ([D240](../DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail)): the side panel of
+  the project, phase, task and run pages, and of chat and planning conversations, reads the same confirmed events
+  with `GET /runs/{id}/events?after&limit`. It starts from windows below the run's version (at most eight pages of
+  100, until a dozen readable steps are found) and then follows the cursor, every 1.5 s while the run advances and
+  every 10 s otherwise. It shows the recorded agent records (`agent_event`: Claude `stream-json` messages, tool calls
+  and results, Codex items), lifecycle, validation and recovery events in plain words, newest first; byte notes and
+  partial deltas only feed the "now" line. It is read only and keeps at most 1,500 relevant events in the page; the
+  run page keeps the complete event list and evidence.
 
 ## Paths, parity and proposals
 

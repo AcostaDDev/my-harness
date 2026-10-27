@@ -205,6 +205,13 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   run id; operational routes and pending submissions are not mounted, and recorded active states do not trigger
   execution polling. Routes of the retired
   support show not found ([compatibility](flows/legacy-compatibility.md)).
+- UI layout ([D240](DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail)): pages use the full
+  width. `Workbench` places a sticky side rail beside the main column when the body is at least 800 px wide (a CSS
+  container query, so it also works beside the chat list or the draft tree) and below it otherwise; the main column
+  comes first in reading and keyboard order. The rail of project, phase, task, run, chat and planning pages is the
+  live activity of the relevant run (`Activity.tsx`, pure folding in `run-activity.ts`), read from the run events
+  endpoint. Answer drafts of documentary conversations (`pages/Answers.tsx`, `answers.ts`) live in browser local
+  storage and are sent as ordinary planning messages; no endpoint or stored data was added.
 - Security: loopback only; an ephemeral session key in a private file and an eight-hour HttpOnly cookie; exact Host
   and Origin; CSRF header `X-My-Harness: 1` on mutations; `Sec-Fetch-Site: cross-site` refused
   ([D079](DECISIONS.md#d079--cross-site-navigations-rejected)). Markdown without HTML, Mermaid drawn as an image,

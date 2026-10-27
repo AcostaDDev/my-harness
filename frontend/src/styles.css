@@ -137,7 +137,8 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .nav-group a:hover { background: var(--surface); }
 .nav-group a[aria-current="page"] { background: var(--surface); box-shadow: inset 3px 0 0 var(--accent); font-weight: 650; }
 .nav-project { margin: 0 0 6px; padding: 0 10px; font-size: 13px; font-weight: 650; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.content { padding: 32px var(--gutter) 64px; max-width: 1120px; width: 100%; min-width: 0; overflow-wrap: anywhere; }
+/* Full width (OT002): pages lay out columns instead of one centered strip; reading measures stay on text blocks. */
+.content { padding: 32px var(--gutter) 64px; width: 100%; min-width: 0; overflow-wrap: anywhere; }
 .content .table, .content .rail { overflow-wrap: normal; }
 .nowrap { white-space: nowrap; }
 
@@ -181,7 +182,7 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .events time { color: var(--muted); font-size: 13px; margin-left: 6px; }
 .phase-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .agents { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 32px; }
-.split { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+.split { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; align-items: start; }
 .split .panel { margin-top: 0; }
 .split-list form { margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--line); }
 .link-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
@@ -321,7 +322,7 @@ button[aria-pressed="true"] { border-color: var(--accent) !important; box-shadow
   .rail-siding { margin: 4px 0 0 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; scroll-behavior: auto !important; }
+  * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
 }
 
 /* Project registry (H6.2 E2): registration, change and removal with preview. */
@@ -488,4 +489,115 @@ pre.diff span { display: block; }
   .tiles { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .tile { padding: 10px 12px; }
   .tile-value { font-size: 20px; }
+}
+
+/* OT002: workbench. The rail joins the main column when the body itself is wide enough (container query), so the
+   same page works full width, beside a list or a document tree, and stacked on narrow screens. */
+.workbench { container-type: inline-size; margin-top: 20px; }
+.workbench-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.workbench-main, .workbench-aside { min-width: 0; }
+.workbench-main > :first-child, .workbench-aside > :first-child { margin-top: 0; }
+.workbench-aside { display: grid; gap: 16px; align-content: start; }
+@container (min-width: 800px) {
+  .workbench-grid { grid-template-columns: minmax(0, 1fr) clamp(280px, 32%, 440px); }
+  .workbench-aside { position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow-y: auto; overscroll-behavior: contain; padding-bottom: 4px; }
+}
+.split-main > .workbench, .docs-main > .workbench { margin-top: 0; }
+.rail-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.rail-panel > h2 { font-size: 15px; margin-bottom: 10px; }
+.rail-panel .hint { font-size: 13px; margin: 10px 0 0; }
+.rail-panel .command-list { margin-block: 10px 0; }
+.rail-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.rail-stat { padding: 8px 10px; border-radius: 8px; background: var(--paper); min-width: 0; }
+.rail-stat dt { font-size: 12.5px; color: var(--muted); }
+.rail-stat dd { margin: 2px 0 0; font-size: 20px; font-weight: 650; line-height: 1.2; }
+.rail-stat-attention { background: var(--attention-soft); }
+.rail-stat-attention dd { color: var(--attention); }
+
+/* Live activity: one trace per run, newest step on top. The node's shape says what kind of step it is and its
+   color how it ended; the only unprompted motion is the pulse of what is running now. */
+.activity { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 12px; min-width: 0; }
+.activity-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.activity-head h2 { font-size: 15px; }
+.activity-run { margin: 2px 0 12px; font-size: 13px; color: var(--muted); }
+.activity-now { border-radius: 8px; background: var(--active-soft); color: var(--active); padding: 9px 12px; margin-bottom: 10px; }
+.activity-now-line { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin: 0; font-weight: 600; font-size: 14px; }
+.activity-role { font-size: 12px; font-weight: 650; padding: 1px 8px; border-radius: 999px; background: var(--surface); color: var(--ink); }
+.activity-pulse { width: 9px; height: 9px; border-radius: 50%; background: currentColor; opacity: .55; flex: none; }
+.activity-pulse-on { opacity: 1; animation: activity-pulse 1.6s ease-out infinite; }
+@keyframes activity-pulse { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--active) 60%, transparent); } to { box-shadow: 0 0 0 9px transparent; } }
+.activity-stream { margin: 8px 0 2px; padding: 8px 10px; max-height: 9.4em; overflow: hidden; background: var(--field); color: var(--ink); font-size: 13px; line-height: 1.5;
+  border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.activity-stream-code { font: 12px/1.45 var(--font-mono); }
+.activity-now-settled { background: var(--neutral-soft); color: var(--neutral); }
+.activity-trace { list-style: none; margin: 0; padding: 0; position: relative; }
+.activity-trace::before { content: ""; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 2px; background: var(--line); }
+.activity-step { position: relative; display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 10px; padding: 6px 0; }
+.activity-node { position: relative; z-index: 1; margin-top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-strong); }
+.activity-command .activity-node, .activity-check .activity-node, .activity-edit .activity-node { border-radius: 3px; }
+.activity-warning .activity-node { border-radius: 2px; transform: rotate(45deg) scale(.85); }
+.activity-message .activity-node { background: var(--ink); border-color: var(--ink); }
+.activity-thinking .activity-node { border-style: dashed; }
+.activity-lifecycle .activity-node { width: 8px; height: 8px; margin: 7px 2px 0; border-width: 0; background: var(--line-strong); }
+.activity-tone-ok .activity-node { border-color: var(--ok); }
+.activity-tone-attention .activity-node { border-color: var(--attention-mark); background: var(--attention-soft); }
+.activity-tone-danger .activity-node { border-color: var(--danger); background: var(--danger); }
+.activity-running .activity-node { border-color: var(--active); background: var(--active); animation: activity-pulse 1.6s ease-out infinite; }
+.activity-body { min-width: 0; }
+.activity-line { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: 13.5px; }
+.activity-label { flex: 1; min-width: 0; font-weight: 600; }
+.activity-lifecycle .activity-label { font-weight: 500; color: var(--muted); }
+.activity-tone-danger .activity-label { color: var(--danger); }
+.activity-time { flex: none; color: var(--muted); font-size: 12px; }
+.activity-code { margin: 4px 0 0; font: 12px/1.45 var(--font-mono); background: var(--code-bg); border-radius: 4px; padding: 4px 7px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 6.4em; overflow: hidden; }
+.activity-text { margin: 3px 0 0; font-size: 13.5px; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 7; line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+.activity-thinking .activity-text { color: var(--muted); font-style: italic; -webkit-line-clamp: 3; line-clamp: 3; }
+.activity > .hint { font-size: 13px; }
+
+/* Reviewer questions: answers first, one card per question, one review and one turn per submission. */
+.answers .panel-head { margin-bottom: 0; }
+.answers-summary { margin: 0; color: var(--muted); font-size: 13.5px; }
+.answers-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+.answer { border: 1px solid var(--line); border-left: 3px solid var(--line-strong); border-radius: var(--radius); padding: 12px 16px 14px; background: var(--field); min-width: 0; }
+.answer-blocking { border-left-color: var(--attention-mark); }
+.answer-deferred { background: transparent; }
+.answer-earlier { border-style: dashed; border-left-style: solid; background: transparent; }
+.answer-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 13px; }
+.answer-kind { font-weight: 650; color: var(--neutral); }
+.answer-blocking .answer-kind { color: var(--attention); }
+.answer-state { color: var(--muted); }
+.answer-state-active { color: var(--active); font-weight: 600; }
+.answer-state-attention { color: var(--attention); font-weight: 600; }
+.answer-question { font-size: 15px; font-weight: 600; margin: 6px 0 10px; white-space: pre-wrap; max-width: 95ch; }
+.answer-label { margin-top: 0; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.answer-field { font-family: var(--font-ui); font-size: 14.5px; line-height: 1.5; margin-top: 4px; }
+.answer-field[readonly] { background: var(--paper); color: var(--muted); }
+.answer-saved { max-height: 180px; margin: 8px 0 0; }
+.answer-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; margin-top: 10px; }
+.answer-actions .check { margin: 0; }
+.answer-actions button { padding: 6px 12px; }
+.answer-defer { margin-top: 10px; font-size: 14px; }
+.answer-defer > summary { cursor: pointer; color: var(--muted); width: fit-content; }
+.answer-defer > summary:hover { color: var(--ink); }
+.answers-pending, .answers-earlier { margin-top: 18px; }
+.answers-pending h3, .answers-earlier h3 { margin-top: 0; }
+.answers-resolved { margin-top: 16px; }
+.answers-review { margin-top: 16px; padding: 14px 18px 16px; border: 1px solid var(--accent); border-radius: var(--radius); background: color-mix(in srgb, var(--accent-soft) 35%, var(--surface)); }
+.answers-review > h3 { margin-top: 0; }
+.answers-preview { max-height: 360px; background: var(--field); border: 1px solid var(--line); font-size: 13px; }
+.answers-bar { position: sticky; bottom: 12px; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+  margin-top: 16px; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); box-shadow: 0 8px 22px -14px rgb(0 0 0 / .35); }
+.answers-bar > p { margin: 0; font-size: 14px; color: var(--muted); }
+.answers-bar .actions { margin-top: 0; flex: 1 1 auto; justify-content: flex-end; }
+/* Conversation picker of onboarding: the list and the new-conversation form side by side when there is room. */
+.conversation-picker { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 460px); gap: 8px 32px; align-items: end; }
+.conversation-picker form { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: flex-end; }
+.conversation-picker form label { flex: 1 1 240px; margin-top: 0; }
+.conversation-picker form > button { margin-top: 0; }
+@media (max-width: 880px) { .conversation-picker { grid-template-columns: minmax(0, 1fr); } }
+.composer { margin-top: 16px; padding-top: 2px; border-top: 1px solid var(--line); }
+@media (max-width: 880px) {
+  .answer { padding: 12px 12px 14px; }
+  .answers-bar { position: static; box-shadow: none; }
+  .answers-bar .actions { width: 100%; }
 }

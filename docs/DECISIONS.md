@@ -1066,3 +1066,8 @@ Development moves off `main` so that `main` only carries published versions:
 GitHub's default branch stays `main`, so visitors see the released state. Commits already pushed to `main` after
 `v0.1.1` are not rewritten; the next release merge brings `main` forward. Agents check the current branch at the
 start of a session and never work on `main`.
+
+The repository is public since 2026-10-27, and GitHub protects `main`: changes need a pull request (no required
+approvals, as there is a single maintainer), the rule also applies to administrators, and force pushes and deletion
+are refused. A release is therefore a pull request from `develop` to `main` merged with **Create a merge commit**,
+which is the `--no-ff` merge above; squash or rebase would break the shared history with `develop`.

@@ -53,8 +53,9 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
   member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
   `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
-  package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md). `main` only carries
-  releases; work goes through topic branches into `develop` (D235).
+  package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md). The repository is public;
+  the protected `main` only carries releases merged from `develop` by pull request, and work goes through topic
+  branches into `develop` (D235).
 - **Real-provider evidence.** Historical evidence before `cli-14`: first real use to a closed phase, four
   reviewer/executor combinations COMMITTED (D071), and Django recipe creation through four tasks and phase closure
   on macOS ARM64/Python 3.13. Current-adapter evidence (October 2026, same platform): Claude Code 2.1.310 reviewer

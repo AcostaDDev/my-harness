@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="1" errors="1" skipped="1" time="0.7">
+  <testsuite name="Synthetic &amp; safe" tests="4" failures="1" errors="1" skipped="1">
+    <testcase name="passes" classname="Example" time="0" id="observed-1" />
+    <testcase name="fails" classname="Example" time="1.2"><failure type="AssertionError" message="Expected &lt;script&gt;">Observed failure &amp; details</failure></testcase>
+    <testcase name="errors" classname="Example"><error type="RuntimeError">Synthetic traceback</error></testcase>
+    <testcase name="skips"><skipped message="Synthetic skip" /></testcase>
+  </testsuite>
+</testsuites>

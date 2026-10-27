@@ -1,0 +1,62 @@
+{
+  "synthetic": true,
+  "contract": "H0.2 offline probe; not captured provider output",
+  "cases": [
+    {
+      "path": "codex-success.jsonl",
+      "provider": "codex",
+      "exit_code": 0,
+      "expected_status": "complete",
+      "expected_events": 4
+    },
+    {
+      "path": "claude-success.jsonl",
+      "provider": "claude",
+      "exit_code": 0,
+      "expected_status": "complete",
+      "expected_events": 4
+    },
+    {
+      "path": "codex-truncated.jsonl",
+      "provider": "codex",
+      "exit_code": 0,
+      "expected_status": "incomplete",
+      "expected_events": 2
+    },
+    {
+      "path": "claude-truncated.jsonl",
+      "provider": "claude",
+      "exit_code": 0,
+      "expected_status": "incomplete",
+      "expected_events": 2
+    },
+    {
+      "path": "codex-error.jsonl",
+      "provider": "codex",
+      "exit_code": 1,
+      "expected_status": "failed",
+      "expected_events": 2
+    },
+    {
+      "path": "claude-error.jsonl",
+      "provider": "claude",
+      "exit_code": 1,
+      "expected_status": "failed",
+      "expected_events": 2
+    },
+    {
+      "path": "codex-no-terminal.jsonl",
+      "provider": "codex",
+      "exit_code": 0,
+      "expected_status": "incomplete",
+      "expected_events": 1
+    },
+    {
+      "path": "claude-no-terminal.jsonl",
+      "provider": "claude",
+      "exit_code": 0,
+      "expected_status": "incomplete",
+      "expected_events": 1
+    }
+  ]
+}

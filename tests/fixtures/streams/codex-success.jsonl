@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"synthetic-thread","future_field":{"nested":[null,"ñ"]}}
+{"type":"future.event","opaque":[1,null]}
+{"type":"item.completed","item":{"id":"synthetic-item","type":"agent_message","text":"Respuesta sintética"}}
+{"type":"turn.completed"}

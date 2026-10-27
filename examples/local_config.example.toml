@@ -1,0 +1,122 @@
+# My Harness — real-use configuration (local-config-8, P012-T010). Template, not valid as is.
+# Keep it OUTSIDE any checkout, owned by the service user, chmod 600.
+# No secrets: authentication stays in each CLI. Canonical absolute paths.
+# Selected clients are discovered on each role's explicit PATH. No CLI version is required.
+# Stable minimums: Codex 0.163.0 and Claude Code 2.1.304. Older clients get an update instruction.
+# Compatible later releases are admitted automatically with conditional interface compatibility.
+# Parsing is data-only; service startup and admission resolve clients, and every attempt revalidates them.
+# Formats 1–7 remain readable; v1–v6 explicit version assertions must match the installed client.
+# v8 keeps v7 automatic clients, v6 work-language settings, v5 presets and v2 recipe fragments.
+# Validate: my-harness check-config /path/my-harness.toml [--preflight]
+# Start:    my-harness serve --database /path/state/harness.sqlite3 --config /path/my-harness.toml
+format = "local-config-8"
+
+[service]
+state_dir = "/ABSOLUTE/PATH/harness-state"   # CLI artifacts and migrations; outside the checkouts
+supervisor = false                            # true: runs the queue on startup
+# lease_seconds = 30.0
+# poll_seconds = 0.5
+
+[git]
+executable = "/usr/bin/git"
+author_name = "Author Name"
+author_email = "author@example.invalid"
+
+[agents.reviewer]                             # plans, reviews, evaluates phases, chat and bootstrap; read-only
+provider = "codex"                            # "codex" or "claude"
+model = "REVIEWER-MODEL"                      # the user sets the reviewer model and effort
+effort = "high"                               # provider vocabulary (codex: minimal…ultra; claude: low…max)
+# executable = ["/ABSOLUTE/PATH/codex"]        # optional path for a nonstandard installation
+timeout_seconds = 1800
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/ABSOLUTE/PATH/client-bin:/usr/bin:/bin", LANG = "C.UTF-8" }
+
+[agents.executor]                             # single writer; the reviewer sets its model and effort
+provider = "claude"                           # "claude" or "codex" (Codex: workspace-write, network disabled)
+# executable = ["/ABSOLUTE/PATH/claude"]       # optional path for a nonstandard installation
+timeout_seconds = 3600
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/ABSOLUTE/PATH/client-bin:/usr/bin:/bin", LANG = "C.UTF-8" }
+tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # Claude only
+allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # Claude only
+# grantable_tools = []                        # Claude only: tools grantable through H3.2
+
+[registration]                                # project registration from the UI (SQLite, versioned and audited)
+roots = ["/ABSOLUTE/PATH/projects"]           # only folders under these canonical roots can be registered
+bootstrap_enabled = false                     # true: the UI can enable bootstrap in registered folders
+
+# Declared profiles (local-config-4): the project stack, nothing runs on load. Review and confirm
+# every command: argv without a shell, whose first element is a name from the composition `executables`. All
+# keys are required except `sensitive_allowlist` and the v8 formatter pair below. Empty lists are only accepted in
+# `preparation` and `data_model_paths`. The content enters the frozen hash: changing it quarantines pending jobs.
+# Built-in profile names (typescript-web) are reserved.
+[profiles.python-django]
+preparation = [
+  { argv = ["python", "--version"], timeout_seconds = 30 },
+  { argv = ["python", "-m", "django", "--version"], timeout_seconds = 30 },
+]
+validations = [
+  # The JUnit report is declared with its validation; `.local/` must be in the project's .gitignore.
+  { argv = ["pytest", "--junitxml=.local/junit.xml", "-q"], timeout_seconds = 900, junit = { path = ".local/junit.xml", coverage = "Project pytest tests; not code coverage" } },
+  { argv = ["ruff", "check", "."], timeout_seconds = 120 },
+  { argv = ["ruff", "format", "--check", "."], timeout_seconds = 120 },
+  { argv = ["mypy", "."], timeout_seconds = 600 },
+  { argv = ["python", "manage.py", "check"], timeout_seconds = 120 },
+  { argv = ["python", "manage.py", "makemigrations", "--check", "--dry-run", "--noinput"], timeout_seconds = 120 },
+]
+# Prefixes a task contract can cite; running them also requires the exact authorization.
+allowed_command_prefixes = [["pytest"], ["ruff", "check"], ["ruff", "format", "--check"], ["mypy"],
+                            ["python", "manage.py", "check"], ["python", "manage.py", "makemigrations", "--check"]]
+protected_paths = ["docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "docs/DECISIONS.md", "docs/archive/**",
+                   "AGENTS.md", "CLAUDE.md", "GEMINI.md", ".harness/**", ".codex/**", ".claude/**",
+                   "pyproject.toml", "uv.lock", "poetry.lock", "requirements*.txt", "setup.cfg", "tox.ini",
+                   "pytest.ini", "mypy.ini", "ruff.toml", ".ruff.toml", "manage.py", ".gitignore"]
+sensitive_paths = [".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "*.sqlite3"]
+sensitive_allowlist = [".env.example"]
+# Parity (D090): a diff touching these paths without docs/DDBB-DIAGRAM.md is not accepted.
+data_model_paths = ["**/models.py", "**/models/**", "**/migrations/**"]
+# Optional in v8 only: uncomment BOTH nonempty fields to format changed, permitted Python files before validation.
+# No shell; argv must end in `--`; the executable must be mapped and authorize_profile_commands must be true.
+# Revalidation never formats; the review and commit bind the formatted content. Omit both to disable.
+# formatter_argv = ["ruff", "format", "--"]
+# formatter_paths = ["*.py"]
+executor_instructions = """Implement the Django change within the frozen task paths, with pytest tests next to it. \
+Keep ruff check, ruff format --check, mypy, manage.py check and makemigrations --check passing; \
+add migrations for model changes and update docs/DDBB-DIAGRAM.md in the same task. \
+Do not weaken tests, tool settings, dependencies or their locks. Dependency installation, \
+database services and network access require separate authorization."""
+
+[compositions.django]                         # composition of the declared profile
+profile = "python-django"
+authorize_profile_commands = true
+executables = { python = "/ABSOLUTE/PATH/.venv/bin/python", pytest = "/ABSOLUTE/PATH/.venv/bin/pytest", ruff = "/ABSOLUTE/PATH/.venv/bin/ruff", mypy = "/ABSOLUTE/PATH/.venv/bin/mypy" }
+environment = { PATH = "/ABSOLUTE/PATH/.venv/bin:/usr/bin:/bin", HOME = "/PRIVATE/PATH/command-home", LANG = "C.UTF-8", CI = "true", DJANGO_SETTINGS_MODULE = "config.settings" }
+
+[compositions.web]                            # named commands; the UI picks one, never defines them
+profile = "typescript-web"                    # built-in profile or one from [profiles]
+authorize_profile_commands = true             # authorizes exactly the profile preparation and validations
+executables = { node = "/ABSOLUTE/PATH/node", npm = "/ABSOLUTE/PATH/npm" }
+environment = { PATH = "/ABSOLUTE/PATH/bin:/usr/bin:/bin", HOME = "/PRIVATE/PATH/command-home", LANG = "C.UTF-8", CI = "true", npm_config_cache = "/ABSOLUTE/PATH/npm-cache", npm_config_update_notifier = "false" }
+# max_timeout_seconds = 1800
+# max_output_bytes = 65536
+
+# Additional exact variant (e.g. a contract command with the default timeout):
+# [[compositions.web.authorized]]
+# argv = ["npm", "run", "test"]
+# timeout_seconds = 1800
+
+# [[projects]] is optional: operator projects, not editable from the UI. Their ids cannot be registered.
+[[projects]]
+id = "my-web"
+root = "/ABSOLUTE/PATH/disposable-checkout"   # Git worktree/checkout; preferably disposable to start with
+repository_trusted = true                     # trust in the repository scripts/configuration
+composition = "web"                           # composition above; the profile comes from it
+# tag_kind = "lightweight"                    # or "annotated"
+# documents = "v2"                           # unified documentation contract (D088), mandatory; omitted = "v2"
+# bootstrap_enabled = false                   # H4.2/H6.5: create from scratch in this empty target
+work_language = "en"                          # "en"/"es", recorded once for this root; never changes
+
+[projects.policy]                             # the user's explicit choice; no defaults
+planning_mode = "agent"                       # "agent": the reviewer plans; "deterministic": NEXT_STEPS contract
+executor_mode = "catalog"                     # "catalog": only this catalog; "open": any CLI model
+executor_models = ["EXECUTOR-MODEL"]          # in "open", reference selection (server contracts)
+executor_efforts = ["medium"]                 # within the executor provider vocabulary
+# max_revision_cycles = 3

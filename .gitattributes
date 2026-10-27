@@ -1,0 +1,2 @@
+# Preserve trailing spaces in verbatim third-party license text.
+NOTICE-THIRD-PARTY.md whitespace=-blank-at-eol

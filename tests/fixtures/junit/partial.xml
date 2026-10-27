@@ -1,0 +1,1 @@
+<testsuite name="Interrupted" tests="3"><testcase name="completed" time="0.1" /><testcase name="unfinished"><failure>Interrupted

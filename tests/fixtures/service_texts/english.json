@@ -1,0 +1,253 @@
+{
+ "adapters/bootstrap.py": {
+  "Git returned an unexpected number of bootstrap objects": "invariant"
+ },
+ "adapters/cli_agents.py": {
+  "CLI execution requires a managed process journal": "invariant",
+  "Fresh frozen request required": "invariant",
+  "Prompt snapshot without a consistent output schema": "invariant",
+  "Unknown agent role": "invariant",
+  "Use a new adapter per claimed job": "invariant"
+ },
+ "adapters/cli_diagnostics.py": {
+  "Duplicate key": "invariant"
+ },
+ "adapters/commands.py": {
+  "Checkout trust has not been granted for this root": "agent-input",
+  "Command cwd must be an existing checkout directory": "agent-input",
+  "Command timeout exceeds configured ceiling": "agent-input",
+  "Configured executable unavailable or not executable": "agent-input",
+  "Exact command execution has not been authorized": "agent-input",
+  "Native commands require a bound managed journal": "invariant",
+  "Native commands require managed command identity and journal": "invariant",
+  "Use a fresh command runner for each job": "invariant"
+ },
+ "adapters/engine_fake.py": {
+  "Unexpected agent invocation": "invariant"
+ },
+ "adapters/git.py": {
+  "Annotated tag intent requires an integer date and a NUL-free message": "invariant",
+  "Annotated tag intent requires its sealed object id": "invariant",
+  "Expected a full Git object id": "invariant",
+  "Explicit GitIdentity and positive diff limit required": "invariant",
+  "Persisted commit intent is internally inconsistent": "invariant",
+  "Phase tag intent must name refs/tags/<name> and a full commit id": "invariant",
+  "Unknown tag kind": "invariant",
+  "cannot change to {}": "technical"
+ },
+ "adapters/preparation.py": {
+  "Expected regular file": "invariant",
+  "Safe relative file required": "invariant"
+ },
+ "adapters/streams.py": {
+  "Nonfinite JSON: {}": "invariant"
+ },
+ "core/engine/chat.py": {
+  "Frozen chat context changed after it was queued": "invariant"
+ },
+ "core/engine/commit.py": {
+  "Clock must return an aware time": "invariant",
+  "Evidence provenance is not valid Git provenance": "invariant",
+  "Mechanical updates must be explicit MechanicalUpdate values": "invariant",
+  "Pending commit intent belongs to a different run": "invariant",
+  "Unknown commit outcome status": "invariant",
+  "Unknown mechanical content encoding": "invariant"
+ },
+ "core/engine/context.py": {
+  "Expected a checkout-relative path": "invariant",
+  "Invalid engine policy": "invariant",
+  "Unknown document layout": "invariant"
+ },
+ "core/engine/definition.py": {
+  "DECISIONS: {}": "technical",
+  "Frozen planning context changed after it was queued": "invariant",
+  "NEXT_STEPS: {}": "technical",
+  "ROADMAP needs at least one phase section «## PNNN — título»": "technical",
+  "ROADMAP: {}": "technical"
+ },
+ "core/engine/document_ops.py": {
+  "Unknown edit source": "invariant"
+ },
+ "core/engine/document_text.py": {
+  "The work language must be en or es": "invariant"
+ },
+ "core/engine/junit.py": {
+  "DTD, entity declarations and external entities are forbidden": "agent-input",
+  "Expected testsuite or testsuites root": "agent-input",
+  "Invalid suite hierarchy": "agent-input",
+  "Report must be a regular, unshared file without links": "agent-input",
+  "Report path must be a checkout file outside .git": "agent-input",
+  "Testcase must be a direct child of a suite container": "agent-input",
+  "XML element/depth limit exceeded": "agent-input",
+  "XML testcase limit exceeded": "agent-input"
+ },
+ "core/engine/language.py": {
+  "Invalid frozen language pair; the attempt is not rendered": "invariant",
+  "No language field map for role": "invariant",
+  "The frozen work language differs from the project context": "invariant",
+  "Unknown frozen language context; the attempt is not rendered": "invariant"
+ },
+ "core/engine/metrics.py": {
+  "Nonfinite JSON: {}": "invariant"
+ },
+ "core/engine/permissions.py": {
+  "Invalid permission snapshot": "invariant",
+  "Permission snapshot does not match the frozen attempt": "invariant"
+ },
+ "core/engine/phases.py": {
+  "Clock must return an aware time": "invariant",
+  "Unknown tag kind": "invariant"
+ },
+ "core/engine/prompts.py": {
+  "Incomplete prompt catalog": "invariant",
+  "Missing or unknown render variables": "invariant",
+  "No output schema for role": "invariant",
+  "Project instructions are supplied by the engine, never by the caller": "invariant",
+  "Prompt identity mismatch": "invariant",
+  "Template hash mismatch": "invariant"
+ },
+ "core/engine/serialization.py": {
+  "Unknown managed history format": "invariant"
+ },
+ "core/engine/validation.py": {
+  "Managed commands require a durable journal": "invariant",
+  "Validation argv outside profile command policy": "agent-input"
+ },
+ "core/engine/workflow.py": {
+  "Resume requires the original frozen context/policy": "invariant",
+  "Server contract must be frozen canonical JSON": "invariant",
+  "Start requires a fresh history with the frozen context": "invariant"
+ },
+ "core/project_onboarding.py": {
+  "Binary source: not analysed": "agent-input",
+  "Dependency names must be strings": "agent-input",
+  "Source size mismatch: {}": "invariant",
+  "Unclosed Prisma model block": "agent-input",
+  "package.json must be an object": "agent-input",
+  "scripts must map names to strings": "agent-input",
+  "{} must be an object": "agent-input"
+ },
+ "recipes/django_2.py": {
+  "Unsupported work language: {}": "invariant"
+ },
+ "recipes/typescript_web_2.py": {
+  "Unsupported work language: {}": "invariant"
+ },
+ "services/local_config.py": {
+  "git: {}": "technical",
+  "{}.junit: {}": "technical"
+ },
+ "services/managed.py": {
+  "Frozen deterministic command context changed": "invariant",
+  "Run has a frozen native command configuration; its managed runner is required": "invariant"
+ },
+ "services/project_preparation.py": {
+  "Preparation intent corrupt/incompatible": "invariant",
+  "Sealed commit intent corrupt": "invariant",
+  "Unknown preparation step": "invariant"
+ },
+ "storage/bootstrap.py": {
+  "Bootstrap result must match its sealed intent": "invariant",
+  "Bootstrap run lacks its operation": "invariant"
+ },
+ "storage/chat.py": {
+  "Chat run without its turn": "invariant",
+  "Chat turn already settled": "invariant"
+ },
+ "storage/document_export.py": {
+  "Export intent must match its exact reviewed SQLite snapshot": "invariant",
+  "Export operation already settled": "invariant",
+  "Export requires its queued operation": "invariant",
+  "Export result differs from its sealed intent": "invariant"
+ },
+ "storage/documents.py": {
+  "Document edit already settled": "invariant",
+  "Document edit requires its queued operation": "invariant",
+  "Intent must match its exact reviewed preview and SQLite authority": "invariant",
+  "Result differs from its sealed intent": "invariant"
+ },
+ "storage/managed.py": {
+  "A new job needs its checkout root to freeze its languages": "invariant",
+  "A pending commit operation fixed different mechanical updates": "invariant",
+  "Attempt must use frozen context/task and a fresh session": "invariant",
+  "Attempt requires a previously persisted invocation intent": "invariant",
+  "Cannot finish with an unknown invocation outcome": "invariant",
+  "Cannot quarantine a different/finished owner": "invariant",
+  "Clock must return an aware UTC time": "invariant",
+  "Command has not spawned": "invariant",
+  "Command process identity cannot change": "invariant",
+  "Commit intent must name this run's reviewed acceptance evidence": "invariant",
+  "Commit result differs from the persisted intent": "invariant",
+  "Commit result requires its pending intent": "invariant",
+  "Different process owner": "invariant",
+  "Document intents belong to document operations": "invariant",
+  "Explicit component versions required; unknown values use null": "invariant",
+  "Frozen attempt result changed": "invariant",
+  "Frozen run identity/context changed": "invariant",
+  "Frozen task contract changed": "invariant",
+  "Frozen task identity must match the managed run": "invariant",
+  "Lease must be positive and finite": "invariant",
+  "Live command owner required": "invariant",
+  "Live owner and pending invocation required": "invariant",
+  "Managed history cannot be discarded or replaced": "invariant",
+  "One launch per attempt; no retry": "invariant",
+  "One process intent per started command": "invariant",
+  "Only a terminal engine action can finish a job": "invariant",
+  "Pending command process required": "invariant",
+  "Persisted correction budget exhausted": "invariant",
+  "Process identity cannot change": "invariant",
+  "Process owner already registered": "invariant",
+  "Recorded validation/review cannot change": "invariant",
+  "Unknown command process event": "invariant",
+  "Unknown job": "invariant",
+  "Unknown process intent": "invariant"
+ },
+ "storage/managed_mode.py": {
+  "Existing activation manifest belongs to another authority": "invariant",
+  "Existing activation marker or manifest integrity mismatch": "invariant",
+  "Existing activation snapshot integrity mismatch": "invariant",
+  "Unsafe existing activation snapshot path": "invariant"
+ },
+ "storage/managed_views.py": {
+  "Persisted JUnit original hash/size mismatch": "invariant"
+ },
+ "storage/permissions.py": {
+  "Callers cannot inject permission snapshots": "invariant"
+ },
+ "storage/phases.py": {
+  "Phase operation already settled": "invariant",
+  "Phase run without its phase operation": "invariant",
+  "Tag intent requires its queued close operation": "invariant"
+ },
+ "storage/planning.py": {
+  "Planning run without its turn": "invariant",
+  "Planning turn already settled": "invariant"
+ },
+ "storage/preparation.py": {
+  "Exact preparation process intent required once": "invariant",
+  "Preparation lacks its exclusive checkout lock": "invariant",
+  "Preparation process requires its started step": "invariant",
+  "Process identity cannot change": "invariant",
+  "Unknown preparation process": "invariant",
+  "Unknown preparation process event": "invariant",
+  "Exact preparation executor intent required once": "invariant",
+  "Unknown preparation executor process": "invariant"
+ },
+ "storage/project_import.py": {
+  "Import already settled": "invariant",
+  "Import requires its queued operation": "invariant",
+  "Import result differs from its sealed intent": "invariant",
+  "Import run lacks its operation": "invariant",
+  "Use the onboarding repository": "invariant"
+ },
+ "storage/prompts.py": {
+  "Broken prompt activation": "invariant"
+ },
+ "storage/transition.py": {
+  "Transition already settled": "invariant",
+  "Transition requires its queued operation": "invariant"
+ },
+ "storage/work_language.py": {
+  "Unknown work language source {}": "invariant"
+ }
+}

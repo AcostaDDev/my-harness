@@ -1,0 +1,4 @@
+{"type":"system","subtype":"init","session_id":"synthetic-session","future_field":{"nested":[null,"ñ"]}}
+{"type":"future.event","opaque":[1,null]}
+{"type":"assistant","message":{"content":[{"type":"text","text":"Respuesta sintética"}]}}
+{"type":"result","subtype":"success","is_error":false,"result":"Respuesta sintética"}

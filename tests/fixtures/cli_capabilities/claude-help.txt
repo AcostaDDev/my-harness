@@ -1,0 +1,5 @@
+Synthetic Claude interface fixture authored for the harness tests. Not vendor output.
+--print --output-format --verbose --include-partial-messages --no-session-persistence
+--session-id --model --effort --permission-mode --permission-prompts --tools --allowedTools
+--strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands
+--no-chrome --restricted --json-schema

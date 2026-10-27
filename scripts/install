@@ -1,0 +1,18 @@
+#!/bin/sh
+# Use an explicitly selected local interpreter for bootstrap as well as installation.
+bootstrap=python3
+if command -v python3.14 >/dev/null 2>&1; then
+    bootstrap=python3.14
+fi
+next_python=no
+for argument in "$@"; do
+    if [ "$next_python" = yes ]; then
+        bootstrap=$argument
+        next_python=no
+    elif [ "$argument" = --python ]; then
+        next_python=yes
+    else
+        case "$argument" in --python=*) bootstrap=${argument#--python=} ;; esac
+    fi
+done
+exec "$bootstrap" -E -s -B "$(dirname "$0")/install.py" "$@"

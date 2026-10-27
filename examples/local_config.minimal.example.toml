@@ -1,0 +1,63 @@
+# My Harness — minimal single-provider configuration (local-config-7). Template, not valid as is.
+# One provider (Claude Code) for both roles and one declared profile for a small Python project tested with unittest.
+# For Codex, set provider = "codex" in both roles and drop the Claude-only `tools`/`allowed_tools` keys.
+# Keep it OUTSIDE any checkout, owned by the service user, chmod 600. No secrets: each CLI keeps its own login.
+# Replace every /ABSOLUTE/PATH, USER and REVIEWER-MODEL placeholder with canonical absolute paths and real values.
+# Clients are discovered on each role's explicit PATH; no CLI version is required (minimums: Codex 0.163.0,
+# Claude Code 2.1.304). The complete template with every option: local_config.example.toml.
+# Validate: my-harness check-config /path/my-harness.toml --preflight
+# Start:    my-harness serve --database /path/state/harness.sqlite3 --config /path/my-harness.toml
+format = "local-config-7"
+
+[service]
+state_dir = "/ABSOLUTE/PATH/harness-state"    # CLI artifacts and streams; outside every checkout
+supervisor = true                             # runs queued work: each attempt invokes the CLI and uses your plan
+
+[git]
+executable = "/usr/bin/git"                   # must support --no-lazy-fetch
+author_name = "Author Name"                   # identity of the harness commits
+author_email = "author@example.invalid"
+
+[agents.reviewer]                             # plans, reviews, checks phases, chats and defines; read-only
+provider = "claude"
+model = "REVIEWER-MODEL"                      # a model your Claude Code account can use
+effort = "high"                               # Claude: low…max; Codex: minimal…ultra
+timeout_seconds = 1800
+# USER must be the account running the service; PATH must contain the `claude` (or `codex`) executable.
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/ABSOLUTE/PATH/client-bin:/usr/bin:/bin", LANG = "C.UTF-8" }
+
+[agents.executor]                             # the only writer; the reviewer picks its model and effort per task
+provider = "claude"
+timeout_seconds = 3600
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/ABSOLUTE/PATH/client-bin:/usr/bin:/bin", LANG = "C.UTF-8" }
+tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # Claude only; no shell
+allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # Claude only
+
+[registration]
+roots = ["/ABSOLUTE/PATH/projects"]           # existing checkouts can be registered only under these roots
+bootstrap_enabled = true                      # allows creating projects from scratch from the UI
+
+# Declared profile: argv without a shell; the first element names an entry of the composition `executables`.
+# Its content enters the frozen hash: changing it quarantines pending jobs. Review every command.
+[profiles.python-unittest]
+preparation = [
+  { argv = ["python3", "--version"], timeout_seconds = 30 },
+]
+validations = [
+  # Fails until tests/ holds at least one test: ask for it in the first task.
+  { argv = ["python3", "-m", "unittest", "discover", "-s", "tests", "-t", "."], timeout_seconds = 600 },
+]
+allowed_command_prefixes = [["python3", "-m", "unittest"]]
+protected_paths = ["docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "docs/DECISIONS.md", "docs/archive/**",
+                   "AGENTS.md", "CLAUDE.md", "GEMINI.md", ".harness/**", ".codex/**", ".claude/**", ".gitignore"]
+sensitive_paths = [".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "id_rsa*", "*.sqlite3"]
+data_model_paths = []
+executor_instructions = """Implement the change within the frozen task paths using the Python standard library, \
+with unittest tests under tests/. Keep every test passing and do not weaken existing tests. \
+Dependency installation and network access require separate authorization."""
+
+[compositions.python]                         # the UI picks a composition by name; it never defines commands
+profile = "python-unittest"
+authorize_profile_commands = true             # authorizes exactly the profile preparation and validations
+executables = { python3 = "/ABSOLUTE/PATH/python3" }
+environment = { PATH = "/usr/bin:/bin", HOME = "/ABSOLUTE/PATH/command-home", LANG = "C.UTF-8", PYTHONDONTWRITEBYTECODE = "1" }

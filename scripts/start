@@ -1,0 +1,7 @@
+#!/bin/sh
+# Bootstrap only; the service always uses the verified installation's interpreter.
+bootstrap=python3
+if command -v python3.14 >/dev/null 2>&1; then
+    bootstrap=python3.14
+fi
+exec "$bootstrap" -E -s -B "$(dirname "$0")/start.py" "$@"

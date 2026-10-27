@@ -1,0 +1,3 @@
+Synthetic Codex interface fixture authored for the harness tests. Not vendor output.
+--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules
+--strict-config --color --cd --config --skip-git-repo-check

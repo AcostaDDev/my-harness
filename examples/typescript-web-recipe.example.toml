@@ -1,0 +1,31 @@
+# Fragment for an existing local-config-7 TOML, OUTSIDE the checkouts and chmod 600 (P010-T002, D143; P011-T020, D168).
+# In local-config-6/7 it selects typescript-web-recipe-2 and its own profile: the child is prepared with its work
+# language (en/es), chosen when it is created. The same keys in local-config-5 keep typescript-web-recipe-1.
+# Template NOT valid as is. Keep the operator's service/git/agents/agent_presets/registration.
+# Add this composition to the catalog. Create the child from the UI with it and bootstrap_enabled=true;
+# the parent root is chosen in the UI, never inferred from this example. [registration].bootstrap_enabled=true.
+# It only prepares new children created by the service; registered and onboarded projects bring their own package.json.
+# Loading it changes no global configuration and installs nothing. Enabling network here only sets a ceiling:
+# each preparation confirms its own mode, manifest, argv and limits before running.
+
+[recipes.typescript-web]
+node_executable = "/ABSOLUTE/PATH/node"
+node_version = "24.15.0"                  # EXACT version of that node; goes into the package.json engines
+npm_executable = "/ABSOLUTE/PATH/npm"
+npm_version = "11.12.1"                   # EXACT version of that npm; engine-strict requires it on every npm ci
+npm_cache = "/ABSOLUTE/PATH/npm-cache"    # existing directory, outside the checkouts and the service state
+# Offline (the default) uses only this cache: it must contain typescript@5.9.3 from the packaged lock.
+# An empty cache fails without downloading or switching mode. With network, npm writes to this cache.
+allow_network = false                     # true allows requesting network mode in the preview; does not run it
+timeout_seconds = 120                     # ceiling per command, 120..1800 s; no global timeout or retry
+max_output_bytes = 65536                   # per stream and command
+
+[compositions.typescript]
+profile = "typescript-web"                 # v6/v7: the recipe's own copy of the profile; v5: the built-in one
+recipe = "typescript-web"
+authorize_profile_commands = true
+# node and npm must resolve to the same files as the recipe.
+executables = { node = "/ABSOLUTE/PATH/node", npm = "/ABSOLUTE/PATH/npm" }
+# Task environment: never rewritten. npm_config_cache must equal npm_cache so that every task
+# reinstalls (npm ci --offline) with the cache the preparation accredited. PATH must include node's directory.
+environment = { PATH = "/ABSOLUTE/PATH/node-bin:/usr/bin:/bin", HOME = "/ABSOLUTE/PATH/task-home", npm_config_cache = "/ABSOLUTE/PATH/npm-cache", npm_config_userconfig = "/ABSOLUTE/PATH/user.npmrc", npm_config_globalconfig = "/ABSOLUTE/PATH/global.npmrc", npm_config_update_notifier = "false" }

@@ -1,0 +1,13 @@
+{
+  "name": "harness-typescript-web-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.15.0", "npm": "11.12.1" },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "tsc && node scripts/test.mjs",
+    "build": "tsc && node scripts/build.mjs"
+  },
+  "devDependencies": { "typescript": "5.9.3" }
+}

@@ -1,0 +1,43 @@
+[project]
+name = "my-harness"
+version = "0.1.0"
+description = "Local application that orchestrates Codex and Claude Code agents to plan, implement, review and commit tasks in Git repositories"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE.md", "NOTICE-THIRD-PARTY.md"]
+authors = [{ name = "David Acosta" }]
+requires-python = ">=3.14,<3.15"
+keywords = ["agents", "codex", "claude-code", "git", "harness", "local-first"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development",
+]
+dependencies = [
+    "fastapi==0.143.0",
+    "pydantic==2.14.0",
+    "uvicorn==0.54.0",
+    "sqlalchemy==2.1.4",
+    "alembic==1.20.0",
+]
+
+[project.scripts]
+my-harness = "my_harness.cli:main"
+
+[dependency-groups]
+dev = ["pytest==9.1.1", "httpx==0.28.1", "pytest-xdist==3.8.0"]
+
+[build-system]
+requires = ["uv_build==0.12.19"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+# Parallel by default (D125); `-n 0` runs serially, e.g. to debug a test.
+addopts = "-n auto --dist worksteal"

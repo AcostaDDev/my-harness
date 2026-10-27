@@ -1,0 +1,19 @@
+{
+  "Django": "5.2.17",
+  "asgiref": "3.10.0",
+  "sqlparse": "0.6.0",
+  "pytest": "9.0.3",
+  "pytest-django": "4.11.1",
+  "iniconfig": "2.1.0",
+  "packaging": "25.0",
+  "pluggy": "1.6.0",
+  "Pygments": "2.20.0",
+  "ruff": "0.14.1",
+  "mypy": "1.18.2",
+  "mypy_extensions": "1.1.0",
+  "pathspec": "0.12.1",
+  "typing_extensions": "4.15.0",
+  "django-stubs": "5.2.7",
+  "django-stubs-ext": "5.2.7",
+  "types-PyYAML": "6.0.12.20250915"
+}

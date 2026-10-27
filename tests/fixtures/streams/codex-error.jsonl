@@ -1,0 +1,2 @@
+{"type":"turn.started"}
+{"type":"turn.failed","error":{"message":"Error de autenticación sintético","future_code":"synthetic_auth"}}

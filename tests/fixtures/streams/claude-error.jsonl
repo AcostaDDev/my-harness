@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"synthetic-session"}
+{"type":"result","subtype":"error_during_execution","is_error":true,"errors":["Error de autenticación sintético"]}

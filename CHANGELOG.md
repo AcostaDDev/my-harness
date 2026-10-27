@@ -55,6 +55,9 @@ The API adds fields and one state; the generated client types are regenerated.
 
 ### Fixed
 
+- A definition or onboarding conversation whose turns all failed without output or draft changes no longer blocks
+  activating a corrected configuration, such as a longer client timeout
+  ([D236](docs/DECISIONS.md#d236--empty-failed-intake-turns-are-not-pending-configuration-work)).
 - Tasks of a project with its own profile could not be admitted after a global change or an agent-only project
   change (`preparation_required`): admission now binds the receipt selected for the job's exact configuration
   revision.

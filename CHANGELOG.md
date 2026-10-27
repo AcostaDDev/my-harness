@@ -31,6 +31,26 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-10-27
+
+Patch release for OT005 (D247–D249). Upgrade by installing the new package after stopping the service and writers;
+projects, configuration and historical operations/receipts are preserved. No configuration format, API response model,
+database schema, migration, dependency or packaged recipe change. New inline tool-link evidence is opt-in; old
+receipts and explicit recovery retain their original policy.
+
+### Fixed
+
+- Generic preparation accepts pre-existing read-only executable aliases outside its private write scope when their
+  exact file-link chain ends at an explicitly declared, resolved and hash-bound tool. External directory aliases
+  along that tool chain (such as a Homebrew interpreter alias) are explicitly recorded and checked. Checkout
+  directory links and unrelated targets remain refused; this grants no new write scope or environment accreditation.
+- Tool-link text/modes, executable bytes and the complete alias path set stay bound through confirmation,
+  post-effect guards, receipt verification and explicit recovery. Link-resolution errors identify the link instead
+  of incorrectly reporting a changed project-folder identity.
+- Generic preparation review shows authorized paths/effects, private directories, executor selection/instructions,
+  exact command arguments and command context/evidence. It no longer invents file hashes or leaves numbered steps
+  blank. Generic mode/consent wording follows the profile; recipe v1/v2 fixed-file review remains supported.
+
 ## [0.1.4] — 2026-10-27
 
 Patch release for OT003 (D241/D244/D245). Install the new package to update the service and UI; existing projects,

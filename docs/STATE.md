@@ -8,21 +8,34 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT003 release delivery, then OT004**, before the unchanged Metrics Records task P001-T001.
-OT001 was released as `0.1.2` and OT002 as `0.1.3`; the agreed next separate patch targets are **0.1.4 for OT003**
-and **0.1.5 for OT004** (D239/D242/D243). Neither target is released.
+The owner confirmed **OT005 → 0.1.5** (generic-preparation tool-alias hotfix), then **OT004 → 0.1.6** (visual
+profile/agent editor), before the unchanged Metrics Records task P001-T001 (D246 supersedes D243's target/order).
+OT001/OT002/OT003 were released separately as 0.1.2/0.1.3/**0.1.4** (D239). OT005's initial manual preview failed
+on an external Homebrew directory alias; the owner-approved D248 amendment is now implemented, qualified and
+installed. The owner's next screenshot exposed missing generic review details; D249 now corrects that display
+(213 frontend tests/typecheck/build passed) and is installed. The latest owner screenshot reaches ACTIVE preparation
+and explicitly authorizes the 0.1.5 release now; completion of the real preparation/receipt/activation is not claimed.
+OT004 is unimplemented; no Metrics task is complete.
 
-OT003's intake diagnostics and owner-approved adoption and joint-review follow-ups (D241/D244/D245) are implemented on
-`fix/intake-profile-diagnostics`; checks/status are in [the evidence](phase/OT003-intake-profile-diagnostics.md).
-The owner has now authorized the repository commit, 0.1.4 distribution, release PR/merge to main and GitHub
-publication. The candidate is prepared and under release qualification; integration/publication remain pending. A later operator turn was observed using the original
-OT003 prompt/failure context, and a later screenshot showed the corrected document blocker; this does not qualify a
-release. The owner-authorized offline update/restart after joint-review implementation completed successfully:
-the installed generation is READY, backend source matches, UI contains joint review, and the service answers on
-8013. Conversation/proposal/configuration hashes are unchanged; no new reviewer invocation or adoption occurred.
-See the task evidence. Local installation does not finish the agreed release delivery (D242).
-OT004's visual profile/agent editor is **planned, not implemented**, in its own task contract in ONE_OFF_TASKS.
-All product changes in the current working diff belong to OT003; the OT004/governance additions are planning only.
+**Resume after `/clear`:** OT005 source is on `fix/ot005-preparation-tool-links`, based on `develop` at `a8efd10`.
+Latest source commit **`be76164`** includes the D247/D248 exact tool-chain guards and D249's complete generic plan
+review (paths/effects, executor and nested commands). The unchanged backend last passed **2140 pytest cases,
+2 skipped, 29 subtests**; the frontend now passes **213 tests**, typecheck and build. The authorized offline
+reinstall/restart is complete: all **102 installed UI asset files** match the qualified build, served root/entry JS
+return 200 and all SQLite table/private TOML hashes were preserved. Service is on loopback 8013; metadata is still 0.1.4.
+See [the evidence and outstanding delivery](phase/OT005-preparation-tool-links.md). The owner explicitly authorized
+0.1.5 integration/release PR/archive/GitHub publication after reaching active preparation; release qualification is
+in progress. Source candidate metadata is 0.1.5; the running installed build retains its 0.1.4 metadata plus fixes.
+Keep OT005 in the queue until delivery completes. Publication does not restart the installed service. No maintenance-
+triggered real provider/preparation, operator TOML edit or migration was performed.
+
+OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
+through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a`, tagged `v0.1.4` on main. The
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.4) includes the self-contained archive
+and checksum, downloaded and verified byte for byte. Full offline pytest: 2095 passed, 2 skipped, 29 subtests passed;
+203 frontend tests, unittest/typecheck/build, temporary schema and installed-wheel checks passed. Earlier authorized
+local installation used the uncommitted implementation with 0.1.3 metadata; publishing this release did not restart
+or replace the operator's running service. See [the evidence](phase/OT003-intake-profile-diagnostics.md).
 
 ## Accumulated baseline
 
@@ -197,7 +210,7 @@ promoted revision 4 with both clients at 3600 seconds. No new provider invocatio
 Focused synthetic checks and limitations are recorded in
 [the fix artifact](phase/failed-intake-activation.md).
 
-## Bounded fix — intake profile rejection diagnostics (OT003; delivery pending)
+## Patch 0.1.4 — onboarding profile adoption and joint document review (OT003)
 
 Current definition/onboarding prompts explain logical executable aliases and exact direct-tool membership. Invalid
 executable names now identify the command field/index without echoing candidate values; later planning contexts
@@ -213,12 +226,34 @@ Focused offline synthetic checks and frontend build passed. No real provider, pr
 release was performed. The owner-authorized offline local upgrade/restart subsequently completed successfully;
 installed checks, HTTP/source/UI verification and unchanged conversation/proposal/configuration hashes are recorded
 in the task artifact. Frozen histories/catalogs remain unchanged.
-See [OT003](phase/OT003-intake-profile-diagnostics.md). Source changes are complete; release qualification,
-integration and the agreed 0.1.4 distribution remain in ONE_OFF_TASKS (D242). No Metrics Records task is complete.
+Released through PR #3 as 0.1.4, with full offline regression, package verification and matching GitHub downloads.
+OT003 was removed from ONE_OFF_TASKS only after publication/verification (D242). Subsequent preparation diagnosis
+and the owner's D246 priority decision now put OT005 before OT004.
+See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. No Metrics Records task is complete.
+
+## Source hotfix — read-only preparation tool aliases (OT005, target 0.1.5)
+
+Generic preparation now admits pre-existing read-only aliases outside private `local_paths` when their bounded
+file-link chains end at explicitly configured, resolved and hash-bound executables (D247). New plan/receipt evidence
+freezes exact chain text/modes and the alias path set. Preview, post-effect scope guards, linked recovery and receipt
+verification preserve that binding; directory redirects, unrelated/changed targets and protected links remain refused.
+Existing environments gain no write authority or undeclared stable-environment accreditation. Historical receipts
+and recovery keep their original link policy and bytes; recipe sources/fingerprints are unchanged.
+
+The initial local test exposed an external Homebrew directory alias; D248's approved policy explicitly binds that
+alias in the declared executable chain and keeps directory links inside the checkout refused. Source commit
+`3e2ad45` is now qualified and installed; the real checkout snapshot also passed in read-only inspection. The latest
+local restart preserved all data/configuration hashes and returned HTTP 200. Full results/limits are recorded in
+[the evidence](phase/OT005-preparation-tool-links.md). The owner advanced through review/confirmation to ACTIVE
+preparation and explicitly authorized 0.1.5 delivery; real receipt/activation completion is not claimed. Keep OT005
+in ONE_OFF_TASKS until delivery completes (D242).
+D249's review display fix is also installed from `be76164` (213 frontend tests and installed UI asset checks passed).
+OT004/0.1.6 and Metrics Records remain unimplemented.
 
 ## Planned one-off — visual profile and agent configuration editor (OT004)
 
-The owner chose a separate 0.1.5 patch after OT003, before Metrics Records (D243). Existing basic global/profile
+The owner originally chose OT004 after OT003 (D243), then prioritized OT005 and moved this editor's separate target
+to **0.1.6**, still before Metrics Records (D246). Existing basic global/profile
 forms leave command/path/tool-capability settings in advanced TOML/JSON. OT004 will expose supported settings
 through interactive forms in project settings and applicable global settings, show scope/effective inheritance,
 and preserve fixed role restrictions and existing save/preparation/activation gates. The bounded task and

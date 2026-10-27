@@ -1,9 +1,9 @@
 # OT003 — Intake profile rejection diagnostics
 
-Completed in source on `fix/intake-profile-diagnostics`, 2026-10-27; **delivery pending**. Decision:
+Released as **0.1.4** on 2026-10-27; implementation branch `fix/intake-profile-diagnostics`. Decision:
 [D241](../DECISIONS.md#d241--actionable-intake-profile-rejections). This is a bounded correction outside P001,
 assigned its own **0.1.4** patch. D242 records the owner's requirement to track source and delivery separately;
-OT003 remains in ONE_OFF_TASKS until that delivery is completed or explicitly deferred.
+OT003 remained in ONE_OFF_TASKS until publication/verification completed; the historical work notes follow.
 The owner later extended OT003 with the adoption blockers found during manual testing (D244); that follow-up
 is also implemented/tested, not installed by this work. No version bump, commit, installed-service upgrade,
 restart, provider call, push or release was performed by this agent. A subsequently inspected operator turn used
@@ -212,3 +212,27 @@ Final pre-integration regression: `UV_CACHE_DIR=.local/uv-cache uv run --frozen 
 TestClient deprecations and the intentional duplicate-ZIP-member tampering fixture. Only current task/release files
 were staged; frozen histories, catalogs and recipe sources were not rewritten. The release keeps schema 0027 and
 all prior configuration formats.
+
+## Published 0.1.4
+
+- Implementation/release-version commit: `437acf5` (`fix: onboarding profile adoption and document review (OT003, 0.1.4)`).
+- Integrated on develop by `7863acb`; [release PR #3](https://github.com/AcostaDDev/my-harness/pull/3),
+  develop → protected main, merged with a merge commit at `9985b0a3716240b0f346e6b8a7c21f9480ebe2e6`.
+- Lightweight tag `v0.1.4` points to that exact release merge. main and develop were synchronized to it before
+  the separate documentation follow-up. No direct main work or history rewrite was used.
+- Final distribution was built offline from a detached worktree of that merge and passed the exact artifact and
+  isolated installed-wheel checks again, using the previously populated operator cache without network installs.
+- [GitHub Release v0.1.4](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.4) is published (not draft or
+  prerelease). Assets: `my-harness-0.1.4-distribution.tar.gz` (3,644,839 bytes) and its `.sha256` file.
+- Archive SHA-256: `7331b4c05509ff2f8cea67dab56079ef0f3b5dd9c3eaeb8de8242a9c341a616d`.
+  The archive has the self-contained `my-harness-0.1.4/` root and its 13 files match the verified distribution exactly.
+  Both GitHub assets were downloaded and matched the local files byte for byte; the downloaded archive's checksum passed.
+- OT003 is complete and removed from the one-off queue. OT004 remains planned for a separate 0.1.5 release before
+  Metrics Records. No real provider call, operator project mutation or further service restart/installation was
+  performed for this release. The existing locally installed uncommitted build still has 0.1.3 metadata until the
+  operator separately upgrades it; publication alone does not change that installation.
+
+Qualification: 2095 pytest cases passed, 2 skipped, 29 subtests passed; 10 unittest cases and 203 frontend tests
+passed; shared-version/OpenAPI/types, typecheck/build, fresh temporary migration/schema checks and final installed
+artifact checks passed. No new browser/accessibility or real-provider/production qualification is claimed.
+The current queue/STATE/NEXT_STEPS/ROADMAP follow-up records the completed delivery separately from the immutable tag.

@@ -1,6 +1,6 @@
 [project]
 name = "my-harness"
-version = "0.1.4"
+version = "0.1.5"
 description = "Local application that orchestrates Codex and Claude Code agents to plan, implement, review and commit tasks in Git repositories"
 readme = "README.md"
 license = "MIT"

@@ -305,6 +305,16 @@ errors/uncertainty stop the sequence and report acknowledged progress without au
 profile and documentary commit remain separately confirmed (D245).
 The reviewer stays read-only; the executor has only the confirmed preparation scope and no general global writes.
 A receipt binds configuration, tools, commands, protected content and stable environment; failures do not qualify it.
+New generic preparation plans also bind pre-existing read-only file-link chains outside private local paths when
+these resolve to an explicitly declared, hash-bound executable (D247/D248). Exact chain paths/link bytes/modes are
+preserved through preview, execution, recovery and receipt verification. New plans explicitly bind external directory
+aliases only along that tool chain (D248); checkout directory links, unbound targets, broken/looping chains and
+protected-path links are refused. The 40-link ceiling counts both file and external directory aliases. This grants
+no writes or accreditation of the rest of an existing environment; stable environment evidence still comes only from declared `environment_paths`.
+Old plans/receipts retain their policy and frozen bytes.
+Generic preparation review shows writable path/effect pairs, the executor scope/instructions and exact nested commands
+with cwd/timeouts/environment; it does not fabricate recipe content, diffs or file hashes. Generic network modes have
+profile-specific wording. Fixed recipe review and reason/consent/hash/configuration gates remain unchanged (D249).
 
 Later editing preserves active authority until confirmed activation. Technical changes require committed current
 documents and new preparation; optional assistance uses frozen active clients and only authorized context. Applying

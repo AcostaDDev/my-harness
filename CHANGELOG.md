@@ -31,6 +31,31 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-10-27
+
+Patch release for OT004 (D250). Install the new package after stopping the service and writers; projects,
+configuration and histories are preserved. Interface only: no configuration format, API contract, database schema,
+migration, dependency or recipe change.
+
+### Added
+
+- Guided forms in **Global configuration** for agent environment variables, a pinned client version and tool
+  capabilities, and for reusable profiles, compositions and agent presets. Recipes and any setting without a control
+  are kept exactly and remain editable in TOML.
+- The project's profile configuration editor is also available in the project's **Settings**. It explains what the
+  private copy inherits and edits profile commands (arguments, directory, timeout, environment, JUnit report),
+  command prefixes, protected/sensitive/data-model paths, executor instructions, the optional formatter, installed
+  executable paths, the command environment, authorization and limits, and the project's agents, as far as the
+  project's stage allows.
+- Field checks name what to correct before a preview is requested; save reviews state per project whether a new
+  preparation is required, which project copies only change their global reference and that admitted work keeps its
+  frozen settings.
+
+### Changed
+
+- Tool lists are offered only for a Claude Code executor and explained as explicit CLI tool permissions. Lists made
+  unsupported by a provider or role change stay visible and block validation until removed explicitly.
+
 ## [0.1.5] — 2026-10-27
 
 Patch release for OT005 (D247–D249). Upgrade by installing the new package after stopping the service and writers;

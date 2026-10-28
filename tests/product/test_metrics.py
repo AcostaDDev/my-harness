@@ -26,6 +26,7 @@ from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 from my_harness.storage.metrics import MetricsViews, backfill
 from my_harness.storage.models import AttemptMetricRow, AttemptModelMetricRow, ManagedAttemptRow
 from my_harness.storage.retention import apply_retention, preview_retention
+from conftest import clear_accounting
 from test_backup import db_path, dump_rows
 from test_cli_agents import PROBE, wait_until
 from test_managed import PLAN, VERSIONS, Clock, SyntheticCrash, context, edit, repository, review, submit, worker  # noqa: F401
@@ -404,6 +405,9 @@ def test_backfill_of_old_captures_reads_only_verified_streams(tmp_path, context,
     assert verified[2]['diagnostics'] == ['stream_hash_mismatch'] and verified[2]['total_tokens'] == 1050
     # What was read from a verified stream would not be rebuilt if that stream is retired: the downgrade refuses.
     config = migrated_database[1]
+    with pytest.raises(RuntimeError, match='Accounting records'):
+        command.downgrade(config, '0013_bootstrap')
+    clear_accounting(path)
     with pytest.raises(RuntimeError, match='Stream-derived'):
         command.downgrade(config, '0013_bootstrap')
     command.check(config)
@@ -452,6 +456,7 @@ def test_cli_backfill_requires_an_explicit_existing_database(tmp_path, context, 
 def test_downgrade_without_stream_derived_rows_round_trips(tmp_path, context, repository, migrated_database):
     flow(tmp_path, context, repository)[2].run_once()
     config = migrated_database[1]
+    clear_accounting(db_path(migrated_database))
     command.downgrade(config, '0013_bootstrap')
     command.upgrade(config, 'head')
     command.check(config)

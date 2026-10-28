@@ -24,6 +24,7 @@ from my_harness.core.engine.serialization import dump_history, load_history
 from my_harness.services.managed import LocalSupervisor
 from my_harness.storage.database import make_engine
 from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from conftest import clear_accounting
 
 TASK, PHASE = "P001-T001", "P001"
 IDENTITY = GitIdentity("My Harness", "harness@example.invalid")
@@ -778,6 +779,7 @@ def test_commit_migration_round_trip_keeps_managed_history(task, repository, mig
     job, _ = accept(repository, context)
     before = repository.get_run(job.run_id)
     command.check(migrated_database[1])
+    clear_accounting(migrated_database[0])  # 0028 refuses to drop accounting records; this test is about 0006
     command.downgrade(migrated_database[1], "0005_cli_processes")
     assert "managed_commits" not in inspect(repository.engine).get_table_names()
     command.upgrade(migrated_database[1], "head")

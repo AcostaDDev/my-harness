@@ -14,6 +14,10 @@ executor step, `output-guard-1` stops repetitive streamed text and issues no rec
 while the lease lasts. When ownership is lost, the adapter stops its group and leaves a partial `capture.json`, and
 the closing owner settles the stale `RUNNING` row from independent liveness before closing
 ([D251](../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)).
+The executor intent is also the expected P001 accounting invocation (`preparation_step`, no run or attempt), bound
+through the plan's frozen configuration data; `process_finished` or the closing owner's settlement appends its
+capture in the same transaction. Native command/JUnit/commit steps are never model invocations
+([D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
 
 Recipes prepare the technical stack of a newly created project after its root documentation commit:
 Django ([D119](../DECISIONS.md#d119--django-recipe-preparation)) and TypeScript web

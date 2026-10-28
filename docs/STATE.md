@@ -8,8 +8,10 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The one-off queue is **empty**. **Next: P001-T003**, capture, storage and historical compatibility.
-P001-T001 design and P001-T002's isolated calculator/packaged references are complete; operational integration is pending.
+The one-off queue is **empty**. **P001-T003** (capture, storage and historical compatibility) is complete and delivered
+through `feat/p001-t003-capture-storage` → `develop`/`origin`; **next: P001-T004** (aggregates and API).
+P001-T001 design, P001-T002's calculator/references and P001-T003's native accounting records are complete
+([T003 evidence](phase/P001-T003-capture-storage.md), D259); bounded queries/API and the UI remain pending.
 OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). P001 targets **0.1.9 at phase closure**; P002 targets
 **0.2.0 at its closure** (D253).
@@ -81,7 +83,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - **Engine.** Package `my_harness` with an explicit context per project, frozen task contracts, planning by the
   reviewer or deterministic from `NEXT_STEPS`, the execute → format → validate → review loop with a correction limit,
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
-- **Persistence and recovery.** SQLite schema `0027_profile_proposals` managed by Alembic; idempotent job queue
+- **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (on the T003 topic branch;
+  the published 0.1.8 and the operator installation remain at `0027_profile_proposals`); idempotent job queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
   a verified snapshot (D150). Derived run projection written with each history (D144).
@@ -119,8 +122,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   metrics, without project configuration, a checkout, execution polling or mutation controls
   ([flow](flows/backup-consultation.md)).
 - **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
-  member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
-  `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
+  member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup/upgrade, retention,
+  `metrics-backfill`, explicit accounting operations (T003) and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
   package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md). The repository is public;
   the protected `main` only carries releases merged from `develop` by pull request, and work goes through topic
   branches into `develop` (D235).
@@ -162,8 +165,9 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   freeze active clients/context; they cannot change machine-wide settings or earlier job snapshots.
 - Formats 1–8 preserve entry and hashes. Explicit conversion keeps legacy authority until converted profiles are
   newly prepared and the complete set is confirmed/promoted. Backup format 2 includes configuration versions,
-  working copies, intents and referenced evidence. Query-only restore uses bundle bytes without original roots,
-  clients or execution authority. Schema 0027 has 54 tables; data/flows are documented alongside the implementation.
+  working copies, intents and referenced evidence; T003's format 3 adds verified accounting records and an explicit
+  `backup-upgrade` copy for older bundles. Query-only restore uses bundle bytes without original roots, clients or
+  execution authority. Schema 0028 has 62 tables; data/flows are documented alongside the implementation.
 - Installed first-use checks use fake Claude and Go tools, disposable projects and temporary Git/SQLite on macOS
   ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
   above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
@@ -227,8 +231,13 @@ tariff documents, offline validation and pure `valuation-1` calculation (D258), 
 Final T002 checks: 2283 pytest cases passed, 2 skipped, 29 subtests; 102 focused calculator/core cases, 10 unittest
 cases and 230 frontend tests passed, as did typecheck/build, exact distribution and isolated installed-wheel checks.
 All evidence is synthetic/offline; no real provider or billing validation was performed.
-Planned persistence/flows remain unimplemented; schema 0027, metrics-1 and runtime version 0.1.8 are unchanged.
-**Next: P001-T003**; four implementation/qualification tasks remain. T001 source delivery is
+**P001-T003 is complete as source** (D259): native invocation ledger for managed attempts, preparation executor steps
+and configuration assistance; allowlisted `usage-capture-1` evidence; `local-config-10`/`project-config-2` billing
+profiles dereferenced from frozen revisions; admission-bound valuations; previewed reference import, accounting
+backfill and repricing cohorts; migration `0028_usage_accounting`; format-3 backups and `backup-upgrade`.
+`metrics-1`, existing endpoints/OpenAPI and runtime version 0.1.8 are unchanged. Checks and omissions:
+[T003 evidence](phase/P001-T003-capture-storage.md); source delivered through its topic → `develop`/`origin` merge.
+**Next: P001-T004**; three implementation/qualification tasks remain. T001 source delivery is
 `docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge; T002 uses
 `feat/p001-t002-reference-calculator` → `develop`/`origin`;
 release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.

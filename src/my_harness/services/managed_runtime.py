@@ -327,7 +327,7 @@ class ManagedRuntime:
         """
         from my_harness.core.engine.journal import JournalError
         from my_harness.services import local_config as legacy
-        from my_harness.services.configuration import parse
+        from my_harness.services.configuration import parse, runtime
         from my_harness.services.managed import guarded_writer
         from my_harness.services.project_configuration import ProjectConfiguration
         from my_harness.services.project_preparation import ProjectPreparation
@@ -341,8 +341,7 @@ class ManagedRuntime:
         def refusal(exc, **where):
             code = getattr(exc, 'code', None) or getattr(exc.__context__, 'code', None) or 'configuration_invalid'
             return {'project': None, 'role': None, **where, 'code': code, 'diagnostic': str(exc)[:500]}
-        candidate = copy.deepcopy(parse(setup.repository.document('global', reference['revision']), 'global'))
-        candidate.setdefault('compositions', {})
+        candidate = runtime(parse(setup.repository.document('global', reference['revision']), 'global'))
         try:
             config = legacy._build(candidate, setup.directory / 'global.toml', allow_empty_compositions=True,
                                    editor=True)[0]

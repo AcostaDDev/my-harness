@@ -361,6 +361,19 @@ def test_real_cli_transport_journals_preparation_process_without_run_or_attempt(
     assert result['receipt']['commit'] == result['plan']['base_head']  # No technical content change, no empty commit.
 
 
+def test_preparation_executor_step_is_its_own_accounting_source(generic, monkeypatch):
+    """P001-T003: the executor intent is the expected invocation; native commands are never model invocations."""
+    from my_harness.storage.models import UsageCaptureRow, UsageInvocationRow
+    test_real_cli_transport_journals_preparation_process_without_run_or_attempt(generic, monkeypatch, 'claude')
+    with Session(generic[0].runtime.engine) as session:
+        [invocation] = session.scalars(select(UsageInvocationRow).where(
+            UsageInvocationRow.source_kind == 'preparation_step')).all()
+        assert (invocation.source_kind, invocation.attempt_id, invocation.run_id) == ('preparation_step', None, None)
+        assert invocation.preparation_step_id == invocation.source_id and invocation.launch == 'observed'
+        assert invocation.purpose == 'preparation' and invocation.binding is None
+        assert session.scalar(select(func.count()).select_from(UsageCaptureRow)) == 1
+
+
 def test_expired_preparation_never_replays_and_requires_stopped_owner(generic):
     from datetime import timedelta, datetime, timezone
     service, body, executor, *_ = generic

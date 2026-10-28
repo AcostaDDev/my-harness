@@ -17,6 +17,7 @@ from my_harness.core.engine.prompts import builtin_catalog, dump_catalog, load_c
 from my_harness.storage.chat import ChatRepository
 from my_harness.storage.managed import Conflict
 from my_harness.storage.models import ChatTurnRow, ManagedAttemptRow, ManagedJobRow, PermissionRequestRow
+from conftest import clear_accounting
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import PLAN, VERSIONS, Ports, client, git, make_context, review, settle
 from test_phases import checkout, world  # noqa: F401  (fixtures)
@@ -361,6 +362,7 @@ def test_cli_reviewer_handles_chat_role_read_only_with_either_provider(tmp_path)
 
 def test_migration_roundtrip_and_downgrade_refused_with_chat_runs(migrated_database, world, chat):
     command.check(migrated_database[1])
+    clear_accounting(migrated_database[0])  # 0028 refuses to drop accounting records; this test is about 0012
     command.downgrade(migrated_database[1], '0011_phase_amendments')
     assert 'chat_turns' not in inspect(world.repository.engine).get_table_names()
     command.upgrade(migrated_database[1], 'head')
@@ -369,6 +371,9 @@ def test_migration_roundtrip_and_downgrade_refused_with_chat_runs(migrated_datab
     world.script(answer())
     chat.say(cid)
     world.run()
+    with pytest.raises(RuntimeError, match='Accounting records'):
+        command.downgrade(migrated_database[1], '0011_phase_amendments')
+    clear_accounting(migrated_database[0])
     with pytest.raises(RuntimeError, match='0012'):
         command.downgrade(migrated_database[1], '0011_phase_amendments')
     assert chat.get(cid)['turns'][0]['status'] == 'ANSWERED'

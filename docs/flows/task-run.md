@@ -120,6 +120,13 @@ Stored captures are never replaced and no attempt is marked successful. The run 
 checkout reserved until the existing explicit confirm-stopped action; lease expiry alone proves nothing about a
 writer. `output-guard-1` already appears in repetitive attempt status, stop reason and capture metadata.
 
+P001-T003 ([D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)):
+the transaction that inserts an attempt row also records its expected `usage_invocations` row with the billing binding
+dereferenced from the job's sealed configuration revision. The transaction that records the attempt result (or the
+explicit confirm-stopped interruption) also appends its allowlisted `usage-capture-1`, components and, with a frozen
+profile, the admission-bound valuation. A fenced owner cannot write either. Accounting never retries inference,
+settles a process or certifies that a writer stopped ([accounting flow](metrics-accounting.md)).
+
 ## Reading a run
 
 - `GET /runs/{id}` returns the summary, the stops, `history.cycle_count` and `history.latest_cycle`; cycles are read

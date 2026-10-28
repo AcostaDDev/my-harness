@@ -22,15 +22,17 @@ renewal/journal follow-up was released and installed as **0.1.8** through
 [PR #7](https://github.com/AcostaDDev/my-harness/pull/7); its draft/public downloads and installation were verified
 ([evidence](phase/OT007-task-run-lease.md)). The one-off queue is empty; P001-T001 is complete as design/inventory,
 P001-T002 as an isolated calculator/reference library and P001-T003 as native capture/storage, integrated into
-`develop`; P001-T004 is next. No production retry was made.
+`develop`; P001-T004 is complete and integrated into `develop`, and P001-T005 is next. No production
+retry was made.
 See [OT005 release evidence](phase/OT005-preparation-tool-links.md); one-off deliveries are separate from Metrics work.
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex
 clients; keep the accounting concepts extensible without adding another execution provider.
 **Status:** active phase; T001 design/inventory, T002 pure calculator/references and T003 native capture/storage,
-billing binding, explicit cohorts and format-3 archives complete and integrated into `develop`; three tasks in
-[NEXT_STEPS](NEXT_STEPS.md), starting with P001-T004. Bounded queries/API and the UI remain pending.
+billing binding, explicit cohorts and format-3 archives complete and integrated into `develop`; remaining tasks in
+[NEXT_STEPS](NEXT_STEPS.md). T004's bounded read-only queries/API are complete as source
+([evidence](phase/P001-T004-aggregates-api.md), D262) and the controls/UI (T005) and qualification (T006) remain.
 [T002 evidence](phase/P001-T002-reference-calculator.md), D258; [T003 evidence](phase/P001-T003-capture-storage.md), D259. [T001](phase/P001-T001-accounting-contract.md) and D254–D257
 settle the technical contract, source limits and synthetic acceptance matrix; data/flows remain labelled planned
 until their implementing tasks. D234 still owns the six-task plan.

@@ -826,6 +826,87 @@ def managed_router(runtime: ManagedRuntime):
         """H6.2 E6: evolution of the tests. Each validation cycle of the tasks, OK/KO, by descending key."""
         return call(metrics().validations, metrics_scope(project_id, phase, task), dimension, offset, limit)
 
+    # --- P001-T004 (D262): invocation accounting (read-only; never prices, backfills or launches) -------------
+    from datetime import timezone
+    from pydantic import AwareDatetime
+    from my_harness.api.schemas import (
+        AccountingCohortRead, AccountingDimension, AccountingGroupsRead, AccountingInvocationDetailRead,
+        AccountingInvocationsRead, AccountingLaunch, AccountingModelKind, AccountingOrder, AccountingSource,
+        AccountingSummaryRead, AccountingTasksRead, AccountingValuationRead, AccountingWork,
+    )
+    from my_harness.storage.accounting_views import AccountingViews
+
+    def utc_text(value):
+        return value.astimezone(timezone.utc).isoformat(timespec='microseconds') if value is not None else None
+
+    def accounting_query(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None,
+                         provider: Scoped = None, role: Scoped = None, purpose: Scoped = None,
+                         source_kind: AccountingSource | None = None, outcome: Scoped = None,
+                         launch: AccountingLaunch | None = None, requested_model: Scoped = None,
+                         effective_model: Scoped = None, effective_model_kind: AccountingModelKind | None = None,
+                         work: Annotated[list[AccountingWork] | None, Query(max_length=6)] = None,
+                         started_from: AwareDatetime | None = None, started_before: AwareDatetime | None = None,
+                         cohort: Scoped = None):
+        """Filters of every accounting read; `cohort` (id or name) replaces the admission-bound selection."""
+        filters = {**metrics_scope(project_id, phase, task), 'provider': provider, 'role': role,
+                   'purpose': purpose, 'source_kind': source_kind, 'outcome': outcome, 'launch': launch,
+                   'requested_model': requested_model, 'effective_model': effective_model,
+                   'effective_model_kind': effective_model_kind, 'work': work,
+                   'started_from': utc_text(started_from), 'started_before': utc_text(started_before)}
+        return filters, cohort
+
+    AccountingQuery = Annotated[tuple, Depends(accounting_query)]
+
+    def accounting():
+        return AccountingViews(runtime.repository.engine)
+
+    @router.get('/accounting/summary', response_model=AccountingSummaryRead, operation_id='managed_accounting_summary')
+    def accounting_summary(query: AccountingQuery):
+        """Coverage, tokens, cache hit, wall throughput and compatible amount buckets of the scope."""
+        filters, cohort = query
+        return call(accounting().summary, filters, cohort)
+
+    @router.get('/accounting/groups', response_model=AccountingGroupsRead, operation_id='managed_accounting_groups')
+    def accounting_groups(dimension: AccountingDimension, query: AccountingQuery, order: AccountingOrder = 'invocations',
+                          offset: Offset = 0, limit: Limit = 30):
+        """Totals per group; each invocation enters exactly one group (mixed/unknown models are visible groups)."""
+        filters, cohort = query
+        return call(accounting().groups, filters, dimension, offset, limit, cohort=cohort, order=order)
+
+    @router.get('/accounting/tasks', response_model=AccountingTasksRead, operation_id='managed_accounting_tasks')
+    def accounting_tasks(query: AccountingQuery):
+        """Task spend per bucket against attempted and verified-COMMITTED tasks, with explicit denominators."""
+        filters, cohort = query
+        return call(accounting().tasks, filters, cohort)
+
+    @router.get('/accounting/invocations', response_model=AccountingInvocationsRead,
+                operation_id='managed_accounting_invocations')
+    def accounting_invocations(query: AccountingQuery, offset: Offset = 0, limit: Limit = 30):
+        """Expected invocations by UTC start, including those without a capture or a valuation."""
+        filters, cohort = query
+        return call(accounting().invocations, filters, offset, limit, cohort)
+
+    @router.get('/accounting/invocations/{invocation_id}', response_model=AccountingInvocationDetailRead,
+                operation_id='managed_accounting_invocation')
+    def accounting_invocation(invocation_id: str, cohort: Scoped = None):
+        """One invocation: binding, latest allowlisted capture and its alternative component views."""
+        runtime.ready()
+        return call(accounting().invocation, invocation_id, cohort)
+
+    @router.get('/accounting/invocations/{invocation_id}/valuations', response_model=Page[AccountingValuationRead],
+                operation_id='managed_accounting_valuations')
+    def accounting_valuations(invocation_id: str, offset: Offset = 0, limit: Limit = 10):
+        """Every immutable valuation with lines, reference identity, discrepancy and cohort memberships."""
+        runtime.ready()
+        return call(accounting().valuations, invocation_id, offset, limit)
+
+    @router.get('/accounting/cohorts', response_model=Page[AccountingCohortRead],
+                operation_id='managed_accounting_cohorts')
+    def accounting_cohorts(offset: Offset = 0, limit: Limit = 30):
+        """Named backfill/repricing cohorts, newest first; a BUILDING cohort yields no full amount."""
+        runtime.ready()
+        return call(accounting().cohorts, offset, limit)
+
     # --- H4.1: contextual chat -----------------------------------------------------------------
 
     from my_harness.api.schemas import (

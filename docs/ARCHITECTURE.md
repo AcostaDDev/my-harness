@@ -341,11 +341,12 @@ SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm
 are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
 version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.
 
-## 12. P001 accounting architecture (capture/storage implemented; queries and UI pending)
+## 12. P001 accounting architecture (capture/storage and queries/API implemented; UI pending)
 
 [T001 contract](phase/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
 storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
-`terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 adds bounded queries/API, T005 controls/UI.
+`terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 added bounded read-only queries/API
+([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005 adds controls/UI.
 
 - **Pure core.** `core/engine/metric_references.py` / `valuation.py` (T002) validate pinned canonical references and
   calculate exact Decimal lines. `core/engine/usage_capture.py` builds the allowlisted `usage-capture-1` document from
@@ -365,5 +366,10 @@ storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-froz
 - **Archives.** Retention removes authorized stream bytes only. `storage/accounting_backup.py` verifies all accounting
   digests in the same snapshot for backup format 3; `backup-upgrade` migrates a copy of an older-schema bundle into a
   new query-only bundle. Consultation needs no original roots, clients, network or configuration authority.
+- **Queries/API.** `storage/accounting_views.py` (`accounting-aggregate-1`) selects one SQL row per invocation with
+  its latest capture and the valuation of an explicit policy (original admission valuation or one named cohort) and
+  accumulates coverage, token sums and exact decimal amount buckets in Python, constant memory per group; it never
+  decodes histories, prices or writes. `api/managed.py` exposes `GET /api/managed/accounting/{summary,groups,tasks,
+  invocations,cohorts}` and invocation detail/valuations; OpenAPI and generated client types include them.
 
 See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounting flow](flows/metrics-accounting.md).

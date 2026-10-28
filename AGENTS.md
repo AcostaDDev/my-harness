@@ -42,6 +42,23 @@ agents; its work language is English.
 
 ## Commands (from the root; offline after the first installation)
 
+Prefer the quiet wrappers ([D260](docs/DECISIONS.md#d260--quiet-development-checks-and-economical-agent-workflow)).
+They print one line per suite plus failing IDs with their first error line, keep the full output in
+`.local/check/<suite>.log`, and exit nonzero on any failure:
+
+```sh
+scripts/check tests/product/test_x.py   # focused pytest only; options after `--`, e.g. -- -k name -n 0
+scripts/check                           # unittest, alembic check on a temporary SQLite, full pytest
+scripts/check --frontend                # adds the Node tests and the frontend build (which runs tsc)
+scripts/check-docs                      # local links/anchors, fences, en/es keys, DDBB head and table count
+```
+
+To save tokens: run the cheapest sufficient check first (focused paths, then the full suite only for shared code or
+at task closure), and inspect a log with `grep`/a line range instead of re-running verbosely. Read source and long
+documents by range or after `grep -n`, not whole. Do not write ad hoc link checkers; extend `scripts/check-docs`.
+
+The wrapped commands (direct `alembic check` uses `.local/harness.sqlite3`):
+
 ```sh
 python3 -m unittest discover -s tests -p 'test_*.py'
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q   # parallel (xdist); -n 0 serially

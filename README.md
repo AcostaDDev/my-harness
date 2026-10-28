@@ -428,6 +428,11 @@ npm --prefix frontend run check
 npm --prefix frontend run build
 ```
 
+`scripts/check` runs the same suites with compact output: one line per suite, failing IDs with their first error
+line, and the full log in `.local/check/<suite>.log`. Given paths, it runs only pytest over them. `--frontend` adds the
+Node tests and the build, and `alembic check` uses a temporary SQLite database. `scripts/check-docs` checks local
+Markdown links and anchors, code fences, en/es catalog keys and the schema head stated in `docs/DDBB-DIAGRAM.md`.
+
 After changing an API contract, regenerate the client types (never edit them by hand):
 
 ```sh

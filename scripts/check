@@ -1,0 +1,4 @@
+#!/bin/sh
+# Quiet development checks with compact output; see scripts/check.py. Offline.
+cd "$(dirname "$0")/.." || exit 1
+exec python3 scripts/check.py "$@"

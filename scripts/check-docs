@@ -1,0 +1,4 @@
+#!/bin/sh
+# Documentation links, anchors, fences, catalog keys and DDBB head; see scripts/check_docs.py. Offline.
+cd "$(dirname "$0")/.." || exit 1
+exec python3 scripts/check_docs.py "$@"

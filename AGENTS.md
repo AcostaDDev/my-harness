@@ -32,7 +32,9 @@ agents; its work language is English.
   completion separately from integration, distribution and installation; do not drop pending delivery (D242).
 - Work on a topic branch from `develop` (`<kind>/<topic>`); `main` only receives release merges. Check the current
   branch at the start of a session
-  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
+  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)). One-off tasks are the
+  exception: they branch from the latest release on `main`, never from `develop`
+  ([D261](docs/DECISIONS.md#d261--one-off-tasks-branch-from-the-latest-release-not-from-develop)).
 - Never present as implemented what is only designed. Frozen histories, snapshots, catalogs and fingerprinted
   recipe sources are not rewritten.
 - When finishing: relevant checks, reviewed diff and current STATE/NEXT_STEPS/ONE_OFF_TASKS. Record durable

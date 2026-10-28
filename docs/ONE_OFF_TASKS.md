@@ -34,5 +34,7 @@ Before product edits, identify the phase/task or one-off owner and agree whether
 or needs a separate distribution. Record its branch, target version/route and outstanding delivery steps (D242).
 Source completion, integration into `develop`, release merge into `main`, distribution publication and local
 installation are different states. Keep outstanding agreed delivery in this queue until completed or explicitly
-deferred with a recorded destination. D239's patch-per-one-off rule and D235's branch/release route apply.
+deferred with a recorded destination. D239's patch-per-one-off rule applies. One-off branches start from the latest
+release on `main` and reach `main` through their own release, then `main` is merged back into `develop`; they are
+never merged into `develop` alone, which carries unreleased phase work (D261).
 Recording a release target does not authorize a commit, merge, push, publication, service restart or installation.

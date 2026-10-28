@@ -1653,3 +1653,18 @@ managed-project isolation is unchanged: adapters still disable client hooks and 
 projects keep the engine's deterministic, journaled formatter/validation/JUnit steps. The new scripts are not in
 `BUNDLE_SCRIPTS` or the wheel/sdist, so delivery is source-only into `develop` with no patch release (D239 applies
 to product changes). Evidence: [OT008](phase/OT008-development-checks.md).
+
+## D261 — One-off tasks branch from the latest release, not from `develop`
+
+Status: accepted at the owner's request on 2026-10-28. Refines D235/D237/D239/D242 for one-off tasks.
+
+`develop` carries phase work that is not yet released. A one-off task therefore never branches from or merges into
+`develop` alone. Its topic branch (`<kind>/<topic>`) starts from the latest release tag on `main`. A one-off that
+changes the product is released from that branch through `main` as its own patch version (D239), and `main` is
+then merged back into `develop`, as D235 already does for fixes to a published version. A one-off that changes
+nothing released (development tooling, documentation only) waits on its branch and reaches `main` with the next
+release. Its delivery route is recorded and confirmed before edits (D242) against this rule.
+
+OT008 was registered with the route topic → `develop` and was merged there (`eb80123`, pushed) before this rule was
+written down. It is development tooling outside the distribution, so it stays in `develop` and reaches `main` with
+the P001 closure release (0.1.9). Its history is not rewritten or reverted.

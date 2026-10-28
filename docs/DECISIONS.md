@@ -1668,3 +1668,40 @@ release. Its delivery route is recorded and confirmed before edits (D242) agains
 OT008 was registered with the route topic → `develop` and was merged there (`eb80123`, pushed) before this rule was
 written down. It is development tooling outside the distribution, so it stays in `develop` and reaches `main` with
 the P001 closure release (0.1.9). Its history is not rewritten or reverted.
+
+## D262 — Bounded accounting aggregates and the read-only accounting API
+
+Status: accepted implementation detail in P001-T004, within D254–D257 and the T001 §8 aggregation contract; controls
+and UI remain T005.
+
+`storage/accounting_views.py` reads the T003 ledger only. One SQL row per native invocation joins its latest
+append-only capture (the newest evidence, as repricing already selects) and the valuation(s) of one explicit
+selection policy: the original admission-bound valuation (earliest `admission` row) by default, or the frozen
+membership of one named cohort. In a cohort analysis non-members in the filters are counted as `outside_selection`
+only; a `BUILDING` cohort yields known subtotals but no full amount. Run histories are never decoded; nothing prices,
+backfills, launches a client or writes, so the same reads work on a restored query-only archive.
+
+Derived per invocation: provider (the agent's frozen `<agent>_provider`, else the capture client), effective model
+from the selected evidence components (`reported` when every component names the same model, `mixed` for several,
+`unknown` otherwise; mixed/unknown are visible groups, so each invocation enters exactly one group), UTC start day,
+and work class: `task_first_pass`, `task_rework` (a later run of the same task, or the run's second execution
+and every attempt after it), `phase`, `conversation`, `setup` (preparation and configuration assistance) or `other`. A phase
+filter without an explicit work selection uses the phase-work default (conversations and setup excluded) and names it
+in the response. Filters: provider, role, purpose, source, outcome, launch, requested/effective model and kind, work
+and UTC start `[from, to)`; root/phase/task come from the existing project scope.
+
+Coverage counts expected invocations (not-invoked excluded and shown), launch states, captures, complete/partial/
+absent usage, complete/incomplete/unsupported/unpriced valuations and grouped unpriced reasons. Amount buckets add
+only identical unit/platform/product/scheme/basis/counterfactual/retrospective valuations as exact decimal strings;
+`amount` is null unless every valuation in the bucket is complete, no expected invocation is unpriced and the
+selection is complete, while `known_subtotal` always shows what is known. Token sums are per category with
+contributor counts and partial contributors; Codex uncached input is input minus cache reads. Cache hit and wall
+throughput use only complete usage with every needed quantity known and report the excluded count. Task indicators
+divide the bucket total of every attempted task invocation by verified-COMMITTED tasks (null while any task's
+commit is only an `INTENT`) and by attempted tasks, rounding half-even to 12 places, with committed-only work
+separate. Groups and invocation pages are offset-paginated over a stable order; pagination never changes totals.
+
+API (additive, `accounting-aggregate-1`): `GET /api/managed/accounting/{summary,groups,tasks,invocations,cohorts}`,
+`/accounting/invocations/{id}` and `/accounting/invocations/{id}/valuations` (lines, reference identity, discrepancy
+and cohort memberships). Existing `/metrics/*` endpoints, `metrics-1` floats and frozen phase summaries are unchanged.
+Evidence: [P001-T004](phase/P001-T004-aggregates-api.md).

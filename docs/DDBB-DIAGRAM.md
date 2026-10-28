@@ -991,7 +991,8 @@ Alembic `0028_usage_accounting` (P001-T003, [D254–D257](DECISIONS.md#d254--nat
 [D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)) adds eight tables;
 current head `0028_usage_accounting`, 62 tables. The migration only creates them: it never backfills or reprices,
 and its downgrade refuses while any accounting row exists. Existing metrics, histories and configuration bytes are
-unchanged. Bounded queries/API over these rows belong to T004 ([flow](flows/metrics-accounting.md)).
+unchanged. T004's bounded read-only queries/API (`storage/accounting_views.py`, D262) read these rows without a schema
+change ([flow](flows/metrics-accounting.md)).
 
 ```mermaid
 erDiagram

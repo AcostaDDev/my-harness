@@ -1524,6 +1524,368 @@ class MetricsSummaryRead(BaseModel):
     stops: StopsRead
 
 
+# --- P001-T004 (D262): invocation accounting, read-only `accounting-aggregate-1` ---------------
+
+AccountingWork = Literal['task_first_pass', 'task_rework', 'phase', 'conversation', 'setup', 'other']
+AccountingDimension = Literal['provider', 'effective_model', 'requested_model', 'role', 'purpose', 'work',
+                              'source_kind', 'root', 'phase', 'task', 'day', 'outcome', 'launch']
+AccountingOrder = Literal['invocations', 'key']
+AccountingSource = Literal['managed_attempt', 'preparation_step', 'configuration_assistance']
+AccountingLaunch = Literal['pending', 'not_invoked', 'observed', 'unknown_execution']
+AccountingModelKind = Literal['reported', 'mixed', 'unknown']
+DecimalText = Annotated[str, Field(description='Exact decimal string; never a binary float.')]
+
+
+class AccountingFiltersRead(BaseModel):
+    root: str | None = None
+    phase: str | None = None
+    task: str | None = None
+    provider: str | None = None
+    role: str | None = None
+    purpose: str | None = None
+    source_kind: AccountingSource | None = None
+    outcome: str | None = None
+    launch: AccountingLaunch | None = None
+    requested_model: str | None = None
+    effective_model: str | None = None
+    effective_model_kind: AccountingModelKind | None = None
+    work: list[AccountingWork] | None = Field(default=None, description='With a phase and no explicit work, '
+                                              'the phase-work default: conversations and setup are excluded.')
+    started_from: str | None = Field(default=None, description='UTC invocation start, inclusive.')
+    started_before: str | None = Field(default=None, description='UTC invocation start, exclusive.')
+
+
+class AccountingCohortRead(BaseModel):
+    id: str
+    name: str
+    kind: Literal['backfill', 'repricing']
+    status: Literal['BUILDING', 'CLOSED']
+    expected: int
+    built: int
+    selection_digest: str
+    scenario_digest: str | None
+    reference_set_digest: str | None
+    basis: str | None
+    retrospective: bool | None
+    created_at: str
+    closed_at: str | None
+
+
+class AccountingSelectionRead(BaseModel):
+    policy: Literal['admission', 'cohort'] = Field(description='Original admission-bound valuation per invocation, '
+                                                   'or the frozen membership of one named cohort.')
+    cohort: AccountingCohortRead | None
+    complete: bool = Field(description='False while the cohort is BUILDING: no full amount is available.')
+
+
+class AccountingLaunchCountsRead(BaseModel):
+    pending: int
+    not_invoked: int
+    observed: int
+    unknown_execution: int
+
+
+class AccountingUsageCountsRead(BaseModel):
+    complete: int
+    partial: int
+    absent: int
+
+
+class AccountingValuationCountsRead(BaseModel):
+    complete: int
+    incomplete: int
+    unsupported: int
+    unpriced: int
+
+
+class AccountingCoverageRead(BaseModel):
+    invocations: int = Field(description='Invocation rows in scope and selection, not-invoked included.')
+    expected: int = Field(description='Invocations except not-invoked: the denominator of usage and spend.')
+    launch: AccountingLaunchCountsRead
+    captured: int
+    usage: AccountingUsageCountsRead
+    valuation: AccountingValuationCountsRead
+    unpriced_reasons: dict[str, int]
+    outside_selection: int | None = Field(description='Cohort policy: invocations in the filters but not members.')
+    full_scope_priced: bool
+
+
+class AccountingTokenSumRead(BaseModel):
+    sum: int | None = Field(description='Null when no invocation contributes: absence, not zero.')
+    invocations: int
+    partial: int = Field(description='Contributing invocations whose usage is a partial subtotal.')
+
+
+class AccountingCacheHitRead(BaseModel):
+    cache_read_tokens: int
+    input_tokens: int = Field(description='Uncached input + cache reads + known cache writes.')
+    invocations: int = Field(description='Complete usage with every input category known.')
+    excluded: int
+    ratio: float | None
+
+
+class AccountingThroughputRead(BaseModel):
+    output_tokens: int
+    wall_ms: int
+    invocations: int = Field(description='Complete usage with output and a positive measured wall duration.')
+    excluded: int
+    output_tokens_per_wall_second: float | None = Field(description='Wall throughput, not generation speed.')
+
+
+class AccountingAmountRead(BaseModel):
+    unit: str
+    platform: str | None
+    product: str | None
+    scheme: str
+    basis: str
+    counterfactual: bool
+    retrospective: bool
+    invocations: int
+    complete: int
+    incomplete: int
+    unsupported: int
+    denominator: int = Field(description='Expected invocations of the scope or group.')
+    amount: DecimalText | None = Field(description='Null unless every valuation of this bucket is complete, no '
+                                       'expected invocation is unpriced and the selection is complete.')
+    known_subtotal: DecimalText | None = Field(description='Complete amounts plus incomplete known subtotals.')
+    reasons: dict[str, int]
+    discrepancies: dict[str, int]
+
+
+class AccountingTotalsRead(BaseModel):
+    coverage: AccountingCoverageRead
+    tokens: dict[str, AccountingTokenSumRead]
+    cache_hit: AccountingCacheHitRead
+    wall_throughput: AccountingThroughputRead
+    amounts: list[AccountingAmountRead] = Field(description='Only identical unit/platform/product/scheme/basis/'
+                                                'counterfactual/retrospective valuations are added.')
+
+
+class AccountingSummaryRead(AccountingTotalsRead):
+    format: Literal['accounting-aggregate-1']
+    filters: AccountingFiltersRead
+    selection: AccountingSelectionRead
+
+
+class AccountingGroupRead(AccountingTotalsRead):
+    key: str | None
+    key_kind: Literal['value', 'unknown', 'reported', 'mixed']
+    root: str | None = Field(description='Phase and task groups are keyed within their root (and phase).')
+    phase_code: str | None
+
+
+class AccountingGroupsRead(BaseModel):
+    format: Literal['accounting-aggregate-1']
+    dimension: AccountingDimension
+    order: AccountingOrder
+    filters: AccountingFiltersRead
+    selection: AccountingSelectionRead
+    items: list[AccountingGroupRead]
+    offset: int
+    next_offset: int | None
+
+
+class AccountingTaskCountsRead(BaseModel):
+    attempted: int
+    committed: int = Field(description='Attempted tasks with a verified COMMITTED acceptance.')
+    acceptance_unknown: int
+    not_committed: int
+
+
+class AccountingAmountPairRead(BaseModel):
+    amount: DecimalText | None
+    known_subtotal: DecimalText | None
+
+
+class AccountingIndicatorRead(BaseModel):
+    unit: str
+    platform: str | None
+    product: str | None
+    scheme: str
+    basis: str
+    counterfactual: bool
+    retrospective: bool
+    total: AccountingAmountPairRead = Field(description='All attempted task work: revisions, reviews, retries.')
+    committed_work: AccountingAmountPairRead = Field(description='Work of committed tasks only.')
+    per_committed_task: DecimalText | None = Field(description='Total / committed tasks, half-even to 12 places.')
+    per_attempted_task: DecimalText | None
+    committed_work_per_committed_task: DecimalText | None
+
+
+class AccountingTasksRead(BaseModel):
+    format: Literal['accounting-aggregate-1']
+    filters: AccountingFiltersRead
+    selection: AccountingSelectionRead
+    tasks: AccountingTaskCountsRead
+    coverage: AccountingCoverageRead
+    committed_coverage: AccountingCoverageRead
+    indicators: list[AccountingIndicatorRead]
+
+
+class AccountingValuationBriefRead(BaseModel):
+    id: str
+    origin: Literal['admission', 'backfill', 'repricing']
+    status: Literal['complete', 'incomplete', 'unsupported']
+    unit: str
+    platform: str | None
+    product: str | None
+    scheme: str
+    basis: str
+    counterfactual: bool
+    retrospective: bool
+    amount: DecimalText | None
+    known_subtotal: DecimalText | None
+    reasons: list[str]
+    warnings: list[str]
+    discrepancy: str | None = Field(description='Comparison status against the client-reported estimate.')
+
+
+class AccountingCaptureRefRead(BaseModel):
+    id: int
+    version: str
+    source: str
+    recorded_at: str
+
+
+class AccountingInvocationUsageRead(BaseModel):
+    coverage: Literal['complete', 'partial', 'absent'] | None = Field(description='Null when not invoked.')
+    partition: str | None
+    delegation: str | None
+    charges_complete: bool | None
+    reasons: list[str]
+    tokens: dict[str, int | None]
+
+
+class AccountingInvocationRead(BaseModel):
+    id: str
+    source_kind: AccountingSource
+    source_id: str
+    run_id: str | None
+    attempt_id: str | None
+    preparation_id: str | None
+    preparation_step_id: str | None
+    operation_id: str | None
+    request_id: str | None
+    root: str | None
+    project_id: str | None
+    phase_code: str | None
+    task_id: str | None
+    purpose: str
+    work: AccountingWork
+    role: str
+    agent: str | None
+    provider: str | None
+    requested_model: str | None
+    requested_effort: str | None
+    effective_model: str | None
+    effective_model_kind: AccountingModelKind
+    launch: AccountingLaunch
+    outcome: str | None
+    started_at: str
+    finished_at: str | None
+    wall_ms: int | None
+    capture: AccountingCaptureRefRead | None = Field(description='Latest append-only capture.')
+    usage: AccountingInvocationUsageRead
+    in_selection: bool
+    valuations: list[AccountingValuationBriefRead] = Field(description='Valuations chosen by the selection policy.')
+    unpriced_reason: str | None
+
+
+class AccountingInvocationsRead(BaseModel):
+    format: Literal['accounting-aggregate-1']
+    filters: AccountingFiltersRead
+    selection: AccountingSelectionRead
+    items: list[AccountingInvocationRead]
+    offset: int
+    next_offset: int | None
+
+
+class AccountingComponentRead(BaseModel):
+    key: str
+    grain: str
+    parent_key: str | None
+    inclusion: str | None
+    reported_model: str | None
+    model_source: str | None
+    semantics: str | None
+    coverage: str
+    input_tokens: int | None
+    cache_read_tokens: int | None
+    cache_write_tokens: int | None
+    write_5m: int | None
+    write_1h: int | None
+    output_tokens: int | None
+    reasoning_tokens: int | None
+    reasons: list[str]
+
+
+class AccountingCaptureDocumentRead(BaseModel):
+    digest: str
+    document: dict[str, Any] = Field(description='Allowlisted capture: no prompts, argv, environment or paths.')
+    evidence: dict[str, Any] | None
+    evidence_digest: str | None
+
+
+class AccountingInvocationDetailRead(AccountingInvocationRead):
+    selection: AccountingSelectionRead
+    versions: dict[str, Any]
+    binding: dict[str, Any] | None
+    binding_sha256: str | None
+    captures: int
+    capture_document: AccountingCaptureDocumentRead | None
+    components: list[AccountingComponentRead] = Field(description='Alternative views; never added together.')
+
+
+class AccountingReferenceRead(BaseModel):
+    id: str
+    kind: str
+    format: str
+    source: str
+    provider: str | None
+    product: str | None
+    model: str | None
+    observed_at: str | None
+
+
+class AccountingLineRead(BaseModel):
+    number: int
+    component_key: str
+    category: str
+    quantity: int
+    rate: dict[str, Any]
+    factors: list[Any]
+    included_adjustments: list[Any]
+    tariff_reference: str
+    identity_reference: str | None
+    rate_case: str
+    exact_amount: DecimalText
+
+
+class AccountingCohortRefRead(BaseModel):
+    id: str
+    name: str
+
+
+class AccountingValuationRead(AccountingValuationBriefRead):
+    capture_id: int
+    normalization: str
+    calculator: str
+    profile_digest: str
+    reference_set_digest: str
+    scenario_digest: str
+    evidence_digest: str
+    scenario: dict[str, Any]
+    exact_sum: DecimalText | None
+    rounding_adjustment: DecimalText | None
+    selected_components: list[Any]
+    discrepancy_detail: dict[str, Any] | None
+    supersedes: str | None
+    recorded_at: str
+    cohorts: list[AccountingCohortRefRead]
+    lines: list[AccountingLineRead]
+    references: list[AccountingReferenceRead]
+
+
 # --- H6.2 E2: project registry (D054/D076) -----------------------------------------------
 
 PermissionLayer = Literal['global', 'project', 'contract', 'provider']

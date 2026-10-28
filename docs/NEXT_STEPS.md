@@ -1,7 +1,8 @@
 # P001 — Metrics Records (target: 0.1.9 at phase closure)
 
-**Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; three tasks pending.
-**Next phase task: P001-T004 — Aggregates and API.**
+**Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; T004 aggregates/API
+complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; two tasks pending.
+**Next phase task: P001-T005 — Billing/reference controls and metrics UI.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty. The queue is **empty**: OT008 (development checks, D260) was
@@ -23,7 +24,7 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T004.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+**Next: P001-T005.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
 complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
 
 The sections below retain each task's contract and distinguish completed work from pending integration. T001 settled
@@ -35,7 +36,8 @@ There is no task release or runtime version bump; release qualification/publicat
 T002 uses `feat/p001-t002-reference-calculator` → `develop`/`origin` with the same explicit task delivery authorization;
 its [evidence](phase/P001-T002-reference-calculator.md) separates source integration from future distribution.
 T003 used `feat/p001-t003-capture-storage` → `develop`/`origin` with the same explicit owner authorization
-([evidence](phase/P001-T003-capture-storage.md)).
+([evidence](phase/P001-T003-capture-storage.md)). T004 used `feat/p001-t004-aggregates-api` → `develop`/`origin` with
+the same explicit owner authorization ([evidence](phase/P001-T004-aggregates-api.md)).
 
 ## Shared constraints
 
@@ -160,7 +162,9 @@ backup/retention and migration tests; run `alembic check` only against a prepare
 
 ## P001-T004 — Aggregates and API
 
-**Status:** pending; next task.
+**Status:** complete as source (bounded read-only `accounting-aggregate-1` queries and `GET /api/managed/accounting/*`;
+OpenAPI/types regenerated; delivered through its topic → `develop`/`origin` merge). **Evidence:** [aggregates/API checks](phase/P001-T004-aggregates-api.md),
+D262. The criteria below are retained as the completed task contract.
 **Depends on:** completed T003 and its stable records.
 **Objective:** expose bounded, explainable usage and cost analysis by provider/model and work context.
 **Allowed paths:** `src/my_harness/storage/metrics.py`, relevant projection/query modules in
@@ -188,7 +192,7 @@ compatibility and no full-history reads; check generated types using the existin
 
 ## P001-T005 — Billing/reference controls and metrics UI
 
-**Status:** pending.
+**Status:** pending; next task (consumes the T004 `/accounting/*` API).
 **Depends on:** completed T004 and T001's configuration/reference workflow.
 **Objective:** let the operator select the billing basis and inspect detailed consumption, valuations and evidence.
 **Allowed paths:** `frontend/src/**`, `frontend/tests/**`, relevant configuration/API/service/storage modules to

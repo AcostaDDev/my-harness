@@ -13,9 +13,10 @@ source-only through `chore/ot008-development-checks` → `develop`/`origin`, wit
 with the P001 closure (D261: later one-offs branch from the latest release, not `develop`). Develop with
 `scripts/check` and `scripts/check-docs` ([evidence](phase/OT008-development-checks.md)). **P001-T003**
 (capture, storage and historical compatibility) is complete and delivered through `feat/p001-t003-capture-storage`
-→ `develop`/`origin`; **next phase task: P001-T004** (aggregates and API).
+→ `develop`/`origin`. **P001-T004** (aggregates and API) is complete and delivered through `feat/p001-t004-aggregates-api`
+→ `develop`/`origin` ([T004 evidence](phase/P001-T004-aggregates-api.md), D262). **Next phase task: P001-T005** (billing/reference controls and metrics UI).
 P001-T001 design, P001-T002's calculator/references and P001-T003's native accounting records are complete
-([T003 evidence](phase/P001-T003-capture-storage.md), D259); bounded queries/API and the UI remain pending.
+([T003 evidence](phase/P001-T003-capture-storage.md), D259); the UI and phase qualification remain pending.
 OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). P001 targets **0.1.9 at phase closure**; P002 targets
 **0.2.0 at its closure** (D253).
@@ -241,7 +242,13 @@ profiles dereferenced from frozen revisions; admission-bound valuations; preview
 backfill and repricing cohorts; migration `0028_usage_accounting`; format-3 backups and `backup-upgrade`.
 `metrics-1`, existing endpoints/OpenAPI and runtime version 0.1.8 are unchanged. Checks and omissions:
 [T003 evidence](phase/P001-T003-capture-storage.md); source delivered through its topic → `develop`/`origin` merge.
-**Next: P001-T004**; three implementation/qualification tasks remain. T001 source delivery is
+**P001-T004 is complete as source** (D262): `storage/accounting_views.py` and `GET /api/managed/accounting/{summary,
+groups,tasks,invocations,cohorts}` plus invocation detail/valuations read the ledger with an explicit selection policy
+(original admission valuation or one named cohort), separate compatible amount buckets, coverage with unpriced reasons,
+effective/requested model and work-class dimensions and task indicators with explicit denominators; reads never
+price, write or decode histories. OpenAPI/types are regenerated; `/metrics/*` is unchanged
+([T004 evidence](phase/P001-T004-aggregates-api.md)); source delivered through its topic → `develop`/`origin` merge.
+**Next: P001-T005**; two implementation/qualification tasks remain. T001 source delivery is
 `docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge; T002 uses
 `feat/p001-t002-reference-calculator` → `develop`/`origin`;
 release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.

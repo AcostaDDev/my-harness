@@ -323,13 +323,14 @@ prepared converted profiles before activation. Configuration backup includes byt
 restore reads its bundle without original paths or clients and rejects editing, preparation, assistance and activation.
 See the [configuration flow](flows/configuration-setup.md) and [README](../README.md#configure).
 
-## 13. P001 accounting design (capture/storage implemented; queries and UI pending)
+## 13. P001 accounting design (capture/storage and queries/API implemented; UI pending)
 
 F13's visible statistics still use `metrics-1` per-attempt metrics. [D254–D257](DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence)
 and the [T001 contract](phase/P001-T001-accounting-contract.md) define the additions for T002–T005.
 T002's [pure library/references](phase/P001-T002-reference-calculator.md) (D258) and T003's
 [native capture, records, billing binding, explicit operations and format-3 archives](phase/P001-T003-capture-storage.md)
-(D259) are implemented. Bounded accounting queries/API (T004) and billing/reference controls/UI (T005) are pending.
+(D259) and T004's [bounded read-only accounting queries/API](phase/P001-T004-aggregates-api.md) (D262) are implemented.
+Billing/reference controls/UI (T005) are pending.
 P001 targets **0.1.9 at phase closure**; P002 targets **0.2.0** (D253).
 
 - Account for native managed attempts, preparation executor steps and configuration-assistance calls, with

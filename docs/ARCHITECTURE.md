@@ -346,7 +346,8 @@ version regardless of executable path. Builds disable uv's output `.gitignore` t
 [T001 contract](phase/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
 storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
 `terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 added bounded read-only queries/API
-([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005 adds controls/UI.
+([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005 adds controls/UI,
+planned in [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) (not implemented).
 
 - **Pure core.** `core/engine/metric_references.py` / `valuation.py` (T002) validate pinned canonical references and
   calculate exact Decimal lines. `core/engine/usage_capture.py` builds the allowlisted `usage-capture-1` document from

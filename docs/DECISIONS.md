@@ -1705,3 +1705,39 @@ API (additive, `accounting-aggregate-1`): `GET /api/managed/accounting/{summary,
 `/accounting/invocations/{id}` and `/accounting/invocations/{id}/valuations` (lines, reference identity, discrepancy
 and cohort memberships). Existing `/metrics/*` endpoints, `metrics-1` floats and frozen phase summaries are unchanged.
 Evidence: [P001-T004](phase/P001-T004-aggregates-api.md).
+
+## D263 — P001-T005 split, accounting page and billing/reference control contracts
+
+Status: accepted design before P001-T005 implementation, within D254–D257, D259 and D262; nothing here is implemented.
+
+The owner split T005 into two bounded, sequential deliveries, each on its own topic branch from `develop` →
+`develop`/`origin`: **T005a** (accounting UI, read-only over the D262 API, no API change) and then **T005b**
+(billing-profile and reference controls, with an additive API). D234's six-task plan is otherwise unchanged; both
+record evidence in `docs/phase/P001-T005-metrics-ui.md`, and T005 completes when both are delivered.
+
+- **Accounting page (T005a).** A new page, global and per project and available on query-only archives, consumes
+  only `/api/managed/accounting/*`. The existing Statistics page stays on `metrics-1` (its cost is the reporting
+  client's estimate) and links to it, so reported estimates and calculated valuations never share a figure. Backfill
+  and repricing stay CLI-only (`accounting-backfill`, `accounting-reprice`): the page lists and selects cohorts and
+  names the command, as Statistics does for `metrics-backfill`. Archives show no mutation control and do not poll.
+- **Reference API (T005b).** The configuration router (`/api/managed/configuration`) gains
+  `GET /references` (bounded page of available bundles: packaged and imported, with source, provider/product/models,
+  observation date and effective-period state), `POST /references/preview` and `POST /references/import` over the
+  T003 backend. The import writes immutable accounting reference rows, not a configuration revision, and activates
+  nothing; a profile adopts a bundle only through a confirmed configuration save/activation. The list reads stored
+  rows and the packaged bundle without inserting them and does not depend on the configuration setup, so it also
+  works on a restored archive; both POSTs keep the restored-archive refusal.
+- **Idempotent import.** Importing equal bytes is idempotent (D255), so a retried confirmation must not fail as
+  stale: the preview digest seals the bundle id, raw-byte digest, reference count and conflicts, while new/existing
+  row counts are informative and outside it. Confirming after the rows already exist returns the same report with
+  zero inserted rows; a conflicting id still refuses. The CLI keeps the same preview → confirm contract.
+- **Save-time billing validation (T005b).** Server previews refuse what would otherwise surface later as
+  `billing_profile_unknown`: a global profile whose `references` bundle is not available (packaged or imported); a
+  project's explicit `project-config-2` selection that its referenced global revision lacks or whose provider
+  differs from the project's agent for that role; and a global save that removes or changes the provider of a
+  profile still selected by a derived project copy (the affected projects are named, like a profile used by a
+  composition). Inherited global defaults are not refused for projects, since `project-config-1` bytes keep their
+  meaning: the preview effects report each role whose default would resolve as unknown.
+- **Formats.** Billing controls appear only after an explicit conversion to `local-config-10`/`project-config-2`
+  shown in the save preview; loading never converts. Billing-only saves keep the technical receipt (D259); frozen
+  jobs keep their binding. Guided forms follow D250 (controls replace only their own keys; TOML remains complete).

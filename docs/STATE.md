@@ -8,8 +8,9 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The one-off queue is **empty**. **P001-T003** (capture, storage and historical compatibility) is complete and delivered
-through `feat/p001-t003-capture-storage` → `develop`/`origin`; **next: P001-T004** (aggregates and API).
+The one-off queue has **OT008** (quiet development checks and agent workflow guidance), registered to run before
+P001-T004. **P001-T003** (capture, storage and historical compatibility) is complete and delivered through
+`feat/p001-t003-capture-storage` → `develop`/`origin`; **next phase task: P001-T004** (aggregates and API) after OT008.
 P001-T001 design, P001-T002's calculator/references and P001-T003's native accounting records are complete
 ([T003 evidence](phase/P001-T003-capture-storage.md), D259); bounded queries/API and the UI remain pending.
 OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as

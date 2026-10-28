@@ -37,6 +37,60 @@ INPUT_SEMANTICS = {'claude': 'excludes_cache', 'codex': 'includes_cache_read'}
 # Codex items that are not tools; every other completed type counts as a tool.
 CODEX_NON_TOOLS = frozenset({'agent_message', 'reasoning', 'error'})
 VERDICT_ROLES = frozenset({'reviewer', 'phase'})
+# P001-T003 (D259): additive accounting retention inside the same summary; metrics-1 never reads it.
+STREAM_ACCOUNTING = 'usage-stream-1'
+# Allowlisted raw usage counters and retained (unpriced) strings; prompts and other fields never enter.
+RAW_COUNTERS = {'claude': ('input_tokens', 'cache_read_input_tokens', 'cache_creation_input_tokens', 'output_tokens'),
+                'codex': ('input_tokens', 'cached_input_tokens', 'cache_write_input_tokens', 'output_tokens',
+                          'reasoning_output_tokens')}
+RAW_NESTED = {'cache_creation': ('ephemeral_5m_input_tokens', 'ephemeral_1h_input_tokens'),
+              'output_tokens_details': ('thinking_tokens',),
+              'server_tool_use': ('web_search_requests', 'web_fetch_requests')}
+RAW_STRINGS = ('service_tier', 'speed', 'inference_geo')
+
+
+def raw_usage(provider, data):
+    """Allowlisted copy of a usage object: integer counters verbatim, others marked invalid, absent omitted."""
+    if not isinstance(data, dict):
+        return None
+    result = {}
+
+    def put(target, key, value):
+        target[key] = value if type(value) is int and value >= 0 else {'invalid': True}
+    for key in RAW_COUNTERS.get(provider, ()):
+        if key in data:
+            put(result, key, data[key])
+    if provider == 'claude':
+        for name, keys in RAW_NESTED.items():
+            if isinstance(data.get(name), dict):
+                nested = {}
+                for key in keys:
+                    if key in data[name]:
+                        put(nested, key, data[name][key])
+                result[name] = nested
+        for key in RAW_STRINGS:
+            if isinstance(data.get(key), str) and len(data[key]) <= 80:
+                result[key] = data[key]
+    return result
+
+
+def cost_lexemes(provider, raw: bytes):
+    """Exact decimal spelling of client-reported amounts in a terminal record, without float conversion."""
+    if provider != 'claude':
+        return None
+    try:
+        event = json.loads(raw.decode('utf-8'), parse_float=str, parse_constant=_reject)
+    except (UnicodeDecodeError, ValueError):
+        return None
+    if not isinstance(event, dict):
+        return None
+
+    def lexeme(value):
+        return value if type(value) is str and len(value) <= 64 else str(value) if type(value) is int else None
+    models = event.get('modelUsage')
+    return {'total_cost_usd': lexeme(event.get('total_cost_usd')),
+            'models': {name: lexeme(item.get('costUSD')) for name, item in sorted(models.items())
+                       if isinstance(name, str) and isinstance(item, dict)} if isinstance(models, dict) else None}
 
 
 def count(value):
@@ -67,6 +121,11 @@ class StreamMetrics:
         self.items = {}      # Codex: item.completed per type, once per id.
         self.item_ids = set()
         self.terminal = {}   # Fields of the last terminal, including those of terminal-2.
+        # usage-stream-1: Claude requests keyed by message id; a delta updates the current message only.
+        self.requests = {}
+        self.current = None
+        self.unidentified = 0
+        self.lexemes = None
 
     def _tool(self, name, ident):
         if not isinstance(name, str) or not name:
@@ -93,17 +152,38 @@ class StreamMetrics:
             if inner.get('type') == 'message_start' and isinstance(inner.get('message'), dict):
                 self.messages.append(_usage(inner['message'].get('usage'), CLAUDE_USAGE)
                                      or dict.fromkeys(CLAUDE_USAGE))
+                self._request_start(inner['message'])
             elif inner.get('type') == 'message_delta' and self.messages:
                 # Cumulative usage of the current message: replaces, never adds.
                 delta = _usage(inner.get('usage'), CLAUDE_USAGE) or {}
                 self.messages[-1] = {name: delta[name] if delta.get(name) is not None else value
                                      for name, value in self.messages[-1].items()}
+                if self.current is not None:
+                    request = self.requests[self.current]
+                    update = raw_usage('claude', inner.get('usage')) or {}
+                    request['usage'] = {**(request['usage'] or {}), **update}
         elif kind == 'assistant' and isinstance(event.get('message'), dict):
             for block in event['message'].get('content') or ():
                 if isinstance(block, dict) and block.get('type') == 'tool_use':
                     self._tool(block.get('name'), block.get('id'))
         if terminal:
             self.terminal = {key: event[key] for key in TERMINAL_FIELDS + TERMINAL_FIELDS_2 if key in event}
+
+    def _request_start(self, message):
+        ident = message.get('id')
+        usage = raw_usage('claude', message.get('usage'))
+        model = message.get('model') if isinstance(message.get('model'), str) else None
+        if not isinstance(ident, str) or not ident:
+            self.current = None
+            self.unidentified += 1
+            return
+        self.current = ident
+        known = self.requests.get(ident)
+        if known is None:
+            self.requests[ident] = {'id': ident, 'model': model, 'start': usage, 'usage': usage, 'conflict': False}
+        elif known['start'] != usage or known['model'] != model:
+            # The same message id with different initial evidence cannot certify one request partition.
+            known['conflict'] = True
 
     def summary(self) -> dict:
         tools = {name: len(ids) for name, ids in self.tool_ids.items()}
@@ -113,9 +193,14 @@ class StreamMetrics:
         if self.messages:
             usage = {name: (sum(m[name] for m in self.messages) if all(m[name] is not None for m in self.messages)
                             else None) for name in CLAUDE_USAGE}
-        return {'format': CAPTURE, 'messages': len(self.messages) if self.provider == 'claude' else None,
+        claude = self.provider == 'claude'
+        requests = [{key: item[key] for key in ('id', 'model', 'usage', 'conflict')} for item in self.requests.values()]
+        return {'format': CAPTURE, 'messages': len(self.messages) if claude else None,
                 'message_usage': usage, 'tools': dict(sorted(tools.items())),
-                'items': dict(sorted(self.items.items())) if self.provider == 'codex' else None}
+                'items': dict(sorted(self.items.items())) if self.provider == 'codex' else None,
+                'accounting': {'format': STREAM_ACCOUNTING, 'requests': requests if claude else None,
+                               'unidentified_messages': self.unidentified if claude else None,
+                               'cost_lexemes': self.lexemes}}
 
 
 TERMINALS = {'codex': frozenset({'turn.completed', 'turn.failed'}), 'claude': frozenset({'result'})}
@@ -132,7 +217,10 @@ def replay(provider: str, data: bytes) -> dict:
         except (UnicodeDecodeError, ValueError):
             continue
         if isinstance(event, dict) and isinstance(event.get('type'), str):
-            metrics.event(event, terminal=event['type'] in TERMINALS.get(provider, ()))
+            terminal = event['type'] in TERMINALS.get(provider, ())
+            metrics.event(event, terminal=terminal)
+            if terminal:
+                metrics.lexemes = cost_lexemes(provider, line)
     return {'summary': metrics.summary(), 'terminal': metrics.terminal}
 
 

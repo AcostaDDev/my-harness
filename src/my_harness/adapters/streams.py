@@ -4,7 +4,7 @@ import json
 import hashlib
 
 from my_harness.core.engine.contracts import freeze
-from my_harness.core.engine.metrics import TERMINAL_FIELDS, TERMINAL_FIELDS_2, StreamMetrics
+from my_harness.core.engine.metrics import TERMINAL_FIELDS, TERMINAL_FIELDS_2, StreamMetrics, cost_lexemes
 from my_harness.i18n import tr
 
 
@@ -167,6 +167,7 @@ class AgentStream:
             for key in TERMINAL_FIELDS + TERMINAL_FIELDS_2:
                 if key in event:
                     self.observed[key] = event[key]
+            self.metrics.lexemes = cost_lexemes(self.provider, raw)
         self.metrics.event(event, terminal=terminal)
 
     def finish(self, exit_code):

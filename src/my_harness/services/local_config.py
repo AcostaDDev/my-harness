@@ -717,7 +717,7 @@ class LocalComposer:
         item.pop('agent_selection', None)
         project, composition = shadow.compose(item, original[1], registry=original[2])
         versions = {**project.versions, 'local_config': EDITOR_VERSION,
-                    'project_configuration': 'project-config-1',
+                    'project_configuration': data['format'],
                     'project_configuration_revision': str(reference['revision']),
                     'project_configuration_sha256': reference['sha256'],
                     'project_environment_sha256': hashlib.sha256(freeze(receipt).encode()).hexdigest()}

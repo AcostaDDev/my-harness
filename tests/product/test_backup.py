@@ -283,7 +283,7 @@ def test_cli_backup_round_trip_and_errors_are_explicit(migrated_database, tmp_pa
     assert main(['backup-create', str(db_path(migrated_database)), str(bundle)]) == 1
     assert 'writers-stopped' in capsys.readouterr().err
     assert main(['backup-create', str(db_path(migrated_database)), str(bundle), '--writers-stopped']) == 0
-    assert json.loads(capsys.readouterr().out)['format'] == 2
+    assert json.loads(capsys.readouterr().out)['format'] == 3
     assert main(['backup-verify', str(bundle)]) == 0
     capsys.readouterr()
     assert main(['backup-restore', str(bundle), str(dest)]) == 0

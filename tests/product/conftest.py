@@ -1,5 +1,7 @@
+from contextlib import closing
 from pathlib import Path
 import shutil
+import sqlite3
 
 from alembic import command
 from alembic.config import Config
@@ -7,6 +9,17 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+ACCOUNTING_TABLES = ('valuation_cohort_members', 'valuation_cohorts', 'usage_valuation_lines', 'usage_valuations',
+                     'usage_components', 'usage_captures', 'usage_invocations', 'metrics_references')
+
+
+def clear_accounting(database):
+    """0028 refuses a downgrade while accounting rows exist; tests of older revisions remove their synthetic rows."""
+    path = str(database).removeprefix('sqlite:///')
+    with closing(sqlite3.connect(path)) as db:
+        for table in ACCOUNTING_TABLES:
+            db.execute(f'DELETE FROM {table}')
+        db.commit()
 
 
 @pytest.fixture(scope="session")

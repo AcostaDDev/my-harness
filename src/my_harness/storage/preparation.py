@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, defer
 
 from my_harness.adapters.processes import liveness
+from my_harness.storage import accounting
 from my_harness.storage.managed import Conflict, OwnershipLost
 from my_harness.storage.models import (
     CheckoutLockRow as Lock, ManagedProcessRow as Process,
@@ -16,6 +17,10 @@ from my_harness.storage.models import (
 )
 from my_harness.storage.permissions import actor
 from my_harness.i18n import tr
+
+
+def _process(row):
+    return {'spec': row.spec, 'status': row.status, 'identity': row.identity, 'capture': row.capture}
 
 
 class PreparationRepository:
@@ -116,6 +121,8 @@ class PreparationRepository:
             process.capture = {**capture, 'reported_group_state': capture.get('group_state'), 'group_state': state,
                                'settled_by': 'closing_owner'}
             process.status = 'STOPPED' if state == 'dead' else 'UNCERTAIN'
+            accounting.settle_process(session, 'preparation_step', process.id, _process(process),
+                                      outcome='interrupted', now=self.managed._now())
             self.event(session, row, 'process_interrupted', {'process_id': process.id, 'status': process.status,
                                                              'group_state': state, 'partial_capture': partial is not None})
 
@@ -181,6 +188,9 @@ class PreparationAgentJournal(PreparationJournal):
                     or row.plan['contract'] != 'project-profile-preparation-1'):
                 raise Conflict('Exact preparation executor intent required once')
             session.add(Process(id=step_id, preparation_id=row.id, spec=spec, status='PENDING'))
+            session.flush()
+            # P001-T003: the executor intent is the expected invocation; no synthetic run or attempt.
+            accounting.intend_preparation(session, row, step_id, spec, self.repository.managed._now())
             self.repository.event(session, row, 'executor_intended', {'step_id': step_id, 'spec': spec})
 
     def process_update(self, step_id, kind, payload):
@@ -201,6 +211,8 @@ class PreparationAgentJournal(PreparationJournal):
                 elif kind == 'process_finished':
                     process.capture = payload
                     process.status = 'STOPPED' if payload.get('group_state') == 'dead' else 'UNCERTAIN'
+                    accounting.settle_process(session, 'preparation_step', step_id, _process(process),
+                                              outcome=payload.get('status'), now=self.repository.managed._now())
                 self.repository.event(session, row, 'executor_' + kind, {'step_id': step_id, **payload})
 
 

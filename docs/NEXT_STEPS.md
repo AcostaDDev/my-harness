@@ -1,7 +1,7 @@
 # P001 — Metrics Records (target: 0.1.9 at phase closure)
 
-**Status:** active phase; T001 design and T002 calculator/references complete; four tasks pending.
-**Next phase task: P001-T003 — Capture, storage and historical compatibility.**
+**Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; three tasks pending.
+**Next phase task: P001-T004 — Aggregates and API.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty.
@@ -22,8 +22,8 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T003.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
-complete a Metrics Records task. T001 is now separately complete as accepted design/inventory (D254–D257).
+**Next: P001-T004.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
 
 The sections below retain each task's contract and distinguish completed work from pending integration. T001 settled
 the technical contract; T002 implements the isolated pure calculator/references, without operational integration.
@@ -33,6 +33,8 @@ T001 was delivered through `docs/p001-t001-accounting-contract` → `develop`.
 There is no task release or runtime version bump; release qualification/publication remains at P001 closure.
 T002 uses `feat/p001-t002-reference-calculator` → `develop`/`origin` with the same explicit task delivery authorization;
 its [evidence](phase/P001-T002-reference-calculator.md) separates source integration from future distribution.
+T003 used `feat/p001-t003-capture-storage` → `develop`/`origin` with the same explicit owner authorization
+([evidence](phase/P001-T003-capture-storage.md)).
 
 ## Shared constraints
 
@@ -120,7 +122,9 @@ with exact checks and supported/unsupported cases.
 
 ## P001-T003 — Capture, storage and historical compatibility
 
-**Status:** pending; next task.
+**Status:** complete (native capture, additive records, frozen billing binding, explicit cohorts and format-3 archives;
+queries/API remain T004 and controls/UI T005). **Evidence:** [capture/storage checks](phase/P001-T003-capture-storage.md),
+D259. The criteria below are retained as the completed task contract.
 **Depends on:** completed T002; record/billing-profile contracts accepted in T001.
 **Objective:** persist detailed usage and immutable valuations with the evidence required to reproduce them.
 **Allowed paths:** relevant `src/my_harness/adapters/**`, `src/my_harness/core/engine/**`,
@@ -155,7 +159,7 @@ backup/retention and migration tests; run `alembic check` only against a prepare
 
 ## P001-T004 — Aggregates and API
 
-**Status:** pending.
+**Status:** pending; next task.
 **Depends on:** completed T003 and its stable records.
 **Objective:** expose bounded, explainable usage and cost analysis by provider/model and work context.
 **Allowed paths:** `src/my_harness/storage/metrics.py`, relevant projection/query modules in

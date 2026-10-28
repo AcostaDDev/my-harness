@@ -1592,3 +1592,39 @@ unknown reasons and separate estimate comparisons support later immutable persis
 database, API, configuration, frontend, version bump, distribution publication or installation is added here.
 
 Evidence and task delivery: [P001-T002](phase/P001-T002-reference-calculator.md).
+
+## D259 — Native accounting capture, frozen revision binding and format-3 archives
+
+Status: accepted implementation detail in P001-T003, within D254–D257; queries/API remain T004, controls/UI T005.
+
+The adapter keeps `cli-14`/`terminal-2`; its stream summary gains an additive `usage-stream-1` section with Claude
+requests keyed by message id (a repeated start with different evidence is a conflict, a delta replaces the current
+message's counters) and the terminal's exact cost lexemes. `metrics-1` never reads it. `usage-capture-1` is an
+allowlisted, float-free document built from the native source's sealed process evidence: client/version, requested
+selection, native status, reported selection, response/model-usage models, raw counters, reported amounts as lexeme
+or labelled legacy float, activity, timing and artifact digests, never prompts, argv, environment or paths. One
+terminal is final usage even when the structured payload was invalid. The launch gate is `not_invoked` only on a
+refused launch (no permitted launch or a stopped gate wrapper) and `unknown_execution` without positive evidence.
+
+Evidence selection prefers a complete request partition that reconciles with the terminal, then a reconciled
+`modelUsage` partition (the lone cache writer inherits the terminal lifetimes), then a single response model, else
+`model_unreported`/`model_partition_unknown`. Delegation tools (`Task`, `Agent`) leave the boundary unknown; server
+tool activity or nonzero server-tool counters leave charges incomplete. Absent Codex write counters stay absent.
+
+Admission already seals exact immutable configuration revisions (job `versions_json`, preparation plan data,
+assistance preview source). The invocation intent dereferences those revision bytes into a content-addressed
+`billing-binding-1` (profile with asserted conditions, or an explicit unknown reason), never the active/working
+configuration. `local-config-10`/`project-config-2` add only `billing` profiles/defaults/selections; billing is
+validated separately, removed before composing the runtime (v10 runs exactly as v9) and outside `technical()`.
+
+Migration `0028_usage_accounting` adds eight tables (62 product tables). Invocation IDs are `<source_kind>:<id>`; its
+downgrade refuses while accounting rows exist. Backfill materializes settled native sources (legacy metrics-only
+attempts as `legacy-metrics-1` evidence) with `backfill` valuations, never admission-bound ones; repricing applies a
+stated scenario. Both freeze at most 10,000 members at preview, build in bounded transactions, resume by
+idempotency key from their frozen selection and only then close. Reference import validates a bounded canonical
+bundle. CLI: `accounting-references`, `accounting-backfill`, `accounting-reprice`, `backup-upgrade`.
+
+Backup format 3 records the accounting inventory and recomputes reference, capture, binding, valuation (identity and
+exact line sum) and cohort digests in the same snapshot. Bundles of an older schema require `backup-upgrade`, which
+migrates a private copy into a new query-only format-3 bundle and leaves the original bytes unchanged.
+Evidence: [P001-T003](phase/P001-T003-capture-storage.md).

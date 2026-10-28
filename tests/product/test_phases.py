@@ -20,6 +20,7 @@ from my_harness.storage.managed import Conflict, SQLiteManagedRepository
 from my_harness.storage.managed_views import SQLiteManagedViews
 from my_harness.storage.models import ManagedAttemptRow, PhaseEventRow
 from my_harness.storage.phases import PhaseRepository
+from conftest import clear_accounting
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import (
     PLAN, VERSIONS, Ports, client, edit, git, make_context, review, settle,
@@ -621,6 +622,7 @@ def test_migration_roundtrip_preserves_runs(migrated_database, world):
     world.check(pid, phase_review())
     run = world.repository.get_run(world.get(pid)['operations'][0]['run_id'])
     command.check(migrated_database[1])
+    clear_accounting(migrated_database[0])  # 0028 refuses to drop accounting records; this test is about 0010
     command.downgrade(migrated_database[1], '0009_permissions')
     assert 'managed_phases' not in inspect(world.repository.engine).get_table_names()
     command.upgrade(migrated_database[1], 'head')

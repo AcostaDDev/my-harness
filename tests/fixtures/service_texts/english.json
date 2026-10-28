@@ -146,6 +146,17 @@
   "Sealed commit intent corrupt": "invariant",
   "Unknown preparation step": "invariant"
  },
+ "storage/accounting.py": {
+  "unknown native invocation source": "invariant",
+  "naive native timestamp": "invariant",
+  "unknown invocation link": "invariant"
+ },
+ "storage/accounting_backup.py": {
+  "binding:{}": "invariant",
+  "capture:{}": "invariant",
+  "valuation:{}": "invariant",
+  "cohort:{}": "invariant"
+ },
  "storage/bootstrap.py": {
   "Bootstrap result must match its sealed intent": "invariant",
   "Bootstrap run lacks its operation": "invariant"

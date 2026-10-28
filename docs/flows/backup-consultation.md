@@ -32,6 +32,11 @@ flowchart TD
 - Reads share the ordinary projection-based components without selecting or decoding the full history, rebuilding
   projections or accessing the checkout. In ordinary mode `/runs/:id` keeps its canonical project redirect and its
   existing empty state when no project is configured.
+- Backup format 3 (schema 0028) also records the accounting inventory and recomputes reference, capture, binding,
+  valuation and cohort digests in the same snapshot; any mismatch refuses verification. Accounting values, reasons
+  and cohorts are read from SQLite without original roots, clients or network; nothing is recalculated or backfilled.
+  A bundle of an older schema is refused with a pointer to `backup-upgrade`, which migrates a private copy into a new
+  query-only format-3 bundle and leaves the original bundle byte-identical.
 - Consultation does not resume jobs, release locks or certify that historical writers stopped. Stop the service
   normally; its ephemeral access key is removed. Uncertain historical process identity remains uncertain.
 

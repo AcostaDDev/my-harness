@@ -343,8 +343,10 @@ preserves database/snapshot for inspection; no automatic restore. `serve` never 
 /path/venv/bin/my-harness backup-restore /path/new-backup /path/restored
 ```
 
-`--artifact-root` (repeatable) authorizes state and configuration roots. Format 2 includes versioned TOML,
-working copies, operation intents and referenced evidence; format 1 without new configuration remains readable. A restore creates a new,
+`--artifact-root` (repeatable) authorizes state and configuration roots. Format 3 includes versioned TOML,
+working copies, operation intents, referenced evidence and verified P001 accounting records. A bundle created before
+schema `0028_usage_accounting` is not migrated in place: `backup-upgrade /path/old-backup /path/upgraded-backup`
+writes a new verified format-3 bundle from a copy and leaves the original unchanged. A restore creates a new,
 query-only database with the same schema revision. To browse it, start `serve --database
 /path/restored/state.sqlite3` from the installed venv and open the local UI. The archive home accepts a run id;
 `/runs/:id` opens its recorded evidence, diff, JUnit and metrics without a configured project or checkout.
@@ -352,7 +354,9 @@ No supervisor or agents run; mutations return 409. Historical pending jobs stay 
 certify that a historical writer stopped. See the [consultation flow](docs/flows/backup-consultation.md).
 
 **Other commands.** `logs-preview`, `logs-apply` and `logs-inspect` apply an explicit retention to agent streams;
-`metrics-backfill` completes metrics; `diagnose-cli` checks one agent configuration. Every command documents its
+`metrics-backfill` completes metrics; `accounting-references`, `accounting-backfill` and `accounting-reprice` are
+explicit P001 accounting operations (without `--preview-sha256` they only preview; applying needs that digest and
+`--key`); `diagnose-cli` checks one agent configuration. Every command documents its
 arguments with `--help`.
 
 **Diagnosis.** Start with the authenticated configuration status and explicit **Check client version/help**;

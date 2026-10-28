@@ -1,48 +1,61 @@
-# Planned flow — P001 invocation accounting
+# Flow — P001 invocation accounting
 
-**Accepted design, not implemented.** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence)
-and the [T001 contract](../phase/P001-T001-accounting-contract.md) govern T002–T005. Current production behavior
-remains `terminal-2` / `metrics-1` and schema 0027; this diagram introduces no running workflow.
-T002 implements only the isolated pure calculator/reference library ([evidence](../phase/P001-T002-reference-calculator.md),
-D258). The diagram's native capture, frozen binding, persistence and reads are still pending; it has no operational caller yet.
+**Capture, storage, binding, explicit operations and archives implemented (P001-T003); bounded queries/API (T004)
+and billing/reference controls/UI (T005) pending.** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
+the [T001 contract](../phase/P001-T001-accounting-contract.md), T002's pure calculator
+([D258](../DECISIONS.md#d258--pinned-reference-cases-and-the-pure-valuation-boundary)) and
+[D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives) govern it.
+`terminal-2`/`metrics-1`, existing metrics endpoints and their UI are unchanged ([evidence](../phase/P001-T003-capture-storage.md)).
 
 ```mermaid
 flowchart TD
-    C[Explicit configuration save and separate activation] --> B[Freeze profile and reference bundle at native admission]
-    B --> I[Managed attempt, preparation executor step or assistance intent]
-    I --> E[Persist unique invocation identity in the native transaction]
+    C[Explicit v10/v2 billing save and separate activation] --> B[Admission freezes the exact configuration revision]
+    B --> I[Attempt row, preparation executor intent or INTENDED assistance operation]
+    I --> E[Same transaction: usage_invocations row with binding dereferenced from the frozen revision]
     E --> L[Existing fenced CLI launch and process journal]
-    L --> O[Native result or partial capture; no accounting retry of inference]
-    O --> S[Atomically append allowlisted usage capture and components]
-    S --> V[Pure offline calculator with pinned evidence and references]
-    V --> P[Immutable original valuation, or explicit unpriced reasons]
-    P --> Q[Bounded reads, exact compatible totals and expected-row coverage]
-    P --> R[Authorized stream retention keeps accounting evidence]
-    R --> A[Verify format-3 snapshot, references, valuations and native links]
-    A --> H[Query-only archive consultation from bundle bytes]
-    S --> X[Explicit previewed backfill or repricing into a named cohort]
-    X --> N[Append interpretation and valuation; close complete cohort]
-    N --> Q
+    L --> O[Native result, refused launch or closing-owner partial capture; no accounting retry]
+    O --> S[Same transaction: lifecycle, allowlisted usage-capture-1 and components]
+    S --> V{Launch refused?}
+    V -- yes --> N0[not_invoked: no valuation, excluded from spend]
+    V -- no --> P{Frozen billing profile?}
+    P -- no --> U[Unpriced: billing_profile_unknown]
+    P -- yes --> W[Pure calculator with pinned bundle: immutable admission valuation, lines and reasons]
+    W --> Q[T004: bounded reads over original admission values or one closed cohort]
+    U --> Q
+    S --> X[CLI preview + confirm: accounting-backfill or accounting-reprice]
+    X --> K[Named cohort built in bounded transactions; BUILDING until closed]
+    K --> Q
+    S --> R[Authorized stream retention keeps every accounting row]
+    R --> A[Backup format 3 recomputes accounting digests in one snapshot]
+    A --> H[Query-only restore; older schema needs backup-upgrade copy]
 ```
 
-- Model-free jobs/steps do not create invocations. Missing result/terminal data stays visible, independently of
-  whether the native source is successful, failed, interrupted, pending or positively proved not invoked.
-- Billing profiles use the existing [configuration flow](configuration-setup.md), with new global/project formats
-  and separately frozen billing metadata. Save never activates; new activation does not rebind old jobs/plans.
-  Reference import is explicit, offline, bounded and digest-checked. There is no price fetch during an ordinary read.
-- Final totals replace cumulative/message views for accounting; model/request/child components are never added to
-  their inclusive total. Unsupported partitions, TTLs, request tiers, charges or reference applicability produce
-  reasons and covered subtotals. Accounting cannot certify liveness or release the checkout lock.
-- T003 adds the [planned tables](../DDBB-DIAGRAM.md#planned-p001-accounting-records-not-implemented) through the
-  [explicit migration flow](database-migration.md), after a verified snapshot. Migration/read/startup never backfills
-  or reprices usage. Repeated source/capture/valuation keys are idempotent; ownership loss still fences writes.
-- Backfill/repricing append evidence/scenarios into an explicit cohort; they do not change native sources, earlier
-  valuations, `metrics-1`, histories, old configuration, phase summaries or recipe fingerprints. Reads select the
-  original admission-bound view or one named closed cohort, never a sum of alternatives.
-- [Archive consultation](backup-consultation.md) uses retained bytes/references/line items without original paths,
-  provider access, configuration mutation, execution polling or recalculation. Legacy bundles retain their
-  matching-schema support; explicit archive upgrade uses a new copy/bundle and preserves the original.
+- **Sources.** Managed attempts (task/phase/chat/definition/onboarding), generic preparation executor steps and
+  configuration assistance. Deterministic jobs, native commands, closure, bootstrap commits and other local work
+  create no invocation. A missing process row is `unknown_execution`, never zero; only a refused launch is
+  `not_invoked`. Replaying a settlement with identical evidence appends nothing; changed evidence is a new capture.
+- **Evidence.** Prompts, argv, environment and paths never enter a capture. The selected view prefers a reconciled
+  request partition, then a reconciled per-model partition, then a single response model. Terminal and constituent
+  views are never added; requested selections never become reported models. Missing terminal, conflicting request
+  ids, unknown delegation boundaries and server-tool charges stay explicit reasons with a known subtotal at most.
+- **Binding.** Jobs, preparation plans and assistance previews already freeze exact immutable revisions; the intent
+  dereferences them into `billing-binding-1`. Activation of a later revision never rebinds queued or settled work.
+  Reference bundles are packaged or explicitly imported (`accounting-references`), content-addressed and immutable.
+- **Operations.** `accounting-backfill` materializes settled native sources without an invocation (legacy
+  metrics-only attempts as `legacy-metrics-1` evidence); its valuations are `backfill`, never admission-bound.
+  `accounting-reprice` applies a stated profile as a retrospective or contemporaneous scenario. Both preview a frozen
+  selection (at most 10,000), need the exact preview digest and an idempotency key, resume from the frozen selection
+  and close only when complete. `metrics-backfill` keeps its separate meaning. Neither runs on read, startup,
+  migration or restore, and neither launches clients or rewrites native sources, metrics or earlier valuations.
+- **Archives.** Retention removes authorized stream bytes only. Format-3 backups verify every accounting digest and
+  the exact line sums; restored consultation is query-only and refuses accounting operations.
 
-T002 implements the calculator/references, T003 the capture/configuration/persistence/operations, T004 queries/API,
-T005 controls/UI and T006 end-to-end qualification. The existing task, configuration, migration and backup flows
-describe implemented behavior until their respective implementation tasks update them.
+## Source
+
+- `core/engine/metrics.py` (`usage-stream-1`), `core/engine/usage_capture.py`, `core/engine/valuation.py`,
+  `core/engine/metric_references.py`.
+- `storage/accounting.py`, `storage/billing.py`, `storage/accounting_operations.py`, `storage/accounting_backup.py`,
+  `storage/managed.py`, `storage/preparation.py`, `services/configuration_assistance.py`, `services/configuration.py`,
+  `storage/backup.py`, `cli.py`, `migrations/versions/0028_usage_accounting.py`.
+- [Data](../DDBB-DIAGRAM.md#p001-accounting-records), [task run](task-run.md), [configuration](configuration-setup.md),
+  [migration](database-migration.md), [archive consultation](backup-consultation.md).

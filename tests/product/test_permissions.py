@@ -20,6 +20,7 @@ from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 from my_harness.storage.managed import Conflict, SQLiteManagedRepository
 from my_harness.storage.models import ManagedAttemptRow, PermissionRequestRow
 from my_harness.storage.permissions import PermissionRepository
+from conftest import clear_accounting
 from test_managed import PLAN, VERSIONS, context, repository
 from test_managed_api import client
 
@@ -288,6 +289,7 @@ def test_permission_migration_roundtrip_and_old_codec(setup, migrated_database):
     assert all(a.request.permission_snapshot_json is None for a in historical.attempts)
     assert json.loads(dump_history(historical))['format'] == 4
     command.check(migrated_database[1])
+    clear_accounting(migrated_database[0])  # 0028 refuses to drop accounting records; this test is about 0009
     command.downgrade(migrated_database[1], '0008_prompt_versions')
     assert 'permission_requests' not in inspect(setup[0].engine).get_table_names()
     command.upgrade(migrated_database[1], 'head')

@@ -181,8 +181,9 @@ DECISIONS sections; do not silently turn these candidate fields into a contract.
 
 The full task sections, dependencies, acceptance criteria, validation and deliverables are maintained in
 [NEXT_STEPS](../NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
-not another task-status record. **Next: T005**, over the T004 API ([evidence](P001-T004-aggregates-api.md)), integrated into
-`develop`. These identifiers belong
+not another task-status record. **Next: T005a** (accounting UI), then T005b (billing/reference controls), over the T004 API
+([evidence](P001-T004-aggregates-api.md)), integrated into `develop`; split by
+[D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). These identifiers belong
 to the current phase, not the pre-release H6.4 milestones.
 
 1. [P001-T001 — Accounting contract and evidence inventory](../NEXT_STEPS.md#p001-t001--accounting-contract-and-evidence-inventory).

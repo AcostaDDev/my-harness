@@ -2,7 +2,8 @@
 
 **Capture, storage, binding, explicit operations and archives implemented (P001-T003); bounded read-only
 queries/API implemented (P001-T004, [D262](../DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api));
-billing/reference controls/UI (T005) pending.** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
+billing/reference controls/UI (T005) pending, planned as T005a/T005b in
+[D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
 the [T001 contract](../phase/P001-T001-accounting-contract.md), T002's pure calculator
 ([D258](../DECISIONS.md#d258--pinned-reference-cases-and-the-pure-valuation-boundary)) and
 [D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives) govern it.

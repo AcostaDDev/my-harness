@@ -330,7 +330,8 @@ and the [T001 contract](phase/P001-T001-accounting-contract.md) define the addit
 T002's [pure library/references](phase/P001-T002-reference-calculator.md) (D258) and T003's
 [native capture, records, billing binding, explicit operations and format-3 archives](phase/P001-T003-capture-storage.md)
 (D259) and T004's [bounded read-only accounting queries/API](phase/P001-T004-aggregates-api.md) (D262) are implemented.
-Billing/reference controls/UI (T005) are pending.
+Billing/reference controls/UI (T005) are pending, designed as T005a (read-only accounting page) and T005b
+(billing/reference controls and reference API) in [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).
 P001 targets **0.1.9 at phase closure**; P002 targets **0.2.0** (D253).
 
 - Account for native managed attempts, preparation executor steps and configuration-assistance calls, with

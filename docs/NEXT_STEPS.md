@@ -1,8 +1,10 @@
 # P001 — Metrics Records (target: 0.1.9 at phase closure)
 
 **Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; T004 aggregates/API
-complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; two tasks pending.
-**Next phase task: P001-T005 — Billing/reference controls and metrics UI.**
+complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; two tasks pending. T005 is split
+into T005a (accounting UI) and T005b (billing/reference controls) by
+[D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).
+**Next phase task: P001-T005a — Accounting UI.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty. The queue is **empty**: OT008 (development checks, D260) was
@@ -24,7 +26,7 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T005.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+**Next: P001-T005a.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
 complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
 
 The sections below retain each task's contract and distinguish completed work from pending integration. T001 settled
@@ -37,7 +39,10 @@ T002 uses `feat/p001-t002-reference-calculator` → `develop`/`origin` with the 
 its [evidence](phase/P001-T002-reference-calculator.md) separates source integration from future distribution.
 T003 used `feat/p001-t003-capture-storage` → `develop`/`origin` with the same explicit owner authorization
 ([evidence](phase/P001-T003-capture-storage.md)). T004 used `feat/p001-t004-aggregates-api` → `develop`/`origin` with
-the same explicit owner authorization ([evidence](phase/P001-T004-aggregates-api.md)).
+the same explicit owner authorization ([evidence](phase/P001-T004-aggregates-api.md)). The T005 split and its
+contracts (D263) were recorded through `docs/p001-t005-split` → `develop`/`origin` before any T005 code. T005a will use
+`feat/p001-t005a-accounting-ui` and T005b `feat/p001-t005b-billing-controls`, each → `develop`/`origin`; commit, merge
+and push of each still need the owner's explicit authorization.
 
 ## Shared constraints
 
@@ -192,29 +197,83 @@ compatibility and no full-history reads; check generated types using the existin
 
 ## P001-T005 — Billing/reference controls and metrics UI
 
-**Status:** pending; next task (consumes the T004 `/accounting/*` API).
+**Status:** pending; split into two sequential deliveries by
+[D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). T005 is complete
+when T005a and T005b are both delivered; their combined criteria below are the task contract.
 **Depends on:** completed T004 and T001's configuration/reference workflow.
 **Objective:** let the operator select the billing basis and inspect detailed consumption, valuations and evidence.
-**Allowed paths:** `frontend/src/**`, `frontend/tests/**`, relevant configuration/API/service/storage modules to
-complete the approved workflow, tests and current documentation; diagram/flows/OpenAPI/types when affected.
-**Acceptance criteria:**
+**Acceptance criteria (whole task):**
 
 - Expose the approved billing-profile/reference workflow through the existing configuration system, with validation,
   exact preview/confirmation, version/conflict handling and frozen jobs preserved. Saving billing metadata must not
-  log in to a provider, change its credentials or affect machine-wide settings.
+  log in to a provider, change its credentials or affect machine-wide settings. (T005b)
 - Show provider/model token breakdowns, cache categories, durations, tools, outcomes and provenance where available;
-  identify requested versus verified model and explain missing details without inventing data.
+  identify requested versus verified model and explain missing details without inventing data. (T005a)
 - Distinguish client-reported estimates, calculated monetary values, credits and any confirmed billing evidence.
   Show tariff applicability/source, line items, discrepancy, staleness/unknowns and priced/unpriced coverage.
-  Do not present subscription-equivalent valuation as an actual extra charge.
+  Do not present subscription-equivalent valuation as an actual extra charge. (T005a)
 - Keep filters, tables and details bounded, navigable and localized in English/Spanish. Offline archive pages show
-  historical references/values without configuration mutation controls, automatic recalculation or operational polling.
+  historical references/values without configuration mutation controls, automatic recalculation or operational
+  polling. (both)
 
-**Validation:** focused frontend/configuration/API checks, `node --test frontend/tests/*.test.mjs`,
-`npm --prefix frontend run check` and `npm --prefix frontend run build`; synthetic visual QA in en/es, light/dark,
-desktop/mobile, keyboard navigation and query-only archive. Record tested surfaces and omissions.
 **Deliverables:** configuration/metrics UI, catalogs and relevant parity/tests, plus
-`docs/phase/P001-T005-metrics-ui.md` with visual and functional evidence.
+`docs/phase/P001-T005-metrics-ui.md` (one section per delivery) with visual and functional evidence.
+
+### P001-T005a — Accounting UI
+
+**Status:** pending; next task. **Delivery route:** `feat/p001-t005a-accounting-ui` from `develop` →
+`develop`/`origin` (commit/merge/push only with explicit owner authorization). No release or version bump.
+**Depends on:** completed T004 (D262) and D263.
+**Objective:** a read-only accounting page over `/api/managed/accounting/*`, without API, schema or backend change.
+**Allowed paths:** `frontend/src/**`, `frontend/tests/**`, en/es catalogs and current documentation.
+**Acceptance criteria:**
+
+- A new page, global and per project, linked from Statistics and the project; Statistics keeps its `metrics-1`
+  panels and wording. Available on a query-only archive without mutation controls or polling.
+- Summary with coverage (expected, not invoked, launch states, captures, complete/partial/absent usage,
+  priced/unpriced with grouped reasons) and one amount per compatible bucket: `amount` only when the API gives it,
+  otherwise the known subtotal labelled partial. Bases (API USD, Enterprise USD, credits, subscription equivalent,
+  reported estimates) stay separate; subscription equivalents are labelled counterfactual, never a charge.
+- Token categories with contributor/partial counts, cache-hit and wall-throughput indicators with their excluded
+  counts, and task indicators with their denominators; null is "no data", never zero.
+- Paginated groups over the D262 dimensions and a filtered, paginated invocation list; the invocation detail shows
+  requested versus effective model and its kind, provider/client, provenance, durations, tools, outcome and the
+  paginated valuations with line items, tariff/identity reference (source, observation age, effective-period state),
+  discrepancy and unknown reasons.
+- Selection policy: the original admission valuation by default or one named cohort; a `BUILDING` cohort is shown as
+  incomplete. Backfill/repricing are named as CLI commands only (D263).
+
+**Validation:** focused Node tests for the new formatting/query helpers, `node --test frontend/tests/*.test.mjs`,
+`npm --prefix frontend run check` and `npm --prefix frontend run build`; synthetic visual QA in en/es, light/dark,
+desktop/mobile, keyboard navigation and a query-only archive. Record tested surfaces and omissions.
+
+### P001-T005b — Billing-profile and reference controls
+
+**Status:** pending; after T005a. **Delivery route:** `feat/p001-t005b-billing-controls` from `develop` →
+`develop`/`origin` (commit/merge/push only with explicit owner authorization). No release or version bump.
+**Depends on:** completed T005a and D263.
+**Objective:** edit billing profiles/selections and import references through the existing configuration system.
+**Allowed paths:** `frontend/src/**`, `frontend/tests/**`, `src/my_harness/api/configuration.py`,
+`src/my_harness/api/project_configuration.py`, `src/my_harness/api/schemas.py`, `src/my_harness/services/**`,
+`src/my_harness/storage/accounting_operations.py` and related storage modules, focused `tests/**`,
+`frontend/openapi.json`, `frontend/src/api.generated.ts` and current documentation (flows/diagram if affected).
+**Acceptance criteria:**
+
+- Explicit, previewed conversion to `local-config-10`/`project-config-2`; guided controls for global profiles
+  (add/edit/remove, conditions with their source) and per-role defaults, and for per-role project selections, under
+  the D250 form rules. The TOML editor stays complete; loading never converts.
+- Server save-time validation of D263: unavailable reference bundle, missing or provider-mismatched explicit
+  project selection and removal/provider change of a profile still selected by a derived project copy are refused
+  with named fields/projects; inherited defaults that would resolve unknown are reported in the preview effects.
+- `GET /api/managed/configuration/references`, `POST …/references/preview` and `POST …/references/import` over the
+  T003 backend, with the idempotent preview digest of D263; bundle size limit, conflicts and the restored-archive
+  refusal kept; the list also works on an archive. OpenAPI exported and client types regenerated.
+- Billing-only saves keep technical receipts; frozen jobs keep their binding; no authentication, credentials or
+  machine-wide settings change.
+
+**Validation:** focused pytest for configuration/billing validation and the reference routes (synthetic bundles,
+temporary SQLite), the full `scripts/check --frontend`, `scripts/check-docs`; synthetic visual QA of the controls in
+en/es, light/dark, desktop/mobile and keyboard, and their absence on a query-only archive.
 
 ## P001-T006 — Qualification and phase handoff
 

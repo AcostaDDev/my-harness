@@ -4,8 +4,8 @@
 **Next phase task: P001-T004 — Aggregates and API.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
-resume this unchanged phase plan when that queue is empty. **OT008** (development checks) is pending and runs before
-P001-T004; it does not change this plan.
+resume this unchanged phase plan when that queue is empty. The queue is **empty**: OT008 (development checks, D260) was
+delivered source-only into `develop` and did not change this plan.
 
 Objective and exit criteria: [ROADMAP](ROADMAP.md#p001--metrics-records).
 Scope and code map: [phase handoff](phase/P001-metrics-records.md).

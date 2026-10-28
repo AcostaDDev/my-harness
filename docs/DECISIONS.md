@@ -1628,3 +1628,28 @@ Backup format 3 records the accounting inventory and recomputes reference, captu
 exact line sum) and cohort digests in the same snapshot. Bundles of an older schema require `backup-upgrade`, which
 migrates a private copy into a new query-only format-3 bundle and leaves the original bytes unchanged.
 Evidence: [P001-T003](phase/P001-T003-capture-storage.md).
+
+## D260 — Quiet development checks and economical agent workflow
+
+Status: accepted for OT008 at the owner's request. Development tooling for this repository only; not a product
+feature and outside the distribution.
+
+`scripts/check` (standard library) runs the AGENTS command sets through the pinned offline `uv` invocation and prints
+one line per suite with its counts, then failing IDs with their first error line (at most 20 entries, each line
+clipped). Default suites are unittest, `alembic check` and full pytest; given paths, only pytest runs over them, with
+options after `--`; `--frontend` adds the Node tests (TAP reporter) and `npm run build`, which already runs `tsc
+--noEmit`. `alembic check` upgrades and checks a fresh temporary SQLite (`HARNESS_DATABASE_URL`), never the
+development database. Each suite's full output replaces `.local/check/<suite>.log` (written to a per-process file and
+renamed, so concurrent runs never interleave); the exit status is nonzero on any failure. `scripts/check-docs` checks
+tracked Markdown (or given files) for local link targets and anchors (GitHub heading slugs with `-N` duplicates and
+explicit `<a id>`/`<a name>`; external URLs are not fetched), unclosed fences, en/es key parity in both catalog pairs,
+and every "head `…`, N tables" statement in `docs/DDBB-DIAGRAM.md` against `SCHEMA_REVISION`, the migration chain head
+and the mapped `__tablename__` count.
+
+AGENTS.md tells every client (Claude Code, Codex) to use these wrappers, to choose the cheapest sufficient check,
+and to read files by range or after `grep`. CLAUDE.md stays a thin import. At the owner's choice, no project
+`.claude/settings.json` (permissions or hooks) is added, so both clients follow the same text-only guidance. The
+managed-project isolation is unchanged: adapters still disable client hooks and project configuration, and managed
+projects keep the engine's deterministic, journaled formatter/validation/JUnit steps. The new scripts are not in
+`BUNDLE_SCRIPTS` or the wheel/sdist, so delivery is source-only into `develop` with no patch release (D239 applies
+to product changes). Evidence: [OT008](phase/OT008-development-checks.md).

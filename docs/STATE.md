@@ -9,7 +9,8 @@ Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
 The one-off queue is **empty**. **OT008** (quiet development checks and agent workflow guidance, D260) was delivered
-source-only through `chore/ot008-development-checks` → `develop`/`origin`, with no release; develop with
+source-only through `chore/ot008-development-checks` → `develop`/`origin`, with no release; it reaches `main`
+with the P001 closure (D261: later one-offs branch from the latest release, not `develop`). Develop with
 `scripts/check` and `scripts/check-docs` ([evidence](phase/OT008-development-checks.md)). **P001-T003**
 (capture, storage and historical compatibility) is complete and delivered through `feat/p001-t003-capture-storage`
 → `develop`/`origin`; **next phase task: P001-T004** (aggregates and API).

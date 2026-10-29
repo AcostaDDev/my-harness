@@ -8,6 +8,7 @@ import { DiffBlock, Evidence, Fields, Hash, Stale, usePoll } from "../ui";
 import { configurationChange, projectEditing, projectIssues } from "../project-profile";
 import type { Form } from "../project-profile";
 import { AgentFields, CommandsFields, ProfileFields, SaveImpact } from "../ProfileFields";
+import { ProjectBilling } from "../BillingFields";
 import { domId, texts } from "../profile-form.ts";
 import type { Issues } from "../profile-form.ts";
 import { efforts, modelOptions } from "../configuration.ts";
@@ -268,6 +269,7 @@ function ProjectFields({ form, editing, issues, onChange }: {
         [t("editor.revision_cycles"), policy.max_revision_cycles === undefined ? t("common.not_recorded") : String(policy.max_revision_cycles)],
       ]} />
     </fieldset>
+    <ProjectBilling scope="project-profile" form={form} issues={issues} onChange={onChange} />
     <p className="hint">{t("editor.preserved")}</p>
   </>;
 }

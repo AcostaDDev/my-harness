@@ -45,6 +45,9 @@ function environment(language = 'en') {
     if (path.endsWith('/task-sources')) return Response.json({ items: [], diagnostics: [] });
     if (path === '/api/managed/projects/own/configuration') return Response.json(env.state);
     if (path === '/api/managed/registry') return Response.json({ compositions: [] });
+    // The referenced global revision (D263): synthetic billing profiles and one default.
+    if (path === '/api/managed/configuration/revisions/global/3') return Response.json({ text: '', form: { format: 'local-config-10',
+      billing: { profiles: { credits: { provider: 'codex' }, api: { provider: 'claude' }, other: { provider: 'codex' } }, defaults: { reviewer: 'credits' } } } });
     if (path.endsWith('/preparation')) return Response.json({ available: false });
     if (path.endsWith('/form')) return Response.json({ form: body.form ?? JSON.parse(body.text), text: body.text ?? JSON.stringify(body.form) });
     if (path.endsWith('/preview')) {
@@ -268,5 +271,33 @@ for (const language of ['en', 'es']) test(`with the editing base the profile, co
     assert.deepEqual(sent.edit, edit); assert.deepEqual(sent.provenance, form().provenance); assert.deepEqual(sent.global, form().global);
     assert.ok(html.includes(env.catalog['editor.impact_preparation']));
     assert.ok(!env.requests.some(r => /\/(save|activate|preparation\/confirm)$/.test(r.path)), 'review alone saves nothing');
+  } finally { env.close(); }
+});
+
+test('billing selections need the explicit project-config-2 conversion and offer only the role provider profiles', async () => {
+  const env = environment();
+  try {
+    const tree = env.tree();
+    let html = await env.render(tree);
+    const say = (key, params) => Object.entries(params).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, value), en[key]);
+    assert.ok(html.includes(say('billing.convert_hint', { format: 'project-config-2', current: 'project-config-1' })));
+    env.host.elements.find(e => e.type === 'button' && e.props.children === say('billing.convert', { format: 'project-config-2' })).props.onClick();
+    html = await env.render(tree);
+    // The reviewer inherits `credits`; the Claude executor has no default and stays unknown unless it selects `api`.
+    assert.ok(html.includes(say('billing.inherit_named', { name: 'credits' })));
+    const unknown = en['billing.resolves_unknown'].replaceAll("'", '&#x27;');
+    assert.ok(html.includes(say('billing.resolves', { name: 'credits' }))); assert.ok(html.includes(unknown));
+    // Each profile is offered only to the role of its provider: Codex profiles to the reviewer, `api` to the executor.
+    const offered = value => env.host.elements.filter(e => e.type === 'option' && e.props.value === value).length;
+    assert.deepEqual([offered('credits'), offered('other'), offered('api')], [1, 1, 1]);
+    props(env, 'project-profile-billing-executor').onChange({ target: { value: 'api' } });
+    html = await env.render(tree);
+    assert.ok(!html.includes(unknown) && html.includes(say('billing.resolves', { name: 'api' })));
+    env.reason('Synthetic billing selection'); await env.render(tree);
+    env.click('profile.review_save'); await env.render(tree);
+    const sent = formRequests(env).at(-1).body.form;
+    assert.equal(sent.format, 'project-config-2'); assert.deepEqual(sent.billing, { executor: 'api' });
+    assert.deepEqual(sent.agents, form().agents);
+    assert.ok(!env.requests.some(r => /\/(save|activate)$/.test(r.path)), 'review alone saves nothing');
   } finally { env.close(); }
 });

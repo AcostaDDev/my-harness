@@ -13657,6 +13657,286 @@
         }
       }
     },
+    "/api/managed/configuration/references": {
+      "get": {
+        "summary": "References",
+        "description": "Available reference bundles. Independent of the configuration setup, so it also lists a restored archive.",
+        "operationId": "configuration_references",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ReferenceBundleRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/configuration/references/preview": {
+      "post": {
+        "summary": "References Preview",
+        "operationId": "configuration_references_preview",
+        "parameters": [
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferenceBundleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceImportRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/configuration/references/import": {
+      "post": {
+        "summary": "References Import",
+        "description": "Writes immutable reference rows, not a configuration revision; equal bytes are idempotent (D263).",
+        "operationId": "configuration_references_import",
+        "parameters": [
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferenceBundleImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceImportRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/configuration/revisions/{scope}/{revision}": {
       "get": {
         "summary": "Revision",
@@ -26889,6 +27169,39 @@
         ],
         "title": "Page[PhaseTaskRead]"
       },
+      "Page_ReferenceBundleRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceBundleRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[ReferenceBundleRead]"
+      },
       "Page_TaskMetricsRead_": {
         "properties": {
           "items": {
@@ -31107,6 +31420,268 @@
           "source"
         ],
         "title": "PromptVersionRead"
+      },
+      "ReferenceBundleImport": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1048576,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Preview Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content",
+          "preview_sha256"
+        ],
+        "title": "ReferenceBundleImport"
+      },
+      "ReferenceBundleInput": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1048576,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "ReferenceBundleInput"
+      },
+      "ReferenceBundleRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "references": {
+            "type": "integer",
+            "title": "References"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "observed_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed From"
+          },
+          "observed_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed To"
+          },
+          "effective_period": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "known",
+              "mixed"
+            ],
+            "title": "Effective Period"
+          },
+          "schemes": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceSchemeRead"
+            },
+            "type": "array",
+            "title": "Schemes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "recorded_at",
+          "available",
+          "references",
+          "providers",
+          "models",
+          "observed_from",
+          "observed_to",
+          "effective_period",
+          "schemes"
+        ],
+        "title": "ReferenceBundleRead",
+        "description": "D263: an available `metrics-reference-1` bundle (packaged or imported); listing never inserts rows."
+      },
+      "ReferenceImportRead": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "reference-import",
+            "title": "Operation"
+          },
+          "bundle": {
+            "type": "string",
+            "title": "Bundle"
+          },
+          "raw_sha256": {
+            "type": "string",
+            "title": "Raw Sha256"
+          },
+          "references": {
+            "type": "integer",
+            "title": "References"
+          },
+          "conflicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conflicts"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "new_rows": {
+            "type": "integer",
+            "title": "New Rows"
+          },
+          "existing_rows": {
+            "type": "integer",
+            "title": "Existing Rows"
+          },
+          "inserted_rows": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inserted Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation",
+          "bundle",
+          "raw_sha256",
+          "references",
+          "conflicts",
+          "sha256",
+          "new_rows",
+          "existing_rows"
+        ],
+        "title": "ReferenceImportRead",
+        "description": "`sha256` seals bundle, raw bytes, count and conflicts; row counts are informative (D263)."
+      },
+      "ReferenceSchemeRead": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "bases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bases"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "conditions": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Conditions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "platform",
+          "product",
+          "scheme",
+          "unit",
+          "bases",
+          "models",
+          "conditions"
+        ],
+        "title": "ReferenceSchemeRead",
+        "description": "One tariff scheme a billing profile can pin: its identity, bases, models and case conditions."
       },
       "RegeneratedDocumentRead": {
         "properties": {

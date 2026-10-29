@@ -5,10 +5,18 @@ import { errorText, translateNow, useI18n } from "./Language";
 import type { MessageKey } from "./i18n.ts";
 import { managed, ManagedError } from "./managed-api";
 import type { S } from "./managed-api";
+import { refusalLine } from "./configuration.ts";
+import type { LiveRefusal } from "./configuration.ts";
 
 /** Text of an error to show: a service problem without a diagnostic gets the interface's own sentence. */
-export const message = (e: unknown) => e instanceof ManagedError && e.diagnostic === undefined
-  ? translateNow("error.no_diagnostic", { status: e.status, code: e.code ?? "request_failed" }) : errorText(e);
+export const message = (e: unknown) => (e instanceof ManagedError && e.diagnostic === undefined
+  ? translateNow("error.no_diagnostic", { status: e.status, code: e.code ?? "request_failed" }) : errorText(e)) + corrections(e);
+
+/** Structured corrections of a refused candidate (D238/D263): where, code and diagnostic, one per line. */
+function corrections(e: unknown) {
+  if (!(e instanceof ManagedError) || !e.details?.length) return "";
+  return e.details.map(item => "\n" + refusalLine((item && typeof item === "object" ? item : {}) as LiveRefusal)).join("");
+}
 
 /** Full uninterpreted evidence: null is shown as "not recorded", never as empty. */
 export function Evidence({ title, value }: { title: string; value: unknown }) {

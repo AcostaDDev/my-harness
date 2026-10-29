@@ -13,6 +13,7 @@ import { Link } from "../navigation";
 import type { Route } from "../router.ts";
 import { Empty, Evidence, Fields, Hash, Loading, PageHeader, Pagination, Stale, Status, usePoll, when } from "../ui";
 import { PURPOSES } from "./shared";
+import { ReferenceList } from "../BillingFields";
 
 // Accounting (P001-T005a, D263) over /api/managed/accounting/* (D262): read-only, global or per project and
 // available on a query-only archive. Valuations are calculated from pinned references; the client-reported
@@ -132,6 +133,7 @@ export function AccountingPage({ project, refresh = 0 }: { project?: string; ref
             selected={selected} onSelect={setSelected} />
           {selected && <InvocationDetail key={`${selected}/${selection.cohort ?? ""}`} id={selected} cohort={selection.cohort} onClose={() => setSelected(undefined)} />}
         </>}
+    {!project && <ReferenceList />}
   </>;
 }
 

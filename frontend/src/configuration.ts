@@ -2,6 +2,7 @@ import type { S } from "./managed-api";
 import { managed, ManagedError } from "./managed-api";
 import type { MessageKey } from "./i18n.ts";
 import { agentIssues, commandsIssues, isObject, profileIssues, texts } from "./profile-form.ts";
+import { globalIssues } from "./billing.ts";
 
 export type Form = Record<string, unknown>;
 export type Draft = {
@@ -98,7 +99,7 @@ export function errors(draft: Draft): Record<string, MessageKey> {
   if (Array.isArray(roots) && roots.some(root => typeof root !== "string" || !root.startsWith("/"))) result["registration.roots"] = "configuration.absolute";
   for (const role of ["reviewer", "executor"])
     for (const [key, issue] of Object.entries(agentIssues(field(draft.form, `agents.${role}`), `agents.${role}`, [role], efforts))) result[key] ??= issue;
-  return { ...result, ...catalogIssues(draft.form) };
+  return { ...result, ...catalogIssues(draft.form), ...globalIssues(draft.form) };
 }
 
 const MODEL = /^[A-Za-z0-9][A-Za-z0-9._:@[\]-]{0,127}$/;
@@ -163,8 +164,9 @@ export function waitingReason(reason: string): { key: MessageKey; id: string } {
 }
 
 export type LiveRefusal = S["LiveRefusalRead"];
-/** One correction line of a refused live candidate: where (project or role/setting), the code and its diagnostic. */
+/** One correction line of a refused live (D238) or billing (D263) candidate: where, the code and its diagnostic. */
 export function refusalLine(item: LiveRefusal): string {
-  const where = item.project ?? item.setting ?? item.role ?? "";
+  const setting = item.setting ?? item.role;
+  const where = item.project ? [item.project, setting].filter(Boolean).join(" · ") : setting ?? "";
   return [where, item.code, item.diagnostic].filter(Boolean).join(" · ");
 }

@@ -2032,6 +2032,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/configuration/references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * References
+         * @description Available reference bundles. Independent of the configuration setup, so it also lists a restored archive.
+         */
+        get: operations["configuration_references"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/configuration/references/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** References Preview */
+        post: operations["configuration_references_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/configuration/references/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * References Import
+         * @description Writes immutable reference rows, not a configuration revision; equal bytes are idempotent (D263).
+         */
+        post: operations["configuration_references_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/configuration/revisions/{scope}/{revision}": {
         parameters: {
             query?: never;
@@ -5937,6 +5994,15 @@ export interface components {
             /** Next Offset */
             next_offset: number | null;
         };
+        /** Page[ReferenceBundleRead] */
+        Page_ReferenceBundleRead_: {
+            /** Items */
+            items: components["schemas"]["ReferenceBundleRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
         /** Page[TaskMetricsRead] */
         Page_TaskMetricsRead_: {
             /** Items */
@@ -7434,6 +7500,100 @@ export interface components {
             sha256: string;
             /** Source */
             source: string;
+        };
+        /** ReferenceBundleImport */
+        ReferenceBundleImport: {
+            /** Content */
+            content: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** ReferenceBundleInput */
+        ReferenceBundleInput: {
+            /** Content */
+            content: string;
+        };
+        /**
+         * ReferenceBundleRead
+         * @description D263: an available `metrics-reference-1` bundle (packaged or imported); listing never inserts rows.
+         */
+        ReferenceBundleRead: {
+            /** Id */
+            id: string;
+            /** Source */
+            source: string;
+            /** Recorded At */
+            recorded_at: string | null;
+            /** Available */
+            available: boolean;
+            /** References */
+            references: number;
+            /** Providers */
+            providers: string[];
+            /** Models */
+            models: string[];
+            /** Observed From */
+            observed_from: string | null;
+            /** Observed To */
+            observed_to: string | null;
+            /**
+             * Effective Period
+             * @enum {string}
+             */
+            effective_period: "unknown" | "known" | "mixed";
+            /** Schemes */
+            schemes: components["schemas"]["ReferenceSchemeRead"][];
+        };
+        /**
+         * ReferenceImportRead
+         * @description `sha256` seals bundle, raw bytes, count and conflicts; row counts are informative (D263).
+         */
+        ReferenceImportRead: {
+            /**
+             * Operation
+             * @constant
+             */
+            operation: "reference-import";
+            /** Bundle */
+            bundle: string;
+            /** Raw Sha256 */
+            raw_sha256: string;
+            /** References */
+            references: number;
+            /** Conflicts */
+            conflicts: string[];
+            /** Sha256 */
+            sha256: string;
+            /** New Rows */
+            new_rows: number;
+            /** Existing Rows */
+            existing_rows: number;
+            /** Inserted Rows */
+            inserted_rows?: number | null;
+        };
+        /**
+         * ReferenceSchemeRead
+         * @description One tariff scheme a billing profile can pin: its identity, bases, models and case conditions.
+         */
+        ReferenceSchemeRead: {
+            /** Provider */
+            provider: string;
+            /** Platform */
+            platform: string;
+            /** Product */
+            product: string;
+            /** Scheme */
+            scheme: string;
+            /** Unit */
+            unit: string;
+            /** Bases */
+            bases: string[];
+            /** Models */
+            models: string[];
+            /** Conditions */
+            conditions: {
+                [key: string]: string[];
+            };
         };
         /** RegeneratedDocumentRead */
         RegeneratedDocumentRead: {
@@ -15859,6 +16019,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConfigurationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_references: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ReferenceBundleRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_references_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferenceBundleInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceImportRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_references_import: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferenceBundleImport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceImportRead"];
                 };
             };
             /** @description Forbidden */

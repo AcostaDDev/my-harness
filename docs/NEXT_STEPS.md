@@ -2,10 +2,11 @@
 
 **Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; T004 aggregates/API
 complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; T005a accounting UI complete as
-source and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin`; T005b and T006 pending. T005 is split
+source and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin`; T005b controls complete and delivered
+through `feat/p001-t005b-billing-controls` → `develop`/`origin` (D265), completing T005; T006 pending. T005 is split
 into T005a (accounting UI) and T005b (billing/reference controls) by
 [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).
-**Next phase task: P001-T005b — Billing-profile and reference controls.**
+**Next phase task: P001-T006 — Qualification and phase handoff.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty. The queue is **empty**: OT008 (development checks, D260) was
@@ -27,7 +28,7 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T005b.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+**Next: P001-T006.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
 complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
 
 The sections below retain each task's contract and distinguish completed work from pending integration. T001 settled
@@ -199,7 +200,7 @@ compatibility and no full-history reads; check generated types using the existin
 
 ## P001-T005 — Billing/reference controls and metrics UI
 
-**Status:** in progress (T005a complete as source, T005b pending); split into two sequential deliveries by
+**Status:** complete (T005a and T005b delivered); split into two sequential deliveries by
 [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). T005 is complete
 when T005a and T005b are both delivered; their combined criteria below are the task contract.
 **Depends on:** completed T004 and T001's configuration/reference workflow.
@@ -251,8 +252,10 @@ desktop/mobile, keyboard navigation and a query-only archive. Record tested surf
 
 ### P001-T005b — Billing-profile and reference controls
 
-**Status:** pending; after T005a. **Delivery route:** `feat/p001-t005b-billing-controls` from `develop` →
-`develop`/`origin` (commit/merge/push only with explicit owner authorization). No release or version bump.
+**Status:** complete as source (D265, [evidence](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls))
+and delivered through `feat/p001-t005b-billing-controls` (branched from `develop` at `0d51449`) → `develop`/`origin`
+with explicit owner authorization. No release or version bump.
+The criteria below are retained as the task contract.
 **Depends on:** completed T005a and D263.
 **Objective:** edit billing profiles/selections and import references through the existing configuration system.
 **Allowed paths:** `frontend/src/**`, `frontend/tests/**`, `src/my_harness/api/configuration.py`,

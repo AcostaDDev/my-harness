@@ -148,3 +148,45 @@ def impact(session, repository, changes):
             'shared_catalog_followed': False})
     return {'restart_required': any(c['scope'] == 'global' for c in changes), 'projects': projects,
             'jobs': jobs, 'admitted_jobs_keep_frozen_configuration': True, 'activation_rejects_pending_work': True}
+
+
+def billing_review(session, changes):
+    """D263: refuse at save what would only surface later as `billing_profile_unknown`; report inherited defaults.
+
+    Refused: a global profile whose pinned bundle is not available, and an explicit `project-config-2` selection
+    that its referenced global revision (or the global candidate of the same save) lacks or whose provider differs
+    from the project's agent. A derived copy carries its project's selection, so removing or re-providing a selected
+    profile is refused naming that project. Inherited defaults keep `project-config-1` meaning and are only reported.
+    """
+    from my_harness.services.configuration import BILLING_GLOBAL, BILLING_PROJECT, digest
+    from my_harness.storage import accounting
+    from my_harness.storage.billing import choose, document
+    candidates, refusals, unknown = {}, [], []
+    for change in changes:
+        if change['scope'] != 'global' or not change['validated']:
+            continue
+        data = parse(change['text'], 'global')
+        candidates[digest(change['text'].encode())] = data
+        if data['format'] == BILLING_GLOBAL:
+            for name, profile in sorted(data.get('billing', {}).get('profiles', {}).items()):
+                if not accounting.available(session, profile['references']):
+                    refusals.append({'setting': f'billing.profiles.{name}.references', 'code': 'reference_unavailable'})
+    for change in sorted(changes, key=lambda item: item['scope']):
+        scope = change['scope']
+        if scope == 'global' or not change['validated']:
+            continue
+        data = parse(change['text'], scope)
+        global_data = candidates.get(data['global']['sha256']) or document(session, 'global', data['global'])
+        selected = data.get('billing', {}) if data['format'] == BILLING_PROJECT else {}
+        for role in ('reviewer', 'executor'):
+            chosen = choose(data, global_data, role) if global_data is not None else None
+            if selected.get(role):
+                if chosen is None or chosen[1] is None:
+                    profiles = ((global_data or {}).get('billing', {}).get('profiles', {})
+                                if (global_data or {}).get('format') == BILLING_GLOBAL else {})
+                    refusals.append({'project': scope[8:], 'role': role, 'setting': f'billing.{role}',
+                                     'code': ('billing_provider_mismatch' if selected[role] in profiles
+                                              else 'billing_profile_missing')})
+            elif chosen is not None and chosen[1] is None:
+                unknown.append({'scope': scope, 'role': role, 'profile': chosen[0], 'reason': 'billing_profile_unknown'})
+    return refusals, unknown

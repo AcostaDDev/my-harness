@@ -11,6 +11,7 @@ import type { Action, Draft, LiveRefusal, Review } from "../configuration.ts";
 import { Link } from "../navigation";
 import { ConfigurationAssistance } from "./ConfigurationAssistance";
 import { AgentFields, CommandsFields, KeyValueField, LinesField, ProfileFields, SaveImpact, ToolCapabilities } from "../ProfileFields";
+import { GlobalBilling, ReferenceList } from "../BillingFields";
 import { COMMAND_NAME, ENTRY_NAME, domId, emptyCommands, emptyProfile, isObject, nameIssue, texts, without } from "../profile-form.ts";
 import type { Issues, Obj } from "../profile-form.ts";
 
@@ -140,6 +141,7 @@ export function ConfigurationFields({ draft, onChange, issues }: {
         {input("service.poll_seconds", "configuration.poll", "number")}</div>
     </fieldset>
     <GlobalCatalog form={draft.form} issues={issues} update={update} />
+    <GlobalBilling scope="configuration" form={draft.form} issues={issues} onChange={form => onChange({ ...draft, form })} />
     <p className="hint">{t("configuration.advanced_hint")}</p>
   </>;
 }
@@ -333,8 +335,10 @@ export function ConfigurationPage() {
     try { await work(); }
     catch (error) {
       const live = error instanceof ManagedError && error.status === 409 && error.code === "live_configuration_refused";
-      setRefusals(live ? (error.details ?? []) as LiveRefusal[] : undefined);
-      setError(live ? t("configuration.live.refused") : error instanceof ManagedError && error.status === 409
+      // D263: a billing refusal names its settings (and the projects whose derived selection it would break).
+      const billing = error instanceof ManagedError && error.status === 409 && error.code === "billing_configuration_refused";
+      setRefusals(live || billing ? (error.details ?? []) as LiveRefusal[] : undefined);
+      setError(live ? t("configuration.live.refused") : billing ? t("billing.refused") : error instanceof ManagedError && error.status === 409
         ? `${t("configuration.conflict")} (${error.code ?? "conflict"})` : message(error));
       setReview(undefined); setActivation(undefined); setConfirmed(false); setActivateConfirmed(false);
       refresh(n => n + 1);
@@ -491,6 +495,7 @@ export function ConfigurationPage() {
           <button type="button" disabled={frozen || stale || !confirmed} onClick={() => void run(() => submit(`${ROOT}/save`, { ...review.body, preview_sha256: review.preview.sha256 }))}>{t("configuration.save")}</button>
         </section>}
       </section>
+      <ReferenceList editable disabled={frozen} />
       <section className="panel"><h2>{t("configuration.activation")}</h2><p>{t("configuration.activation_hint")}</p>
         <p className="hint">{t("configuration.activation_scope")}</p>
         <button type="button" disabled={frozen || !saved || saved.status !== "VALIDATED" || !!state.pending || state.status === "RECOVERY_REQUIRED" || state.status === "INVALID" || !draft.reason.trim()}

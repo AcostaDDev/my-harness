@@ -393,7 +393,11 @@ rules change.
   time-limited and permanent revocable grants, enforced outside the model.
 - **Tools and traces.** A client-neutral discovery/description/invocation contract, independent of native tool search,
   prepares future clients such as OpenCode without implementing them. Requests, operations, invocations, observed
-  turns, tool calls and delivered knowledge are correlated with exact revisions and explicit coverage.
+  turns, tool calls and delivered knowledge are correlated with exact revisions and explicit coverage. The operation
+  journal and trace events exist (P002-T006, D287): one recoverable operation per graph key, linked to the existing
+  invocation ledger and attempt, with ordered insert-only events, `trace-observation-1` counters (harness attempt,
+  revision round and native turn kept apart; missing telemetry absent) and read-only, project-scoped trace queries;
+  no product graph launches agents yet and knowledge receipts and discovery events start with T007/T008.
 - **Observation.** A global inbox for both modes and a read-only task-instance graph; their taxonomy and visual design
   come later from the owner.
 - **Preserved.** Acceptance by exact content, READY binding, single writer, intent before effect, conservative recovery,

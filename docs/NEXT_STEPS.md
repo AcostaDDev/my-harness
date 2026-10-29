@@ -5,8 +5,8 @@ refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-
 **P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
 develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
-**P002-T005 is completed (D286 accepted) and integrated into develop.** T006–T023 are planned and not
-started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+**P002-T005 is completed (D286 accepted) and integrated into develop.** **P002-T006 is completed (D287 accepted) and
+integrated into develop.** T007–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
 data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -276,6 +276,19 @@ events and pending effects, with reconstructible request-to-result traces. **Dep
 **Basis:** B05, B10–B13, B19–B23.
 
 **Gates:** G05, G08. **Threats:** TM12, TM14, TM15, TM17.
+
+**Status (2026-10-29):** completed on `feat/p002-t006-operations-tracing` from develop `59b9c80`;
+record: [T006 operations and tracing](phase/P002-T006-operations-tracing.md); the six review findings are corrected
+([§9](phase/P002-T006-operations-tracing.md#9-review-findings-and-corrections)). G05 implemented on D281
+(`trace-observation-1`); G08 resolved by the owner's acceptance of
+[D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract) (operations only under graph threads,
+invocation = ledger row, attempt = native source, five statuses, no backfill). Implemented: schema
+`0032_operation_journal`, journal, `JournalPort`, command sink, fenced invocation seal/settlement, evidence-based
+recovery, read-only trace routes; synthetic evidence only. Bound to later tasks: receipts and broker (T007/T008),
+product graphs that supply operations (T014–T016), recovery UI and inbox (T016/T017), views and aggregation
+(T018/T019), installed conversion (T020). Committed, merged into develop and pushed at the owner's
+authorization; the 0.2.0 route (release → distribution/publication → installation) remains pending, each stage
+separately authorized.
 ## P002-T007 — Frozen context and knowledge-access receipts
 
 **Problem:** database queries can change an agent's effective context silently and leave its knowledge use unexplained.
@@ -618,4 +631,6 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
    authorization; part of 0.2.0.
 4. **P002-T005** is complete on `feat/p002-t005-domain-operations`, merged into develop and pushed at the owner's
    authorization; part of 0.2.0.
-5. Then: **P002-T006** (operations, invocations and correlated events) on a new topic branch from develop.
+5. **P002-T006** is complete on `feat/p002-t006-operations-tracing`, merged into develop and pushed at the owner's
+   authorization; part of 0.2.0.
+6. Then: **P002-T007** (frozen context and knowledge-access receipts) on a new topic branch from develop.

@@ -2188,3 +2188,26 @@ keys are scoped by project and principal; a repeat returns the stored outcome wi
 persisted knowledge projects and serve restored query-only copies. Product composition has no agent resolver,
 permission provider, authorization provider or receipt sink: agent calls and delegated adoption are refused until
 T006–T010/T016 provide them.
+
+## D287 — Operation journal granularity and recovery contract
+
+Status: accepted in P002-T006 (owner, 2026-10-29); implemented in T006. Resolves G08; proposal and evidence in the
+[T006 record](phase/P002-T006-operations-tracing.md#3-g08-contract-accepted-as-d287).
+
+Project task, workflow run, operation, invocation and attempt stay distinct. A new `workflow_operations` journal holds
+one recoverable operation per `OperationPort` key inside a graph thread, with kind, parent/causation, origin and
+bounded references, writer fencing and result/error links. The invocation is the existing `usage_invocations` ledger
+row, the only source of charges; the attempt is its existing native source; `managed_jobs` stays the only scheduler.
+0.1.9 runs keep their journals without synthetic operations or backfill. Statuses `INTENDED`, `COMPLETED`, `FAILED`,
+`UNCERTAIN` and owner-only `ABANDONED`; domain-command operations are written `COMPLETED` in the command's
+transaction and refusals create only an event. Agent invocations are sealed in the fenced attempt-start transaction
+with the ledger intent and completed with the fenced attempt result. Recovery classifies by evidence; an expired
+lease never completes an operation or proves a stopped writer; uncertain inference is never relaunched. Ordered,
+deduplicated `trace_events` share each transition's transaction and rebuild the status projection.
+Implementation: migration `0032_operation_journal` (75 tables), `storage/operation_journal.py`, `JournalPort`, the
+T005 audit sink in outcome and refusal transactions, `agent_started(..., InvocationOperation)` and read-only trace
+routes under `/api/managed/knowledge/projects/{k}/traces/{thread}`.
+Review corrections (same task, before integration; contract unchanged): the generic port seals and completes only
+`sealed_effect`; every port path checks the project root; results are kept verbatim within 16 KiB; `refs`/`origin`
+are validated; offloaded event content is stored in a third table, `trace_artifacts` (76 tables); Codex turns are
+counted from native terminals. Details in the [T006 record](phase/P002-T006-operations-tracing.md#9-review-findings-and-corrections).

@@ -126,6 +126,8 @@ class StreamMetrics:
         self.current = None
         self.unidentified = 0
         self.lexemes = None
+        # P002-T006: native terminal events by type (turn delimiters), whatever the validity of the final payload.
+        self.terminals = {}
 
     def _tool(self, name, ident):
         if not isinstance(name, str) or not name:
@@ -137,6 +139,8 @@ class StreamMetrics:
 
     def event(self, event, *, terminal=False):
         kind = event.get('type')
+        if kind in TERMINALS.get(self.provider, ()):
+            self.terminals[kind] = self.terminals.get(kind, 0) + 1
         if self.provider == 'codex':
             item = event.get('item')
             if kind == 'item.completed' and isinstance(item, dict) and isinstance(item.get('type'), str):
@@ -198,6 +202,7 @@ class StreamMetrics:
         return {'format': CAPTURE, 'messages': len(self.messages) if claude else None,
                 'message_usage': usage, 'tools': dict(sorted(tools.items())),
                 'items': dict(sorted(self.items.items())) if self.provider == 'codex' else None,
+                'terminals': dict(sorted(self.terminals.items())),
                 'accounting': {'format': STREAM_ACCOUNTING, 'requests': requests if claude else None,
                                'unidentified_messages': self.unidentified if claude else None,
                                'cost_lexemes': self.lexemes}}

@@ -31,6 +31,7 @@ from my_harness.storage.models import (
 from my_harness.storage.managed_mode import ModeConflict, ModeGuard
 from my_harness.storage.metrics import executor_round, record as record_metrics
 from my_harness.storage.accounting import intend_attempt as intend_usage, settle_attempt as settle_usage
+from my_harness.storage import operation_journal
 from my_harness.storage import run_projection
 from my_harness.storage.schema import require_schema
 from my_harness.i18n import tr
@@ -529,6 +530,9 @@ class SQLiteManagedRepository:
                 # H6.4: metrics materialized in the same transaction as the attempt result.
                 record_metrics(session, run, row, executor_round=executor_round(roles, number), recorded_at=row.finished_at)
                 settle_usage(session, run, row)  # P001-T003: accounting capture in the same transaction
+                # P002-T006 (D287): the invocation's operation settles with the fenced result, if a graph sealed one.
+                operation_journal.settle_attempt(session, row, revision_round=executor_round(roles, number),
+                                                 at=row.finished_at)
         run.history_json = dump_history(history)
         run.revisions = history.revisions
         run_projection.advance(session, run.id, previous, history, run.history_json)  # same transaction (D142)
@@ -544,7 +548,9 @@ class SQLiteManagedRepository:
             self._event(session, run, "checkpoint", {"job_id": job.id, "history_status": history.status,
                                                     "completed_attempts": completed})
 
-    def agent_started(self, claim: JobRecord, history: RunHistory, request: AgentRequest) -> AgentRequest:
+    def agent_started(self, claim: JobRecord, history: RunHistory, request: AgentRequest,
+                      operation: 'operation_journal.InvocationOperation | None' = None) -> AgentRequest:
+        """`operation`: a graph node's invocation operation, sealed here with the attempt and the ledger intent."""
         self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
@@ -567,7 +573,10 @@ class SQLiteManagedRepository:
                                  status="ACTIVE", started_at=self._now(), language_context=job.language_context)
             session.add(attempt)
             session.flush()
-            intend_usage(session, run, attempt)  # P001-T003: expected invocation with its native intent
+            invocation = intend_usage(session, run, attempt)  # P001-T003: expected invocation with its native intent
+            if operation is not None:
+                operation_journal.seal_invocation(session, operation, root=run.root, job=job, attempt=attempt,
+                                                  invocation_id=invocation.id, at=attempt.started_at)
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
                           "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING",
@@ -649,9 +658,10 @@ class SQLiteManagedRepository:
                 result = AgentResult(None, error="Interrupted invocation; outcome unknown, no automatic retry")
                 row.status, row.result_json, row.finished_at = "INTERRUPTED", freeze(asdict(result)), self._now()
                 history = replace(history, attempts=history.attempts + (Attempt(restore_request(json.loads(row.request_json)), result),))
-                record_metrics(session, run, row, recorded_at=row.finished_at, executor_round=executor_round(
-                    [attempt.request.role for attempt in history.attempts], row.number))
+                round_ = executor_round([attempt.request.role for attempt in history.attempts], row.number)
+                record_metrics(session, run, row, recorded_at=row.finished_at, executor_round=round_)
                 settle_usage(session, run, row)
+                operation_journal.settle_attempt(session, row, revision_round=round_, at=row.finished_at)
             history = stop_history(history, run.stage, reason)
             self._history(session, run, history)
             run.status = "COMMITTED" if self._live_commit(session, run.id, ("COMMITTED",)) else "INTERRUPTED"

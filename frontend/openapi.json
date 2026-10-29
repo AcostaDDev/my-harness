@@ -17635,6 +17635,466 @@
         }
       }
     },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}": {
+      "get": {
+        "summary": "Thread",
+        "operationId": "trace_thread",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thread Id"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceThreadRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}/operations": {
+      "get": {
+        "summary": "Operations",
+        "operationId": "trace_operations",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thread Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceOperationsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}/events": {
+      "get": {
+        "summary": "Events",
+        "description": "Ordered events after the `after` sequence; `operation_id` narrows to one operation.",
+        "operationId": "trace_events",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thread Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "operation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Operation Id"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceEventsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}/artifacts/{sha256}": {
+      "get": {
+        "summary": "Artifact",
+        "description": "Content an event of this thread offloaded (`trace-payload-1` references), verified on read.",
+        "operationId": "trace_artifact",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Thread Id"
+            }
+          },
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "title": "Sha256"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceArtifactRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -35672,6 +36132,417 @@
           "diagnostics"
         ],
         "title": "TaskSourcesRead"
+      },
+      "TraceArtifactRead": {
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "media": {
+            "type": "string",
+            "title": "Media"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Masked content an event offloaded; verified against sha256 and size."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sha256",
+          "size",
+          "media",
+          "content"
+        ],
+        "title": "TraceArtifactRead"
+      },
+      "TraceEventRead": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence",
+            "description": "Global order of the event; the cursor of the next page."
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operation Id"
+          },
+          "invocation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Id"
+          },
+          "command_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command Id"
+          },
+          "parent_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Event Id"
+          },
+          "causation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Causation Id"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload",
+            "description": "Bounded and sanitized (trace-payload-1)."
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "redactions": {
+            "type": "integer",
+            "title": "Redactions"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sequence",
+          "event_id",
+          "kind",
+          "source",
+          "operation_id",
+          "invocation_id",
+          "command_id",
+          "parent_event_id",
+          "causation_id",
+          "payload",
+          "truncated",
+          "redactions",
+          "recorded_at"
+        ],
+        "title": "TraceEventRead"
+      },
+      "TraceEventsRead": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TraceEventRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_after": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_after"
+        ],
+        "title": "TraceEventsRead"
+      },
+      "TraceOperationRead": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "INTENDED",
+              "COMPLETED",
+              "FAILED",
+              "UNCERTAIN",
+              "ABANDONED"
+            ],
+            "title": "Status"
+          },
+          "parent_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Operation Id"
+          },
+          "causation_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Causation Event Id"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "refs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Refs"
+          },
+          "command_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command Id"
+          },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "invocation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Id",
+            "description": "The usage_invocations row: the only source of charges."
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "key",
+          "kind",
+          "status",
+          "parent_operation_id",
+          "causation_event_id",
+          "origin",
+          "refs",
+          "command_id",
+          "attempt_id",
+          "invocation_id",
+          "result",
+          "error",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TraceOperationRead"
+      },
+      "TraceOperationsRead": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TraceOperationRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_offset"
+        ],
+        "title": "TraceOperationsRead"
+      },
+      "TraceThreadRead": {
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "graph_id": {
+            "type": "string",
+            "title": "Graph Id"
+          },
+          "graph_version": {
+            "type": "string",
+            "title": "Graph Version"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "segments": {
+            "type": "integer",
+            "title": "Segments"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thread_id",
+          "graph_id",
+          "graph_version",
+          "status",
+          "segments",
+          "reason",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TraceThreadRead"
       },
       "UiLanguageContextRead": {
         "properties": {

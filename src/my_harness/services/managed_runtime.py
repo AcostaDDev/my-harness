@@ -487,13 +487,20 @@ class ManagedRuntime:
         from my_harness.orchestration import GraphRunner
         return GraphRunner(self.engine, registry)
 
+    def operation_journal(self):
+        """P002-T006 (D287): operation journal and bounded trace queries; reads serve query-only restores."""
+        from my_harness.storage.operation_journal import OperationJournal
+        return OperationJournal(self.engine)
+
     def domain_operations(self):
         """P002-T005 (D286): the shared typed-command service. Agent callers, permission state, delegated adoption
         and receipts keep their fail-closed defaults until T006–T010/T016 provide them; reads need only the engine,
-        so they also serve restored query-only copies."""
+        so they also serve restored query-only copies. P002-T006 (D287): accepted outcomes and recorded refusals write
+        their trace event, and graph commands their operation, through the audit sink in the same transaction."""
         if self._domain_operations is None:
             from my_harness.services.domain_operations import DomainOperations
-            self._domain_operations = DomainOperations(self.engine)
+            from my_harness.storage.operation_journal import command_sink
+            self._domain_operations = DomainOperations(self.engine, audit_sinks=(command_sink,))
         return self._domain_operations
 
     def project(self, project_id: str) -> ManagedProject:

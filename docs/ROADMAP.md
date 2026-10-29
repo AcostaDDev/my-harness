@@ -63,7 +63,9 @@ are integrated into develop. **P002-T003** (LangGraph runtime and continuation f
 integrated into develop; it is exercised by synthetic graphs only and no product behavior
 uses it. **P002-T004** (structured knowledge and revision model, D284–D285) is completed and integrated into develop; it is
 exercised by synthetic knowledge only. **P002-T005** (typed domain operations and capability policy, D286) is
-completed and integrated into develop; owner API routes and synthetic graphs use it, agents do not.
+completed and integrated into develop; owner API routes and synthetic graphs use it, agents do not. **P002-T006**
+(operations, invocations and correlated events, D287) is completed and integrated into develop; synthetic graphs
+and fake CLIs exercise it, and no product graph launches agents.
 
 **Exit criteria (adopted with D268):**
 

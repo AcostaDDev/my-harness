@@ -57,6 +57,11 @@ flowchart TD
   migration or restore, and neither launches clients or rewrites native sources, metrics or earlier valuations.
 - **Archives.** Retention removes authorized stream bytes only. Format-3 backups verify every accounting digest and
   the exact line sums; restored consultation is query-only and refuses accounting operations.
+- **Operations of graphs (P002-T006, D287).** A graph's `agent_invocation` operation is sealed in the same fenced
+  attempt-start transaction as this intent and links `usage_invocations.id`; it settles with the fenced attempt result.
+  The ledger stays the only source of charges: operations and trace events carry no usage amounts, and a
+  `trace-observation-1` event names which usage view exists without adding views
+  ([operation journal](operation-journal.md)).
 - **Queries (T004).** `storage/accounting_views.py` reads one row per invocation with its latest capture and the
   valuation chosen by the selection policy (original admission valuation, or one named cohort; a `BUILDING` cohort
   has no full amount and non-members are only counted). Not-invoked rows are excluded and shown; missing captures,

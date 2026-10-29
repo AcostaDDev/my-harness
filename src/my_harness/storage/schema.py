@@ -7,11 +7,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0031_domain_commands"
-# P002-T004 (D284) and P002-T005 (D286): the protection triggers of 0030 (knowledge) and 0031 (domain command
-# outcomes), by name and whitespace-normalized SQL. A database, backup or restored copy whose triggers are missing
-# or altered is refused.
-SCHEMA_TRIGGERS_SHA256 = "5415725d9284db59c6e81179b1dd79498aaf89e0d0c23ab23b04fc2cb63d032f"
+SCHEMA_REVISION = "0032_operation_journal"
+# P002-T004 (D284), P002-T005 (D286) and P002-T006 (D287): the protection triggers of 0030 (knowledge), 0031
+# (domain command outcomes) and 0032 (trace events and artifacts), by name and whitespace-normalized SQL. A database, backup or
+# restored copy whose triggers are missing or altered is refused.
+SCHEMA_TRIGGERS_SHA256 = "e41422961556b9596549ada60e7b3ee63889f6cfa603a00910231fa7e8f07a74"
 
 
 def trigger_digest(rows) -> str:
@@ -48,7 +48,8 @@ def require_schema(engine: Engine) -> None:
                           "valuation_cohorts", "valuation_cohort_members", "graph_threads", "graph_checkpoints",
                           "graph_checkpoint_writes", "knowledge_projects", "knowledge_items",
                           "knowledge_item_versions", "knowledge_revisions", "knowledge_revision_members",
-                          "knowledge_revision_links", "knowledge_identity_map", "domain_commands"):
+                          "knowledge_revision_links", "knowledge_identity_map", "domain_commands",
+                          "workflow_operations", "trace_events", "trace_artifacts"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
             rows = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'")).all()
             if not triggers_intact(rows):

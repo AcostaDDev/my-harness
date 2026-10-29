@@ -1372,5 +1372,22 @@
   "domain.revision_unknown": "Unknown accepted revision {number}.",
   "domain.schema_mismatch": "The schema digest of {operation} does not match the catalogue.",
   "domain.stale_revision": "The accepted head is not the expected revision; reload it.",
-  "domain.unauthorized_handler": "Operation {operation} was handled without a capability decision."
+  "domain.unauthorized_handler": "Operation {operation} was handled without a capability decision.",
+  "journal.event_conflict": "Trace event {key} already exists with other content; events are never rewritten.",
+  "journal.invocation_exists": "Operation {operation} already sealed its invocation; it is never launched twice.",
+  "journal.kind_unknown": "Unknown operation or event kind {kind}.",
+  "journal.operation_conflict": "Operation {operation} already exists in graph thread {thread} with another kind or references.",
+  "journal.operation_state": "Operation {operation} is {status}; expected {expected}.",
+  "journal.operation_unknown": "Unknown operation {operation}.",
+  "journal.read_only": "The database is a query-only restore; the operation journal cannot be written.",
+  "journal.reason_required": "Abandoning an operation requires a reason.",
+  "journal.thread_scope": "Graph thread {thread} belongs to another project; its operations cannot change project.",
+  "journal.trace_unknown": "No trace with that thread exists in this project.",
+  "journal.artifact_corrupt": "Trace artifact {sha256} does not match its digest or size.",
+  "journal.event_too_large": "Trace event {key} would offload more than 1 MiB; it is refused instead of truncated.",
+  "journal.kind_not_generic": "Operations of kind {kind} are sealed and settled by their own fenced records, not through the generic port.",
+  "journal.origin_invalid": "The operation origin must be a request reference with exactly a known kind and an identifier.",
+  "journal.refs_invalid": "Invalid operation reference {where}: references are at most 32 short lowercase keys with printable values of up to 200 characters, without credentials or secrets.",
+  "journal.result_invalid": "Invalid operation {where}: it must be a JSON object of up to 16 KiB, without credentials or secret values.",
+  "backup.trace_artifact": "Trace artifact {sha256} is missing or does not match its digest or size."
 }

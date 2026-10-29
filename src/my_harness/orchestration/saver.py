@@ -14,7 +14,7 @@ from langgraph.checkpoint.base import (
     get_checkpoint_id, get_checkpoint_metadata, writes_sort_key,
 )
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.orm import Session
 
 from my_harness.i18n import tr
@@ -54,8 +54,15 @@ class HarnessCheckpointSaver(BaseCheckpointSaver[int]):
         super().__init__(serde=strict_serializer())
         self.engine = engine
         # LangGraph calls put and put_writes from its background executor; a SQLite read-then-write transaction
-        # whose snapshot another writer advanced fails at once instead of waiting, so this saver writes one at a time.
+        # whose snapshot another writer advanced fails at once instead of waiting, so this saver writes one at a time
+        # and (P002-T006) takes the database write lock before reading, since node threads write the operation
+        # journal and domain outcomes concurrently.
         self._write = Lock()
+
+    @staticmethod
+    def _locked(session: Session) -> Session:
+        session.execute(text('UPDATE graph_checkpoints SET checkpoint_id = checkpoint_id WHERE 0'))
+        return session
 
     def _tuple(self, session: Session, row: GraphCheckpointRow) -> CheckpointTuple:
         writes = session.scalars(select(GraphCheckpointWriteRow).where(
@@ -117,6 +124,7 @@ class HarnessCheckpointSaver(BaseCheckpointSaver[int]):
         checkpoint_type, checkpoint_bytes = self.serde.dumps_typed(checkpoint)
         metadata_type, metadata_bytes = self.serde.dumps_typed(get_checkpoint_metadata(config, metadata))
         with self._write, Session(self.engine) as session, session.begin():
+            self._locked(session)
             existing = session.get(GraphCheckpointRow, (thread_id, namespace, checkpoint['id']))
             if existing is None:
                 session.add(GraphCheckpointRow(
@@ -132,6 +140,7 @@ class HarnessCheckpointSaver(BaseCheckpointSaver[int]):
         configurable = config['configurable']
         key = (configurable['thread_id'], configurable.get('checkpoint_ns', ''), configurable['checkpoint_id'])
         with self._write, Session(self.engine) as session, session.begin():
+            self._locked(session)
             for position, (channel, value) in enumerate(writes):
                 special = channel in WRITES_IDX_MAP
                 if not special:
@@ -151,5 +160,6 @@ class HarnessCheckpointSaver(BaseCheckpointSaver[int]):
 
     def delete_thread(self, thread_id: str) -> None:
         with self._write, Session(self.engine) as session, session.begin():
+            self._locked(session)
             session.execute(delete(GraphCheckpointWriteRow).where(GraphCheckpointWriteRow.thread_id == thread_id))
             session.execute(delete(GraphCheckpointRow).where(GraphCheckpointRow.thread_id == thread_id))

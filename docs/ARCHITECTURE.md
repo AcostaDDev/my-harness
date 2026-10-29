@@ -10,7 +10,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 |---|---|
 | Core | Python 3.14.4, standard library, package `my-harness` 0.1.1 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
-| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0029_graph_continuations`) |
+| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0030_structured_knowledge`) |
 | Orchestration | LangGraph 1.2.18 (`langgraph-checkpoint` 4.3.1), confined to `orchestration/` ([D280](DECISIONS.md#d280--langgraph-1218-dependency-set-placement-and-runtime-hygiene)) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
 | Client types | `openapi-typescript` 7.13.0 from the exported OpenAPI |
@@ -74,7 +74,8 @@ queue; closing the browser does not cancel work.
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
 | `orchestration/`, `storage/graph_continuations.py` | P002-T003 graph runtime: harness checkpoint saver, versioned graph registry, segment runner with quarantine and cancellation, operation port; the only LangGraph importer, used through `ManagedRuntime.graph_runner` ([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract), [D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine)) |
-| `migrations/versions/0001…0029` | Alembic schema |
+| `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used by tests only ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
+| `migrations/versions/0001…0030` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
 Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
@@ -388,9 +389,10 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
-the P002-T003 runtime foundation; of the design below only the graph runtime and continuation storage exist
-(T003, D280/D282/D283, exercised with synthetic graphs only). Typed commands, the tool broker, the production
-operation journal, knowledge revisions, exports, the inbox and the graph view are not implemented.
+the P002-T003 runtime foundation and the P002-T004 knowledge model; of the design below only the graph runtime and
+continuation storage (T003, D280/D282/D283) and the structured knowledge storage with immutable accepted revisions
+(T004, D284/D285) exist, exercised with synthetic data only. Typed commands, the tool broker, the production
+operation journal, product use of knowledge, exports, the inbox and the graph view are not implemented.
 
 ```mermaid
 flowchart TD

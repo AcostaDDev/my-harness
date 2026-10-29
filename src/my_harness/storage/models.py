@@ -1164,3 +1164,152 @@ class GraphCheckpointWriteRow(Base):
     value_type: Mapped[str] = mapped_column(String(40))
     value: Mapped[bytes] = mapped_column(LargeBinary)
     task_path: Mapped[str] = mapped_column(String(400))
+
+
+KNOWLEDGE_KINDS = ('requirement', 'criterion', 'phase', 'task', 'decision', 'section')
+KNOWLEDGE_DOCUMENTS = ('specification', 'architecture', 'data_model', 'flows', 'instructions')
+KNOWLEDGE_LINKS = ('part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes')
+KNOWLEDGE_ORIGINS = ('owner_confirmed', 'owner_delegated', 'harness_deterministic')
+KNOWLEDGE_LEGACY = ('managed_phase', 'phase_task', 'decision_heading', 'document_section')
+
+
+class KnowledgeProjectRow(Base):
+    """P002-T004 (D284): the knowledge scope of one checkout root. Insert-only (triggers of 0030)."""
+    __tablename__ = 'knowledge_projects'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String, unique=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class KnowledgeItemRow(Base):
+    """A stable identity: kind, logical document (sections only) and a code never reused in its scope."""
+    __tablename__ = 'knowledge_items'
+    __table_args__ = (
+        CheckConstraint(f'kind IN {KNOWLEDGE_KINDS}', name='ck_knowledge_item_kind'),
+        CheckConstraint(f"(kind = 'section') = (document IS NOT NULL) AND (document IS NULL OR document IN "
+                        f"{KNOWLEDGE_DOCUMENTS})", name='ck_knowledge_item_document'),
+        UniqueConstraint('project_id', 'id', name='uq_knowledge_items_project'),
+        Index('uq_knowledge_items_code', 'project_id', 'kind', 'code', unique=True,
+              sqlite_where=text('document IS NULL')),
+        Index('uq_knowledge_items_section', 'project_id', 'document', 'code', unique=True,
+              sqlite_where=text("kind = 'section'")))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    kind: Mapped[str] = mapped_column(String(20))
+    document: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    code: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class KnowledgeItemVersionRow(Base):
+    """Immutable content of one item version (`knowledge-content-1`) with its provenance and source."""
+    __tablename__ = 'knowledge_item_versions'
+    __table_args__ = (
+        CheckConstraint('number >= 1', name='ck_knowledge_version_number'),
+        CheckConstraint("provenance IN ('known', 'inferred', 'unknown')", name='ck_knowledge_version_provenance'),
+        UniqueConstraint('item_id', 'number', name='uq_knowledge_item_versions_number'),
+        UniqueConstraint('item_id', 'id', name='uq_knowledge_item_versions_item'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey('knowledge_items.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    content: Mapped[dict] = mapped_column(JSON)
+    content_sha256: Mapped[str] = mapped_column(String(64))
+    provenance: Mapped[str] = mapped_column(String(10))
+    source: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class KnowledgeRevisionRow(Base):
+    """A draft, or an accepted revision sealed once (number, hashes, origin) on a linear history; never deleted."""
+    __tablename__ = 'knowledge_revisions'
+    __table_args__ = (
+        CheckConstraint("status IN ('DRAFT', 'ACCEPTED', 'DISCARDED')", name='ck_knowledge_revision_status'),
+        CheckConstraint(
+            "status = 'ACCEPTED' AND number >= 1 AND knowledge_sha256 IS NOT NULL AND revision_sha256 IS NOT NULL "
+            f"AND origin IN {KNOWLEDGE_ORIGINS} AND actor IS NOT NULL AND changes IS NOT NULL "
+            "AND closed_at IS NOT NULL "
+            "OR status <> 'ACCEPTED' AND number IS NULL AND knowledge_sha256 IS NULL AND revision_sha256 IS NULL "
+            "AND origin IS NULL AND actor IS NULL AND changes IS NULL AND reason IS NULL "
+            "AND (status = 'DRAFT') = (closed_at IS NULL)", name='ck_knowledge_revision_adoption'),
+        UniqueConstraint('project_id', 'id', name='uq_knowledge_revisions_project'),
+        ForeignKeyConstraint(['project_id', 'base_revision_id'],
+                             ['knowledge_revisions.project_id', 'knowledge_revisions.id'],
+                             name='fk_knowledge_revisions_base'),
+        Index('uq_knowledge_revisions_number', 'project_id', 'number', unique=True,
+              sqlite_where=text("status = 'ACCEPTED'")),
+        Index('uq_knowledge_revisions_base', 'project_id', 'base_revision_id', unique=True,
+              sqlite_where=text("status = 'ACCEPTED' AND base_revision_id IS NOT NULL")),
+        Index('uq_knowledge_revisions_root', 'project_id', unique=True,
+              sqlite_where=text("status = 'ACCEPTED' AND base_revision_id IS NULL")))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    base_revision_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    status: Mapped[str] = mapped_column(String(10))
+    number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    knowledge_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    revision_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    origin: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    actor: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    changes: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    closed_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class KnowledgeRevisionMemberRow(Base):
+    """One item at one version in a revision; `root_position` orders the root sections of each logical document."""
+    __tablename__ = 'knowledge_revision_members'
+    __table_args__ = (
+        CheckConstraint('root_position IS NULL OR root_position >= 0', name='ck_knowledge_member_root'),
+        ForeignKeyConstraint(['project_id', 'revision_id'], ['knowledge_revisions.project_id', 'knowledge_revisions.id'],
+                             name='fk_knowledge_members_revision'),
+        ForeignKeyConstraint(['project_id', 'item_id'], ['knowledge_items.project_id', 'knowledge_items.id'],
+                             name='fk_knowledge_members_item'),
+        ForeignKeyConstraint(['item_id', 'version_id'], ['knowledge_item_versions.item_id', 'knowledge_item_versions.id'],
+                             name='fk_knowledge_members_version'))
+    revision_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    item_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(String(36))
+    version_id: Mapped[str] = mapped_column(String(36))
+    root_position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class KnowledgeRevisionLinkRow(Base):
+    """A typed relationship between two members of the same revision; ordered kinds carry a dense position."""
+    __tablename__ = 'knowledge_revision_links'
+    __table_args__ = (
+        CheckConstraint(f'kind IN {KNOWLEDGE_LINKS}', name='ck_knowledge_link_kind'),
+        CheckConstraint('source_item_id <> target_item_id', name='ck_knowledge_link_self'),
+        CheckConstraint("(kind IN ('part_of', 'criterion_of')) = (position IS NOT NULL) "
+                        "AND (position IS NULL OR position >= 0)", name='ck_knowledge_link_position'),
+        CheckConstraint("(kind = 'supersedes') = (qualifier IS NOT NULL) "
+                        "AND (qualifier IS NULL OR qualifier IN ('full', 'partial'))", name='ck_knowledge_link_qualifier'),
+        ForeignKeyConstraint(['revision_id', 'source_item_id'],
+                             ['knowledge_revision_members.revision_id', 'knowledge_revision_members.item_id'],
+                             name='fk_knowledge_links_source'),
+        ForeignKeyConstraint(['revision_id', 'target_item_id'],
+                             ['knowledge_revision_members.revision_id', 'knowledge_revision_members.item_id'],
+                             name='fk_knowledge_links_target'),
+        Index('uq_knowledge_links_order', 'revision_id', 'kind', 'target_item_id', 'position', unique=True,
+              sqlite_where=text('position IS NOT NULL')))
+    revision_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(20), primary_key=True)
+    source_item_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    target_item_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    qualifier: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
+
+class KnowledgeIdentityRow(Base):
+    """Explicit mapping from a legacy reference (phase row, task code, decision heading, section) to an item."""
+    __tablename__ = 'knowledge_identity_map'
+    __table_args__ = (
+        CheckConstraint(f'legacy_kind IN {KNOWLEDGE_LEGACY}', name='ck_knowledge_identity_kind'),
+        ForeignKeyConstraint(['project_id', 'item_id'], ['knowledge_items.project_id', 'knowledge_items.id'],
+                             name='fk_knowledge_identity_item'))
+    project_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    legacy_kind: Mapped[str] = mapped_column(String(30), primary_key=True)
+    legacy_ref: Mapped[str] = mapped_column(String(400), primary_key=True)
+    item_id: Mapped[str] = mapped_column(String(36))
+    legacy_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))

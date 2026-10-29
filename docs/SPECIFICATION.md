@@ -380,7 +380,11 @@ rules change.
   Delegated approvals carry their origin and are never shown as owner approvals.
 - **Knowledge and documents.** Definition and reverse-engineering onboarding produce database knowledge. Markdown is a
   generated view replaced at defined boundaries without drift detection; IDE edits matter only through an explicit,
-  previewed UI import, which never fabricates execution, approval or usage history.
+  previewed UI import, which never fabricates execution, approval or usage history. The knowledge model is D284:
+  requirements, criteria, phases, tasks, decisions and sections of logical documents, with immutable accepted
+  revisions protected in the database. Instructions are canonical knowledge exported as `AGENTS.md` and derived
+  wrappers, editable in the UI or imported explicitly through an authorized adoption (D285). Only the storage and
+  core of that model exist (P002-T004); no product path uses them yet, and D094 still governs instructions.
 - **Roles and permissions.** Reviewer, executor and judge are configured by provider, model and effort; the judge has
   duty-specific contracts and cannot grant owner-only capabilities. The five permission dimensions gain per-operation,
   time-limited and permanent revocable grants, enforced outside the model.

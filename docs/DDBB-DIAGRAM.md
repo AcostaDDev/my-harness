@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0029_graph_continuations`, 65 tables, defined in
+SQLite schema of the local service: Alembic head `0030_structured_knowledge`, 72 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -1227,3 +1227,112 @@ Index: `ix_graph_threads_status` (status). Check: `status` in `RUNNING`, `WAITIN
   their own row.
 - Downgrade below 0029 is refused while any row exists. Backups copy the tables with the database; a query-only
   restore refuses every runner write.
+
+## P002 structured knowledge
+
+Project knowledge with stable identities, immutable versions and accepted revisions
+([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability),
+[D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files); migration
+`0030_structured_knowledge`, no backfill). A revision is the complete manifest of members and links. No product path
+writes these tables yet; P002-T004 exercises them with synthetic knowledge. `knowledge_projects.root` relates to the
+roots of the managed tables logically, without a foreign key.
+
+```mermaid
+erDiagram
+    knowledge_projects {
+        string id PK
+        string root UK
+        string created_at
+    }
+    knowledge_items {
+        string id PK
+        string project_id FK "→ knowledge_projects.id"
+        string kind
+        string document "null; sections only"
+        string code
+        string created_at
+    }
+    knowledge_item_versions {
+        string id PK
+        string item_id FK "→ knowledge_items.id"
+        integer number
+        json content
+        string content_sha256
+        string provenance
+        json source "null"
+        string created_at
+    }
+    knowledge_revisions {
+        string id PK
+        string project_id FK "→ knowledge_projects.id"
+        string base_revision_id FK "null; (project_id, base_revision_id) → knowledge_revisions"
+        string status
+        integer number "null until accepted"
+        string knowledge_sha256 "null until accepted"
+        string revision_sha256 "null until accepted"
+        string origin "null until accepted"
+        json actor "null until accepted"
+        text reason "null"
+        json changes "null until accepted"
+        string created_at
+        string closed_at "null while draft"
+    }
+    knowledge_revision_members {
+        string revision_id PK, FK "(project_id, revision_id) → knowledge_revisions"
+        string item_id PK, FK "(project_id, item_id) → knowledge_items"
+        string project_id
+        string version_id FK "(item_id, version_id) → knowledge_item_versions"
+        integer root_position "null; root sections only"
+    }
+    knowledge_revision_links {
+        string revision_id PK, FK "→ knowledge_revision_members"
+        string kind PK
+        string source_item_id PK, FK "(revision_id, source_item_id) → knowledge_revision_members"
+        string target_item_id PK, FK "(revision_id, target_item_id) → knowledge_revision_members"
+        integer position "null; ordered kinds only"
+        string qualifier "null; supersedes only"
+    }
+    knowledge_identity_map {
+        string project_id PK, FK "(project_id, item_id) → knowledge_items"
+        string legacy_kind PK
+        string legacy_ref PK
+        string item_id FK
+        string legacy_sha256 "null"
+        string created_at
+    }
+    knowledge_projects ||--o{ knowledge_items : "project_id"
+    knowledge_projects ||--o{ knowledge_revisions : "project_id"
+    knowledge_items ||--o{ knowledge_item_versions : "item_id"
+    knowledge_revisions |o--o{ knowledge_revisions : "base_revision_id"
+    knowledge_revisions ||--o{ knowledge_revision_members : "revision_id"
+    knowledge_items ||--o{ knowledge_revision_members : "item_id"
+    knowledge_item_versions ||--o{ knowledge_revision_members : "version_id"
+    knowledge_revision_members ||--o{ knowledge_revision_links : "source / target"
+    knowledge_items ||--o{ knowledge_identity_map : "item_id"
+```
+
+Uniqueness: `knowledge_items` (project_id, id); `uq_knowledge_items_code` on `knowledge_items` (project_id, kind,
+code) where document IS NULL; `uq_knowledge_items_section` on `knowledge_items` (project_id, document, code) where
+kind = 'section'; `knowledge_item_versions` (item_id, number) and (item_id, id); `knowledge_revisions` (project_id,
+id); `uq_knowledge_revisions_number` (project_id, number), `uq_knowledge_revisions_base` (project_id,
+base_revision_id) and `uq_knowledge_revisions_root` (project_id) where status = 'ACCEPTED' (the last two split by
+base present/absent); `uq_knowledge_links_order` on `knowledge_revision_links` (revision_id, kind, target_item_id,
+position) where position IS NOT NULL.
+
+Checks: `kind` in `requirement`, `criterion`, `phase`, `task`, `decision`, `section`; only sections have a `document`,
+in `specification`, `architecture`, `data_model`, `flows`, `instructions`; `provenance` in `known`, `inferred`,
+`unknown`; revision `status` in `DRAFT`, `ACCEPTED`, `DISCARDED`, with number, hashes, origin (`owner_confirmed`,
+`owner_delegated`, `harness_deterministic`), actor, changes and `closed_at` exactly when accepted; link `kind` in
+`part_of`, `criterion_of`, `depends_on`, `addresses`, `supersedes`, never a self-link, a position exactly for
+`part_of`/`criterion_of` and a qualifier (`full`, `partial`) exactly for `supersedes`; `legacy_kind` in
+`managed_phase`, `phase_task`, `decision_heading`, `document_section`.
+
+- **Triggers (21).** Projects, items, versions and identity mappings are insert-only and refuse an insert over an
+  existing key, so REPLACE and upsert cannot substitute a row. Revisions are inserted as `DRAFT` on an accepted base,
+  change once to `ACCEPTED` (number = base number + 1) or `DISCARDED`, and are never deleted. Members and links change
+  only while their revision is a draft, checked on the old and the new revision. The schema check, backups, bundle
+  verification and restore compare the trigger set with a fixed digest.
+- Content (`knowledge-content-1`), relationship and order rules and the canonical hashes are checked by the
+  repository at adoption and again on every retrieval, together with the chain to the root revision.
+- Downgrade below 0030 is refused while any row exists. Backups copy the tables and triggers with the database; a
+  query-only restore refuses every repository write.

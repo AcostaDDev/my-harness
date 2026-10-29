@@ -2100,3 +2100,65 @@ Releasing a quarantine is a later explicit owner action (T016/T020); there is no
 Thread statuses: `RUNNING`, `WAITING`, `COMPLETED`, `CANCELLED`, `REVOKED`, `QUARANTINED`, `RECOVERY_REQUIRED`,
 `FAILED`. Cancellation and revocation are recorded first; a waiting thread stops without running a node and an active
 segment observes the stop at the next superstep boundary.
+
+## D284 — Structured knowledge entities, revisions and immutability
+
+Status: accepted in P002-T004 (owner, 2026-10-29); implemented in T004 (storage and core only; no product path uses
+it yet). Resolves G06 within D270; evidence in the [T004 record](phase/P002-T004-knowledge.md).
+
+Project knowledge has six item kinds — `requirement` (`RNNN`), `criterion` (`CNNN`), `phase` (`PNNN`), `task`
+(`PNNN-TNNN`), `decision` (`DNNN`) and `section` — each with a stable identity, an immutable kind and a code never
+reused in its scope. A criterion is one checkable condition with exactly one owner: a requirement, a phase or a task.
+A section belongs to exactly one logical document of a closed list (`specification`, `architecture`, `data_model`,
+`flows`, `instructions`), fixed at creation; its slug is unique within that document. Execution and lifecycle states
+stay in the operational tables; rulings, grants, questions and operations are not knowledge. No product one-off
+entity exists.
+
+Item versions are immutable content (`knowledge-content-1`) with provenance `known`, `inferred` or `unknown` and an
+optional source; no date or actor is invented. A revision is the complete copy-on-write manifest of members (item →
+version) and typed links (`part_of`, `criterion_of`, `depends_on`, `addresses`, `supersedes`). The order of children
+is a dense link position and the order of each document's root sections is an explicit per-revision member position.
+Drafts are mutable; adoption is a compare-and-set against the current accepted head that assigns the next number on a
+linear history and records origin (D272), actor, reason and a change summary listing requirements, criteria and
+instructions sections as sensitive. There is no rebase (T012).
+
+Hashes use the canonical JSON: `content_sha256` per version; `knowledge_sha256` over members (identity, kind,
+document, code, version, content hash, root position) and links (kind, endpoints, position, qualifier);
+`revision_sha256` over the knowledge hash, number, base revision hash and adoption record, chaining the history.
+Retrieval recomputes the hashes, chain and rules back to the root and serves nothing that does not match.
+
+Accepted state is immutable in the database: migration `0030_structured_knowledge` adds triggers that refuse updates
+and deletes of projects, items, versions and identity mappings, insertion over an existing key (so REPLACE and upsert
+cannot substitute), any change to members or links of a non-draft revision, any revision change other than one
+`DRAFT` → `ACCEPTED`/`DISCARDED` transition, and an adoption whose number is not its base's plus one; partial unique
+indexes keep one accepted successor per base. Schema checks, backup, bundle verification and restore refuse a
+database whose trigger set differs from the expected digest.
+
+Decision status is `accepted`, `rejected` or `retired`; `retired` is only the first version of an imported or migrated
+record without an identifiable superseder. Supersession is a `supersedes` link qualified `full` (at most one) or
+`partial`; the displayed state is derived and an accepted decision is never re-versioned, removed or un-superseded.
+`proposed` exists only in drafts. Import (T013) and installed migration (T020) map historical status lines with the
+tested mapping of the record: progress notes stay in `historical_status`, "superseded by" clauses become links when the
+superseder is in the set, an ambiguous extent or an unrecognized status needs the owner's choice, and nothing defaults
+to `accepted`.
+
+## D285 — Canonical database instructions and generated instruction files
+
+Status: accepted in P002-T004 (owner, 2026-10-29); representation and staging implemented in T004; context delivery
+pending T007 and file generation pending T013. Resolves G07. D094 remains the implemented behavior until T007
+replaces it.
+
+Project instructions are sections of the `instructions` logical document, revisioned like other knowledge. `AGENTS.md`
+becomes the canonical generated view of the `agents` sections; `CLAUDE.md` and `GEMINI.md` become derived wrappers: the
+fixed import of `AGENTS.md` followed by the sections whose target is `claude` or `gemini`. Only instructions sections
+may target a client, and a child keeps its parent's target. When and whether a wrapper is generated, the renderer and
+the size budgets are T013's export manifest.
+
+Existing rules are kept through a deterministic, model-free staging that splits the files by headings outside code
+fences, keeps text verbatim with its root and child order, removes only the `@AGENTS.md` directive from wrappers and
+reports irregular headings; it creates a draft only, and the rules become canonical through an explicit adoption of
+the previewed result. The owner can also edit the canonical instructions in the UI through the corresponding
+authorized adoption (T012), as for other knowledge. Exported files remain generated views, protected from agents and
+changed only by regeneration or explicit import (D271). Changes to instructions are sensitive in the change summary
+for T005's owner-only enforcement. T007 supersedes D094 when it delivers the accepted instructions in context; until
+then the engine still injects the checkout's `AGENTS.md`.

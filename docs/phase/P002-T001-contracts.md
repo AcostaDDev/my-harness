@@ -362,7 +362,8 @@ Threat-to-task coverage is in the [threat model](P002-T001-threat-model.md#threa
 **Delivery status.** Source (documentation) complete on `docs/p002-t001-contracts`, branched from `develop` at
 `a000e03`, which matched the local `origin/develop` tracking ref (no fetch). After reviewing the diff, the owner
 authorized commit and integration into the local `develop` (2026-10-29); Git history records the commit and merge
-identities. Push to origin was not part of that authorization and remains pending. No release, publication or
+identities. Push to origin was not part of that authorization; it happened with the P002-T002 integration at the owner's
+authorization (2026-10-29). No release, publication or
 installation applies to T001; the phase route remains 0.2.0 at P002 closure (D253/D242).
 
 ### Evidence

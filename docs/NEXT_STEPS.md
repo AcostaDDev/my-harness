@@ -2,7 +2,8 @@
 
 **Status:** active phase; **task plan v0.3, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
 refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
-**P002-T001 is completed as design and integrated into local develop; push pending.** T002–T023 are planned and not started;
+**P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
+accepted) and integrated into develop.** T003–T023 are planned and not started;
 no product behavior is implemented. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -74,13 +75,14 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated, push pending)**; every other task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; every
+other task is **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
 |---|---|---|
-| P002-T001 | Adopt scope, authority contracts, threat model and flow gates (**completed; integrated, push pending**) | Owner adoption of v0.2 |
-| P002-T002 | Characterize graph/tool-discovery/provider integration and pin dependencies | T001 |
+| P002-T001 | Adopt scope, authority contracts, threat model and flow gates (**completed; integrated**) | Owner adoption of v0.2 |
+| P002-T002 | Characterize graph/tool-discovery/provider integration and pin dependencies (**completed; D280–D281 accepted**) | T001 |
 | P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary | T002 |
 | P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions | T001, T002 |
 | P002-T005 | Centralize typed domain commands, queries and capability enforcement | T003, T004 |
@@ -151,6 +153,18 @@ real-provider access remain explicit prerequisites; synthetic evidence is not re
 
 **Gates:** G01, G02 (feasibility), G04, G05; a blocker returns to the owner, no silent alternative runtime.
 **Threats:** TM16, TM19.
+
+**Status (2026-10-29):** completed on `docs/p002-t002-feasibility` from develop `bd1705e`, under
+the owner's authorization of scratch network downloads and minimal real CLI runs. Record:
+[feasibility](phase/P002-T002-feasibility.md) with [probes](phase/P002-T002-probes/README.md). No feasibility blocker:
+LangGraph 1.2.18 is lockable (+27 packages, no pin change) and installs offline; both clients carry the per-invocation
+broker. Accepted by the owner: [D280](DECISIONS.md#d280--langgraph-1218-dependency-set-placement-and-runtime-hygiene)
+(dependency set, placement, hygiene) and
+[D281](DECISIONS.md#d281--per-invocation-mcp-broker-transport-and-minimum-client-capability-contract) (transport,
+MC1–MC7). Findings binding later tasks: node re-execution on resume/crash and silent graph-version drift (T003),
+hosted tracing by inherited environment (T003), Codex approval default, exit 0 and orphaned bridge on cancellation
+(T006/T008), missing Codex usage/model telemetry (T006/T019). Delivery: committed, merged into develop and develop pushed at the owner's authorization; part of 0.2.0.
+Closure checks: `scripts/check-docs` and `git diff --check`; product suites not run (no product change).
 ## P002-T003 — LangGraph runtime and continuation foundation
 
 **Problem:** orchestration must become explicit without introducing a second process scheduler or unsafe replay.
@@ -560,8 +574,6 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 
 ## Next action
 
-1. T001 is committed and merged into local `develop` at the owner's authorization; pushing `develop` to origin needs
-   its own explicit authorization.
-2. Then **P002-T002** on a new topic branch from the integrated develop: bounded, synthetic feasibility of LangGraph
-   embedding/packaging and per-client discovery/capability (gates G01, G02, G04, G05), ending in a recorded dependency
-   decision or an owner-visible blocker. T002 has not started and needs its own authorization for any installation.
+1. T001 and T002 are integrated into `develop` and pushed to origin at the owner's authorization.
+2. Next: **P002-T003** (LangGraph runtime and continuation foundation) on a new topic branch from develop, adding the
+   dependency only under an accepted D280. Not started.

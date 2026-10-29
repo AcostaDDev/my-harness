@@ -371,7 +371,8 @@ def test_reference_import_is_previewed_idempotent_and_rejects_conflicts(reposito
         operations.reference_import(repository.engine, raw, preview_sha256='0' * 64)
     assert operations.reference_import(repository.engine, raw, preview_sha256=preview['sha256'])['inserted_rows'] == 39
     again = operations.reference_preview(repository.engine, raw)
-    assert operations.reference_import(repository.engine, raw, preview_sha256=again['sha256'])['inserted_rows'] == 0
+    assert again['sha256'] == preview['sha256'] and (again['new_rows'], again['existing_rows']) == (0, 39)
+    assert operations.reference_import(repository.engine, raw, preview_sha256=preview['sha256'])['inserted_rows'] == 0
     with pytest.raises(operations.OperationRefused, match='reference_bundle_invalid'):
         operations.reference_preview(repository.engine, raw.replace(b'"anthropic_api_usd"', b'"other_scheme"', 1))
     with pytest.raises(operations.OperationRefused, match='reference_bundle_size'):

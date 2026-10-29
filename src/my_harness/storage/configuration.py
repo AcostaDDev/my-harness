@@ -249,11 +249,18 @@ class ConfigurationRepository:
             result.append({**change, 'revision': revision, 'sha256': digest(change['text'].encode()),
                            'status': 'VALIDATED' if change['validated'] else 'DRAFT', 'diff': diff,
                            'removed_fields': removed})
+        from my_harness.services.configuration_editing import billing_review
+        refusals, unknown = billing_review(session, changes)
+        if refusals:
+            raise ConfigurationConflict('billing_configuration_refused', refusals)
         preview = {'format': FORMAT, 'kind': 'SAVE', 'changes': result, 'reason': reason,
                    'impact': sorted(seen), 'directory': str(files.root), 'state_dir': str(self.state_dir)}
         if self.derive_projects or any(item['scope'].startswith('project:') for item in changes):
             from my_harness.services.configuration_editing import impact
             preview['effects'] = impact(session, self, changes)
+            if unknown:
+                # D263: roles whose inherited global default would resolve as unknown; reported, not refused.
+                preview['effects']['billing_unknown'] = unknown
         return {**preview, 'sha256': seal(preview)}
 
     def preview(self, changes, *, reason):

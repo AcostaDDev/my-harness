@@ -362,6 +362,35 @@ def _valuation_brief(row):
             'discrepancy': (row.discrepancy or {}).get('status') if row.discrepancy else None}
 
 
+def bundle_view(bundle, source, recorded_at):
+    """D263: what a billing profile can pin from one bundle; tariff schemes carry their bases and conditions."""
+    documents = [ref.document() for ref in bundle.references]
+    schemes = {}
+    for document in documents:
+        if document['kind'] != 'tariff':
+            continue
+        identity = tuple(document[key] for key in ('provider', 'platform', 'product', 'scheme', 'unit'))
+        item = schemes.setdefault(identity, {'bases': set(), 'conditions': {}, 'models': set()})
+        item['bases'].update(document['bases'])
+        item['models'].add(document['model'])
+        for name in document['required_conditions']:
+            item['conditions'].setdefault(name, set())
+        for case in document['cases']:
+            for name, value in case['conditions'].items():
+                item['conditions'].setdefault(name, set()).add(str(value))
+    observed = sorted(document['observed_at'] for document in documents)
+    unknown = {document['effective_period_unknown'] for document in documents}
+    return {'id': bundle.id, 'source': source, 'recorded_at': recorded_at, 'available': True,
+            'references': len(documents), 'providers': sorted({document['provider'] for document in documents}),
+            'models': sorted({document['model'] for document in documents}),
+            'observed_from': observed[0] if observed else None, 'observed_to': observed[-1] if observed else None,
+            'effective_period': 'unknown' if unknown == {True} else 'known' if unknown == {False} else 'mixed',
+            'schemes': [{**dict(zip(('provider', 'platform', 'product', 'scheme', 'unit'), identity)),
+                         'bases': sorted(item['bases']), 'models': sorted(item['models']),
+                         'conditions': {name: sorted(values) for name, values in sorted(item['conditions'].items())}}
+                        for identity, item in sorted(schemes.items())]}
+
+
 def _page(items, offset, limit):
     return {'items': items[:limit], 'offset': offset, 'next_offset': offset + limit if len(items) > limit else None}
 
@@ -573,6 +602,30 @@ class AccountingViews:
     def _reference(row):
         return {'id': row.id, 'kind': row.kind, 'format': row.format, 'source': row.source, 'provider': row.provider,
                 'product': row.product, 'model': row.model, 'observed_at': row.observed_at}
+
+    def references(self, offset, limit):
+        """D263: the packaged bundle first, then imported bundles, newest first. Reads never insert rows."""
+        from my_harness.core.engine.metric_references import ReferenceError, load_bundle
+        from my_harness.storage.accounting import packaged
+        bundle = packaged()
+        with Session(self.engine) as session:
+            stored = session.get(Reference, bundle.id)
+            items = [] if offset else [bundle_view(bundle, 'packaged', stored.recorded_at if stored else None)]
+            rows = session.scalars(select(Reference).where(Reference.kind == 'bundle', Reference.id != bundle.id)
+                                   .order_by(Reference.recorded_at.desc(), Reference.id)
+                                   .offset(max(offset - 1, 0)).limit(limit + 1 - len(items))).all()
+        for row in rows:
+            try:
+                loaded = load_bundle(row.content.encode('utf-8'))
+                if loaded.id != row.id:
+                    raise ReferenceError('reference_conflict', 'bundle digest mismatch')
+                items.append(bundle_view(loaded, row.source, row.recorded_at))
+            except ReferenceError:
+                # A damaged row stays visible as unavailable instead of disappearing from the list.
+                items.append({'id': row.id, 'source': row.source, 'recorded_at': row.recorded_at, 'available': False,
+                              'references': 0, 'providers': [], 'models': [], 'observed_from': None,
+                              'observed_to': None, 'effective_period': 'unknown', 'schemes': []})
+        return _page(items, offset, limit)
 
     def cohorts(self, offset, limit):
         with Session(self.engine) as session:

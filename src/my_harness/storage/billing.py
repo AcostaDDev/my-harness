@@ -29,6 +29,21 @@ def document(session, scope, reference):
         return None
 
 
+def choose(project, data, agent):
+    """(name, profile or None, explicit) for one role, or None without billing metadata. Pure: also used by save
+    previews (D263) so a refusal there matches what a frozen binding would resolve."""
+    selected = (project or {}).get('billing', {}) if (project or {}).get('format') == BILLING_PROJECT else {}
+    billing = data.get('billing', {}) if data.get('format') == BILLING_GLOBAL else {}
+    if not selected and not billing:
+        return None
+    name = selected.get(agent) or billing.get('defaults', {}).get(agent)
+    profile = billing.get('profiles', {}).get(name) if name else None
+    provider = ((project or data).get('agents') or {}).get(agent, {}).get('provider')
+    if profile is not None and provider is not None and profile['provider'] != provider:
+        profile = None
+    return name, profile, bool(selected.get(agent))
+
+
 def resolve(session, agent, *, project=None, project_reference=None, global_reference=None):
     """`billing-binding-1` for one configured agent role, or None when no billing-capable format is frozen."""
     configuration = {'global': None, 'project': None}
@@ -48,18 +63,11 @@ def resolve(session, agent, *, project=None, project_reference=None, global_refe
     if data is None:
         return {'format': FORMAT, 'agent': agent, 'configuration': configuration, 'profile_name': None,
                 'profile': None, 'reason': 'configuration_unavailable'}
-    selected = (project or {}).get('billing', {}) if (project or {}).get('format') == BILLING_PROJECT else {}
-    billing = data.get('billing', {}) if data.get('format') == BILLING_GLOBAL else {}
-    if not selected and not billing:
+    chosen = choose(project, data, agent)
+    if chosen is None:
         return None
-    name = selected.get(agent) or billing.get('defaults', {}).get(agent)
-    profile = billing.get('profiles', {}).get(name) if name else None
-    provider = ((project or data).get('agents') or {}).get(agent, {}).get('provider')
-    reason = None
-    if profile is None:
-        reason = 'billing_profile_unknown'
-    elif provider is not None and profile['provider'] != provider:
-        profile, reason = None, 'billing_profile_unknown'
+    name, profile, _ = chosen
+    reason = None if profile is not None else 'billing_profile_unknown'
     if profile is not None:
         profile = {**{k: profile[k] for k in ('provider', 'platform', 'product', 'scheme', 'unit', 'basis',
                                               'references')},

@@ -323,7 +323,7 @@ prepared converted profiles before activation. Configuration backup includes byt
 restore reads its bundle without original paths or clients and rejects editing, preparation, assistance and activation.
 See the [configuration flow](flows/configuration-setup.md) and [README](../README.md#configure).
 
-## 13. P001 accounting design (capture/storage, queries/API and accounting page implemented; controls pending)
+## 13. P001 accounting design (capture/storage, queries/API, accounting page and billing controls implemented)
 
 F13's visible statistics still use `metrics-1` per-attempt metrics. [D254–D257](DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence)
 and the [T001 contract](phase/P001-T001-accounting-contract.md) define the additions for T002–T005.
@@ -331,8 +331,13 @@ T002's [pure library/references](phase/P001-T002-reference-calculator.md) (D258)
 [native capture, records, billing binding, explicit operations and format-3 archives](phase/P001-T003-capture-storage.md)
 (D259) and T004's [bounded read-only accounting queries/API](phase/P001-T004-aggregates-api.md) (D262) are implemented.
 The read-only accounting page (T005a, [D264](DECISIONS.md#d264--accounting-page-routes-exact-amounts-and-derived-reference-period),
-[evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)) is implemented; T005b (billing/reference controls and
-reference API) is pending, designed in [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).
+[evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)) is implemented, and so are T005b's billing/reference
+controls and reference API ([D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts),
+[D265](DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review),
+[evidence](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)): explicit v10/v2 conversion,
+guided profiles/defaults/selections, save-time refusal of unavailable bundles and of missing or provider-mismatched
+explicit selections (naming affected projects), reported unknown inherited defaults, and a bounded reference list with
+an idempotent previewed import that activates nothing.
 P001 targets **0.1.9 at phase closure**; P002 targets **0.2.0** (D253).
 
 - Account for native managed attempts, preparation executor steps and configuration-assistance calls, with

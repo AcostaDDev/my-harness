@@ -112,7 +112,14 @@ is an explicit new-format save: global `local-config-10` adds `billing.profiles`
 role, project `project-config-2` adds `billing` selections. v9/v1 documents are never converted on load. Billing is
 validated separately, removed before the runtime is composed and excluded from the technical receipt binding, so a
 billing-only edit keeps a compatible receipt; it never selects authentication. Queued work keeps the revision frozen at
-its admission; assistance binds the active revision of its confirmed preview.
+its admission; assistance binds the active revision of its confirmed preview. The guided editors (P001-T005b,
+[D265](../DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review)) convert only through an
+explicit button shown in the save diff. A validated save preview refuses (`billing_configuration_refused`, naming
+setting and project) a profile pinning an unavailable bundle and an explicit project selection its global revision —
+or the global candidate of the same save, including derived copies — lacks or gives another provider; roles whose
+inherited default would resolve as unknown are listed in `effects.billing_unknown`. Reference bundles are listed and
+imported through `/api/managed/configuration/references*` with an exact preview; an import writes immutable reference
+rows, not a configuration revision, and a profile adopts a bundle only through a confirmed save.
 
 Formats 1–8 retain entry and hashes. Explicit import previews source/hash/effective registry, saves a v9 global
 and project drafts together, and retains legacy authority until every converted profile is newly prepared,

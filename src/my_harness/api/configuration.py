@@ -2,11 +2,11 @@
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from my_harness.api.security import local_request, problem
-from my_harness.api.schemas import ProblemResponse
+from my_harness.api.schemas import Page, ProblemResponse
 from my_harness.i18n import tr
 from my_harness.services.configuration import parse
 from my_harness.storage.configuration import ConfigurationConflict
@@ -183,10 +183,59 @@ class ConfigurationClientsRead(BaseModel):
     internal_effects_verified: Literal[False] = False
 
 
+class ReferenceSchemeRead(BaseModel):
+    """One tariff scheme a billing profile can pin: its identity, bases, models and case conditions."""
+    provider: str
+    platform: str
+    product: str
+    scheme: str
+    unit: str
+    bases: list[str]
+    models: list[str]
+    conditions: dict[str, list[str]]
+
+
+class ReferenceBundleRead(BaseModel):
+    """D263: an available `metrics-reference-1` bundle (packaged or imported); listing never inserts rows."""
+    id: str
+    source: str
+    recorded_at: str | None
+    available: bool
+    references: int
+    providers: list[str]
+    models: list[str]
+    observed_from: str | None
+    observed_to: str | None
+    effective_period: Literal['unknown', 'known', 'mixed']
+    schemes: list[ReferenceSchemeRead]
+
+
+class ReferenceBundleInput(Input):
+    content: str = Field(min_length=1, max_length=1048576)
+
+
+class ReferenceBundleImport(ReferenceBundleInput):
+    preview_sha256: Hash
+
+
+class ReferenceImportRead(BaseModel):
+    """`sha256` seals bundle, raw bytes, count and conflicts; row counts are informative (D263)."""
+    operation: Literal['reference-import']
+    bundle: str
+    raw_sha256: str
+    references: int
+    conflicts: list[str]
+    sha256: str
+    new_rows: int
+    existing_rows: int
+    inserted_rows: int | None = None
+
+
 def conflict(error):
-    """409 with the structured corrections of a refused live candidate (D238), when it has them."""
+    """409 with the structured corrections of a refused live (D238) or billing (D263) candidate, when it has them."""
     if error.details:
-        return HTTPException(409, {'code': error.code, 'diagnostic': tr('setup.live_refused'), 'details': error.details})
+        diagnostic = tr('setup.billing_refused' if error.code == 'billing_configuration_refused' else 'setup.live_refused')
+        return HTTPException(409, {'code': error.code, 'diagnostic': diagnostic, 'details': error.details})
     return problem(409, error.code, tr('setup.conflict'))
 
 
@@ -223,6 +272,36 @@ def configuration_router(runtime):
                 state['form'] = parse(state['text'], 'global', validated=False)
             return state
         return call(view)
+
+    def reference_operation(operation):
+        from my_harness.storage.accounting_operations import OperationRefused
+        try:
+            return operation(runtime.repository.engine)
+        except OperationRefused as error:
+            if error.code in ('reference_bundle_size', 'reference_bundle_invalid'):
+                raise problem(422, error.code, tr('setup.reference_invalid')) from None
+            raise problem(409, error.code, tr('setup.reference_conflict')) from None
+
+    @router.get('/references', response_model=Page[ReferenceBundleRead], operation_id='configuration_references')
+    def references(offset: Annotated[int, Query(ge=0, le=100000)] = 0, limit: Annotated[int, Query(ge=1, le=50)] = 20):
+        """Available reference bundles. Independent of the configuration setup, so it also lists a restored archive."""
+        from my_harness.storage.accounting_views import AccountingViews
+        runtime.ready()
+        return AccountingViews(runtime.repository.engine).references(offset, limit)
+
+    @router.post('/references/preview', response_model=ReferenceImportRead, operation_id='configuration_references_preview')
+    def references_preview(body: ReferenceBundleInput):
+        from my_harness.storage.accounting_operations import reference_preview
+        runtime.ready()
+        return reference_operation(lambda engine: reference_preview(engine, body.content.encode('utf-8')))
+
+    @router.post('/references/import', response_model=ReferenceImportRead, operation_id='configuration_references_import')
+    def references_import(body: ReferenceBundleImport):
+        """Writes immutable reference rows, not a configuration revision; equal bytes are idempotent (D263)."""
+        from my_harness.storage.accounting_operations import reference_import
+        runtime.ready()
+        return reference_operation(lambda engine: reference_import(engine, body.content.encode('utf-8'),
+                                                                   preview_sha256=body.preview_sha256))
 
     @router.get('/revisions/{scope}/{revision}', response_model=ConfigurationFormRead,
                 operation_id='configuration_revision')

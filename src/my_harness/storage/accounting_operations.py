@@ -80,9 +80,10 @@ def reference_preview(engine, raw):
                 existing += 1
             else:
                 conflicts.append(identifier)
-    return _sealed({'operation': 'reference-import', 'bundle': bundle.id, 'raw_sha256': sha256(raw).hexdigest(),
-                    'references': len(bundle.references), 'new_rows': new, 'existing_rows': existing,
-                    'conflicts': conflicts})
+    # D263: new/existing counts are informative, so a retried confirmation of equal bytes is not stale.
+    sealed = _sealed({'operation': 'reference-import', 'bundle': bundle.id, 'raw_sha256': sha256(raw).hexdigest(),
+                      'references': len(bundle.references), 'conflicts': conflicts})
+    return {**sealed, 'new_rows': new, 'existing_rows': existing}
 
 
 def reference_import(engine, raw, *, preview_sha256):
@@ -95,6 +96,8 @@ def reference_import(engine, raw, *, preview_sha256):
     try:
         inserted = accounting.store_bundle(session, load_bundle(raw), source='import', now=_now())
         session.commit()
+    except accounting.AccountingConflict:
+        raise OperationRefused('reference_conflict') from None
     finally:
         session.close()
     return {**preview, 'inserted_rows': inserted}

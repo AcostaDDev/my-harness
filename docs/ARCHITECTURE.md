@@ -341,14 +341,17 @@ SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm
 are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
 version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.
 
-## 12. P001 accounting architecture (capture/storage, queries/API and accounting page implemented; controls pending)
+## 12. P001 accounting architecture (capture/storage, queries/API, accounting page and billing controls implemented)
 
 [T001 contract](phase/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
 storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
 `terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 added bounded read-only queries/API
 ([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005a added the read-only
-accounting page (`pages/Accounting.tsx`, `accounting.ts`, D264); T005b controls are planned in
-[D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) (not implemented).
+accounting page (`pages/Accounting.tsx`, `accounting.ts`, D264); T005b added the billing/reference controls
+([D265](DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review)): reference routes in
+`api/configuration.py` over `accounting_views.references` and `accounting_operations.reference_*`, the save-time
+`billing_review` (`services/configuration_editing.py`, shared pure `storage/billing.choose`) and the UI in `billing.ts`
+and `BillingFields.tsx`.
 
 - **Pure core.** `core/engine/metric_references.py` / `valuation.py` (T002) validate pinned canonical references and
   calculate exact Decimal lines. `core/engine/usage_capture.py` builds the allowlisted `usage-capture-1` document from

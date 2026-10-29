@@ -1,6 +1,7 @@
 /** Pure editor operations: changing a candidate never carries an old preview or rebases a CAS. */
 import type { MessageKey } from "./i18n.ts";
 import { agentIssues, commandsIssues, profileIssues } from "./profile-form.ts";
+import { selectionIssues } from "./billing.ts";
 
 export type Form = Record<string, any>;
 
@@ -19,6 +20,8 @@ export function projectIssues(form: Form, editing: ReturnType<typeof projectEdit
   const issues: Record<string, MessageKey> = {
     ...(editing.profile ? profileIssues(form.profile, "profile") : {}),
     ...commandsIssues(form.commands, "commands", form.profile),
+    // The referenced global revision's profiles are checked by the server preview (D263).
+    ...selectionIssues(form, undefined),
   };
   if (editing.agents) for (const role of ["reviewer", "executor"]) {
     Object.assign(issues, agentIssues(form.agents?.[role], `agents.${role}`, [role], efforts));

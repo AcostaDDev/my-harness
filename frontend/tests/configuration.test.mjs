@@ -25,6 +25,13 @@ const form = () => ({ format: 'local-config-9', service: { state_dir: '/syntheti
     executor: { provider: 'claude', timeout_seconds: 300, environment: { USER: 'synthetic', PATH: '/synthetic/bin', CUSTOM: 'preserve-me' }, tools: ['Read'] } },
   registration: { roots: [], bootstrap_enabled: false } });
 const draft = state => ({ ...initialDraft(state), form: form(), reason: 'Synthetic explicit setup' });
+// Synthetic reference bundle and import report: made-up digests, schemes and counts only.
+const bundle = () => ({ id: sha('9'), source: 'packaged', recorded_at: null, available: true, references: 2, providers: ['codex'],
+  models: ['synthetic-model'], observed_from: '2026-01-02T00:00:00Z', observed_to: '2026-01-02T00:00:00Z', effective_period: 'unknown',
+  schemes: [{ provider: 'codex', platform: 'synthetic_platform', product: 'synthetic_product', scheme: 'synthetic_credit',
+    unit: 'synthetic_credit', bases: ['token_credit'], models: ['synthetic-model'], conditions: { speed: ['standard'] } }] });
+const referenceReport = content => ({ operation: 'reference-import', bundle: sha('8'), raw_sha256: sha('7'), references: content.length % 5,
+  conflicts: [], sha256: sha('6'), new_rows: 3, existing_rows: 0 });
 const supervisor = mode => ({ configuration_mode: mode, read_only_archive: mode === 'READ_ONLY_ARCHIVE', enabled: false, alive: false,
   last_error: null, ports_configured: false, commit_writer_configured: false });
 
@@ -32,7 +39,7 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
   const driver = hookHost(), requests = [], navigation = [], timers = [], completed = new Map();
   const originals = { fetch: globalThis.fetch, setTimeout: globalThis.setTimeout, clearTimeout: globalThis.clearTimeout };
   const env = { ...driver, state: structuredClone(initial), requests, storage, navigation, timers,
-    failSave: false, conflict: false, failRead: false, catalog: language === 'es' ? es : en };
+    failSave: false, conflict: false, failRead: false, catalog: language === 'es' ? es : en, bundle: bundle(), imported: 0 };
   if (savedDraft) storage.set('harness-configuration-draft-v1', JSON.stringify(savedDraft));
   globalThis.setTimeout = callback => { timers.push(callback); return timers.length; };
   globalThis.clearTimeout = () => {};
@@ -64,6 +71,12 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
       const parsed = body.form ?? JSON.parse(body.text);
       return Response.json({ text: body.text ?? JSON.stringify(parsed), form: parsed });
     }
+    if (path.startsWith('/api/managed/configuration/references?')) return Response.json({ items: [env.bundle], offset: 0, next_offset: null });
+    if (path.endsWith('/references/preview')) return Response.json(referenceReport(body.content));
+    if (path.endsWith('/references/import')) {
+      assert.equal(body.preview_sha256, referenceReport(body.content).sha256);
+      return Response.json({ ...referenceReport(body.content), inserted_rows: env.imported++ ? 0 : 3 });
+    }
     if (path === '/api/managed/configuration/operations/interrupted') return Response.json({ id: 'interrupted', kind: 'SAVE' });
     if (path.endsWith('/recovery/preview')) return Response.json({ operation_id: 'interrupted', sha256: sha('e'), observed: [{ path: 'global.toml', sha256: sha('a') }] });
     if (path.endsWith('/activation/preview')) {
@@ -76,6 +89,8 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
         { scope: 'project:own', diff: '+draft project', status: 'DRAFT' }], legacy_import: { format: 'local-config-8' } });
     if (path.endsWith('/preview')) {
       if (env.conflict) return Response.json({ detail: { code: 'stale_configuration_preview' } }, { status: 409 });
+      if (env.refuseBilling) return Response.json({ detail: { code: 'billing_configuration_refused', diagnostic: 'Synthetic billing refusal',
+        details: [{ project: 'own', role: 'executor', setting: 'billing.executor', code: 'billing_profile_missing' }] } }, { status: 409 });
       return Response.json({ kind: 'SAVE', sha256: sha('b'), impact: ['global'], changes: [{ text: body.text ?? JSON.stringify(body.form), diff: '+synthetic candidate', status: body.validated ? 'VALIDATED' : 'DRAFT' }, ...(env.derived ?? [])], ...env.savePreview });
     }
     const key = options?.headers?.['Idempotency-Key'];
@@ -250,7 +265,8 @@ test('both global URLs mount the editor while archive URLs remain blocked', asyn
     const env = environment(), tree = env.tree(el(Page, { route: parse(path) }));
     try {
       const html = await env.render(tree); assert.match(html, /explicit-model/);
-      assert.equal(env.requests.length, 1); assert.equal(env.requests[0].path, '/api/managed/configuration');
+      // Besides its state, the editor lists the available reference bundles (D263); nothing else is read.
+      assert.deepEqual(env.requests.map(request => request.path), ['/api/managed/configuration', '/api/managed/configuration/references?offset=0&limit=10']);
     } finally { env.close(); }
     const archive = environment('en', { ...base(), mode: 'READ_ONLY_ARCHIVE' });
     try {
@@ -573,5 +589,73 @@ for (const language of ['en', 'es']) test(`a global save preview names the deriv
     assert.ok(html.includes(env.catalog['editor.impact_derived'].replace('{scopes}', 'project:own')));
     assert.ok(html.includes(env.catalog['editor.impact_frozen'].replace('{count}', '1')));
     assert.ok(!html.includes(env.catalog['editor.impact_preparation']));
+  } finally { env.close(); }
+});
+
+// --- P001-T005b (D263): billing controls and reference import ------------------------------------
+
+const say = (key, params = {}) => Object.entries(params).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, value), en[key]);
+const control = (env, predicate, label) => {
+  const element = env.host.elements.find(predicate);
+  assert.ok(element, label); return element.props;
+};
+
+test('billing needs an explicit conversion, then guided profiles and defaults replace only their own keys', async () => {
+  const env = environment(), tree = env.tree();
+  try {
+    let html = await env.render(tree);
+    assert.ok(html.includes(say('billing.convert_hint', { format: 'local-config-10', current: 'local-config-9' })));
+    assert.ok(!env.requests.some(request => request.path.includes('limit=50')), 'Bundles are read for the form only after conversion');
+    control(env, item => item.type === 'button' && item.props.children === say('billing.convert', { format: 'local-config-10' }), 'convert').onClick();
+    html = await env.render(tree);
+    assert.ok(env.requests.some(request => request.path === '/api/managed/configuration/references?limit=50'));
+    const add = () => control(env, item => item.type === 'button' && item.props['aria-label'] === `${en['editor.add_entry']} · ${en['billing.new_profile']}`, 'add').onClick();
+    env.input('configuration-billing-new', 'credits'); await env.render(tree);
+    add(); html = await env.render(tree);
+    assert.ok(html.includes(en['billing.provider_required']), 'A profile without a provider is not added silently');
+    env.input('configuration-billing-new-provider', 'codex'); await env.render(tree);
+    add();
+    await env.render(tree);
+    env.input('configuration-billing-profiles-credits-scheme-choice', [sha('9'), 'synthetic_platform', 'synthetic_product', 'synthetic_credit', 'synthetic_credit'].join('|'));
+    html = await env.render(tree);
+    assert.ok(html.includes(say('billing.conditions_missing', { names: 'speed' })), 'Required conditions are named, never filled in');
+    env.input('configuration-billing-defaults-reviewer', 'credits'); html = await env.render(tree);
+    assert.ok(html.includes(say('billing.profile_in_use', { roles: en['settings.reviewer'] })));
+    // The Claude executor is not offered the Codex profile.
+    assert.equal(env.host.elements.filter(item => item.type === 'option' && item.props.value === 'credits').length, 1);
+    env.preview(); await env.render(tree);
+    const sent = env.requests.filter(request => request.path === '/api/managed/configuration/preview').at(-1).body.form;
+    assert.equal(sent.format, 'local-config-10');
+    assert.deepEqual(sent.billing, { profiles: { credits: { provider: 'codex', platform: 'synthetic_platform', product: 'synthetic_product',
+      scheme: 'synthetic_credit', unit: 'synthetic_credit', basis: 'token_credit', references: sha('9') } }, defaults: { reviewer: 'credits' } });
+    assert.equal(sent.agents.executor.environment.CUSTOM, 'preserve-me');
+  } finally { env.close(); }
+});
+
+test('a refused billing save names the settings and projects to correct', async () => {
+  const env = environment(), tree = env.tree();
+  try {
+    await env.render(tree); env.refuseBilling = true; env.preview();
+    const html = await env.render(tree);
+    assert.ok(html.includes(en['billing.refused']));
+    assert.match(html, /own · billing\.executor · billing_profile_missing/);
+  } finally { env.close(); }
+});
+
+test('reference bundles are listed and imported only after an exact preview; a retry inserts nothing', async () => {
+  const env = environment(), tree = env.tree();
+  try {
+    let html = await env.render(tree);
+    assert.ok(html.includes(en['billing.references_title'])); assert.ok(html.includes(en['billing.effective.unknown']));
+    assert.ok(html.includes(sha('9').slice(0, 12)));
+    env.input('references-content', '{"format": "metrics-reference-1"}'); await env.render(tree);
+    env.click('billing.import_preview'); html = await env.render(tree);
+    assert.ok(html.includes(sha('6'))); assert.ok(html.includes(say('billing.rows_value', { created: 3, existing: 0 })));
+    assert.equal(env.button('billing.import_apply').disabled, true);
+    env.tick('billing.import_confirm'); await env.render(tree); env.click('billing.import_apply'); html = await env.render(tree);
+    assert.ok(html.includes(say('billing.imported.other', { bundle: sha('8').slice(0, 12), count: 3 })));
+    const imported = env.requests.filter(request => request.path.endsWith('/references/import'));
+    assert.equal(imported.length, 1); assert.equal(imported[0].body.preview_sha256, sha('6'));
+    assert.ok(!env.requests.some(request => request.path.endsWith('/save')), 'An import is not a configuration save');
   } finally { env.close(); }
 });

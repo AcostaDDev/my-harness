@@ -160,6 +160,9 @@ function environment(language, archive) {
     if (url.pathname === '/api/managed/projects') data = [];
     else if (url.pathname.endsWith('/accounting/summary')) data = { ...base, ...totals };
     else if (url.pathname.endsWith('/accounting/cohorts')) data = page([cohort]);
+    else if (url.pathname === '/api/managed/configuration/references') data = page([{ id: 'e'.repeat(64), source: 'packaged', recorded_at: null,
+      available: true, references: 2, providers: ['claude'], models: ['synthetic-model'], observed_from: null, observed_to: null,
+      effective_period: 'unknown', schemes: [] }]);
     else if (url.pathname.endsWith('/accounting/tasks')) data = { ...base, tasks: { attempted: 2, committed: 1, acceptance_unknown: 1, not_committed: 0 },
       coverage: totals.coverage, committed_coverage: totals.coverage, indicators: [{ ...bucket('api_usd'), total: { amount: null, known_subtotal: '0.54' },
         committed_work: { amount: null, known_subtotal: '0.3' }, per_committed_task: null, per_attempted_task: null, committed_work_per_committed_task: null }] };
@@ -191,7 +194,9 @@ for (const [language, archive] of [['en', false], ['es', true]]) {
     try {
       const tree = env.tree();
       let html = plain(await env.render(tree));
-      assert.ok(env.requests.every(path => path.startsWith('/api/managed/accounting/') || path === '/api/managed/projects'), env.requests.join('\n'));
+      // The global page also lists the available reference bundles (D263), read-only.
+      assert.ok(env.requests.every(path => path.startsWith('/api/managed/accounting/') || path === '/api/managed/projects'
+        || path.startsWith('/api/managed/configuration/references?')), env.requests.join('\n'));
       assert.ok(!env.requests.some(path => path.includes('/metrics/')), 'Reported estimates stay on Statistics');
       if (language === 'en') {
         assert.match(html, /\$0\.54<sup class="partial"[^>]*> partial<\/sup>/);
@@ -208,6 +213,10 @@ for (const [language, archive] of [['en', false], ['es', true]]) {
       // Null tokens are "no data"; an observed zero stays zero.
       assert.match(html, language === 'en' ? /Cache read<\/th><td class="numeric"><span class="muted">no data/ : /Caché leída<\/th><td class="numeric"><span class="muted">sin dato/);
       assert.equal(/accounting-backfill/.test(html), !archive, 'CLI commands are named only on a live service');
+      // The available reference bundles are listed read-only, also on an archive; no import control here.
+      assert.match(html, language === 'en' ? /Pricing references/ : /Referencias de precios/);
+      assert.match(html, language === 'en' ? /Unknown \(observed prices only\)/ : /Desconocido \(solo precios observados\)/);
+      assert.doesNotMatch(html, /references-content|references-file/);
       assert.doesNotMatch(html, /type="text" name=|method="post"/i);
       if (archive) assert.equal(env.timers.length, 0, 'A query-only archive never polls');
       else assert.ok(env.timers.length > 0, 'A live service refreshes its reads');

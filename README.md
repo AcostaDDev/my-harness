@@ -356,7 +356,7 @@ certify that a historical writer stopped. See the [consultation flow](docs/flows
 **Other commands.** `logs-preview`, `logs-apply` and `logs-inspect` apply an explicit retention to agent streams;
 `metrics-backfill` completes metrics; `accounting-references`, `accounting-backfill` and `accounting-reprice` are
 explicit P001 accounting operations (without `--preview-sha256` they only preview; applying needs that digest and
-`--key`); `diagnose-cli` checks one agent configuration. Every command documents its
+`--key`; reference bundles can also be listed and imported with the same preview from the configuration page); `diagnose-cli` checks one agent configuration. Every command documents its
 arguments with `--help`.
 
 **Diagnosis.** Start with the authenticated configuration status and explicit **Check client version/help**;

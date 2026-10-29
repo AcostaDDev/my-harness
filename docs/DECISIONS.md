@@ -1762,3 +1762,35 @@ codes (D258): `reference_out_of_period` or a blocking `effective_period_unknown`
 "applies" when neither is present and references were used. The client-reported cost appears only in the invocation
 detail (from the allowlisted capture) and in each valuation's comparison, labelled as an estimate of unknown basis.
 Evidence: [P001-T005a](phase/P001-T005-metrics-ui.md#t005a--accounting-ui).
+
+## D265 — Billing controls, reference listing and save-time billing review
+
+Status: accepted implementation detail in P001-T005b, within D250, D255, D259 and D263.
+
+- **Reference API.** `GET /api/managed/configuration/references` pages (≤ 50) the packaged bundle first, then imported
+  bundles newest first, each with its source, stored time (none while the packaged bundle is unused), counts,
+  providers/models, observation range, effective-period state (`unknown`/`known`/`mixed`) and tariff schemes with
+  bases, models and case-condition values, so a profile can be filled from a listed scheme. A row that no longer
+  loads stays listed as unavailable. It reads through the runtime engine, not the configuration setup, and never
+  inserts rows. `POST …/references/preview` and `…/import` take the bundle as JSON text (UTF-8 bytes, ≤ 1 MiB);
+  invalid or oversized bundles answer 422, stale previews and conflicts 409. The import needs no idempotency key:
+  equal bytes are idempotent by content, so the preview digest now seals only bundle id, raw digest, reference count
+  and conflicts (D263) and a store-time conflict race is refused as `reference_conflict`.
+- **Save-time review.** Validated save previews call `billing_review` before sealing: refusals (an unavailable pinned
+  bundle; an explicit project selection the referenced global revision, or the global candidate of the same save,
+  lacks or whose provider differs from the project's agent) raise `billing_configuration_refused` with path-free
+  `{project, role, setting, code}` details, using the D238 detail shape. Derived copies carry their selections, so a
+  global save that removes or re-providers a selected profile names those projects. Roles that would resolve as
+  unknown through an inherited default are reported as `effects.billing_unknown`. The same pure `choose` drives the
+  frozen binding (D259), so a refusal matches what admission would resolve. Drafts are not reviewed.
+- **Controls.** Conversion is one explicit button that changes only `format`; billing controls appear after it. The
+  global form edits profiles (identity, basis, pinned bundle, sourced conditions) and per-role defaults offering only
+  profiles of the role's provider; a profile used by a default cannot be removed there. A listed scheme fills only
+  identity, basis and bundle: conditions are never prefilled, and missing required ones are named as making
+  valuations incomplete. The project form selects per role among the referenced global revision's profiles or
+  inherits its default, showing what each role resolves to. Refusal details appear in the save review and in toasts.
+- **Where the list appears.** Import controls live only on the global configuration page. The read-only list also
+  appears on the global accounting page, which is mounted on query-only archives (D264); the configuration page is
+  not, and archives keep refusing both POSTs.
+
+Evidence: [P001-T005b](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls).

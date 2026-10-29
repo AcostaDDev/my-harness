@@ -2,7 +2,8 @@
 
 **Capture, storage, binding, explicit operations and archives implemented (P001-T003); bounded read-only
 queries/API implemented (P001-T004, [D262](../DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api));
-billing/reference controls/UI (T005) pending, planned as T005a/T005b in
+accounting page (T005a, D264) and billing/reference controls (T005b,
+[D265](../DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review)) implemented as split by
 [D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
 the [T001 contract](../phase/P001-T001-accounting-contract.md), T002's pure calculator
 ([D258](../DECISIONS.md#d258--pinned-reference-cases-and-the-pure-valuation-boundary)) and
@@ -12,7 +13,7 @@ the [T001 contract](../phase/P001-T001-accounting-contract.md), T002's pure calc
 
 ```mermaid
 flowchart TD
-    C[Explicit v10/v2 billing save and separate activation] --> B[Admission freezes the exact configuration revision]
+    C[Explicit v10/v2 billing save: preview refuses unavailable bundles and unresolvable selections; separate activation] --> B[Admission freezes the exact configuration revision]
     B --> I[Attempt row, preparation executor intent or INTENDED assistance operation]
     I --> E[Same transaction: usage_invocations row with binding dereferenced from the frozen revision]
     E --> L[Existing fenced CLI launch and process journal]
@@ -45,7 +46,9 @@ flowchart TD
   ids, unknown delegation boundaries and server-tool charges stay explicit reasons with a known subtotal at most.
 - **Binding.** Jobs, preparation plans and assistance previews already freeze exact immutable revisions; the intent
   dereferences them into `billing-binding-1`. Activation of a later revision never rebinds queued or settled work.
-  Reference bundles are packaged or explicitly imported (`accounting-references`), content-addressed and immutable.
+  Reference bundles are packaged or explicitly imported (`accounting-references` or the configuration page's previewed
+  import), content-addressed and immutable; the preview digest excludes row counts, so a retried import of equal bytes
+  inserts nothing. Save previews refuse unavailable bundles and unresolvable explicit selections before admission.
 - **Operations.** `accounting-backfill` materializes settled native sources without an invocation (legacy
   metrics-only attempts as `legacy-metrics-1` evidence); its valuations are `backfill`, never admission-bound.
   `accounting-reprice` applies a stated profile as a retrospective or contemporaneous scenario. Both preview a frozen

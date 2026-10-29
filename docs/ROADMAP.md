@@ -43,36 +43,48 @@ engine. The accepted T001 contract guides implementation; unsupported evidence c
 
 ## P002 — Continuous Mode
 
-**Target release:** `0.2.0`, published at P002 closure (D253)
-([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
-[D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
+**Target release:** `0.2.0`, published at P002 closure (D253). The heading keeps the reserved name; the adopted scope
+is **autonomous mode and project authority redesign**
+([D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), superseding
+[D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020) and D233's Continuous Mode description).
 
-**Objective:** Automatically close and archive a completed phase, open and plan the next phase, and continue its
-execution under one explicit, bounded authorization. Chain tasks, commits and the READY check while stopping at
-the first error, question or limit.
+**Objective:** optional autonomy over the whole authorized roadmap of a defined or onboarded project — execute tasks,
+check, close and archive each phase, plan its successor and finish — without a phase-count cap, with bounded task
+attempts and no-progress cycles. LangGraph orchestrates; SQLite owns structured, revisioned project knowledge;
+documentation is generated with explicit UI import; scoped tools are discovered through a client-neutral contract; a
+configurable judge handles delegated duties; grants can be permanent and revocable; requests, agents, turns, tools and
+delivered knowledge are traced; a global inbox and a task-instance graph serve both modes.
 
-**Status:** active since the P001 closure (2026-10-29); **draft task plan v0.2 with 23 proposed tasks**, pending owner
-review/adoption before code ([NEXT_STEPS](NEXT_STEPS.md)). No task has started.
+**Status:** active since the P001 closure (2026-10-29). The owner adopted plan v0.2 and the
+[design basis](phase/P002-design-basis.md) as the evolving baseline; **P002-T001 completed the contracts, flows,
+threat model and coverage as accepted design (D268–D279)**, refining the plan to **v0.3** with 23 tasks
+([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)). T001 is integrated into develop; no
+product behavior is implemented and no dependency is adopted. Next: P002-T002 feasibility.
 
-**Design expansion under review:** the owner requests full-roadmap autonomy with LangGraph orchestration,
-database-owned structured knowledge, scoped on-demand tool discovery, judge duties, request-to-result/access
-tracing, generated documents with explicit UI import, a shared global inbox and task-instance graph. See the
-[design basis](phase/P002-design-basis.md) and [discussion](phase/P002-autonomous-mode-discussion.md).
-The original reservation's objective and following criteria are retained as accepted context; the expanded proposed
-criteria are in NEXT_STEPS and formal contract supersession belongs to P002-T001. None of this expansion is implemented.
+**Exit criteria (adopted with D268):**
 
-**Exit criteria:**
+- Created and onboarded projects use structured, revisioned database knowledge; task/decision access is attributable
+  to agent runs; ordinary and autonomous operations use the same domain model.
+- Scoped tools are discovered on demand through a client-neutral contract; client capabilities are qualified or
+  explicitly blocked, without assumed API access, native-tool-search dependency or hidden fallback.
+- Reviewer, executor and judge configuration and judge duty contracts are explicit; permission scope, permanent
+  validity, revocation, delegation and acceptance checks are enforced outside the model.
+- The authorized roadmap can finish without a phase-count cap, with bounded task attempts and no-progress cycles,
+  exact-content/domain-revision evidence, current READY and recoverable effects.
+- Events correlate requests, workflows, operations, agents, observed turns, tool calls and knowledge delivery, with
+  missing native telemetry explicit.
+- Generated documents are regenerated at defined boundaries without drift detection; explicit UI import preserves
+  provenance and never fabricates execution or approval history.
+- A global inbox supports both modes with guarded actions; the graph shows persisted tasks and actual agent
+  involvement following the owner's visual direction.
+- Migration, backup/restore/portability, accounting, query-only consultation and normal mode are qualified, with
+  integrated security, provider and recovery audits and complete synthetic journeys.
+- The 0.2.0 distribution and documentation are qualified and every authorized delivery stage is completed or explicitly
+  deferred; designed-only behavior is never labelled implemented. Without an autonomous authorization, the manual
+  behavior keeps its explicit confirmations.
 
-- The mode is optional and starts only from an initial authorization with an explicit scope and budget.
-- Phase closure, archiving and opening/planning the successor happen automatically within that authorization,
-  subject to a valid READY check and the existing content-bound guarantees.
-- It stops at the first error, blocking condition, question for the user, out-of-scope change or consumption limit,
-  and the stopped work can be inspected and resumed.
-- READY binding, acceptance by exact content, intent before effect and recovery keep their current guarantees.
-- Without that authorization the current behavior is unchanged: explicit task batches, explicit check, closure
-  authorized on READY and a confirmed plan for each new phase.
-
-**Dependencies:** P001 Metrics Records and the existing phase lifecycle and authorization guarantees.
+**Dependencies:** P001 Metrics Records, the existing phase lifecycle, authorization, recovery and accounting
+guarantees, and the T002 feasibility/dependency decision before dependent integration.
 
 ## Known gaps without a phase
 
@@ -85,5 +97,5 @@ criteria are in NEXT_STEPS and formal contract supersession belongs to P002-T001
 - Operating-system isolation of the agents is not provided
   ([D064](DECISIONS.md#d064--cooperative-containment-without-operating-system-isolation)).
 - Gemini CLI is not a provider; its `GEMINI.md` wrapper only imports the common instructions.
-- OpenCode is a requested future CLI integration. P002's proposed portable discovery/domain-tool contract prepares
+- OpenCode is a requested future CLI integration. P002's accepted portable discovery contract (D275) prepares
   the extension point; no OpenCode adapter, authentication/billing compatibility or admission qualification exists yet.

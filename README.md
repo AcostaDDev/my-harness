@@ -26,8 +26,9 @@ models are reached through the official Codex and Claude Code CLIs with your own
 - **Guided configuration.** Installation/start scripts, global setup, own project profiles, confirmed preparation,
   editing and configuration backup are implemented. Installed synthetic evidence is separate from the historical
   provider evidence below.
-- **Next.** An optional continuous mode (tasks → commits → check → closure → next phase) is planned for v0.2.0;
-  see the [roadmap](docs/ROADMAP.md).
+- **Next.** v0.2.0 is designed, not implemented: optional autonomy over a whole authorized roadmap with
+  database-owned project knowledge, generated documentation and a configurable judge; see the
+  [roadmap](docs/ROADMAP.md).
 
 Licensed under the [MIT license](LICENSE); see [NOTICE.md](NOTICE.md) and the
 [third-party notices](NOTICE-THIRD-PARTY.md).

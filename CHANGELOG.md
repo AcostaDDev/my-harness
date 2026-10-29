@@ -17,9 +17,10 @@ All notable changes to My Harness are recorded here. The format follows
   additive API/UI changes it needs ([D239](docs/DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)).
 - By explicit roadmap assignment, P001 **Metrics Records** targets `0.1.9` (it was `0.1.2` before D239 and D253) as a
   specific exception to the patch scope above; it may include additive metrics data/API/configuration changes with
-  the existing compatibility and migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase
-  closure and opening under a bounded authorization
-  ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
+  the existing compatibility and migration guarantees. P002 targets `0.2.0` for autonomous execution of the whole
+  authorized roadmap and the project-authority redesign
+  ([D268](docs/DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline),
+  [D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
   [D253](docs/DECISIONS.md#d253--phase-release-targets-after-018), [roadmap](docs/ROADMAP.md)). P001 was released as
   `0.1.9`; P002 is planned.
 - A version is released through a pull request from `develop` to the protected `main`, merged as a merge commit

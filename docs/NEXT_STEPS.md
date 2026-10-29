@@ -1,19 +1,23 @@
 # P002 — Autonomous mode and project authority redesign (target: 0.2.0)
 
-**Status:** active phase; **draft task plan v0.2, 2026-10-29, pending owner review**. All tasks below are proposed;
-none is implemented or started. The owner requested a complete, refinable task/subtask breakdown during the design
-discussion. This authorizes planning, not implementation or operation. Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first;
-its queue is **empty**.
+**Status:** active phase; **task plan v0.3, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
+refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
+**P002-T001 is completed as design and integrated into local develop; push pending.** T002–T023 are planned and not started;
+no product behavior is implemented. Adoption authorizes planning, not implementation or operation. Read
+[ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
 project knowledge, controlled discoverable tools, bounded judge decisions, recoverable operations, correlated
 tracing, generated/manual-importable documentation, a global inbox and a task-instance graph. Normal mode shares
-the new domain services. This broadens the original [Continuous Mode reservation](ROADMAP.md#p002--continuous-mode);
-formal contract adoption/supersession belongs to T001, not an implied implementation claim in this draft.
+the new domain services. This supersedes the original [Continuous Mode reservation](ROADMAP.md#p002--continuous-mode)
+(D268); the accepted contracts are design, not implemented behavior.
 
-**Design reference:** [P002 design basis](phase/P002-design-basis.md), especially B01–B24, consolidates owner directions,
-recommendations and open gates. The [discussion](phase/P002-autonomous-mode-discussion.md) preserves the reasoning
-and corrections. Start from these before inferring missing details. Technical baseline: [phase lifecycle](flows/phase-lifecycle.md),
+**Design reference:** the accepted [T001 contracts](phase/P002-T001-contracts.md) (supersession map, invariants,
+gate register G01–G17, requirement coverage), [flows FL01–FL14](phase/P002-T001-flows.md),
+[threat model TM01–TM20](phase/P002-T001-threat-model.md) and D268–D279 bind the tasks below. The
+[P002 design basis](phase/P002-design-basis.md), especially B01–B24, consolidates owner directions and
+recommendations. The [discussion](phase/P002-autonomous-mode-discussion.md) preserves the reasoning and corrections.
+Start from these before inferring missing details. Technical baseline: [phase lifecycle](flows/phase-lifecycle.md),
 [task run](flows/task-run.md), [definition](flows/project-definition.md), [onboarding](flows/project-onboarding.md),
 [data](DDBB-DIAGRAM.md) and [architecture](ARCHITECTURE.md). Historical starting evidence remains in the
 [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
@@ -25,11 +29,12 @@ and corrections. Start from these before inferring missing details. Technical ba
   IDs and never silently discard requirements, qualification or pending delivery. Subtasks are reviewable checklists
   inside their owning task, not independently admitted harness contracts. Never rewrite a contract already frozen
   by an actual product execution to match a new plan.
-- Owner review/adoption of this plan precedes T001 and source work. T001 resolves normative contracts and detailed
-  flow gates; T002 resolves capability/dependency feasibility before dependent integration. A newly discovered
-  design inconsistency is surfaced instead of silently deciding it in implementation.
+- T001 resolved the normative contracts and flow guards; T002 resolves capability/dependency feasibility before
+  dependent integration. Each open gate has one owning task (**Gates** lines below); resolving it by assumption is a
+  defect. A newly discovered design inconsistency is surfaced instead of silently deciding it in implementation.
 - One bounded task at a time. Before implementing a task, refine its contract and record its topic branch from
-  develop, evidence requirements and accepted delivery disposition. Current planning branch: docs/p002-plan.
+  develop, evidence requirements and accepted delivery disposition. Each task's evidence cites the threats it
+  controls (**Threats** lines below). T001 branch: `docs/p002-t001-contracts`.
 - Proposed common phase delivery: checked source → develop → 0.2.0 release through protected main → verified
   distribution/publication → local installation, each recorded separately under D242/D253. Commits, merges, pushes,
   real agents/providers, harness execution, network installation, publication and local installation require their
@@ -44,7 +49,7 @@ and corrections. Start from these before inferring missing details. Technical ba
   is distinct from integration/distribution/installation. One-offs use D261's latest-main-release route and do not
   absorb unreleased P002 work.
 
-## Proposed phase exit criteria
+## Phase exit criteria (adopted, D268)
 
 - Created and onboarded projects use structured, revisioned database knowledge; task/decision access is attributable
   to agent runs. All ordinary/manual operations use the same canonical domain model.
@@ -69,11 +74,12 @@ and corrections. Start from these before inferring missing details. Technical ba
 
 ## Task index
 
-All statuses are **proposed**. Dependencies identify prerequisites; they do not authorize parallel implementation.
+T001 is **completed (design; integrated, push pending)**; every other task is **planned**. Dependencies identify
+prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
 |---|---|---|
-| P002-T001 | Adopt scope, authority contracts, threat model and detailed flow gates | Owner review of this draft |
+| P002-T001 | Adopt scope, authority contracts, threat model and flow gates (**completed; integrated, push pending**) | Owner adoption of v0.2 |
 | P002-T002 | Characterize graph/tool-discovery/provider integration and pin dependencies | T001 |
 | P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary | T002 |
 | P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions | T001, T002 |
@@ -99,9 +105,17 @@ All statuses are **proposed**. Dependencies identify prerequisites; they do not 
 
 ## P002-T001 — Scope adoption, authority contracts and flow gates
 
+**Status:** completed as design/documentation on `docs/p002-t001-contracts` (2026-10-29); committed and merged into local
+develop at the owner's authorization; push to origin pending; no individual release (0.2.0 phase route).
 **Problem:** the current specification/decisions describe narrower continuous mode and file-owned knowledge.
 **Expected result:** an owner-reviewed design baseline identifies which contracts change and which guarantees remain,
-with no ambiguity between proposed and implemented behavior. **Dependencies:** owner review of this draft.
+with no ambiguity between proposed and implemented behavior. **Dependencies:** owner adoption of v0.2 (given).
+
+**Delivered:** [contracts](phase/P002-T001-contracts.md) (supersession map, authority invariants, origins, knowledge,
+generated-target replacement policy, judge duties, grants, tool contract, autonomy, trace/inbox/graph, gate register,
+T001 resolutions, coverage), [flows FL01–FL14](phase/P002-T001-flows.md) with guards/effect owners/recovery,
+[threat model](phase/P002-T001-threat-model.md), D268–D279, SPECIFICATION §14 and ARCHITECTURE §13 labelled not
+implemented. The owner reviewed the diff and accepted the T001 resolutions of contracts §13 with the integration.
 
 **Subtasks:**
 
@@ -135,6 +149,8 @@ with no ambiguity between proposed and implemented behavior. **Dependencies:** o
 real-provider access remain explicit prerequisites; synthetic evidence is not reported as native provider qualification.
 **Basis:** B02, B08–B09, B23.
 
+**Gates:** G01, G02 (feasibility), G04, G05; a blocker returns to the owner, no silent alternative runtime.
+**Threats:** TM16, TM19.
 ## P002-T003 — LangGraph runtime and continuation foundation
 
 **Problem:** orchestration must become explicit without introducing a second process scheduler or unsafe replay.
@@ -152,6 +168,7 @@ an agreed interface, first with synthetic operations. **Dependencies:** T002.
 **Evidence:** deterministic lifecycle and crash-boundary checks; no duplicate synthetic effects or hidden inference.
 **Basis:** B02, B12–B13, B18.
 
+**Gates:** G02, G03. **Threats:** TM12, TM20.
 ## P002-T004 — Structured knowledge and revision model
 
 **Problem:** active requirements/plans/decisions depend on document parsing and mutable current content.
@@ -169,6 +186,7 @@ support exact context/evidence binding. **Dependencies:** T001, T002.
 
 **Evidence:** migration/constraint/revision tests and data parity. **Basis:** B03–B04, B13, B22.
 
+**Gates:** G06, G07. **Threats:** TM05.
 ## P002-T005 — Typed domain operations and capability policy
 
 **Problem:** tools, UI and graph routes must not implement different authorization or database mutations.
@@ -187,6 +205,7 @@ support exact context/evidence binding. **Dependencies:** T001, T002.
 
 **Evidence:** command/API misuse, concurrency/idempotency and delegation checks. **Basis:** B02, B04, B06–B09, B13–B15.
 
+**Gates:** —. **Threats:** TM01–TM05, TM18.
 ## P002-T006 — Operations, invocations and correlated events
 
 **Problem:** a single task status cannot explain agent activity or safely resume an uncertain effect.
@@ -205,6 +224,7 @@ events and pending effects, with reconstructible request-to-result traces. **Dep
 **Evidence:** trace ordering/deduplication, missing telemetry, interruptions and re-entry without duplicated effects.
 **Basis:** B05, B10–B13, B19–B23.
 
+**Gates:** G05, G08. **Threats:** TM12, TM14, TM15, TM17.
 ## P002-T007 — Frozen context and knowledge-access receipts
 
 **Problem:** database queries can change an agent's effective context silently and leave its knowledge use unexplained.
@@ -223,6 +243,7 @@ events and pending effects, with reconstructible request-to-result traces. **Dep
 **Evidence:** stale-query, revision and receipt reconstruction checks with realistic synthetic knowledge sizes.
 **Basis:** B03–B04, B10–B11, B13, B21.
 
+**Gates:** G07. **Threats:** TM01, TM14, TM15.
 ## P002-T008 — Scoped tool bridge and lazy discovery
 
 **Problem:** ordinary Python tools are not automatically available inside the supported CLIs, and full catalogues
@@ -243,6 +264,7 @@ shared domain services with auditable identities. **Dependencies:** T002, T005, 
 **Evidence:** fake-CLI integration/capability tests and context-loading measurements; label native evidence separately.
 **Basis:** B05, B07–B11, B21–B23.
 
+**Gates:** G04. **Threats:** TM01–TM04, TM11, TM16.
 ## P002-T009 — Judge configuration and duty contracts
 
 **Problem:** one human-proxy prompt would mix distinct authority and failure semantics.
@@ -260,6 +282,7 @@ shared domain services with auditable identities. **Dependencies:** T002, T005, 
 **Evidence:** synthetic grant/deny/escalate and choice/gap cases with adversarial and incomplete inputs; accounting
 participates from the first new inference path. **Basis:** B04–B07, B10, B18, B21, B23.
 
+**Gates:** G16. **Threats:** TM01, TM05, TM08.
 ## P002-T010 — Permission lifecycle and standing grants
 
 **Problem:** autonomous approval needs bounded delegated authority, permanent validity and enforceable revocation.
@@ -278,6 +301,7 @@ effective snapshots. **Dependencies:** T005, T006, T008, T009.
 **Evidence:** grant accumulation, cross-project targets, expiry/permanence, stale responses and revocation race cases.
 **Basis:** B06–B07, B12–B13, B18, B23.
 
+**Gates:** G10. **Threats:** TM01, TM04, TM06, TM07.
 ## P002-T011 — Database-owned creation and reverse-engineering intake
 
 **Problem:** definition/onboarding currently create documentary drafts and adoption around Markdown authority.
@@ -295,6 +319,7 @@ reverse engineering preserved as a distinct path. **Dependencies:** T004, T005, 
 **Evidence:** both synthetic intake journeys, stale HEAD/proposal refusal, incomplete knowledge and idempotent adoption.
 **Basis:** B03, B09, B13, B15–B16, B22–B23.
 
+**Gates:** G12 inputs (with T016). **Threats:** TM01.
 ## P002-T012 — Authoritative knowledge and decision editing
 
 **Problem:** users must change project intent through the product once IDE Markdown edits have no authority.
@@ -312,6 +337,7 @@ history, references and exact adoption previews. **Dependencies:** T004, T005, T
 
 **Evidence:** editor/adoption concurrency and UI/API journeys, meaningful diffs and historical reads. **Basis:** B03–B04, B13, B20.
 
+**Gates:** —. **Threats:** TM18.
 ## P002-T013 — Exports, manual import and portable document format
 
 **Problem:** generated Markdown must remain useful in the IDE and explicitly importable without automatic drift logic.
@@ -331,6 +357,7 @@ rules. **Dependencies:** T004, T005, T006, T011, T012.
 retry without inference. No watcher, drift warning or automatic disk-to-database synchronization is introduced.
 **Basis:** B03–B04, B13–B16, B22–B23.
 
+**Gates:** G09; implements the adopted D271 replacement policy. **Threats:** TM09, TM10, TM17.
 ## P002-T014 — Task execution and exact acceptance integration
 
 **Problem:** the task engine must consume domain knowledge and participate in the new workflow/effect model.
@@ -349,6 +376,7 @@ tools in both modes. **Dependencies:** T003, T006, T007, T008, T010, T013.
 **Evidence:** synthetic success, correction, denial, invalidation, interruption and duplicate-dispatch cases.
 **Basis:** B01–B02, B07, B10–B14, B17–B18, B21–B23.
 
+**Gates:** —. **Threats:** TM01, TM10, TM12.
 ## P002-T015 — Phase lifecycle and successor planning
 
 **Problem:** phase checks and transitions currently bind documentary baselines and separate explicit planning flows.
@@ -367,6 +395,7 @@ READY, archive/tag and successor semantics. **Dependencies:** T004, T005, T007, 
 **Evidence:** all check outcomes, stale READY, closure crashes, successor/no-successor and manual regression cases.
 **Basis:** B01–B02, B04–B06, B10–B14, B17–B19, B22–B23.
 
+**Gates:** —. **Threats:** TM05, TM10, TM12.
 ## P002-T016 — Full-roadmap autonomous execution
 
 **Problem:** task/phase operations need a sustained delegated workflow that finishes valid roadmap work safely.
@@ -386,6 +415,7 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 **Evidence:** multi-phase synthetic completion, long valid roadmaps, gaps, limits, revocation and stale-answer recovery.
 **Basis:** B01–B02, B05–B07, B10–B13, B17–B19, B21–B23.
 
+**Gates:** G11, G12, G17. **Threats:** TM05, TM15.
 ## P002-T017 — Global inbox and guarded shortcuts
 
 **Problem:** actionable events and questions need one durable cross-project entry point in both operating modes.
@@ -404,6 +434,7 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 **Evidence:** both-mode event/response journeys, duplicate delivery, stale actions and query-only controls.
 **Basis:** B10, B12–B13, B17–B19, B23.
 
+**Gates:** G13 (owner). **Threats:** TM13, TM17, TM18.
 ## P002-T018 — Task graph and correlated trace views
 
 **Problem:** users need to inspect actual task instances and agent work without reading raw workflow storage.
@@ -422,6 +453,7 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 **Evidence:** realistic-size synthetic histories, UI accessibility/navigation, refresh gaps and archive rendering.
 **Basis:** B05, B10–B11, B17, B19–B20, B23.
 
+**Gates:** G14 (owner). **Threats:** TM14.
 ## P002-T019 — Accounting and efficiency analysis
 
 **Problem:** new roles, operations and discovery/context paths change attribution and can obscure consumption.
@@ -440,6 +472,7 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 **Evidence:** synthetic ledger/projection parity, counter/provenance checks and reproducible benchmark fixtures.
 **Basis:** B08–B11, B13, B18, B21–B23.
 
+**Gates:** —. **Threats:** TM14, TM15.
 ## P002-T020 — Installed-state migration and integrated recovery
 
 **Problem:** the redesigned authority/runtime must preserve existing installations and recover across all persisted effects.
@@ -458,6 +491,7 @@ state, with explicit handling of unsupported continuations. **Dependencies:** T0
 **Evidence:** migration fixtures, fault-injection matrix, verified backups/portable bundles and archive regression.
 **Basis:** B02–B03, B10–B17, B19, B21–B23.
 
+**Gates:** —. **Threats:** TM12, TM17, TM20.
 ## P002-T021 — Integrated security and provider audit
 
 **Problem:** individually passing features do not establish safe combined authority or provider compatibility.
@@ -477,6 +511,7 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Evidence:** review findings, adversarial fixtures, resolved blockers and explicit residual limitations.
 **Basis:** B05–B13, B18–B23.
 
+**Gates:** G15; audits TM01–TM20 against the threat model. **Threats:** TM03, TM06, TM08, TM11, TM16.
 ## P002-T022 — Complete journeys and usability qualification
 
 **Problem:** the full redesign must be useful from intake through completion and preserve normal-mode operation.
@@ -495,6 +530,7 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Evidence:** synthetic journey matrix, usability review and integrated check results; real-provider scope is labelled.
 **Basis:** B01–B24.
 
+**Gates:** G15. **Threats:** —.
 ## P002-T023 — Release qualification and delivery disposition
 
 **Problem:** a source-complete redesign is not yet a verified installable 0.2.0 release.
@@ -513,9 +549,19 @@ delivery stage tracked to its actual outcome. **Dependencies:** T021, T022.
 **Evidence:** qualification/release artifacts, actual delivery ledger and current STATE/NEXT_STEPS; no premature
 phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D242/D253/D261.
 
+**Gates:** —. **Threats:** TM19.
+## Plan revisions
+
+- **v0.3 (2026-10-29, T001).** Plan adopted as the evolving baseline; T001 completed as design; gates G01–G17 and
+  threats TM01–TM20 assigned to owning tasks; T002 adds the LangGraph placement question; T013 implements the adopted
+  replacement policy. No task ID added, removed, merged or renumbered; no acceptance or pending delivery dropped
+  ([contracts §14](phase/P002-T001-contracts.md#14-plan-refinements-v03)).
+- **v0.2 / v0.1 (2026-10-29).** Portable tool contract and initial 23-task draft (design basis).
+
 ## Next action
 
-Review/refine this draft and its [design basis](phase/P002-design-basis.md), then adopt the plan before T001. The
-smallest unresolved architectural gates are the CLI discovery/capability contract, operation/checkpoint recovery,
-structured revision boundaries and generated-document import/ownership rules. Those gates are assigned above;
-they do not require pretending the entire refactor can be fully specified in one conversation.
+1. T001 is committed and merged into local `develop` at the owner's authorization; pushing `develop` to origin needs
+   its own explicit authorization.
+2. Then **P002-T002** on a new topic branch from the integrated develop: bounded, synthetic feasibility of LangGraph
+   embedding/packaging and per-client discovery/capability (gates G01, G02, G04, G05), ending in a recorded dependency
+   decision or an owner-visible blocker. T002 has not started and needs its own authorization for any installation.

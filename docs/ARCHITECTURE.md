@@ -107,7 +107,9 @@ one-provider example, v2 recipe fragments and a synthetic demo.
 
 SQLite is the operational authority (runs, attempts, jobs, phases, permissions, conversations, metrics, registry,
 preferences). Git keeps code and documents. Markdown keeps the intent (requirements, architecture, phases,
-decisions). Schema and relations in [DDBB-DIAGRAM](DDBB-DIAGRAM.md). Streams and captures live outside SQLite,
+decisions); P002's accepted design moves that intent to SQLite and makes Markdown a generated view, not implemented
+yet ([§13](#13-p002-target-architecture-accepted-design-not-implemented)). Schema and relations in
+[DDBB-DIAGRAM](DDBB-DIAGRAM.md). Streams and captures live outside SQLite,
 written with fsync and hash; retention purges them only with authorization and keeps metrics and verdicts. Backup
 copies SQLite through its API together with the referenced artifacts; a restore is query-only (`query_only`).
 The persistent restore mark, exposed as `SupervisorRead.read_only_archive`, enables standalone archive views without
@@ -378,3 +380,35 @@ and `BillingFields.tsx`.
   invocations,cohorts}` and invocation detail/valuations; OpenAPI and generated client types include them.
 
 See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounting flow](flows/metrics-accounting.md).
+
+## 13. P002 target architecture (accepted design; not implemented)
+
+[T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
+[D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Nothing below exists in the code;
+sections 1–12 describe 0.1.9. No dependency is added before T002's recorded decision with exact versions.
+
+```mermaid
+flowchart TD
+    UI["UI and global inbox actions"] --> CMD["Typed application commands and queries"]
+    GRAPH["LangGraph: versioned workflow and continuation"] --> CMD
+    CLI["Agent CLI through supervisor"] -->|search, describe, invoke| BROKER["Client-neutral tool broker"]
+    BROKER --> CMD
+    CMD --> GATE["Bind caller; validate authority, revision and idempotency"]
+    GATE --> DB["SQLite: knowledge revisions, decisions, grants, rulings, operations, events"]
+    DB --> CTX["Context assembly and knowledge receipts"]
+    CTX --> CLI
+    DB --> OUTBOX["Committed events and pending effects"]
+    OUTBOX --> EXP["Exporter: owned generated targets"]
+    OUTBOX --> READ["Inbox, graph and trace projections"]
+    READ --> UI
+```
+
+- **Responsibilities.** The graph routes and waits with references only; the domain model is the authority; services
+  validate and perform effects; the supervisor remains the only launcher with one writer per checkout. Where the
+  LangGraph integration lives relative to the standard-library-only core is gate G01.
+- **Operations and recovery.** Recoverable operations link project tasks to invocations and sealed effect intents; a
+  replayed node reconciles the same operation. The continuation/journal consistency contract is G02.
+- **Tools.** A harness-owned versioned catalogue behind a small discovery surface over a transport characterized per
+  client (G04). Deterministic nodes call services directly. Agents never receive database access.
+- **Exports.** An outbox-driven exporter renders accepted revisions to owned targets with generation manifests and
+  recoverable per-target outcomes.

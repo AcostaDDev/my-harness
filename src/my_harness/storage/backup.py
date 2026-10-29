@@ -12,7 +12,7 @@ import stat
 from my_harness.core.engine.serialization import load_history
 from my_harness.storage import run_projection
 from my_harness.storage.models import Base
-from my_harness.storage.schema import SCHEMA_REVISION
+from my_harness.storage.schema import SCHEMA_REVISION, triggers_intact
 from my_harness.i18n import tr
 
 FORMAT = 3  # P001-T003: accounting digests/native links verified in the same snapshot (D257)
@@ -132,6 +132,8 @@ def _integrity(db, *, restored=False):
         columns = {r['name'] for r in db.execute(f'PRAGMA table_info("{name}")')}
         if columns != set(table.columns.keys()):
             raise BackupError(tr('backup.schema_table', name=name))
+    if not triggers_intact(db.execute("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'").fetchall()):
+        raise BackupError(tr('backup.schema_triggers'))
     projected = dict.fromkeys(run_projection.TABLES, 0)
     for run_id, history_json in db.execute('SELECT id, history_json FROM managed_runs ORDER BY id'):
         try:

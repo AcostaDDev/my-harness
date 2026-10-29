@@ -4,8 +4,9 @@
 refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
 **P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
-develop.** T004–T023 are planned and not started; the T003
-runtime is exercised by synthetic graphs only and no product behavior uses it. Adoption authorizes planning, not implementation or operation. Read
+develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
+T005–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -76,7 +77,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; every other task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; every other task is **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -84,7 +85,7 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T001 | Adopt scope, authority contracts, threat model and flow gates (**completed; integrated**) | Owner adoption of v0.2 |
 | P002-T002 | Characterize graph/tool-discovery/provider integration and pin dependencies (**completed; D280–D281 accepted**) | T001 |
 | P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary (**completed; integrated; D282–D283**) | T002 |
-| P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions | T001, T002 |
+| P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions (**completed; integrated; D284–D285**) | T001, T002 |
 | P002-T005 | Centralize typed domain commands, queries and capability enforcement | T003, T004 |
 | P002-T006 | Establish operations, agent invocations, correlated events and recovery records | T003, T004, T005 |
 | P002-T007 | Assemble frozen context and record knowledge-access receipts | T004, T005, T006 |
@@ -217,6 +218,17 @@ support exact context/evidence binding. **Dependencies:** T001, T002.
 **Evidence:** migration/constraint/revision tests and data parity. **Basis:** B03–B04, B13, B22.
 
 **Gates:** G06, G07. **Threats:** TM05.
+
+**Status (2026-10-29):** completed on `feat/p002-t004-structured-knowledge` from develop `467ecc3`; record:
+[T004 knowledge](phase/P002-T004-knowledge.md). After two refinement rounds the owner accepted
+[D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability) (G06: six kinds, logical
+documents, copy-on-write manifests with explicit root order, CAS adoption, triggers, chained hashes, historical
+decision statuses) and [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)
+(G07: canonical database instructions, generated `AGENTS.md` and derived wrappers, UI editing or explicit import by
+authorized adoption; D094 in force until T007), no product one-off entity and the route topic → develop → 0.2.0.
+Bound to later tasks: typed commands and owner-only enforcement of sensitive changes (T005), context delivery and the
+D094 replacement (T007), creation/onboarding drafts (T011), UI editing and rebase (T012), renderer, wrappers and
+import (T013), installed conversion (T020). Committed, merged into develop and pushed at the owner's authorization.
 ## P002-T005 — Typed domain operations and capability policy
 
 **Problem:** tools, UI and graph routes must not implement different authorization or database mutations.
@@ -593,4 +605,7 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 1. T001 and T002 are integrated into `develop` and pushed to origin at the owner's authorization.
 2. **P002-T003** is complete on `feat/p002-t003-langgraph-runtime`, merged into develop and pushed at the owner's
    authorization; part of 0.2.0.
-3. Then: **P002-T004** (structured knowledge and revision model) on a new topic branch from develop. Not started.
+3. **P002-T004** is complete on `feat/p002-t004-structured-knowledge`, merged into develop and pushed at the owner's
+   authorization; part of 0.2.0.
+4. Then: **P002-T005** (typed domain operations and capability policy) on a new topic branch from develop. Not
+   started.

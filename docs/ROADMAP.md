@@ -61,7 +61,8 @@ threat model and coverage as accepted design (D268–D279)**, refining the plan 
 ([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)). T001 and T002 (feasibility, D280–D281)
 are integrated into develop. **P002-T003** (LangGraph runtime and continuation foundation, D282–D283) is completed and
 integrated into develop; it is exercised by synthetic graphs only and no product behavior
-uses it.
+uses it. **P002-T004** (structured knowledge and revision model, D284–D285) is completed and integrated into develop; it is
+exercised by synthetic knowledge only.
 
 **Exit criteria (adopted with D268):**
 

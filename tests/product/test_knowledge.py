@@ -518,7 +518,7 @@ def test_migration_installs_the_expected_triggers_and_refuses_a_downgrade_with_k
     url, repo, project = world
     with raw(url) as db:
         triggers = db.execute("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'").fetchall()
-    assert len([name for name, _sql in triggers if name.startswith('knowledge_')]) == 21
+    assert len([name for name, _sql in triggers if name.startswith('knowledge_') and not name.startswith('knowledge_deliveries_')]) == 21
     assert trigger_digest(triggers) == SCHEMA_TRIGGERS_SHA256
     require_schema(make_engine(url))
     with pytest.raises(RuntimeError):

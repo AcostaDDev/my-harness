@@ -45,6 +45,23 @@ def _amount(value):
     return None
 
 
+def refusal_boundary(spec, capture, identity_present):
+    """Positive supervisor evidence that the target CLI was never released; not inferred from stopping it.
+
+    Additive evidence for T007 receipts and artifact inventories. Historical usage-capture-1 classification below
+    stays unchanged. A gate process can exist while the target executable still has never received GO.
+    """
+    if not isinstance(spec, dict) or not isinstance(capture, dict) or capture.get('status') != 'refused':
+        return None
+    if (spec.get('launch_permitted') is False and not identity_present
+            and capture.get('launch_boundary') in (None, 'before_spawn') and capture.get('launch_permitted') is not True):
+        return 'before_spawn'
+    if (identity_present and spec.get('launch_permitted') is not False and capture.get('launch_permitted') is False
+            and capture.get('launch_boundary') == 'before_go'):
+        return 'before_go'
+    return None
+
+
 def launch_state(spec, status, identity_present, capture):
     """Native launch gate, from positive evidence only. A missing process row proves nothing."""
     if spec is None:

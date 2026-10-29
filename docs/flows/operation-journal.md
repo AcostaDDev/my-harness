@@ -61,8 +61,8 @@ flowchart TD
   without digests; strings over 1 KiB and payloads over 8 KiB become references with digest and size whose masked
   bytes are stored with the event in `trace_artifacts` (at most 1 MiB per event, otherwise the event is refused) and
   read back, verified, by digest; references inside an offloaded JSON payload are checked like those of the event,
-  at write and by backups. `knowledge-delivery-1` and `tool-discovery-1` envelopes are validated before they
-  become events (T007/T008 will emit them) and stay reconstructible from the stored bytes.
+  at write and by backups. `knowledge-delivery-1` and `tool-discovery-1` envelopes remain validated and reconstructible from stored bytes.
+  T007 emits additive v2 knowledge receipts; tool discovery emission remains T008.
 - **Generic port.** `JournalPort` seals and completes `sealed_effect` operations only; an `agent_invocation` or
   `domain_command` settles from its fenced native outcome or by evidence-based reconciliation. Every replay,
   reconciliation and completion checks the operation's project root; another root is refused before reading.
@@ -72,6 +72,11 @@ flowchart TD
   refused, never masked, and a refused completion leaves the operation INTENDED.
 - **Turns.** `trace-observation-1` counts native turn delimiters (`StreamMetrics.terminals`, an additive counter of
   the stream summary) whatever the validity of the final answer; `metrics-1` keeps its historical counters.
+- **Context receipts (T007).** An explicit canonical snapshot is sealed with `agent_started` and its
+  `context.intended` event in that same transaction. The completed input-write observation and agent query/tool
+  returns persist exact exposures with `knowledge.receipt` events (`knowledge-delivery-2`). Only locators, hashes,
+  bounds and failure codes enter trace envelopes; content stays in scoped evidence storage. Historical
+  `knowledge-delivery-1` remains unchanged. [FL08 implementation](frozen-context.md).
 - **Domain commands.** Accepted outcomes and recorded refusals write `domain.command_accepted`/`refused` events in
   their own transactions; graph commands write the `domain_command` operation instead of the accepted event.
 - **Queries.** `GET /api/managed/knowledge/projects/{id}/traces/{thread}` (thread), `/operations` (offset, at most 100

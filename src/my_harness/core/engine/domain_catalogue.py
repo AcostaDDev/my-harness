@@ -209,6 +209,19 @@ def _result(*required) -> dict:
 
 
 CATALOGUE = Catalogue((
+    Entry('knowledge.lookup', 1, 'query', ('owner', 'harness', 'agent'), _AGENTS,
+          _object({'revision': NUMBER, 'item_id': ID,
+                   'exposure': {'enum': ['metadata', 'excerpt', 'full']},
+                   'start': OFFSET, 'length': {'type': 'integer', 'minimum': 1, 'maximum': 32768},
+                   'max_bytes': {'type': 'integer', 'minimum': 1024, 'maximum': 32768}}, ('item_id',)),
+          _result('revision', 'exposures', 'page'), summary='Bounded exposure of one frozen knowledge entity.'),
+    Entry('knowledge.search', 1, 'query', ('owner', 'harness', 'agent'), _AGENTS,
+          _object({'revision': NUMBER, 'query': {'type': 'string', 'minLength': 1, 'maxLength': 200},
+                   'kind': KIND, 'document': DOCUMENT, 'cursor': {'type': 'string', 'maxLength': 100},
+                   'limit': {'type': 'integer', 'minimum': 1, 'maximum': 50},
+                   'exposure': {'enum': ['metadata', 'excerpt', 'full']},
+                   'max_bytes': {'type': 'integer', 'minimum': 1024, 'maximum': 32768}}, ('query',)),
+          _result('revision', 'exposures', 'page'), summary='Literal casefolded search within an accepted revision.'),
     Entry('knowledge.projects', 1, 'query', ('owner',), (), _object({'offset': OFFSET, 'limit': LIMIT}),
           _result('items', 'total', 'offset', 'limit'), summary='Persisted knowledge projects and their heads.'),
     Entry('knowledge.head', 1, 'query', ('owner', 'harness', 'agent'), _AGENTS, _object({}),

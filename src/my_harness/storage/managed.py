@@ -575,8 +575,14 @@ class SQLiteManagedRepository:
             session.flush()
             invocation = intend_usage(session, run, attempt)  # P001-T003: expected invocation with its native intent
             if operation is not None:
-                operation_journal.seal_invocation(session, operation, root=run.root, job=job, attempt=attempt,
+                sealed_operation = operation_journal.seal_invocation(session, operation, root=run.root, job=job, attempt=attempt,
                                                   invocation_id=invocation.id, at=attempt.started_at)
+            prompt_snapshot = json.loads(request.prompt_snapshot_json) if request.prompt_snapshot_json else {}
+            if 'canonical_context' in prompt_snapshot:
+                if operation is None:
+                    raise Conflict(tr('context.operation_required'))
+                from my_harness.storage.frozen_context import seal
+                seal(session, prompt_snapshot['canonical_context']['id'], sealed_operation, request)
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
                           "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING",
@@ -906,6 +912,16 @@ class SQLiteManagedRepository:
                 elif kind == "process_finished":
                     row.status = "STOPPED" if payload["group_state"] == "dead" else "UNCERTAIN"
                     row.capture = payload
+                    from my_harness.core.engine.usage_capture import refusal_boundary
+                    if refusal_boundary(row.spec, payload, row.identity is not None) is not None:
+                        from my_harness.storage.frozen_context import launch_refused
+                        launch_refused(session, attempt_id)
+                elif kind == 'context_input_delivered':
+                    if (row.status != 'RUNNING' or row.identity is None or row.spec.get('launch_permitted') is False
+                            or payload['sha256'] != row.spec.get('prompt_sha256')):
+                        raise Conflict(tr('context.operation_required'))
+                    from my_harness.storage.frozen_context import observe
+                    observe(session, attempt_id, payload['rendered_sha256'])
                 self._event(session, run, kind, {"job_id": job.id, "attempt_id": attempt_id, **payload})
 
     def processes(self, job_id):

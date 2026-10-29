@@ -1389,5 +1389,14 @@
   "journal.origin_invalid": "El origen de la operación debe ser una referencia de solicitud con exactamente un tipo conocido y un identificador.",
   "journal.refs_invalid": "Referencia de operación no válida {where}: las referencias son como máximo 32 claves cortas en minúsculas con valores imprimibles de hasta 200 caracteres, sin credenciales ni secretos.",
   "journal.result_invalid": "Valor {where} de operación no válido: debe ser un objeto JSON de hasta 16 KiB, sin credenciales ni valores secretos.",
-  "backup.trace_artifact": "El artefacto de traza {sha256} falta o no coincide con su digest o su tamaño."
+  "backup.trace_artifact": "El artefacto de traza {sha256} falta o no coincide con su digest o su tamaño.",
+  "backup.context": "La evidencia de contexto congelado o de entrega no ha superado la verificación.",
+  "context.invalid": "El contexto congelado falta, no es válido, pertenece a otro proyecto o supera sus límites.",
+  "context.operation_required": "El contexto canónico requiere una operación de invocación protegida y evidencia de lanzamiento coincidente.",
+  "domain.cursor_invalid": "El cursor no pertenece a esta consulta congelada.",
+  "domain.delivery_key_required": "Se requiere una clave estable de entrega de hasta 180 caracteres.",
+  "domain.delivery_over_limit": "El resultado supera el límite de entrega; usa consulta o búsqueda acotada.",
+  "context.observation_unrecorded": "La observación de entrega del contexto no terminó; la invocación no debe reintentarse automáticamente.",
+  "context.client_mismatch": "El destino de las instrucciones congeladas no coincide con el cliente de la invocación.",
+  "backup.prelaunch_evidence": "El rechazo previo al lanzamiento contradice la evidencia del proceso o de sus artefactos."
 }

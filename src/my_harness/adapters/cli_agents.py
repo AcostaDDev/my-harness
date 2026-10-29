@@ -380,6 +380,18 @@ class CLIProcessAdapter:
         except (OSError, TypeError, ValueError):
             pass  # Never mask the original failure; the raw artifacts remain.
 
+    def _refuse_before_spawn(self, request, config, *, observed=None, diagnostic_code=None):
+        """Known no-launch intent/capture, with no invented prompt or stream artifacts."""
+        details = {}
+        if observed is not None:
+            details['preflight_observed'] = observed
+        if diagnostic_code is not None:
+            details['diagnostic_code'] = diagnostic_code
+        self.journal.process_intent(request.id, {'provider': config.provider, 'adapter_version': VERSION,
+            'cli_version': config.cli_version, 'launch_permitted': False, **details})
+        self.journal.process_update(request.id, 'process_finished', {'status': 'refused', 'group_state': 'dead',
+            'launch_permitted': False, 'launch_boundary': 'before_spawn', **details})
+
     def invoke(self, context, request):
         if self.journal is None:
             raise JournalError("CLI execution requires a managed process journal")
@@ -387,21 +399,20 @@ class CLIProcessAdapter:
         if agent is None:
             raise ValueError("Unknown agent role")
         config = self.agents[agent]
+        canonical_marker = (json.loads(request.prompt_snapshot_json).get('canonical_context')
+                            if request.prompt_snapshot_json else None)
+        if canonical_marker is not None and canonical_marker.get('client') != config.provider:
+            self._refuse_before_spawn(request, config, diagnostic_code='context_client')
+            raise JournalError(tr('context.client_mismatch'))
         from my_harness.adapters.cli_diagnostics import preflight_config
         observed = preflight_config(config, access=access_for(request.role),
                                     expected_identity=self.binding_versions.get(f'{agent}_cli_launch_sha256'))
         if not observed['available']:
-            self.journal.process_intent(request.id, {'provider': config.provider, 'adapter_version': VERSION,
-                'cli_version': config.cli_version, 'preflight_observed': observed, 'launch_permitted': False})
-            metadata = {'status': 'refused', 'group_state': 'dead', 'preflight_observed': observed}
-            self.journal.process_update(request.id, 'process_finished', metadata)
+            self._refuse_before_spawn(request, config, observed=observed)
             raise JournalError('; '.join(d['correction'] for d in observed['diagnostics']))
         argv = argv_for(config, context, request)
         if not guard_contract(config.provider, argv, context.root, access_for(request.role)):
-            self.journal.process_intent(request.id, {'provider': config.provider, 'adapter_version': VERSION,
-                'cli_version': config.cli_version, 'preflight_observed': observed, 'launch_permitted': False,
-                'diagnostic_code': 'guard_contract'})
-            self.journal.process_update(request.id, 'process_finished', {'status': 'refused', 'group_state': 'dead'})
+            self._refuse_before_spawn(request, config, observed=observed, diagnostic_code='guard_contract')
             raise JournalError(tr('cli_diagnostics.guard_contract'))
         if self.artifact_root.is_relative_to(context.root) or self.artifact_root.resolve() != self.artifact_root:
             raise ValueError(tr('agents.artifacts_outside_checkout_without'))
@@ -432,6 +443,8 @@ class CLIProcessAdapter:
                 prompt += "\nAllowed executor selection policy:\n" + freeze({
                     "models": policy.executor_models, "efforts": policy.executor_efforts})
         prompt_bytes = prompt.encode("utf-8")
+        canonical_input = bool(request.prompt_snapshot_json and
+                               'canonical_context' in json.loads(request.prompt_snapshot_json))
         prompt_path = directory / "prompt.txt"
         with prompt_path.open("xb") as file:
             file.write(prompt_bytes)
@@ -492,7 +505,8 @@ class CLIProcessAdapter:
             if not same_launch:
                 stopped = stop_group(process).group_state
                 self.journal.process_update(request.id, 'process_finished',
-                    {'status': 'refused', 'group_state': stopped, 'diagnostic_code': 'identity_changed'})
+                    {'status': 'refused', 'group_state': stopped, 'diagnostic_code': 'identity_changed',
+                     'launch_permitted': False, 'launch_boundary': 'before_go'})
                 raise JournalError(tr('cli_diagnostics.identity_changed'))
             os.write(gate_write, b"G")
             os.close(gate_write)
@@ -502,8 +516,16 @@ class CLIProcessAdapter:
                 try:
                     process.stdin.write(prompt_bytes)
                     process.stdin.close()
+                    if canonical_input:
+                        self.journal.process_update(request.id, 'context_input_delivered',
+                                                    {'sha256': hashlib.sha256(prompt_bytes).hexdigest(),
+                                                     'rendered_sha256': hashlib.sha256(request.prompt.encode('utf-8')).hexdigest()})
                 except (BrokenPipeError, OSError) as exc:
                     write_error.append(str(exc))
+                except Exception as exc:
+                    # A failed receipt write cannot silently become an observed delivery or a successful launch.
+                    write_error.append(str(exc))
+                    cancelled.set()
 
             writer = Thread(target=write_prompt, daemon=True)
             writer.start()
@@ -553,7 +575,9 @@ class CLIProcessAdapter:
                         # Remaining readable bytes have been drained by the iteration above.
                         break
                 process.poll()
-                writer.join(timeout=0.3)
+                writer.join(timeout=6 if canonical_input else 0.3)
+                if canonical_input and writer.is_alive():
+                    raise JournalError(tr('context.observation_unrecorded'))
             status, payload = parser.finish(process.returncode)
             flush()
             status = status_override or status

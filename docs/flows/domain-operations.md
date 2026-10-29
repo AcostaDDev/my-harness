@@ -41,6 +41,12 @@ sequenceDiagram
   `invocation:<id>`). The same request returns the stored result; another request under the same key is
   `idempotency_conflict`. Refusals do not reserve keys.
 - **Agents.** They see only their frozen revision (`head`, `list`, `get`, draft base); queries need receipts (T007).
+  T007 supplies `ReceiptSink`, `knowledge.lookup` and `knowledge.search` through this same pipeline, with exact
+  response/exposure bytes and journal envelopes committed before return. Keys deduplicate invocation/channel
+  deliveries, rechecking caller and current capabilities first. A later adoption of an invocation's own draft
+  cannot expose accepted metadata through `draft.get`. Agent reads of their own open proposals are labelled
+  noncanonical captures. The product composition still refuses agent binding and permissions until T008/T010.
+  See [frozen context](frozen-context.md) for limits, failure, revision-bound cursors and archive readers.
 - **Archives.** On a restored query-only copy the reads work from persisted rows; every mutation route answers 409
   `restored_read_only`, and the service refuses `query_only` before writing.
 - **Trace (T006, D287).** The product composition adds the operation-journal sink: every accepted outcome and every

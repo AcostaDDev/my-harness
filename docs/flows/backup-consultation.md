@@ -39,6 +39,13 @@ flowchart TD
   query-only format-3 bundle and leaves the original bundle byte-identical.
 - Consultation does not resume jobs, release locks or certify that historical writers stopped. Stop the service
   normally; its ephemeral access key is removed. Uncertain historical process identity remains uncertain.
+- P002-T007 adds persisted service readers for canonical context snapshots, exact invocation prompts and paged
+  delivery evidence, scoped by knowledge project. Backup/restore verifies source assembly, immutable boundary
+  links and exposure/receipt-event correspondence; consultation works without a checkout or writes. These are
+  service interfaces for later views, not new archive UI or HTTP routes ([context flow](frozen-context.md)).
+  Known before-spawn refusals have no artifact references; known before-GO refusals retain only the actual prepared
+  prompt. Backup verifies the explicit refusal boundary and rejects contradictory observed output or missing
+  artifacts of launched processes; a stopped group alone grants no exemption.
 
 ## Source
 

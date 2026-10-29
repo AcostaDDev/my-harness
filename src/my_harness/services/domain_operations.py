@@ -5,7 +5,7 @@ catalogue reference. In order: catalogue entry and schema digest, arguments, cal
 inside one transaction query-only refusal, caller re-verification, project membership, idempotency, per-operation
 capabilities, preconditions, the handler and the outcome record; audit sinks (T006 events and operations) run in the
 outcome's transaction and in the separate refusal transaction. Missing infrastructure of later tasks fails closed:
-agent callers (T008), permission state (T010), delegated adoption (T016) and receipts (T007).
+agent callers (T008), permission state (T010) and delegated adoption (T016). T007 supplies the exact receipt sink.
 """
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from my_harness.core.engine import domain_policy as policy
 from my_harness.core.engine import knowledge as core
+from my_harness.core.engine import frozen_context as context_core
 from my_harness.core.engine.contracts import ContractError, freeze
 from my_harness.core.engine.domain_catalogue import CATALOGUE, MAX_ARGUMENTS, SchemaError, validate
 from my_harness.i18n import tr
@@ -30,7 +31,8 @@ STATUS = {'not_found': 404, 'project_unregistered': 404, 'revision_unknown': 404
           'schema_mismatch': 422, 'arguments_invalid': 422, 'idempotency_key_required': 422,
           'knowledge_invalid': 422, 'caller_not_allowed': 403, 'capability_unavailable': 403,
           'capability_denied': 403, 'ceiling_excluded': 403, 'owner_only_excluded': 403, 'caller_unavailable': 403,
-          'delegation_unavailable': 403, 'provenance_not_allowed': 403, 'receipts_unavailable': 403}
+          'delegation_unavailable': 403, 'provenance_not_allowed': 403, 'receipts_unavailable': 403,
+          'delivery_key_required': 422, 'delivery_over_limit': 422, 'cursor_invalid': 422}
 
 
 def now() -> str:
@@ -199,6 +201,7 @@ class DomainOperations:
             'knowledge.draft.open': self._draft_open, 'knowledge.draft.apply': self._draft_apply,
             'knowledge.draft.discard': self._draft_discard, 'knowledge.adoption.preview': self._preview,
             'knowledge.adopt': self._adopt,
+            'knowledge.lookup': self._lookup, 'knowledge.search': self._search,
         }
 
     # Discovery for the broker (T008) -------------------------------------------------------------------------------
@@ -257,6 +260,11 @@ class DomainOperations:
             call = _Call(self, session, caller, entry, arguments, project_id, knowledge)
             call.origin = 'owner_confirmed' if entry.kind == 'adopt' and caller.principal == 'owner' else None
             request_sha256 = policy.request_sha256(entry, arguments, call.origin)
+            if caller.principal == 'agent' and not entry.mutates and hasattr(self.delivery, 'replay'):
+                call.authorize()
+                replay = self.delivery.replay(session, caller, key, request_sha256)
+                if replay is not None:
+                    return Outcome(entry.id, replay, replayed=True)
             if entry.mutates and project_id is not None:
                 previous = session.scalar(select(DomainCommandRow).where(
                     DomainCommandRow.knowledge_project_id == project_id, DomainCommandRow.scope == caller.scope,
@@ -277,7 +285,8 @@ class DomainOperations:
                 raise RuntimeError(tr('domain.unauthorized_handler', operation=entry.id))
             validate(entry.output, result)
             if caller.principal == 'agent' and not entry.mutates:
-                self.delivery.record(session, caller, call.delivery)
+                self.delivery.record(session, caller, {**(call.delivery or {}), 'result': result, 'key': key,
+                                                       'request_sha256': request_sha256})
             if not entry.mutates:
                 return Outcome(entry.id, result)
             row = DomainCommandRow(
@@ -321,6 +330,11 @@ class DomainOperations:
                 session.flush()
                 for sink in self.audit_sinks:  # T006: the refusal event shares the refusal's own transaction
                     sink(session, row)
+                if (caller.principal == 'agent' and entry is not None and not entry.mutates and request
+                        and refusal.code in ('not_found', 'revision_outside_context', 'cursor_invalid',
+                                             'delivery_over_limit', 'knowledge_invalid', 'knowledge_integrity')
+                        and hasattr(self.delivery, 'failure')):
+                    self.delivery.failure(session, caller, key, request, refusal.code)
         except Exception as error:  # noqa: BLE001  (a refusal never becomes a success; report the audit failure)
             raise RuntimeError(tr('domain.refusal_unrecorded', code=refusal.code)) from error
 
@@ -396,6 +410,8 @@ class DomainOperations:
         draft = call.session.get(KnowledgeRevisionRow, call.arguments['draft_id'])
         if draft is None or draft.project_id != call.project_id:
             raise DomainRefusal('not_found')
+        if call.caller.principal == 'agent' and draft.status == 'ACCEPTED' and draft.id != call.caller.frozen_revision_id:
+            raise DomainRefusal('not_found')
         opener = call.session.scalar(select(DomainCommandRow).where(
             DomainCommandRow.draft_id == draft.id, DomainCommandRow.operation_id == 'knowledge.draft.open',
             DomainCommandRow.outcome == 'ACCEPTED'))
@@ -413,6 +429,69 @@ class DomainOperations:
         return core.knowledge_sha256(call.project_id, members.values(), links), members, links
 
     # Handlers ------------------------------------------------------------------------------------------------------
+
+    def _lookup(self, call):
+        call.authorize()
+        args = call.arguments
+        revision = self._revision(call, args.get('revision'))
+        member = revision.members.get(args['item_id']) if revision else None
+        if member is None:
+            raise DomainRefusal('not_found')
+        budget = args.get('max_bytes', 8192)
+        while True:
+            e = context_core.exposure(member, level=args.get('exposure', 'full'), start=args.get('start', 0),
+                                      length=args.get('length', 2048), budget=budget)
+            result = {'revision': {'id': revision.id, 'number': revision.number, 'revision_sha256': revision.revision_sha256},
+                      'exposures': [e], 'page': {'truncated': e['truncated'], 'total': 1,
+                                               'limit': 1, 'max_bytes': args.get('max_bytes', 8192)}}
+            if len(freeze(result).encode('utf-8')) <= context_core.MAX_RESULT:
+                return result
+            budget //= 2
+
+    def _search(self, call):
+        call.authorize()
+        args = call.arguments
+        revision = self._revision(call, args.get('revision'))
+        if revision is None:
+            raise DomainRefusal('not_found')
+        fingerprint = context_core.digest(freeze({'revision_id': revision.id,
+            'arguments': {k: v for k, v in args.items() if k != 'cursor'}}))
+        offset = 0
+        if 'cursor' in args:
+            try:
+                position, sha = args['cursor'].split(':')
+                offset = int(position)
+                if offset < 0 or sha != fingerprint or str(offset) != position:
+                    raise ValueError()
+            except ValueError:
+                raise DomainRefusal('cursor_invalid') from None
+        query = args['query'].casefold()
+        # Search verified accepted members only; no global SQL index can leak another revision/project.
+        selected = sorted((m for m in revision.members.values()
+            if args.get('kind') in (None, m.kind) and ('document' not in args or args['document'] == m.document)
+            and query in (m.code + '\n' + freeze(m.content)).casefold()), key=lambda m: (m.kind, m.document or '', m.code))
+        budget, used, exposures = args.get('max_bytes', 8192), 0, []
+        for member in selected[offset:offset + args.get('limit', 20)]:
+            e = context_core.exposure(member, level=args.get('exposure', 'metadata'), budget=max(0, budget - used))
+            size = len(e['data'].encode('utf-8'))
+            if exposures and used + size + len(freeze(e['identity']).encode('utf-8')) > budget:
+                break
+            if len(freeze(exposures + [e]).encode('utf-8')) > context_core.MAX_RESULT - 1024:
+                if exposures:
+                    break
+                e = context_core.exposure(member, level=args.get('exposure', 'metadata'), budget=min(16384, budget))
+                size = len(e['data'].encode('utf-8'))
+            exposures.append(e)
+            used += size + len(freeze(e['identity']).encode('utf-8'))
+            if used >= budget:
+                break
+        end = offset + len(exposures)
+        page = {'truncated': end < len(selected), 'total': len(selected), 'page': offset,
+                'limit': args.get('limit', 20), 'max_bytes': budget}
+        if end < len(selected):
+            page['next_cursor'] = f'{end}:{fingerprint}'
+        return {'revision': {'id': revision.id, 'number': revision.number, 'revision_sha256': revision.revision_sha256},
+                'exposures': exposures, 'page': page}
 
     def _projects(self, call):
         call.authorize()

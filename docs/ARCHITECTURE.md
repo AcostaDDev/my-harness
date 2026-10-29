@@ -76,7 +76,8 @@ queue; closing the browser does not cancel work.
 | `orchestration/`, `storage/graph_continuations.py` | P002-T003 graph runtime: harness checkpoint saver, versioned graph registry, segment runner with quarantine and cancellation, operation port; the only LangGraph importer, used through `ManagedRuntime.graph_runner` ([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract), [D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine)) |
 | `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used by tests only ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
 | `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`, `storage/operation_journal.py`, `api/traces.py` | P002-T006 operation journal behind `OperationPort` with fenced invocation operations and evidence-based recovery, ordered insert-only trace events, `trace-observation-1` counters, bounded sanitized payloads, T007/T008 envelopes and read-only trace routes ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract)) |
-| `migrations/versions/0001…0032` | Alembic schema |
+| `core/engine/frozen_context.py`, `storage/frozen_context.py` | P002-T007: bounded accepted context, actual frozen profile and explicit Git/code captures, D285 prompt rendering, fenced invocation boundaries and exact query/tool/input receipts, with scoped archive readers ([D288](DECISIONS.md#d288--frozen-invocation-context-and-exact-exposure-evidence)) |
+| `migrations/versions/0001…0033` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
 Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
@@ -178,6 +179,9 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   invoking ([D094](DECISIONS.md#d094--agentsmd-in-every-frozen-prompt)). With the job's `language-context-1` pair,
   `render_attempt` adds the `language-directive-1` directive before the schema and seals it in the snapshot; jobs
   without a pair render as before ([D169](DECISIONS.md#d169--sealed-language-directive-generated-documents-in-the-work-language)).
+  The explicit T007 canonical path supersedes the checkout instruction read with verified accepted instructions
+  and a profile-bound snapshot; absent canonical data fails without a generated-file fallback. Calls without that
+  selection keep historical behavior until explicit migration ([context flow](flows/frozen-context.md), D288).
   The frozen `document_layout` stops earlier jobs before effects. The managed-mode marker is excluded from Git only
   when validated by this installation's guard ([D099](DECISIONS.md#d099--managed-mode-marker-stays-untracked)). The
   retired import template is readable as historical data but never edited, activated or rendered for invocation.
@@ -393,7 +397,9 @@ and `BillingFields.tsx`.
 
 See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounting flow](flows/metrics-accounting.md).
 
-## 13. P002 target architecture (accepted design; not implemented)
+<a id="13-p002-target-architecture-accepted-design-not-implemented"></a>
+
+## 13. P002 target architecture (accepted design; foundations implemented through T007)
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
@@ -402,8 +408,11 @@ continuation storage (T003, D280/D282/D283) and the structured knowledge storage
 (T004, D284/D285) exist, exercised with synthetic data only, and the typed command service (T005, D286) with its
 catalogue, capability policy and `domain_commands` outcomes, reached by owner API routes and synthetic graphs only, and
 the operation journal with correlated trace events (T006, D287), used by synthetic graphs, graph domain commands and
-`agent_started` callers that supply an operation. The tool broker, agent use of knowledge, exports, the inbox and the
-graph view are not implemented, and no product graph launches agents yet.
+`agent_started` callers that supply an operation. Local T007 adds `core/engine/frozen_context.py`, `storage/frozen_context.py` and schema
+`0033_frozen_context`: explicit canonical prompt rendering, frozen invocation boundaries and exact knowledge
+receipts, also readable without checkout from an archive. `ManagedRuntime.frozen_contexts()` prepares/renders
+contexts; `agent_started` seals them and the adapter observes completed input delivery. The tool broker and its
+caller resolver, permissions, exports, inbox and graph view remain pending, and no product graph launches agents yet.
 
 ```mermaid
 flowchart TD

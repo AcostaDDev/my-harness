@@ -1389,5 +1389,14 @@
   "journal.origin_invalid": "The operation origin must be a request reference with exactly a known kind and an identifier.",
   "journal.refs_invalid": "Invalid operation reference {where}: references are at most 32 short lowercase keys with printable values of up to 200 characters, without credentials or secrets.",
   "journal.result_invalid": "Invalid operation {where}: it must be a JSON object of up to 16 KiB, without credentials or secret values.",
-  "backup.trace_artifact": "Trace artifact {sha256} is missing or does not match its digest or size."
+  "backup.trace_artifact": "Trace artifact {sha256} is missing or does not match its digest or size.",
+  "backup.context": "Frozen context or delivery evidence failed verification.",
+  "context.invalid": "Frozen context is missing, invalid, outside its project or exceeds its bounds.",
+  "context.operation_required": "Canonical context requires a fenced invocation operation and matching launch evidence.",
+  "domain.cursor_invalid": "The cursor does not belong to this frozen query.",
+  "domain.delivery_key_required": "A stable delivery key of at most 180 characters is required.",
+  "domain.delivery_over_limit": "The knowledge result exceeds the delivery bound; use bounded lookup or search.",
+  "context.observation_unrecorded": "Context delivery observation did not finish; the invocation must not be retried automatically.",
+  "context.client_mismatch": "The frozen instruction target does not match the invocation client.",
+  "backup.prelaunch_evidence": "Prelaunch refusal contradicts its process or artifact evidence."
 }

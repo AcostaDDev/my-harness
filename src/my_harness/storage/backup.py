@@ -155,6 +155,24 @@ def _integrity(db, *, restored=False):
     for name, count in projected.items():
         if db.execute(f'SELECT count(*) FROM {name}').fetchone()[0] != count:
             raise BackupError(tr('backup.projection', projection=run_projection.PROJECTION, name=name))
+    # P002-T006: every offloaded trace artifact matches its digest and size, and every reference has its bytes,
+    # including the references inside an offloaded JSON payload.
+    stored = {}
+    for event_id, sha256, size, media, content in db.execute(
+            'SELECT event_id, sha256, size, media, content FROM trace_artifacts'):
+        if _hash(content) != sha256 or len(content) != size:
+            raise BackupError(tr('backup.trace_artifact', sha256=sha256))
+        stored.setdefault(event_id, {})[sha256] = (media, content)
+    from my_harness.core.engine.trace_payload import contained_references
+    for event_id, payload in db.execute('SELECT event_id, payload FROM trace_events'):
+        artifacts = stored.get(event_id, {})
+        try:
+            references = list(contained_references(json.loads(payload), artifacts))
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise BackupError(tr('backup.trace_artifact', sha256=event_id)) from exc
+        for reference in references:
+            if reference.get('sha256') not in artifacts:
+                raise BackupError(tr('backup.trace_artifact', sha256=reference.get('sha256')))
     from my_harness.storage.accounting_backup import AccountingMismatch, verify
     try:
         return verify(db)

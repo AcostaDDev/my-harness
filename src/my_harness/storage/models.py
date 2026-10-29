@@ -1361,3 +1361,86 @@ class DomainCommandRow(Base):
     draft_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     revision_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+# --- P002-T006 (D287): operation journal and correlated trace events -------------------------------------------
+
+OPERATION_STATUSES = ('INTENDED', 'COMPLETED', 'FAILED', 'UNCERTAIN', 'ABANDONED')
+TRACE_SOURCES = ('supplied', 'reported', 'derived', 'measured', 'absent')
+
+
+class WorkflowOperationRow(Base):
+    """One recoverable operation per `OperationPort` key inside one graph thread (D287). `status` is a projection of
+    the operation's `trace_events`; the invocation is the `usage_invocations` row it links, never a copy of it."""
+    __tablename__ = 'workflow_operations'
+    __table_args__ = (
+        UniqueConstraint('thread_id', 'key'),
+        CheckConstraint(f'status IN {OPERATION_STATUSES}', name='ck_workflow_operation_status'),
+        CheckConstraint("kind != 'agent_invocation' OR (attempt_id IS NOT NULL AND invocation_id IS NOT NULL "
+                        "AND job_id IS NOT NULL AND owner_token IS NOT NULL)", name='ck_workflow_operation_writer'),
+        CheckConstraint("kind != 'domain_command' OR (command_id IS NOT NULL AND status = 'COMPLETED')",
+                        name='ck_workflow_operation_command'),
+        Index('ix_workflow_operations_root', 'root', 'thread_id'),
+        Index('ix_workflow_operations_status', 'status'),
+        Index('uq_workflow_operations_attempt', 'attempt_id', unique=True, sqlite_where=text('attempt_id IS NOT NULL')))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    thread_id: Mapped[str] = mapped_column(ForeignKey('graph_threads.id'))
+    key: Mapped[str] = mapped_column(String(80))
+    root: Mapped[str] = mapped_column(String)
+    kind: Mapped[str] = mapped_column(String(40))
+    parent_operation_id: Mapped[str | None] = mapped_column(ForeignKey('workflow_operations.id'), nullable=True)
+    causation_event_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    origin: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    refs: Mapped[dict] = mapped_column(JSON)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(20))
+    job_id: Mapped[int | None] = mapped_column(ForeignKey('managed_jobs.id'), nullable=True)
+    owner_token: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    command_id: Mapped[str | None] = mapped_column(ForeignKey('domain_commands.command_id'), nullable=True)
+    attempt_id: Mapped[str | None] = mapped_column(ForeignKey('managed_attempts.id'), nullable=True)
+    invocation_id: Mapped[str | None] = mapped_column(ForeignKey('usage_invocations.id'), nullable=True)
+    result: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    error: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class TraceEventRow(Base):
+    """Ordered (by `id`), deduplicated (by `dedupe_key`) and insert-only (triggers of 0032) trace event, written in
+    the transaction of the change it reports. Payloads are bounded and sanitized (`trace-payload-1`)."""
+    __tablename__ = 'trace_events'
+    __table_args__ = (
+        CheckConstraint(f'source IN {TRACE_SOURCES}', name='ck_trace_event_source'),
+        Index('ix_trace_events_thread', 'thread_id', 'id'),
+        Index('ix_trace_events_operation', 'operation_id', 'id'),
+        Index('ix_trace_events_root', 'root', 'id'),
+        {'sqlite_autoincrement': True})
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[str] = mapped_column(String(36), unique=True)
+    dedupe_key: Mapped[str] = mapped_column(String(200), unique=True)
+    root: Mapped[str | None] = mapped_column(String, nullable=True)
+    thread_id: Mapped[str | None] = mapped_column(ForeignKey('graph_threads.id'), nullable=True)
+    operation_id: Mapped[str | None] = mapped_column(ForeignKey('workflow_operations.id'), nullable=True)
+    invocation_id: Mapped[str | None] = mapped_column(ForeignKey('usage_invocations.id'), nullable=True)
+    command_id: Mapped[str | None] = mapped_column(ForeignKey('domain_commands.command_id'), nullable=True)
+    parent_event_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    causation_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    kind: Mapped[str] = mapped_column(String(60))
+    source: Mapped[str] = mapped_column(String(20))
+    payload: Mapped[dict] = mapped_column(JSON)
+    payload_sha256: Mapped[str] = mapped_column(String(64))
+    truncated: Mapped[bool] = mapped_column(Boolean)
+    redactions: Mapped[int] = mapped_column(Integer)
+    recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class TraceArtifactRow(Base):
+    """Content of a trace event payload offloaded by `trace-payload-1` (strings over 1 KiB, payloads over 8 KiB),
+    already masked, written with its event and insert-only (triggers of 0032). Readable only through that event's
+    project and thread; the digest and size are verified on read, by backups and on restore."""
+    __tablename__ = 'trace_artifacts'
+    event_id: Mapped[str] = mapped_column(ForeignKey('trace_events.event_id'), primary_key=True)
+    sha256: Mapped[str] = mapped_column(String(64), primary_key=True)
+    size: Mapped[int] = mapped_column(Integer)
+    media: Mapped[str] = mapped_column(String(80))
+    content: Mapped[bytes] = mapped_column(LargeBinary)

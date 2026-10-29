@@ -2727,6 +2727,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Thread */
+        get: operations["trace_thread"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operations */
+        get: operations["trace_operations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Events
+         * @description Ordered events after the `after` sequence; `operation_id` narrows to one operation.
+         */
+        get: operations["trace_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}/artifacts/{sha256}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Artifact
+         * @description Content an event of this thread offloaded (`trace-payload-1` references), verified on read.
+         */
+        get: operations["trace_artifact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -8755,6 +8829,140 @@ export interface components {
              * @description Repeated tasks or missing document: not offered for queuing.
              */
             diagnostics: string[];
+        };
+        /** TraceArtifactRead */
+        TraceArtifactRead: {
+            /** Sha256 */
+            sha256: string;
+            /** Size */
+            size: number;
+            /** Media */
+            media: string;
+            /**
+             * Content
+             * @description Masked content an event offloaded; verified against sha256 and size.
+             */
+            content: string;
+        };
+        /** TraceEventRead */
+        TraceEventRead: {
+            /**
+             * Sequence
+             * @description Global order of the event; the cursor of the next page.
+             */
+            sequence: number;
+            /** Event Id */
+            event_id: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "supplied" | "reported" | "derived" | "measured" | "absent";
+            /** Operation Id */
+            operation_id: string | null;
+            /** Invocation Id */
+            invocation_id: string | null;
+            /** Command Id */
+            command_id: string | null;
+            /** Parent Event Id */
+            parent_event_id: string | null;
+            /** Causation Id */
+            causation_id: string | null;
+            /**
+             * Payload
+             * @description Bounded and sanitized (trace-payload-1).
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Truncated */
+            truncated: boolean;
+            /** Redactions */
+            redactions: number;
+            /** Recorded At */
+            recorded_at: string;
+        };
+        /** TraceEventsRead */
+        TraceEventsRead: {
+            /** Items */
+            items: components["schemas"]["TraceEventRead"][];
+            /** Next After */
+            next_after: number | null;
+        };
+        /** TraceOperationRead */
+        TraceOperationRead: {
+            /** Operation Id */
+            operation_id: string;
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "INTENDED" | "COMPLETED" | "FAILED" | "UNCERTAIN" | "ABANDONED";
+            /** Parent Operation Id */
+            parent_operation_id: string | null;
+            /** Causation Event Id */
+            causation_event_id: string | null;
+            /** Origin */
+            origin: {
+                [key: string]: unknown;
+            } | null;
+            /** Refs */
+            refs: {
+                [key: string]: string;
+            };
+            /** Command Id */
+            command_id: string | null;
+            /** Attempt Id */
+            attempt_id: string | null;
+            /**
+             * Invocation Id
+             * @description The usage_invocations row: the only source of charges.
+             */
+            invocation_id: string | null;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Error */
+            error: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** TraceOperationsRead */
+        TraceOperationsRead: {
+            /** Items */
+            items: components["schemas"]["TraceOperationRead"][];
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** TraceThreadRead */
+        TraceThreadRead: {
+            /** Thread Id */
+            thread_id: string;
+            /** Graph Id */
+            graph_id: string;
+            /** Graph Version */
+            graph_version: string;
+            /** Status */
+            status: string;
+            /** Segments */
+            segments: number;
+            /** Reason */
+            reason: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
         };
         /**
          * UiLanguageContextRead
@@ -19163,6 +19371,262 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KnowledgeAdoptRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    trace_thread: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceThreadRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    trace_operations: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceOperationsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    trace_events: {
+        parameters: {
+            query?: {
+                after?: number;
+                limit?: number;
+                operation_id?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceEventsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    trace_artifact: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                thread_id: string;
+                sha256: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TraceArtifactRead"];
                 };
             };
             /** @description Forbidden */

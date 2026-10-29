@@ -13,7 +13,7 @@ sequenceDiagram
     participant R as GraphRunner
     participant T as graph_threads
     participant G as LangGraph + harness saver
-    participant J as Operation port (journal)
+    participant J as Operation port (JournalPort)
     S->>R: start(graph, thread, identity-only state)
     R->>T: Stamp graph id, version, fingerprint, then RUNNING
     loop Durable segments
@@ -56,5 +56,12 @@ sequenceDiagram
   and the idempotency key is the node's deterministic `operation_key`, so a replayed node receives the stored outcome
   instead of a second effect. The command is committed or absent in one transaction, so it never leaves a sealed
   intent without outcome; nothing is atomic with the checkpoint. A harness caller cannot adopt knowledge.
-- **Later tasks.** The production journal and uncertain-operation reconciliation (T006/T020), quarantine release
-  and autonomous bounds (T016), and real graphs (T014–T016) are not part of this flow yet.
+- **Production journal (T006, D287).** `JournalPort(journal, thread, root)` binds the
+  [operation journal](operation-journal.md) to a thread: the seal commits an `INTENDED` operation before the effect,
+  a replay of a COMPLETED, FAILED or ABANDONED operation returns its record without the effect, and a sealed operation
+  without outcome raises `OperationUncertain`. Classifying it as `UNCERTAIN` is a separate, evidence-based recovery.
+- **Concurrent writes.** LangGraph writes checkpoints from its background executor while node threads write the
+  journal and domain outcomes; the saver serializes its own writes and takes the SQLite write lock before reading, so
+  a concurrent commit makes it wait instead of failing on a stale snapshot (found in T006).
+- **Later tasks.** Reconcilers for Git, export and notification effects (T013–T016, T020), quarantine release and
+  autonomous bounds (T016), and real graphs (T014–T016) are not part of this flow yet.

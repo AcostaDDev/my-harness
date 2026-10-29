@@ -3,8 +3,9 @@
 API routes, deterministic graph nodes and (from T008) the tool broker all call `DomainOperations.execute` with a
 catalogue reference. In order: catalogue entry and schema digest, arguments, caller principal/role/tool policy, then
 inside one transaction query-only refusal, caller re-verification, project membership, idempotency, per-operation
-capabilities, preconditions, the handler and the outcome record. Missing infrastructure of later tasks fails closed:
-agent callers (T006/T008), permission state (T010), delegated adoption (T016) and receipts (T007).
+capabilities, preconditions, the handler and the outcome record; audit sinks (T006 events and operations) run in the
+outcome's transaction and in the separate refusal transaction. Missing infrastructure of later tasks fails closed:
+agent callers (T008), permission state (T010), delegated adoption (T016) and receipts (T007).
 """
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -307,7 +308,7 @@ class DomainOperations:
                     KnowledgeSession(session).project_id(caller.root) if caller.root else None)
                 if project is not None and session.get(KnowledgeProjectRow, project) is None:
                     project = None
-                session.add(DomainCommandRow(
+                row = DomainCommandRow(
                     command_id=str(uuid4()), knowledge_project_id=project, operation_id=str(operation_id)[:80],
                     operation_version=version if isinstance(version, int) else 0,
                     schema_sha256=entry.schema_sha256 if entry else None, catalogue_sha256=self.catalogue.sha256,
@@ -315,7 +316,11 @@ class DomainOperations:
                     actor=caller.actor(), origin=None, scope=caller.scope[:200],
                     idempotency_key=key[:200] if isinstance(key, str) else None, request_sha256=request,
                     outcome='REFUSED', refusal_code=refusal.code, capability=None, result=None,
-                    recorded_at=now()))
+                    recorded_at=now())
+                session.add(row)
+                session.flush()
+                for sink in self.audit_sinks:  # T006: the refusal event shares the refusal's own transaction
+                    sink(session, row)
         except Exception as error:  # noqa: BLE001  (a refusal never becomes a success; report the audit failure)
             raise RuntimeError(tr('domain.refusal_unrecorded', code=refusal.code)) from error
 

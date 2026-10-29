@@ -1372,5 +1372,22 @@
   "domain.revision_unknown": "Revisión aceptada desconocida: {number}.",
   "domain.schema_mismatch": "El digest del esquema de {operation} no coincide con el catálogo.",
   "domain.stale_revision": "La cabeza aceptada no es la revisión esperada; recárgala.",
-  "domain.unauthorized_handler": "La operación {operation} se gestionó sin una decisión de capacidades."
+  "domain.unauthorized_handler": "La operación {operation} se gestionó sin una decisión de capacidades.",
+  "journal.event_conflict": "El evento de traza {key} ya existe con otro contenido; los eventos nunca se reescriben.",
+  "journal.invocation_exists": "La operación {operation} ya selló su invocación; nunca se lanza dos veces.",
+  "journal.kind_unknown": "Tipo de operación o de evento desconocido: {kind}.",
+  "journal.operation_conflict": "La operación {operation} ya existe en el hilo de grafo {thread} con otro tipo o con otras referencias.",
+  "journal.operation_state": "La operación {operation} está en {status}; se esperaba {expected}.",
+  "journal.operation_unknown": "Operación desconocida: {operation}.",
+  "journal.read_only": "La base es una restauración de solo consulta; no se puede escribir el diario de operaciones.",
+  "journal.reason_required": "Abandonar una operación requiere un motivo.",
+  "journal.thread_scope": "El hilo de grafo {thread} pertenece a otro proyecto; sus operaciones no pueden cambiar de proyecto.",
+  "journal.trace_unknown": "No existe ninguna traza con ese hilo en este proyecto.",
+  "journal.artifact_corrupt": "El artefacto de traza {sha256} no coincide con su digest o su tamaño.",
+  "journal.event_too_large": "El evento de traza {key} externalizaría más de 1 MiB; se rechaza en lugar de truncarse.",
+  "journal.kind_not_generic": "Las operaciones de tipo {kind} se sellan y liquidan con sus propios registros cercados, no mediante el puerto genérico.",
+  "journal.origin_invalid": "El origen de la operación debe ser una referencia de solicitud con exactamente un tipo conocido y un identificador.",
+  "journal.refs_invalid": "Referencia de operación no válida {where}: las referencias son como máximo 32 claves cortas en minúsculas con valores imprimibles de hasta 200 caracteres, sin credenciales ni secretos.",
+  "journal.result_invalid": "Valor {where} de operación no válido: debe ser un objeto JSON de hasta 16 KiB, sin credenciales ni valores secretos.",
+  "backup.trace_artifact": "El artefacto de traza {sha256} falta o no coincide con su digest o su tamaño."
 }

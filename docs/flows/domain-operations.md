@@ -29,6 +29,7 @@ sequenceDiagram
         S-->>C: Typed result with command_id
     end
     Note over S,DB: Any refusal rolls back and is recorded in its own transaction (never in a query-only copy)
+    Note over S,DB: Audit sinks (T006) write the trace event, and for graph callers the operation, in that same transaction
 ```
 
 - **Caller binding.** The API binds the owner from the local session: reads by the persisted knowledge project id,
@@ -42,6 +43,10 @@ sequenceDiagram
 - **Agents.** They see only their frozen revision (`head`, `list`, `get`, draft base); queries need receipts (T007).
 - **Archives.** On a restored query-only copy the reads work from persisted rows; every mutation route answers 409
   `restored_read_only`, and the service refuses `query_only` before writing.
+- **Trace (T006, D287).** The product composition adds the operation-journal sink: every accepted outcome and every
+  recorded refusal writes its `trace_events` row in its own transaction, and a graph caller's accepted command also
+  writes its `domain_command` operation (COMPLETED) under the node's key. If the sink fails, the outcome or the
+  refusal rolls back with it and the call reports an error ([operation journal](operation-journal.md)).
 - **Errors.** `{code, diagnostic}` with the diagnostic in the interface language: 404 for missing or foreign ids and
   unregistered projects, 422 for schema, argument, key and invalid-knowledge refusals, 403 for caller and capability
   refusals, 409 for stale or conflicting state.

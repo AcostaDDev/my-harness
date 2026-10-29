@@ -2606,3 +2606,71 @@ class KnowledgeAdoptRead(_MutationRead):
     knowledge_sha256: str
     origin: Literal['owner_confirmed', 'owner_delegated', 'harness_deterministic']
     changes: dict[str, Any]
+
+
+# --- P002-T006 (D287): read-only operation journal and trace ---------------------------------------------------
+
+OperationStatus = Literal['INTENDED', 'COMPLETED', 'FAILED', 'UNCERTAIN', 'ABANDONED']
+TraceSource = Literal['supplied', 'reported', 'derived', 'measured', 'absent']
+
+
+class TraceThreadRead(BaseModel):
+    thread_id: str
+    graph_id: str
+    graph_version: str
+    status: str
+    segments: int
+    reason: str | None
+    created_at: str
+    updated_at: str
+
+
+class TraceOperationRead(BaseModel):
+    operation_id: str
+    key: str
+    kind: str
+    status: OperationStatus
+    parent_operation_id: str | None
+    causation_event_id: str | None
+    origin: dict[str, Any] | None
+    refs: dict[str, str]
+    command_id: str | None
+    attempt_id: str | None
+    invocation_id: str | None = Field(description='The usage_invocations row: the only source of charges.')
+    result: dict[str, Any] | None
+    error: dict[str, Any] | None
+    created_at: str
+    updated_at: str
+
+
+class TraceOperationsRead(BaseModel):
+    items: list[TraceOperationRead]
+    next_offset: int | None
+
+
+class TraceEventRead(BaseModel):
+    sequence: int = Field(description='Global order of the event; the cursor of the next page.')
+    event_id: str
+    kind: str
+    source: TraceSource
+    operation_id: str | None
+    invocation_id: str | None
+    command_id: str | None
+    parent_event_id: str | None
+    causation_id: str | None
+    payload: dict[str, Any] = Field(description='Bounded and sanitized (trace-payload-1).')
+    truncated: bool
+    redactions: int
+    recorded_at: str
+
+
+class TraceEventsRead(BaseModel):
+    items: list[TraceEventRead]
+    next_after: int | None
+
+
+class TraceArtifactRead(BaseModel):
+    sha256: str
+    size: int
+    media: str
+    content: str = Field(description='Masked content an event offloaded; verified against sha256 and size.')

@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0031_domain_commands`, 73 tables, defined in
+SQLite schema of the local service: Alembic head `0032_operation_journal`, 76 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -1332,7 +1332,7 @@ in `specification`, `architecture`, `data_model`, `flows`, `instructions`; `prov
   existing key, so REPLACE and upsert cannot substitute a row. Revisions are inserted as `DRAFT` on an accepted base,
   change once to `ACCEPTED` (number = base number + 1) or `DISCARDED`, and are never deleted. Members and links change
   only while their revision is a draft, checked on the old and the new revision. The schema check, backups, bundle
-  verification and restore compare the trigger set with a fixed digest (shared with the 0031 triggers).
+  verification and restore compare the trigger set with a fixed digest (shared with the 0031 and 0032 triggers).
 - Content (`knowledge-content-1`), relationship and order rules and the canonical hashes are checked by the
   repository at adoption and again on every retrieval, together with the chain to the root revision.
 - Downgrade below 0030 is refused while any row exists. Backups copy the tables and triggers with the database; a
@@ -1384,6 +1384,100 @@ stored as SQL NULL.
 
 - **Triggers (3).** Rows are insert-only: updates and deletes abort, and an insert over an existing id, command id or
   accepted (project, scope, key) aborts, so REPLACE cannot substitute an outcome. They join the knowledge triggers in
-  the fixed digest compared by the schema check, backups, bundle verification and restore (24 triggers).
+  the fixed digest compared by the schema check, backups, bundle verification and restore (24 triggers at 0031;
+  27 with the trace-event triggers of 0032).
 - Downgrade below 0031 is refused while any row exists. Backups copy the table; a query-only restore writes nothing,
   not even refusals.
+
+## P002 operation journal and trace events
+
+One recoverable operation per `OperationPort` key inside a graph thread and the ordered, deduplicated events of the
+trace ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract); migration
+`0032_operation_journal`, no backfill: 0.1.9 runs keep their own journals). The invocation is the existing
+`usage_invocations` row; operations hold no usage amounts. `usage_invocations.operation_id` keeps its meaning
+(`configuration_operations`).
+
+```mermaid
+erDiagram
+    workflow_operations {
+        string id PK
+        string thread_id FK "→ graph_threads.id"
+        string key "deterministic OperationPort key"
+        string root "project root; fixed by the thread's first operation"
+        string kind "domain_command, agent_invocation, sealed_effect"
+        string parent_operation_id FK "null; → workflow_operations.id"
+        string causation_event_id "null; trace_events.event_id"
+        json origin "null; {kind, id} request reference"
+        json refs "at most 32 string references of 200 characters"
+        string request_sha256 "kind and refs"
+        string status
+        integer job_id FK "null; agent invocations; → managed_jobs.id"
+        string owner_token "null; fencing token of the job"
+        string command_id FK "null; → domain_commands.command_id"
+        string attempt_id FK "null; → managed_attempts.id"
+        string invocation_id FK "null; → usage_invocations.id"
+        json result "null; verbatim, at most 16 KiB, no credentials"
+        json error "null; code and reference"
+        string created_at
+        string updated_at
+    }
+    trace_events {
+        integer id PK "global order"
+        string event_id UK
+        string dedupe_key UK
+        string root "null for refusals without a project"
+        string thread_id FK "null; → graph_threads.id"
+        string operation_id FK "null; → workflow_operations.id"
+        string invocation_id FK "null; → usage_invocations.id"
+        string command_id FK "null; → domain_commands.command_id"
+        string parent_event_id "null; previous event of the operation"
+        string causation_id "null"
+        string kind
+        string source
+        json payload "trace-payload-1: bounded and sanitized"
+        string payload_sha256 "payload and links"
+        boolean truncated
+        integer redactions
+        string recorded_at
+    }
+    trace_artifacts {
+        string event_id PK "FK → trace_events.event_id"
+        string sha256 PK "digest of content"
+        integer size
+        string media
+        blob content "masked content the event offloaded"
+    }
+    graph_threads ||--o{ workflow_operations : "thread_id"
+    workflow_operations |o--o{ workflow_operations : "parent_operation_id"
+    domain_commands |o--o| workflow_operations : "command_id"
+    managed_attempts |o--o| workflow_operations : "attempt_id"
+    usage_invocations |o--o| workflow_operations : "invocation_id"
+    managed_jobs |o--o{ workflow_operations : "job_id"
+    workflow_operations |o--o{ trace_events : "operation_id"
+    graph_threads |o--o{ trace_events : "thread_id"
+    trace_events ||--o{ trace_artifacts : "event_id"
+```
+
+Uniqueness: (`thread_id`, `key`); `uq_workflow_operations_attempt` (attempt_id) where not null; `event_id`;
+`dedupe_key`. Indexes `ix_workflow_operations_root` (root, thread_id), `ix_workflow_operations_status` (status),
+`ix_trace_events_thread` (thread_id, id), `ix_trace_events_operation` (operation_id, id), `ix_trace_events_root`
+(root, id).
+
+Checks: `status` in `INTENDED`, `COMPLETED`, `FAILED`, `UNCERTAIN`, `ABANDONED`; an `agent_invocation` has attempt,
+invocation, job and owner token; a `domain_command` has its command and is `COMPLETED`; `source` in `supplied`,
+`reported`, `derived`, `measured`, `absent`.
+
+- **Status is a projection.** Every transition is a compare-and-set that writes its `operation.<status>` event in the
+  same transaction; the last such event rebuilds the status. Transitions: INTENDED → COMPLETED | FAILED | UNCERTAIN;
+  UNCERTAIN → COMPLETED | FAILED (reconciled from the native source) | ABANDONED (owner).
+- **Triggers (6).** Events and artifacts are insert-only: updates and deletes abort, and an insert over an existing
+  event id, event key or (event, digest) aborts. They join the fixed trigger digest of the schema check, backups and
+  restore (30 triggers).
+- **Artifacts.** Strings over 1 KiB and payloads over 8 KiB of an event are stored, already masked, in
+  `trace_artifacts` with the event (at most 1 MiB per event; more is refused). Every reference in a payload, and
+  inside an offloaded `application/json` payload, has its row (checked at write and by backup verification); digest
+  and size are verified on read and by backups.
+- **Bounds.** `refs` (≤ 32 lowercase keys, printable string values ≤ 200 characters) and `origin` (`{kind, id}`) are
+  validated before writing and never coerced; credential names and secret-looking values are refused.
+- Downgrade below 0032 is refused while any row exists. Backups copy the three tables; a query-only restore serves
+  the read-only trace routes and refuses every journal write.

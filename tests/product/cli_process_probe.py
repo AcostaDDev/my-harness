@@ -214,6 +214,14 @@ elif mode == 'long_text':
     print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'usage': None, 'duration_ms': 0,
                       'result': json.dumps({'result': 'Prepared synthetic files'})}), flush=True)
     sys.exit(0)
+elif mode == 'term_exit0':
+    # P002-T006: the shape T002 characterized for Codex; SIGTERM ends the stream at an in-flight item with exit 0.
+    signal.signal(signal.SIGTERM, lambda signum, frame: os._exit(0))
+    for event in ({'type': 'thread.started', 'thread_id': 'synthetic'}, {'type': 'turn.started'},
+                  {'type': 'item.started', 'item': {'id': 'item_0', 'type': 'mcp_tool_call', 'status': 'in_progress'}}):
+        print(json.dumps(event), flush=True)
+    time.sleep(60)
+    sys.exit(0)
 elif mode == 'hang' or mode == 'child':
     if mode == 'child':
         child = subprocess.Popen([sys.executable, '-c',

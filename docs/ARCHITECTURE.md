@@ -10,7 +10,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 |---|---|
 | Core | Python 3.14.4, standard library, package `my-harness` 0.1.1 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
-| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0031_domain_commands`) |
+| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0032_operation_journal`) |
 | Orchestration | LangGraph 1.2.18 (`langgraph-checkpoint` 4.3.1), confined to `orchestration/` ([D280](DECISIONS.md#d280--langgraph-1218-dependency-set-placement-and-runtime-hygiene)) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
 | Client types | `openapi-typescript` 7.13.0 from the exported OpenAPI |
@@ -75,7 +75,8 @@ queue; closing the browser does not cancel work.
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
 | `orchestration/`, `storage/graph_continuations.py` | P002-T003 graph runtime: harness checkpoint saver, versioned graph registry, segment runner with quarantine and cancellation, operation port; the only LangGraph importer, used through `ManagedRuntime.graph_runner` ([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract), [D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine)) |
 | `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used by tests only ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
-| `migrations/versions/0001…0030` | Alembic schema |
+| `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`, `storage/operation_journal.py`, `api/traces.py` | P002-T006 operation journal behind `OperationPort` with fenced invocation operations and evidence-based recovery, ordered insert-only trace events, `trace-observation-1` counters, bounded sanitized payloads, T007/T008 envelopes and read-only trace routes ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract)) |
+| `migrations/versions/0001…0032` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
 Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
@@ -205,6 +206,9 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   persisted knowledge, also on restored archives; `POST …/projects/{p}/knowledge/drafts[/{d}/changes|discard|
   adoption/preview|adopt]` change it with `Idempotency-Key`, expected draft hash, expected head and preview hash
   ([flow](flows/domain-operations.md)).
+- Traces (P002-T006, D287): `GET …/knowledge/projects/{k}/traces/{thread}[/operations|/events|/artifacts/{sha}]`
+  read one graph thread's operations, ordered events and the content its events offloaded within that knowledge
+  project, bounded pages, also on restored archives ([flow](flows/operation-journal.md)).
 - `GET/PUT /api/managed/preferences`: global languages with an expected version and `Idempotency-Key`; each job
   exposes the `language_context` sealed when it was admitted ([flow](flows/language-preferences.md)).
 - Work language ([flow](flows/project-work-language.md)): `work_language` is required in registration
@@ -396,9 +400,10 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 the P002-T003 runtime foundation and the P002-T004 knowledge model; of the design below only the graph runtime and
 continuation storage (T003, D280/D282/D283) and the structured knowledge storage with immutable accepted revisions
 (T004, D284/D285) exist, exercised with synthetic data only, and the typed command service (T005, D286) with its
-catalogue, capability policy and `domain_commands` outcomes, reached by owner API routes and synthetic graphs only.
-The tool broker, the production operation journal, agent use of knowledge, exports, the inbox and the graph view are
-not implemented.
+catalogue, capability policy and `domain_commands` outcomes, reached by owner API routes and synthetic graphs only, and
+the operation journal with correlated trace events (T006, D287), used by synthetic graphs, graph domain commands and
+`agent_started` callers that supply an operation. The tool broker, agent use of knowledge, exports, the inbox and the
+graph view are not implemented, and no product graph launches agents yet.
 
 ```mermaid
 flowchart TD
@@ -422,8 +427,11 @@ flowchart TD
   the core never imports it (import-boundary test). No product graph is registered yet.
 - **Operations and recovery.** Recoverable operations link project tasks to invocations and sealed effect intents; a
   replayed node reconciles the same operation. The continuation/journal consistency contract (G02) is D282: the
-  checkpoint is routing progress only and nodes act through an operation port with deterministic keys; the
-  production journal behind that port is T006. Segments, version stamping and quarantine (G03) are D283.
+  checkpoint is routing progress only and nodes act through an operation port with deterministic keys. The
+  production journal behind that port is implemented (T006, D287): `workflow_operations` per thread key, invocation =
+  the existing ledger row, attempt = its native source, statuses INTENDED/COMPLETED/FAILED/UNCERTAIN/ABANDONED,
+  fenced seals and settlements, evidence-based recovery and insert-only `trace_events`
+  ([flow](flows/operation-journal.md)). Segments, version stamping and quarantine (G03) are D283.
 - **Tools.** A harness-owned versioned catalogue behind a small discovery surface over a transport characterized per
   client (G04). Deterministic nodes call services directly. Agents never receive database access. Implemented (D286):
   `core/engine/domain_catalogue.py` (entries, digests, schema subset validator), `core/engine/domain_policy.py`

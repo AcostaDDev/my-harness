@@ -12,7 +12,7 @@ models are reached through the official Codex and Claude Code CLIs with your own
 ## Status
 
 - **Pre-release.** The first local version is complete within the scope described below; the package declares
-  version `0.1.8`, the eighth patch of the first public release `0.1.0`, and is not published on PyPI. See the
+  version `0.1.9`, the ninth patch of the first public release `0.1.0`, and is not published on PyPI. See the
   [changelog](CHANGELOG.md) for the versioning policy.
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
@@ -124,15 +124,15 @@ scripts/install --allow-network
 
 ### 2b. Install from a release package
 
-Download `my-harness-0.1.8-distribution.tar.gz` and its `.sha256` from the
+Download `my-harness-0.1.9-distribution.tar.gz` and its `.sha256` from the
 [Releases page](https://github.com/AcostaDDev/my-harness/releases) (or with `curl` as below) into the same folder, then:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.8/my-harness-0.1.8-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.8/my-harness-0.1.8-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.8-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.8-distribution.tar.gz
-cd my-harness-0.1.8
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.9/my-harness-0.1.9-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.9/my-harness-0.1.9-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.9-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.9-distribution.tar.gz
+cd my-harness-0.1.9
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -216,6 +216,16 @@ The form needs no Django/TypeScript composition or hand-written TOML. **TOML** e
 conversion is validated on the server. Storage is chosen at startup and cannot be moved by this editor.
 With the supervisor enabled, **each queued agent attempt uses your provider account and quota**. Detection,
 preview and ordinary reading do not invoke a model.
+
+**Usage accounting (optional).** Every agent invocation is recorded with its usage evidence whether or not it can
+be priced. To value it, convert the global configuration explicitly to `local-config-10` and add named billing
+profiles (provider, platform/product, scheme, unit, basis, pinned reference bundle and the conditions you assert),
+with defaults per role; projects can select another profile per role after converting to `project-config-2`. A
+profile applies to work admitted after its activation, never to queued or past work; a billing-only change keeps
+the technical preparation. **Accounting** shows coverage, amounts per compatible basis and the reason for each
+unpriced invocation. These are local valuations from pinned public prices, not invoices, balances or quotas, and
+seed prices have unknown historical validity. Older work is valued only through the explicit
+`accounting-backfill`/`accounting-reprice` commands below.
 
 **Existing configuration.** Formats 1–8 retain their original entry and hashes. Start with `--config` inside the
 installation's configuration root, or use the installed CLI `serve --database … --config …` for an existing
@@ -343,8 +353,10 @@ preserves database/snapshot for inspection; no automatic restore. `serve` never 
 /path/venv/bin/my-harness backup-restore /path/new-backup /path/restored
 ```
 
-`--artifact-root` (repeatable) authorizes state and configuration roots. Format 2 includes versioned TOML,
-working copies, operation intents and referenced evidence; format 1 without new configuration remains readable. A restore creates a new,
+`--artifact-root` (repeatable) authorizes state and configuration roots. Format 3 includes versioned TOML,
+working copies, operation intents, referenced evidence and verified P001 accounting records. A bundle created before
+schema `0028_usage_accounting` is not migrated in place: `backup-upgrade /path/old-backup /path/upgraded-backup`
+writes a new verified format-3 bundle from a copy and leaves the original unchanged. A restore creates a new,
 query-only database with the same schema revision. To browse it, start `serve --database
 /path/restored/state.sqlite3` from the installed venv and open the local UI. The archive home accepts a run id;
 `/runs/:id` opens its recorded evidence, diff, JUnit and metrics without a configured project or checkout.
@@ -352,7 +364,9 @@ No supervisor or agents run; mutations return 409. Historical pending jobs stay 
 certify that a historical writer stopped. See the [consultation flow](docs/flows/backup-consultation.md).
 
 **Other commands.** `logs-preview`, `logs-apply` and `logs-inspect` apply an explicit retention to agent streams;
-`metrics-backfill` completes metrics; `diagnose-cli` checks one agent configuration. Every command documents its
+`metrics-backfill` completes metrics; `accounting-references`, `accounting-backfill` and `accounting-reprice` are
+explicit P001 accounting operations (without `--preview-sha256` they only preview; applying needs that digest and
+`--key`; reference bundles can also be listed and imported with the same preview from the configuration page); `diagnose-cli` checks one agent configuration. Every command documents its
 arguments with `--help`.
 
 **Diagnosis.** Start with the authenticated configuration status and explicit **Check client version/help**;
@@ -378,6 +392,7 @@ Git history and documents. Delete them only if you no longer need that history.
 | Declared profiles (`[profiles.*]`) and onboarding of existing repositories | Yes | Two synthetic Django repositories onboarded with originals intact; a documented clone reached COMMITTED using a v8 declared profile, six validations/13 JUnit cases and the native formatter (two files unchanged) |
 | Chat, backup and restore | Yes | Two real reviewer answers, deterministic command without a model and proposal confirmed QUEUED without execution; backup/restored API and Chrome UI preserve real runs, diffs, JUnit and metrics |
 | Run views, metrics and export preview over large synthetic histories | Yes | Restored real-run views/metrics verified; large histories and export preview have synthetic evidence only |
+| Usage accounting: capture, valuation from pinned references, aggregates, Accounting page, backup and restored consultation | Yes (P001 qualification, synthetic streams and the packaged references) | Not validated: no real capture, account billing or invoice comparison |
 
 The current-adapter evidence was collected in October 2026 on macOS ARM64 with Claude Code **2.1.310** as
 reviewer and Codex **0.164.0** as executor, using installed wheels, disposable synthetic projects and explicit
@@ -423,6 +438,11 @@ node --test frontend/tests/*.test.mjs
 npm --prefix frontend run check
 npm --prefix frontend run build
 ```
+
+`scripts/check` runs the same suites with compact output: one line per suite, failing IDs with their first error
+line, and the full log in `.local/check/<suite>.log`. Given paths, it runs only pytest over them. `--frontend` adds the
+Node tests and the build, and `alembic check` uses a temporary SQLite database. `scripts/check-docs` checks local
+Markdown links and anchors, code fences, en/es catalog keys and the schema head stated in `docs/DDBB-DIAGRAM.md`.
 
 After changing an API contract, regenerate the client types (never edit them by hand):
 

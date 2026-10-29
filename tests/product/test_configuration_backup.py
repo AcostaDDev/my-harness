@@ -29,7 +29,7 @@ def test_pending_and_draft_are_preserved_without_originals(setup, tmp_path, monk
     save(repo, [change(repo, 'format="local-config-9"', validated=False)], key='draft')
     target = tmp_path / 'bundle'
     manifest = bundle(repo, target)
-    assert manifest['format'] == 2
+    assert manifest['format'] == 3
     assert len(manifest['configuration']['revisions']) == 3
     restored = tmp_path / 'restored'
     restore_backup(target, restored)

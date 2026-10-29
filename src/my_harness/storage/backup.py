@@ -15,7 +15,7 @@ from my_harness.storage.models import Base
 from my_harness.storage.schema import SCHEMA_REVISION
 from my_harness.i18n import tr
 
-FORMAT = 2
+FORMAT = 3  # P001-T003: accounting digests/native links verified in the same snapshot (D257)
 RESTORED_USER_VERSION = 0x483532
 MAX_FILE_BYTES = 256 * 1024 * 1024
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
@@ -153,6 +153,11 @@ def _integrity(db, *, restored=False):
     for name, count in projected.items():
         if db.execute(f'SELECT count(*) FROM {name}').fetchone()[0] != count:
             raise BackupError(tr('backup.projection', projection=run_projection.PROJECTION, name=name))
+    from my_harness.storage.accounting_backup import AccountingMismatch, verify
+    try:
+        return verify(db)
+    except (AccountingMismatch, KeyError, TypeError, ValueError) as exc:
+        raise BackupError(tr('backup.accounting', error=exc)) from exc
 
 
 def _references(db):
@@ -264,7 +269,7 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
     with closing(_connect(database, 'rw')) as lock:
         lock.execute('BEGIN IMMEDIATE')
         try:
-            _integrity(lock)
+            accounting_inventory = _integrity(lock)
             from my_harness.adapters.processes import liveness
             for row in lock.execute('SELECT process_owner, owner_closed FROM managed_jobs WHERE process_owner IS NOT NULL'):
                 if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) == 'alive':
@@ -354,7 +359,8 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             manifest = {'format': FORMAT, 'kind': 'backup', 'schema': SCHEMA_REVISION,
                         'consistency': 'service-and-writers-stopped/sqlite-backup/write-lock',
                         'database': {'path': 'state.sqlite3', 'sha256': _hash(raw_db), 'size_bytes': len(raw_db)},
-                        'configuration': configuration, 'files': files, 'absent_optional': absent, 'absent_purged': purged,
+                        'configuration': configuration, 'accounting': accounting_inventory,
+                        'files': files, 'absent_optional': absent, 'absent_purged': purged,
                         'external_legacy_sources': [r[0] for r in lock.execute('SELECT root FROM legacy_sources ORDER BY root') if r[0] not in {r[0] for r in lock.execute('SELECT snapshot_root FROM managed_activations')}],
                         'runs': [dict(r) for r in lock.execute('SELECT id,root,status,purpose FROM managed_runs ORDER BY id')],
                         'execution_authorized': False}
@@ -382,7 +388,10 @@ def verify_bundle(bundle):
         if _read(bundle / 'COMPLETE', 64) != _hash(raw).encode():
             raise BackupError(tr('backup.bundle_incomplete'))
         manifest = json.loads(raw)
-        if (type(manifest['format']) is not int or manifest['format'] not in (1, FORMAT) or manifest['schema'] != SCHEMA_REVISION or
+        if type(manifest['format']) is int and manifest['format'] in (1, 2, FORMAT) and manifest['schema'] != SCHEMA_REVISION:
+            # Older matching-schema bundles stay readable by their own release; this one needs an explicit copy.
+            raise BackupError(tr('backup.upgrade_required'))
+        if (type(manifest['format']) is not int or manifest['format'] not in (1, 2, FORMAT) or manifest['schema'] != SCHEMA_REVISION or
                 manifest['kind'] not in ('backup', 'restored') or manifest['execution_authorized'] is not False):
             raise BackupError(tr('backup.bundle_format'))
         database = manifest['database']
@@ -398,12 +407,15 @@ def verify_bundle(bundle):
         if len(manifest['files']) > MAX_FILES:
             raise BackupError(tr('backup.too_many_artifacts'))
         with closing(_connect(bundle / 'state.sqlite3')) as db:
-            _integrity(db, restored=True)
+            accounting_inventory = _integrity(db, restored=True)
             from my_harness.storage.configuration_backup import inventory
             configuration = inventory(db)[0]
             if (manifest['format'] == 1 and any(configuration.values())
-                    or manifest['format'] == FORMAT and manifest.get('configuration') != configuration):
+                    or manifest['format'] >= 2 and manifest.get('configuration') != configuration):
                 raise BackupError(tr('backup.configuration_bundle_required'))
+            if (manifest['format'] < FORMAT and any(accounting_inventory.values())
+                    or manifest['format'] == FORMAT and manifest.get('accounting') != accounting_inventory):
+                raise BackupError(tr('backup.accounting', error='inventory'))
             refs = _references(db)
             from my_harness.storage.retention import authorized_absences
             purged = authorized_absences(db, refs)
@@ -479,3 +491,71 @@ def restored_artifact(engine, source):
         raise BackupError(tr('backup.restored_manifest'))
     manifest = json.loads(raw)
     return next((bundle / _relative(item['path']) for item in manifest['files'] if item['source'] == str(source)), None)
+
+
+def _verify_files(bundle, manifest):
+    """Structural check of an older bundle's own bytes; its schema-specific checks belong to its release."""
+    database = manifest['database']
+    raw_db = _read(bundle / _relative(database['path']))
+    if database['path'] != 'state.sqlite3' or _hash(raw_db) != database['sha256'] or len(raw_db) != database['size_bytes']:
+        raise BackupError(tr('backup.sqlite_hash'))
+    for item in manifest['files']:
+        relative = _relative(item['path'])
+        data = _read(bundle / relative)
+        if not relative.startswith('artifacts/') or _hash(data) != item['sha256'] or len(data) != item['size_bytes']:
+            raise BackupError(tr('backup.artifact_hash'))
+    return raw_db
+
+
+def upgrade_bundle(bundle, destination):
+    """Explicit archive upgrade: a NEW format-3 bundle migrated from a copy; the original stays byte-identical.
+
+    Only SQLite changes (the same Alembic chain as `migrate`); artifacts are copied verbatim and re-verified.
+    The copy keeps the query-only restore mark and grants no execution, activation or recalculation.
+    """
+    bundle, destination = _absolute(bundle), _absolute(destination)
+    if destination.is_relative_to(bundle) or bundle.is_relative_to(destination):
+        raise BackupError(tr('backup.restore_overlap'))
+    try:
+        raw = _read(bundle / 'manifest.json', MAX_MANIFEST_BYTES)
+        if _read(bundle / 'COMPLETE', 64) != _hash(raw).encode():
+            raise BackupError(tr('backup.bundle_incomplete'))
+        manifest = json.loads(raw)
+        if (type(manifest.get('format')) is not int or manifest['format'] not in (1, 2)
+                or manifest.get('kind') not in ('backup', 'restored') or manifest.get('execution_authorized') is not False):
+            raise BackupError(tr('backup.bundle_format'))
+        raw_db = _verify_files(bundle, manifest)
+        destination = _new_destination(destination)
+        db_path = destination / 'state.sqlite3'
+        _write(db_path, raw_db)
+        with closing(_connect(db_path, 'rw')) as db:
+            db.execute('PRAGMA user_version=0')  # Only for this private copy's migration; restored again below.
+        from alembic import command
+        from my_harness.storage.migrate import _config
+        command.upgrade(_config(f'sqlite:///{db_path}'), 'head')
+        with closing(_connect(db_path, 'rw')) as db:
+            db.execute(f'PRAGMA user_version={RESTORED_USER_VERSION}')
+        for suffix in ('-wal', '-shm', '-journal'):
+            sidecar = Path(str(db_path) + suffix)
+            if os.path.lexists(sidecar):
+                os.unlink(sidecar)
+        _sync(db_path)
+        with closing(_connect(db_path)) as db:
+            accounting_inventory = _integrity(db, restored=True)
+            from my_harness.storage.configuration_backup import inventory
+            configuration = inventory(db)[0]
+        for item in manifest['files']:
+            _write(destination / item['path'], _read(bundle / item['path']))
+        upgraded = _read(db_path)
+        result = {**manifest, 'format': FORMAT, 'schema': SCHEMA_REVISION, 'configuration': configuration,
+                  'accounting': accounting_inventory,
+                  'database': {'path': 'state.sqlite3', 'sha256': _hash(upgraded), 'size_bytes': len(upgraded)},
+                  'upgraded_from': {'format': manifest['format'], 'schema': manifest['schema'],
+                                    'manifest_sha256': _hash(raw), 'database_sha256': manifest['database']['sha256']}}
+        _finish(destination, result)
+        verify_bundle(destination)
+        return result
+    except (OSError, sqlite3.Error, KeyError, TypeError, ValueError, RecursionError) as exc:
+        if isinstance(exc, BackupError):
+            raise
+        raise BackupError(tr('backup.bundle_invalid', error=exc)) from exc

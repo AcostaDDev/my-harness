@@ -3,7 +3,7 @@
 **Status:** OT002 specified, not implemented. No design plugin or provider invoked.
 **Request:** show pending questions before the free-message form; provide answers
 per question and an explicit individual/selected/all batch submission workflow.
-**Queue:** [ONE_OFF_TASKS](../ONE_OFF_TASKS.md#ot002--answer-pending-reviewer-questions-individually-or-in-one-batch).
+**Queue:** completed; see [OT002 evidence](OT002-question-answers.md).
 
 ## Current evidence
 

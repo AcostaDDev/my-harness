@@ -1,4 +1,4 @@
-"""Index, backup, retention, metrics backfill and explicit version/help; no inference."""
+"""Index, backup, retention, metrics/accounting backfill and explicit version/help; no inference."""
 import argparse
 from contextlib import closing
 import json
@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from my_harness.storage.database import make_engine
 from my_harness.storage.schema import require_schema
-from my_harness.storage.backup import create_backup, restore_backup, verify_bundle
+from my_harness.storage.backup import create_backup, restore_backup, upgrade_bundle, verify_bundle
 from my_harness.storage.retention import preview_retention, apply_retention, inspect_logs
 from my_harness.i18n import DEFAULT_LANGUAGE, LANGUAGES, emission, message, supported
 
@@ -48,6 +48,9 @@ def build_parser(language: str = DEFAULT_LANGUAGE) -> argparse.ArgumentParser:
     command.add_argument('--writers-stopped', action='store_true', help=say('writers_stopped'))
     command = operations.add_parser('backup-verify')
     command.add_argument('bundle')
+    command = operations.add_parser('backup-upgrade', help=say('backup_upgrade'))
+    command.add_argument('bundle')
+    command.add_argument('destination')
     command = operations.add_parser('backup-restore', help=say('backup_restore'))
     command.add_argument('bundle')
     command.add_argument('destination')
@@ -73,6 +76,21 @@ def build_parser(language: str = DEFAULT_LANGUAGE) -> argparse.ArgumentParser:
     command = operations.add_parser('metrics-backfill', help=say('metrics_backfill'))
     command.add_argument('--database', required=True, help=say('database_existing'))
     command.add_argument('--artifact-root', action='append', default=[], help=say('metrics_artifact_root'))
+    command = operations.add_parser('accounting-references', help=say('accounting_references'))
+    command.add_argument('--database', required=True, help=say('database_existing'))
+    command.add_argument('--file', required=True, help=say('accounting_file'))
+    command.add_argument('--preview-sha256', help=say('accounting_preview'))
+    for name in ('accounting-backfill', 'accounting-reprice'):
+        command = operations.add_parser(name, help=say(name.replace('-', '_')))
+        command.add_argument('--database', required=True, help=say('database_existing'))
+        command.add_argument('--name', required=True, help=say('accounting_name'))
+        if name == 'accounting-reprice':
+            command.add_argument('--profile', required=True, help=say('accounting_profile'))
+            command.add_argument('--scenario', choices=('retrospective', 'contemporaneous'), required=True,
+                                 help=say('accounting_retrospective'))
+            command.add_argument('--filters', help=say('accounting_filters'))
+        command.add_argument('--preview-sha256', help=say('accounting_preview'))
+        command.add_argument('--key', help=say('accounting_key'))
     command = operations.add_parser('migrate', help=say('migrate'))
     command.add_argument('--database', required=True, help=say('database_existing'))
     command.add_argument('--snapshots', required=True, help=say('snapshots'))
@@ -127,6 +145,37 @@ def _run(args, language: str) -> int:
             require_schema(engine)
             print(json.dumps(backfill(engine, artifact_roots=args.artifact_root), ensure_ascii=False, indent=2))
             return 0
+        if args.operation.startswith('accounting-'):
+            from my_harness.launcher import local_database
+            from my_harness.storage import accounting_operations as operations
+            path, url = local_database(args.database, language)
+            if not path.is_file():
+                raise ValueError(message('cli.backfill_missing', language))
+            engine = make_engine(url)
+            require_schema(engine)
+            if args.operation == 'accounting-references':
+                raw = Path(args.file).read_bytes()
+                result = (operations.reference_import(engine, raw, preview_sha256=args.preview_sha256)
+                          if args.preview_sha256 else operations.reference_preview(engine, raw))
+            else:
+                if args.operation == 'accounting-backfill':
+                    kwargs = {'name': args.name}
+                    preview, apply = operations.backfill_preview, operations.backfill
+                else:
+                    kwargs = {'name': args.name, 'profile': json.loads(Path(args.profile).read_text()),
+                              'retrospective': args.scenario == 'retrospective',
+                              'filters': json.loads(Path(args.filters).read_text()) if args.filters else None}
+                    preview, apply = operations.reprice_preview, operations.reprice
+                if args.preview_sha256 is None:
+                    result = preview(engine, **kwargs)
+                    result = {**result, 'selection': {**result['selection'],
+                                                      'members': len(result['selection']['members'])}}
+                elif not args.key:
+                    raise ValueError(message('cli.help.accounting_key', language))
+                else:
+                    result = apply(engine, **kwargs, preview_sha256=args.preview_sha256, key=args.key)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
         if args.operation == 'check-config':
             from my_harness.services.local_config import inspect_local_config, summary
             config, agents = inspect_local_config(args.configuration)
@@ -163,6 +212,8 @@ def _run(args, language: str) -> int:
                                          writers_stopped=args.writers_stopped)
             elif args.operation == 'backup-restore':
                 manifest = restore_backup(args.bundle, args.destination)
+            elif args.operation == 'backup-upgrade':
+                manifest = upgrade_bundle(args.bundle, args.destination)
             else:
                 manifest = verify_bundle(args.bundle)
             print(json.dumps(manifest, ensure_ascii=False, indent=2))

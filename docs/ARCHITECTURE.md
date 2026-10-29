@@ -10,7 +10,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 |---|---|
 | Core | Python 3.14.4, standard library, package `my-harness` 0.1.1 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
-| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0027_profile_proposals`) |
+| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0028_usage_accounting`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
 | Client types | `openapi-typescript` 7.13.0 from the exported OpenAPI |
 | Tooling | uv 0.12.19 and `uv.lock`; Node 24.15.0, npm 11.12.1 and `frontend/package-lock.json` |
@@ -68,13 +68,13 @@ queue; closing the browser does not cancel work.
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Packaged recipes (`django-recipe-1/2`, `typescript-web-recipe-1/2`) and their confirmed, recoverable preparation |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Application, routes, Pydantic contracts, session and guard |
 | `profiles/` | Built-in profile `typescript-web` (composable); TOML profiles are composed in `services/local_config.py` |
-| `cli.py`, `launcher.py` | `my-harness` (`init-db`, `serve`, `migrate`, `check-config`, backup, retention, `metrics-backfill`, `diagnose-cli`); `--ui-language` per invocation |
+| `cli.py`, `launcher.py` | `my-harness` (`init-db`, `serve`, `migrate`, `check-config`, backup/upgrade, retention, `metrics-backfill`, accounting operations, `diagnose-cli`); `--ui-language` per invocation |
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
 | `migrations/versions/0001…0027` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
-Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
+Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
 provider), `markdown.ts` and `mermaid-view.ts` (isolated rendering), `managed-api.ts` (idempotent submissions),
 `api.generated.ts` (generated, never edited). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`,
 `check_distribution.py`, `smoke_cli.py`. `examples/`: the `local_config.example.toml` template, the minimal
@@ -202,9 +202,9 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   `work_language_immutable` in changes and unregistrations; `POST …/projects/{p}/work-language/preview` and
   `…/work-language` (hash and reason) for projects without a value. Without it, every new admission answers 409
   `work_language_required`. Projects, registrations, jobs and attempts expose the value or frozen pair.
-- UI routes: `/`, `/stats`, `/preferences`, `/projects/new`, `/projects/:p` with `setup`,
+- UI routes: `/`, `/stats`, `/accounting`, `/preferences`, `/projects/new`, `/projects/:p` with `setup`,
   `onboarding[/:c/*draft]`, `chat[/:c]`, `docs[/*path]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
-  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` redirects to the canonical project route
+  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `accounting`, `settings`; `/runs/:id` redirects to the canonical project route
   in ordinary mode and opens a standalone evidence view in marked query-only copies. The archive home accepts a
   run id; operational routes and pending submissions are not mounted, and recorded active states do not trigger
   execution polling. Routes of the retired
@@ -330,8 +330,8 @@ independent group liveness. Protected links
 remain refused, stable-environment evidence is separate, and recipe fingerprints/sources are unchanged.
 
 Alembic 0026 adds three configuration tables (scope references, revisions and operations); 0027 makes registered
-composition/profile nullable for documentary intake. There are 54 tables. JSON journals extend existing operations
-without changing legacy histories. Format-2 backups inventory immutable/working configuration, partial intents and
+composition/profile nullable for documentary intake; 0028 adds the P001 accounting records (§12), for 62 tables.
+JSON journals extend existing operations without changing legacy histories. Backups (format 3 since 0028) inventory immutable/working configuration, partial intents and
 referenced evidence; restore reads its bundle and never executes stored paths. See [data](DDBB-DIAGRAM.md#versioned-configuration)
 and [flow](flows/configuration-setup.md). Formats 1–8 and their frozen hashes remain unchanged.
 
@@ -340,3 +340,41 @@ verify distribution and venv identity; instance/install locks survive in the chi
 SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm user/global configuration paths
 are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
 version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.
+
+## 12. P001 accounting architecture (capture/storage, queries/API, accounting page and billing controls implemented)
+
+[T001 contract](phase/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
+storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
+`terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 added bounded read-only queries/API
+([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005a added the read-only
+accounting page (`pages/Accounting.tsx`, `accounting.ts`, D264); T005b added the billing/reference controls
+([D265](DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review)): reference routes in
+`api/configuration.py` over `accounting_views.references` and `accounting_operations.reference_*`, the save-time
+`billing_review` (`services/configuration_editing.py`, shared pure `storage/billing.choose`) and the UI in `billing.ts`
+and `BillingFields.tsx`.
+
+- **Pure core.** `core/engine/metric_references.py` / `valuation.py` (T002) validate pinned canonical references and
+  calculate exact Decimal lines. `core/engine/usage_capture.py` builds the allowlisted `usage-capture-1` document from
+  sealed process evidence, enumerates terminal/model/request views and selects one reconciled `usage-accounting-1`
+  view. `metrics.StreamMetrics` additively retains ID-keyed Claude requests and exact cost lexemes (`usage-stream-1`).
+- **Ledger.** `storage/accounting.py` writes inside the native transaction: `managed.py` (attempt row → intent,
+  `_history`/`confirm_stopped` → settlement), `storage/preparation.py` (executor intent, `process_finished`, closing
+  owner) and `configuration_assistance.py` (INTENDED operation, settlement/recovery). Fencing is unchanged: a stale
+  owner cannot write accounting. Not-invoked launches have no valuation; missing process rows stay `unknown_execution`.
+- **Billing binding.** `storage/billing.py` dereferences only the immutable revision frozen at admission into a
+  content-addressed `billing-binding-1`. `local-config-10`/`project-config-2` add billing metadata, validated in
+  `services/configuration.py` and removed by `runtime()` before composing executable configuration; `technical()`
+  excludes it, so billing-only edits keep compatible receipts. Profiles never select authentication.
+- **Operations.** `storage/accounting_operations.py` provides previewed reference import, accounting backfill and
+  repricing with idempotency keys and named cohorts built in bounded transactions; CLI `accounting-references`,
+  `accounting-backfill`, `accounting-reprice`. Nothing runs on GET, startup, migration or restore.
+- **Archives.** Retention removes authorized stream bytes only. `storage/accounting_backup.py` verifies all accounting
+  digests in the same snapshot for backup format 3; `backup-upgrade` migrates a copy of an older-schema bundle into a
+  new query-only bundle. Consultation needs no original roots, clients, network or configuration authority.
+- **Queries/API.** `storage/accounting_views.py` (`accounting-aggregate-1`) selects one SQL row per invocation with
+  its latest capture and the valuation of an explicit policy (original admission valuation or one named cohort) and
+  accumulates coverage, token sums and exact decimal amount buckets in Python, constant memory per group; it never
+  decodes histories, prices or writes. `api/managed.py` exposes `GET /api/managed/accounting/{summary,groups,tasks,
+  invocations,cohorts}` and invocation detail/valuations; OpenAPI and generated client types include them.
+
+See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounting flow](flows/metrics-accounting.md).

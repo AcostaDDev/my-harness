@@ -1454,7 +1454,8 @@ specific exception in the real incident was not recorded and remains unproven.
 
 ## D252 — Managed-run lease renewal, chunk journals and interrupted process evidence
 
-Status: accepted for OT007; target patch **0.1.8**, with source, release and installation tracked separately.
+Status: accepted for OT007; released and installed as patch **0.1.8** through
+[PR #7](https://github.com/AcostaDDev/my-harness/pull/7), merge/tag `c005298` / `v0.1.8`.
 Extends D251's runtime reliability treatment to the shared managed supervisor (task, phase, chat and definition
 lanes). No schema, dependency, configuration, API contract or frozen adapter/version change.
 
@@ -1479,3 +1480,317 @@ lanes). No schema, dependency, configuration, API contract or frozen adapter/ver
 The owner explicitly authorized commit, integration/push, release PR/draft and verified archive/checksum, merge,
 publication/public verification, offline installation with the service stopped, and closure. This does not authorize
 real providers, a project retry or service start. Evidence: [OT007](phase/OT007-task-run-lease.md).
+
+## D253 — Phase release targets after 0.1.8
+
+Status: accepted at the owner's explicit confirmation during P001-T001.
+
+P001 Metrics Records targets **0.1.9**, published at phase closure; P002 Continuous Mode retains **0.2.0**,
+published at its closure. The initial request named 0.1.8, but OT007 already published that version; the owner
+confirmed 0.1.9 after this discrepancy was raised. Released tags/assets and their evidence are not rewritten.
+This fixes P001's current target under D239 and retains D233's specific allowance for additive metrics changes
+in that patch. Package/API/UI version metadata stays 0.1.8 until T006 qualifies the release candidate.
+
+Each phase task uses a topic branch from `develop`, with checked source integrated there. The owner authorized
+commit, merge where necessary and push for this session's task. That task delivery is separate from release PR,
+merge/tag on `main`, distribution verification/publication at closure, and local installation (D235/D242).
+T001 completes design only; it neither closes P001 nor publishes or installs anything.
+
+## D254 — Native invocation accounting and immutable evidence
+
+Status: accepted design in P001-T001; implementation pending T003–T004.
+
+The [accounting contract](phase/P001-T001-accounting-contract.md#4-record-grain-identity-and-completeness-d254)
+adds a shared invocation ledger keyed by native source kind/ID: managed attempt, generic preparation executor step,
+or configuration-assistance operation. Assistance/preparation retain their own journals without fabricated managed
+attempts. Deterministic work has no model invocation; expected but result-less invocations stay visible in coverage.
+Intent identity is persisted before launch; absent process evidence alone does not prove zero consumption.
+
+Versioned captures, evidence interpretations and model/request components are append-only and digest-bound. Terminal
+totals, constituent messages, model partitions and inclusive delegated parents are alternative views, not amounts
+to add together. Unknown model association, partition, inclusion or final usage leaves an explicit incomplete case.
+Requested model/effort never certifies reported selection. `metrics-1` and its historical semantics remain intact;
+new normalization is `usage-accounting-1`. D251/D252 fencing and independent stopped-writer rules remain authoritative.
+
+## D255 — Versioned billing profiles and offline reference binding
+
+Status: accepted design in P001-T001; implementation pending T002–T005.
+
+Global `local-config-10` will own named `billing-profile-1` definitions/defaults; `project-config-2` may select them
+per configured role. Existing versions retain bytes/hashes and load with unknown billing metadata. New-format save
+and activation remain explicit CAS confirmations with D238 boundaries; billing-only metadata must not invalidate
+otherwise compatible technical receipts. Admission/assistance/preparation freeze the resolved profile and reference
+bytes/digests. Existing queued jobs/plans without a binding stay unknown, not rebound to current settings.
+
+Model identity and tariff references are separate content-addressed `metrics-reference-1` documents, pinning exact
+identifiers, product/scheme/unit, source/locale/observation, effective interval or explicit unknown, conditions and
+structured overrides. T002 packages immutable seed data; T003 stores referenced bytes; T005 offers explicit bounded
+JSON import through configuration. No network refresh on reads or calculation. Conflicting identity/content or
+unresolved applicability cannot silently select a tariff. Subscription-equivalent scenarios are labelled separately
+from API USD, Enterprise USD, credits and reported estimates. Billing metadata never changes CLI authentication;
+there is no invoice/balance integration, billed-amount editor or universal credit/USD conversion in P001.
+
+## D256 — Disjoint quantities and exact decimal valuations
+
+Status: accepted design in P001-T001; implementation pending T002–T005.
+
+The [calculation contract](phase/P001-T001-accounting-contract.md#6-normalization-calculation-and-discrepancy-d256)
+defines `valuation-1`: disjoint uncached input, cache reads, writes by evidenced lifetime, output and separately
+evidenced tool charges. Reasoning remains inside output. Claude excludes cache from raw input; the established
+Codex CLI baseline includes reads, while nonzero-write semantics remain uncharacterized. Responses API write
+partition documentation is not evidence of CLI emission and cannot change `metrics-1` in place.
+
+Rates/amounts use decimal strings and bounded Decimal arithmetic with precision 160; exact line sums are rounded
+once per invocation to 12 places with ROUND_HALF_EVEN. Aggregation sums persisted rounded totals exactly. Modifiers
+are reference/category-specific, never inferred from effort or speed. Missing TTL, request tier, model, scheme or
+charge evidence yields complete/incomplete/unsupported results with coverage and stable reasons; no zero/default
+tariff fallback. Comparable reported estimates keep a signed delta and evidence-based precision tolerance; unknown
+bases are not comparable. Existing float records are preserved. Full details and synthetic boundary/rounding cases
+are in the contract; T001's arithmetic checks are documentation evidence, not an implemented calculator.
+
+## D257 — Additive accounting history, explicit cohorts and archive parity
+
+Status: accepted design in P001-T001; implementation pending T003–T006.
+
+New invocation/capture/component/reference/valuation/cohort tables are additive; T001 changes neither schema nor
+API. T003 uses D150 snapshot-before-migration, native-source transactions and unique digest keys. Legacy results,
+metrics/configuration hashes, run projection, frozen summaries/catalogs and recipes are never overwritten. Preserve
+`metrics-backfill`; add explicit, previewed accounting backfill/repricing with bounded cohorts and reports.
+New interpretations/values append records. Ordinary totals use original admission-bound valuations; explicit
+analysis selects one closed cohort, counting each invocation once. No implicit latest-price selection or GET-time
+backfill/recalculation. Incomplete cohort construction cannot advertise full coverage.
+
+Retention preserves sufficient accounting evidence and all referenced bytes. T003 adds backup format 3 with digest
+and native-link verification; older formats retain their supported matching-schema contract. Old archive upgrades
+need a documented explicit copy/new-bundle path, not in-place query-only mutation. Restored consultation works
+without roots, clients, network or executable authority. T004 adds bounded decimal-string API contracts alongside
+unchanged legacy fields; T005 keeps en/es and archive controls in parity. All planned data/flows are labelled
+unimplemented until the corresponding task provides code and evidence.
+
+## D258 — Pinned reference cases and the pure valuation boundary
+
+Status: accepted implementation detail in P001-T002, within D255/D256; operational integration pending T003–T005.
+
+`metric_references.py` validates separate canonical `metrics-reference-1` identity/tariff documents and content-addressed
+bundles. Tariffs enumerate exact condition combinations, request intervals, category rates/factors, already included
+adjustments and exclusions. The reference language is data only. Overrides require a new sourced reference; no ad hoc
+factor, implicit Standard case, network refresh or mutable model-name identity is used. Ambiguous overlapping versions
+cannot share a bundle; a different unknown-period observation uses another bundle, preserving the original bytes.
+
+The packaged `metrics-2026-10-27-v1.json` derives from the immutable T001 observation, including its source URLs/digest.
+It covers the eight suggested models plus Terra, with known conditions/unknown historical effective periods retained.
+It does not certify current prices, account eligibility, agreement terms or historical tariff validity. Explicit
+retrospective scenarios retain an unknown-period warning; ordinary historical valuations remain incomplete.
+
+`valuation.py` takes JSON-safe `usage-accounting-1` evidence, a `valuation-scenario-1` input and a validated pinned
+bundle. The scenario is a pure calculation input, not a new operational configuration format. The caller must supply
+a reconciled single view or disjoint request/model partition, model-response provenance and reported/asserted
+conditions; T003 owns capture reconciliation and frozen billing-profile binding. Responses API semantics remain
+separate from Codex CLI semantics. Charged tools use independently evidenced quantities/references, never client
+activity counts. Exact Decimal lines and once-per-invocation rounding follow D256. Result digests, line evidence,
+unknown reasons and separate estimate comparisons support later immutable persistence; no operational caller,
+database, API, configuration, frontend, version bump, distribution publication or installation is added here.
+
+Evidence and task delivery: [P001-T002](phase/P001-T002-reference-calculator.md).
+
+## D259 — Native accounting capture, frozen revision binding and format-3 archives
+
+Status: accepted implementation detail in P001-T003, within D254–D257; queries/API remain T004, controls/UI T005.
+
+The adapter keeps `cli-14`/`terminal-2`; its stream summary gains an additive `usage-stream-1` section with Claude
+requests keyed by message id (a repeated start with different evidence is a conflict, a delta replaces the current
+message's counters) and the terminal's exact cost lexemes. `metrics-1` never reads it. `usage-capture-1` is an
+allowlisted, float-free document built from the native source's sealed process evidence: client/version, requested
+selection, native status, reported selection, response/model-usage models, raw counters, reported amounts as lexeme
+or labelled legacy float, activity, timing and artifact digests, never prompts, argv, environment or paths. One
+terminal is final usage even when the structured payload was invalid. The launch gate is `not_invoked` only on a
+refused launch (no permitted launch or a stopped gate wrapper) and `unknown_execution` without positive evidence.
+
+Evidence selection prefers a complete request partition that reconciles with the terminal, then a reconciled
+`modelUsage` partition (the lone cache writer inherits the terminal lifetimes), then a single response model, else
+`model_unreported`/`model_partition_unknown`. Delegation tools (`Task`, `Agent`) leave the boundary unknown; server
+tool activity or nonzero server-tool counters leave charges incomplete. Absent Codex write counters stay absent.
+
+Admission already seals exact immutable configuration revisions (job `versions_json`, preparation plan data,
+assistance preview source). The invocation intent dereferences those revision bytes into a content-addressed
+`billing-binding-1` (profile with asserted conditions, or an explicit unknown reason), never the active/working
+configuration. `local-config-10`/`project-config-2` add only `billing` profiles/defaults/selections; billing is
+validated separately, removed before composing the runtime (v10 runs exactly as v9) and outside `technical()`.
+
+Migration `0028_usage_accounting` adds eight tables (62 product tables). Invocation IDs are `<source_kind>:<id>`; its
+downgrade refuses while accounting rows exist. Backfill materializes settled native sources (legacy metrics-only
+attempts as `legacy-metrics-1` evidence) with `backfill` valuations, never admission-bound ones; repricing applies a
+stated scenario. Both freeze at most 10,000 members at preview, build in bounded transactions, resume by
+idempotency key from their frozen selection and only then close. Reference import validates a bounded canonical
+bundle. CLI: `accounting-references`, `accounting-backfill`, `accounting-reprice`, `backup-upgrade`.
+
+Backup format 3 records the accounting inventory and recomputes reference, capture, binding, valuation (identity and
+exact line sum) and cohort digests in the same snapshot. Bundles of an older schema require `backup-upgrade`, which
+migrates a private copy into a new query-only format-3 bundle and leaves the original bytes unchanged.
+Evidence: [P001-T003](phase/P001-T003-capture-storage.md).
+
+## D260 — Quiet development checks and economical agent workflow
+
+Status: accepted for OT008 at the owner's request. Development tooling for this repository only; not a product
+feature and outside the distribution.
+
+`scripts/check` (standard library) runs the AGENTS command sets through the pinned offline `uv` invocation and prints
+one line per suite with its counts, then failing IDs with their first error line (at most 20 entries, each line
+clipped). Default suites are unittest, `alembic check` and full pytest; given paths, only pytest runs over them, with
+options after `--`; `--frontend` adds the Node tests (TAP reporter) and `npm run build`, which already runs `tsc
+--noEmit`. `alembic check` upgrades and checks a fresh temporary SQLite (`HARNESS_DATABASE_URL`), never the
+development database. Each suite's full output replaces `.local/check/<suite>.log` (written to a per-process file and
+renamed, so concurrent runs never interleave); the exit status is nonzero on any failure. `scripts/check-docs` checks
+tracked Markdown (or given files) for local link targets and anchors (GitHub heading slugs with `-N` duplicates and
+explicit `<a id>`/`<a name>`; external URLs are not fetched), unclosed fences, en/es key parity in both catalog pairs,
+and every "head `…`, N tables" statement in `docs/DDBB-DIAGRAM.md` against `SCHEMA_REVISION`, the migration chain head
+and the mapped `__tablename__` count.
+
+AGENTS.md tells every client (Claude Code, Codex) to use these wrappers, to choose the cheapest sufficient check,
+and to read files by range or after `grep`. CLAUDE.md stays a thin import. At the owner's choice, no project
+`.claude/settings.json` (permissions or hooks) is added, so both clients follow the same text-only guidance. The
+managed-project isolation is unchanged: adapters still disable client hooks and project configuration, and managed
+projects keep the engine's deterministic, journaled formatter/validation/JUnit steps. The new scripts are not in
+`BUNDLE_SCRIPTS` or the wheel/sdist, so delivery is source-only into `develop` with no patch release (D239 applies
+to product changes). Evidence: [OT008](phase/OT008-development-checks.md).
+
+## D261 — One-off tasks branch from the latest release, not from `develop`
+
+Status: accepted at the owner's request on 2026-10-28. Refines D235/D237/D239/D242 for one-off tasks.
+
+`develop` carries phase work that is not yet released. A one-off task therefore never branches from or merges into
+`develop` alone. Its topic branch (`<kind>/<topic>`) starts from the latest release tag on `main`. A one-off that
+changes the product is released from that branch through `main` as its own patch version (D239), and `main` is
+then merged back into `develop`, as D235 already does for fixes to a published version. A one-off that changes
+nothing released (development tooling, documentation only) waits on its branch and reaches `main` with the next
+release. Its delivery route is recorded and confirmed before edits (D242) against this rule.
+
+OT008 was registered with the route topic → `develop` and was merged there (`eb80123`, pushed) before this rule was
+written down. It is development tooling outside the distribution, so it stays in `develop` and reaches `main` with
+the P001 closure release (0.1.9). Its history is not rewritten or reverted.
+
+## D262 — Bounded accounting aggregates and the read-only accounting API
+
+Status: accepted implementation detail in P001-T004, within D254–D257 and the T001 §8 aggregation contract; controls
+and UI remain T005.
+
+`storage/accounting_views.py` reads the T003 ledger only. One SQL row per native invocation joins its latest
+append-only capture (the newest evidence, as repricing already selects) and the valuation(s) of one explicit
+selection policy: the original admission-bound valuation (earliest `admission` row) by default, or the frozen
+membership of one named cohort. In a cohort analysis non-members in the filters are counted as `outside_selection`
+only; a `BUILDING` cohort yields known subtotals but no full amount. Run histories are never decoded; nothing prices,
+backfills, launches a client or writes, so the same reads work on a restored query-only archive.
+
+Derived per invocation: provider (the agent's frozen `<agent>_provider`, else the capture client), effective model
+from the selected evidence components (`reported` when every component names the same model, `mixed` for several,
+`unknown` otherwise; mixed/unknown are visible groups, so each invocation enters exactly one group), UTC start day,
+and work class: `task_first_pass`, `task_rework` (a later run of the same task, or the run's second execution
+and every attempt after it), `phase`, `conversation`, `setup` (preparation and configuration assistance) or `other`. A phase
+filter without an explicit work selection uses the phase-work default (conversations and setup excluded) and names it
+in the response. Filters: provider, role, purpose, source, outcome, launch, requested/effective model and kind, work
+and UTC start `[from, to)`; root/phase/task come from the existing project scope.
+
+Coverage counts expected invocations (not-invoked excluded and shown), launch states, captures, complete/partial/
+absent usage, complete/incomplete/unsupported/unpriced valuations and grouped unpriced reasons. Amount buckets add
+only identical unit/platform/product/scheme/basis/counterfactual/retrospective valuations as exact decimal strings;
+`amount` is null unless every valuation in the bucket is complete, no expected invocation is unpriced and the
+selection is complete, while `known_subtotal` always shows what is known. Token sums are per category with
+contributor counts and partial contributors; Codex uncached input is input minus cache reads. Cache hit and wall
+throughput use only complete usage with every needed quantity known and report the excluded count. Task indicators
+divide the bucket total of every attempted task invocation by verified-COMMITTED tasks (null while any task's
+commit is only an `INTENT`) and by attempted tasks, rounding half-even to 12 places, with committed-only work
+separate. Groups and invocation pages are offset-paginated over a stable order; pagination never changes totals.
+
+API (additive, `accounting-aggregate-1`): `GET /api/managed/accounting/{summary,groups,tasks,invocations,cohorts}`,
+`/accounting/invocations/{id}` and `/accounting/invocations/{id}/valuations` (lines, reference identity, discrepancy
+and cohort memberships). Existing `/metrics/*` endpoints, `metrics-1` floats and frozen phase summaries are unchanged.
+Evidence: [P001-T004](phase/P001-T004-aggregates-api.md).
+
+## D263 — P001-T005 split, accounting page and billing/reference control contracts
+
+Status: accepted design before P001-T005 implementation, within D254–D257, D259 and D262; nothing here is implemented.
+
+The owner split T005 into two bounded, sequential deliveries, each on its own topic branch from `develop` →
+`develop`/`origin`: **T005a** (accounting UI, read-only over the D262 API, no API change) and then **T005b**
+(billing-profile and reference controls, with an additive API). D234's six-task plan is otherwise unchanged; both
+record evidence in `docs/phase/P001-T005-metrics-ui.md`, and T005 completes when both are delivered.
+
+- **Accounting page (T005a).** A new page, global and per project and available on query-only archives, consumes
+  only `/api/managed/accounting/*`. The existing Statistics page stays on `metrics-1` (its cost is the reporting
+  client's estimate) and links to it, so reported estimates and calculated valuations never share a figure. Backfill
+  and repricing stay CLI-only (`accounting-backfill`, `accounting-reprice`): the page lists and selects cohorts and
+  names the command, as Statistics does for `metrics-backfill`. Archives show no mutation control and do not poll.
+- **Reference API (T005b).** The configuration router (`/api/managed/configuration`) gains
+  `GET /references` (bounded page of available bundles: packaged and imported, with source, provider/product/models,
+  observation date and effective-period state), `POST /references/preview` and `POST /references/import` over the
+  T003 backend. The import writes immutable accounting reference rows, not a configuration revision, and activates
+  nothing; a profile adopts a bundle only through a confirmed configuration save/activation. The list reads stored
+  rows and the packaged bundle without inserting them and does not depend on the configuration setup, so it also
+  works on a restored archive; both POSTs keep the restored-archive refusal.
+- **Idempotent import.** Importing equal bytes is idempotent (D255), so a retried confirmation must not fail as
+  stale: the preview digest seals the bundle id, raw-byte digest, reference count and conflicts, while new/existing
+  row counts are informative and outside it. Confirming after the rows already exist returns the same report with
+  zero inserted rows; a conflicting id still refuses. The CLI keeps the same preview → confirm contract.
+- **Save-time billing validation (T005b).** Server previews refuse what would otherwise surface later as
+  `billing_profile_unknown`: a global profile whose `references` bundle is not available (packaged or imported); a
+  project's explicit `project-config-2` selection that its referenced global revision lacks or whose provider
+  differs from the project's agent for that role; and a global save that removes or changes the provider of a
+  profile still selected by a derived project copy (the affected projects are named, like a profile used by a
+  composition). Inherited global defaults are not refused for projects, since `project-config-1` bytes keep their
+  meaning: the preview effects report each role whose default would resolve as unknown.
+- **Formats.** Billing controls appear only after an explicit conversion to `local-config-10`/`project-config-2`
+  shown in the save preview; loading never converts. Billing-only saves keep the technical receipt (D259); frozen
+  jobs keep their binding. Guided forms follow D250 (controls replace only their own keys; TOML remains complete).
+
+## D264 — Accounting page routes, exact amounts and derived reference period
+
+Status: accepted implementation detail in P001-T005a, within D262 and D263; no API change.
+
+The page lives at `/accounting` (sidebar) and `/projects/:p/accounting` (project navigation), and Statistics links to
+the matching scope. Like Statistics, only the global page is mounted on a query-only archive and while configuration
+is not ready; project routes stay blocked there. Live reads refresh every 15 s; the invocation detail and its
+valuations are read once; an archive never polls. Filters, cohort selection and pagination are client state, not URL.
+
+Amounts are formatted from the API's exact decimal strings by regrouping their digits in the visual language, never
+through a binary float: trailing zeros after the last significant decimal are dropped (two decimals at least for an
+ISO currency) and the exact string stays in the tooltip. A bucket shows `amount` only when the API gives it; otherwise
+its `known_subtotal` with a "partial" mark. Units without an ISO code are named (`chatgpt_work_codex_credit` →
+credits); unknown units and codes are shown as is.
+
+The API's reference rows carry no effective period, so a valuation's period state is derived from the calculator's
+codes (D258): `reference_out_of_period` or a blocking `effective_period_unknown` reason, the retrospective warning, or
+"applies" when neither is present and references were used. The client-reported cost appears only in the invocation
+detail (from the allowlisted capture) and in each valuation's comparison, labelled as an estimate of unknown basis.
+Evidence: [P001-T005a](phase/P001-T005-metrics-ui.md#t005a--accounting-ui).
+
+## D265 — Billing controls, reference listing and save-time billing review
+
+Status: accepted implementation detail in P001-T005b, within D250, D255, D259 and D263.
+
+- **Reference API.** `GET /api/managed/configuration/references` pages (≤ 50) the packaged bundle first, then imported
+  bundles newest first, each with its source, stored time (none while the packaged bundle is unused), counts,
+  providers/models, observation range, effective-period state (`unknown`/`known`/`mixed`) and tariff schemes with
+  bases, models and case-condition values, so a profile can be filled from a listed scheme. A row that no longer
+  loads stays listed as unavailable. It reads through the runtime engine, not the configuration setup, and never
+  inserts rows. `POST …/references/preview` and `…/import` take the bundle as JSON text (UTF-8 bytes, ≤ 1 MiB);
+  invalid or oversized bundles answer 422, stale previews and conflicts 409. The import needs no idempotency key:
+  equal bytes are idempotent by content, so the preview digest now seals only bundle id, raw digest, reference count
+  and conflicts (D263) and a store-time conflict race is refused as `reference_conflict`.
+- **Save-time review.** Validated save previews call `billing_review` before sealing: refusals (an unavailable pinned
+  bundle; an explicit project selection the referenced global revision, or the global candidate of the same save,
+  lacks or whose provider differs from the project's agent) raise `billing_configuration_refused` with path-free
+  `{project, role, setting, code}` details, using the D238 detail shape. Derived copies carry their selections, so a
+  global save that removes or re-providers a selected profile names those projects. Roles that would resolve as
+  unknown through an inherited default are reported as `effects.billing_unknown`. The same pure `choose` drives the
+  frozen binding (D259), so a refusal matches what admission would resolve. Drafts are not reviewed.
+- **Controls.** Conversion is one explicit button that changes only `format`; billing controls appear after it. The
+  global form edits profiles (identity, basis, pinned bundle, sourced conditions) and per-role defaults offering only
+  profiles of the role's provider; a profile used by a default cannot be removed there. A listed scheme fills only
+  identity, basis and bundle: conditions are never prefilled, and missing required ones are named as making
+  valuations incomplete. The project form selects per role among the referenced global revision's profiles or
+  inherits its default, showing what each role resolves to. Refusal details appear in the save review and in toasts.
+- **Where the list appears.** Import controls live only on the global configuration page. The read-only list also
+  appears on the global accounting page, which is mounted on query-only archives (D264); the configuration page is
+  not, and archives keep refusing both POSTs.
+
+Evidence: [P001-T005b](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls).

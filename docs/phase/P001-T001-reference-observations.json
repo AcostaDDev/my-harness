@@ -1,0 +1,494 @@
+{
+  "format": "p001-t001-research-observations-1",
+  "status": "research_only_not_runtime_catalog",
+  "source_commit": "2dcf9d4",
+  "collected_at": "2026-10-27T21:06:53Z",
+  "disclaimer": "Minimal factual extraction, not full archived pages, historical effective-date proof, account eligibility or provider-confirmed billing. Future changes require a new observation artifact.",
+  "sources": [
+    {
+      "id": "R1",
+      "urls": [
+        "https://platform.claude.com/docs/es/about-claude/pricing"
+      ],
+      "locale": "es",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "First-party Standard USD, per million disjoint tokens.",
+        "Haiku tier uses each request prompt including cache reads and writes; boundary is strictly above 100000.",
+        "Speed, region and server-tool conditions require separate applicability evidence."
+      ],
+      "columns": [
+        "uncached_input",
+        "cache_read",
+        "write_5m",
+        "write_1h",
+        "output"
+      ],
+      "rates": {
+        "claude-opus-5-5": [
+          "4",
+          "0.20",
+          "5",
+          "8",
+          "20"
+        ],
+        "claude-sonnet-5-5": [
+          "2",
+          "0.10",
+          "2.50",
+          "4",
+          "10"
+        ],
+        "claude-fable-5-1": [
+          "10",
+          "0.25",
+          "12.50",
+          "20",
+          "50"
+        ],
+        "claude-haiku-5-5:prompt<=100000": [
+          "0.10",
+          "0.01",
+          "0.125",
+          "0.20",
+          "0.50"
+        ],
+        "claude-haiku-5-5:prompt>100000": [
+          "0.50",
+          "0.05",
+          "0.625",
+          "1",
+          "2.50"
+        ]
+      }
+    },
+    {
+      "id": "R2",
+      "urls": [
+        "https://code.claude.com/docs/en/costs"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Reported dollars are local estimates; configured organization rates can differ from list prices. Subscription included use is not an additional API bill."
+      ]
+    },
+    {
+      "id": "R3",
+      "urls": [
+        "https://help.openai.com/en/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing",
+        "https://help.openai.com/es-es/articles/11481834-chatgpt-rate-card-business-enterpriseedu-credit-based-pricing"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "English and Spanish Work/Codex rows agree for these models at observation. Chat and legacy metering are distinct.",
+        "Current applicable credit scheme; agreement and plan eligibility remain required. No separate Codex cache-write fee."
+      ],
+      "columns": [
+        "uncached_input",
+        "cached_input",
+        "output"
+      ],
+      "unit": "chatgpt_work_codex_credit",
+      "rate_quantity": 1000000,
+      "rates": {
+        "gpt-6.1-sol": [
+          "50",
+          "2.5",
+          "250"
+        ],
+        "gpt-6.1-terra": [
+          "25",
+          "1.25",
+          "125"
+        ],
+        "gpt-6-sol": [
+          "50",
+          "5",
+          "250"
+        ],
+        "gpt-6-astra": [
+          "250",
+          "25",
+          "1250"
+        ],
+        "gpt-6-luna": [
+          "2.5",
+          "0.25",
+          "12.5"
+        ]
+      }
+    },
+    {
+      "id": "R4",
+      "urls": [
+        "https://developers.openai.com/api/docs/pricing"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "API tariffs are separate from ChatGPT credit and Enterprise USD billing.",
+        "Rendered page flattens Standard, Flex/Batch, Fast and Ultrafast tables. Use corroborating model cards for Standard.",
+        "30m/12h cache-write rates and request/region conditions cannot be assumed from CLI invocation totals."
+      ]
+    },
+    {
+      "id": "R5",
+      "urls": [
+        "https://learn.chatgpt.com/docs/pricing"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Work and Codex share usage. Included allowances are not computable credit balances; current Standard credit rows corroborate R3."
+      ]
+    },
+    {
+      "id": "R6",
+      "urls": [
+        "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Eligible Enterprise USD agreements only; agreement terms may differ.",
+        "Codex with ChatGPT sign-in has no long-context surcharge or separate cache-write fee; API-key use is separate."
+      ],
+      "columns": [
+        "uncached_input",
+        "cached_input",
+        "output"
+      ],
+      "unit": "USD",
+      "rate_quantity": 1000000,
+      "rates": {
+        "gpt-6.1-sol": [
+          "2",
+          "0.10",
+          "10"
+        ],
+        "gpt-6.1-terra": [
+          "1",
+          "0.05",
+          "5"
+        ],
+        "gpt-6-sol": [
+          "2",
+          "0.20",
+          "10"
+        ],
+        "gpt-6-astra": [
+          "10",
+          "1",
+          "50"
+        ],
+        "gpt-6-luna": [
+          "0.10",
+          "0.01",
+          "0.50"
+        ]
+      }
+    },
+    {
+      "id": "R7",
+      "urls": [
+        "https://help.openai.com/en/articles/12642688-using-credits-for-flexible-usage-in-chatgpt-personal-plans"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Included use precedes eligible purchased credits; account access is not established by this page.",
+        "The article directs Work/Codex credit rates to the rate card; product safety auto-review is distinct from a harness reviewer invocation."
+      ]
+    },
+    {
+      "id": "R8",
+      "urls": [
+        "https://platform.claude.com/docs/en/models/overview",
+        "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Canonical Claude API IDs below exist. Dateless 4.6-generation and later IDs identify fixed snapshots; older convenience aliases differ."
+      ],
+      "exact_ids": [
+        "claude-opus-5-5",
+        "claude-sonnet-5-5",
+        "claude-haiku-5-5",
+        "claude-fable-5-1"
+      ]
+    },
+    {
+      "id": "R9",
+      "urls": [
+        "https://learn.chatgpt.com/docs/models"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Exact configured identifiers remain separate from actual model reports and account availability."
+      ],
+      "exact_ids": [
+        "gpt-6.1-sol",
+        "gpt-6.1-terra",
+        "gpt-6-sol",
+        "gpt-6-astra",
+        "gpt-6-luna"
+      ]
+    },
+    {
+      "id": "R10",
+      "urls": [
+        "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "API usage.cache_creation.ephemeral_5m_input_tokens and ephemeral_1h_input_tokens partition cache_creation_input_tokens. API documentation does not establish CLI emission."
+      ]
+    },
+    {
+      "id": "R11",
+      "urls": [
+        "https://developers.openai.com/api/docs/guides/prompt-caching"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Responses input includes reads and writes. For established API evidence: ordinary input = input_tokens - cached_tokens - cache_write_tokens.",
+        "input_tokens_details.cache_write_tokens_details.ttl_30m_tokens and ttl_12h_tokens are disjoint write quantities, not additive fees over ordinary input."
+      ]
+    },
+    {
+      "id": "R12",
+      "urls": [
+        "https://learn.chatgpt.com/docs/non-interactive-mode",
+        "https://code.claude.com/docs/en/headless"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Codex documented JSON terminal includes input_tokens, cached_input_tokens, output_tokens and reasoning_output_tokens. Optional billing fields are not guaranteed by this example.",
+        "Claude supports non-interactive structured/stream output; provider API fields still need CLI capture characterization."
+      ]
+    },
+    {
+      "id": "R13",
+      "urls": [
+        "https://learn.chatgpt.com/docs/agent-configuration/speed"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Applicable purchased-credit and Enterprise PAYG Fast factor is 2; eligible Ultrafast factor is 6.",
+        "Included-allowance factors 2.5 and 8 are separate; API-key use follows API rates, not these credit factors."
+      ]
+    },
+    {
+      "id": "R14",
+      "urls": [
+        "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Standard API model card corroborates identity and base pricing; long requests above 272000 input tokens apply 2x input/cache and 1.5x output for the full request.",
+        "Unobserved write-lifetime rate remains null; model-card input/write/output evidence is not CLI evidence."
+      ],
+      "exact_id": "gpt-6.1-sol",
+      "columns": [
+        "uncached_input",
+        "cache_read",
+        "write_30m",
+        "write_12h",
+        "output"
+      ],
+      "unit": "USD",
+      "rate_quantity": 1000000,
+      "rates": [
+        "2",
+        "0.10",
+        "2.50",
+        "5",
+        "10"
+      ],
+      "additional_rate_source": "R4"
+    },
+    {
+      "id": "R15",
+      "urls": [
+        "https://developers.openai.com/api/docs/models/gpt-6.1-terra"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Standard API model card corroborates identity and base pricing; long requests above 272000 input tokens apply 2x input/cache and 1.5x output for the full request.",
+        "Unobserved write-lifetime rate remains null; model-card input/write/output evidence is not CLI evidence."
+      ],
+      "exact_id": "gpt-6.1-terra",
+      "columns": [
+        "uncached_input",
+        "cache_read",
+        "write_30m",
+        "write_12h",
+        "output"
+      ],
+      "unit": "USD",
+      "rate_quantity": 1000000,
+      "rates": [
+        "1",
+        "0.05",
+        "1.25",
+        "2.50",
+        "5"
+      ],
+      "additional_rate_source": "R4"
+    },
+    {
+      "id": "R16",
+      "urls": [
+        "https://developers.openai.com/api/docs/models/gpt-6-astra"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Standard API model card corroborates identity and base pricing; long requests above 272000 input tokens apply 2x input/cache and 1.5x output for the full request.",
+        "Unobserved write-lifetime rate remains null; model-card input/write/output evidence is not CLI evidence."
+      ],
+      "exact_id": "gpt-6-astra",
+      "columns": [
+        "uncached_input",
+        "cache_read",
+        "write_30m",
+        "write_12h",
+        "output"
+      ],
+      "unit": "USD",
+      "rate_quantity": 1000000,
+      "rates": [
+        "10",
+        "1",
+        "12.50",
+        "25",
+        "50"
+      ],
+      "additional_rate_source": "R4"
+    },
+    {
+      "id": "R17",
+      "urls": [
+        "https://developers.openai.com/api/docs/models/gpt-6-luna"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Standard API model card corroborates identity and base pricing; long requests above 272000 input tokens apply 2x input/cache and 1.5x output for the full request.",
+        "Unobserved write-lifetime rate remains null; model-card input/write/output evidence is not CLI evidence."
+      ],
+      "exact_id": "gpt-6-luna",
+      "columns": [
+        "uncached_input",
+        "cache_read",
+        "write_30m",
+        "write_12h",
+        "output"
+      ],
+      "unit": "USD",
+      "rate_quantity": 1000000,
+      "rates": [
+        "0.10",
+        "0.01",
+        "0.125",
+        "0.25",
+        "0.50"
+      ],
+      "additional_rate_source": "R4"
+    },
+    {
+      "id": "R18",
+      "urls": [
+        "https://developers.openai.com/api/docs/models/gpt-6-sol"
+      ],
+      "locale": "en",
+      "observed_at": "2026-10-27T21:06:53Z",
+      "effective_from": null,
+      "effective_to": null,
+      "effective_period_unknown": true,
+      "facts": [
+        "Standard API model card corroborates identity and base pricing; long requests above 272000 input tokens apply 2x input/cache and 1.5x output for the full request.",
+        "Unobserved write-lifetime rate remains null; model-card input/write/output evidence is not CLI evidence."
+      ],
+      "exact_id": "gpt-6-sol",
+      "columns": [
+        "uncached_input",
+        "cache_read",
+        "write_30m",
+        "write_12h",
+        "output"
+      ],
+      "unit": "USD",
+      "rate_quantity": 1000000,
+      "rates": [
+        "2",
+        "0.20",
+        "2.50",
+        null,
+        "10"
+      ],
+      "additional_rate_source": null
+    }
+  ]
+}

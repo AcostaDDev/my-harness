@@ -1,10 +1,19 @@
 # P001 — Metrics Records
 
-Status: active documentation phase; initialized on 2026-10-27, no implementation started. Target release: `0.1.2`.
+Status: active phase; initialized on 2026-10-27. T001 design, T002 pure calculator/references and T003 native
+capture/storage/billing binding/explicit operations/format-3 archives (integrated into `develop`) are complete;
+T004 bounded read-only queries/API (integrated into `develop`) is complete; T005a's accounting page is complete as
+source and integrated into `develop` (D264); T005b controls are complete and integrated (D265), completing T005.
+Current target: **0.1.9 at P001 closure** (D253); the original 0.1.2 assignment was superseded by D239.
 Authority: [D232](../DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries) for accounting scope;
-[D233](../DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) for phase order and version.
+[D233](../DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) for phase order;
+[D253](../DECISIONS.md#d253--phase-release-targets-after-018) for current closure releases (P002 remains 0.2.0).
 The task plan and statuses live in [NEXT_STEPS](../NEXT_STEPS.md), as recorded by
-[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); all six tasks are pending, starting with P001-T001.
+[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001–T004 are complete as source; T005 is
+complete (T005a and T005b delivered) and T006 is complete as source qualification
+([evidence](P001-T006-qualification.md)); the 0.1.9 release and closure remain.
+The accepted [T001 contract](P001-T001-accounting-contract.md) and D254–D257 resolve the candidate design questions
+below. This handoff retains scope/baseline/history; its earlier candidate language is not a competing design.
 This handoff is intended to let an agent start without the conversation that motivated it.
 
 ## Purpose and reading order
@@ -25,8 +34,9 @@ Read, in order:
 4. [DDBB-DIAGRAM](../DDBB-DIAGRAM.md), [task flow](../flows/task-run.md),
    [configuration flow](../flows/configuration-setup.md), [migration flow](../flows/database-migration.md) and
    [archive consultation](../flows/backup-consultation.md).
-5. [Reference notes](P001-metrics-records-references.md), then the source files below. Recheck live sources at
-   implementation time; a retrieval date is not a tariff's effective date.
+5. [Reference notes](P001-metrics-records-references.md), the accepted T001 observation and
+   [T002 implementation/evidence](P001-T002-reference-calculator.md), then the source files below.
+   Source refresh creates a separate pinned version; a retrieval date is not a tariff's effective date.
 
 This repository is edited by hand, not by running My Harness on itself. Work in English, one bounded task at a time;
 inspect concurrent changes before editing. Do not launch real clients/providers, install dependencies over the
@@ -149,9 +159,10 @@ Spanish UI should make the billing basis, observation date, tariff applicability
 Keep `docs/DDBB-DIAGRAM.md`, affected `docs/flows/`, `frontend/openapi.json` and the generated
 `frontend/src/api.generated.ts` in parity with actual changes. Do not predeclare schema fields or routes as shipped.
 
-## Decisions to resolve in P001-T001
+## Design questions resolved by P001-T001
 
-These are open design questions, not blockers to reading the handoff or established implementation choices:
+These were the initialization questions. The accepted [T001 contract](P001-T001-accounting-contract.md), §§4–8,
+resolves them through D254–D257; implementation remains pending:
 
 | Question | Required decision/evidence |
 |---|---|
@@ -162,7 +173,7 @@ These are open design questions, not blockers to reading the handoff or establis
 | Amount policy | Decimal representation, precision/rounding, formula/modifier ordering, compatible aggregate bases and reported-versus-calculated discrepancies. |
 | Compatibility | Additive tables/format versions; old API fields; safe migration, explicit backfill, immutable repricing and backup contents. |
 | Product scope | Whether invoice reconciliation is manual evidence or a separately authorized future integration; no billing API connection is implied. |
-| Release execution | Target `0.1.2` is fixed by D233 as a specific exception to D231's patch scope. Define upgrade notes and compatibility checks; this is not an interface-only patch. Do not change runtime version strings during planning. |
+| Release execution | D253 confirms 0.1.9 at P001 closure, after the already published 0.1.8. T006 qualifies metadata/upgrade notes; per-task integration into develop is separate from release. D233's additive-metrics patch exception is retained. |
 
 Use local code and synthetic streams to settle reversible details. If evidence conflicts with the specification or
 an accepted decision, ask before changing design, as AGENTS requires. Record accepted technical choices in new
@@ -172,7 +183,11 @@ DECISIONS sections; do not silently turn these candidate fields into a contract.
 
 The full task sections, dependencies, acceptance criteria, validation and deliverables are maintained in
 [NEXT_STEPS](../NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
-not another task-status record. These identifiers belong to the current phase, not the pre-release H6.4 milestones.
+not another task-status record. **T006 is complete** ([evidence](P001-T006-qualification.md)); next are the
+authorized 0.1.9 release and closure (T005b [evidence](P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)), over the T004 API
+([evidence](P001-T004-aggregates-api.md)), integrated into `develop`; split by
+[D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). These identifiers belong
+to the current phase, not the pre-release H6.4 milestones.
 
 1. [P001-T001 — Accounting contract and evidence inventory](../NEXT_STEPS.md#p001-t001--accounting-contract-and-evidence-inventory).
 2. [P001-T002 — Versioned references and pure calculator](../NEXT_STEPS.md#p001-t002--versioned-references-and-pure-calculator).

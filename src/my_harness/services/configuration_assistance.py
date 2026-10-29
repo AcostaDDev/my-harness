@@ -20,8 +20,9 @@ from my_harness.i18n import current as visual_language, tr
 from my_harness.services.configuration import parse, secretless
 from my_harness.services.configuration_setup import toml_document
 from my_harness.services.local_config import _agents
+from my_harness.storage import accounting
 from my_harness.storage.configuration import ConfigurationConflict, seal, operation_view
-from my_harness.storage.models import ConfigurationOperationRow as Operation
+from my_harness.storage.models import ConfigurationOperationRow as Operation, UsageInvocationRow as Invocation
 
 SCHEMA = {'type': 'object', 'additionalProperties': False,
     'properties': {'text': {'type': 'string'}, 'rationale': {'type': 'string'},
@@ -178,6 +179,7 @@ class ConfigurationAssistance:
                 {'preview': preview, 'owner': owner, 'attempt_id': attempt_id, 'owner_closed': False},
                 kind='ASSIST', status='INTENDED')
             operation_id = row.id
+            accounting.intend_assistance(session, row, preview, attempt_id, self.repository.managed._now())
         workspace = self.runtime.setup.state_dir / 'configuration-assistance' / 'work' / operation_id
         result, failure_type = None, None
         try:
@@ -251,6 +253,8 @@ class ConfigurationAssistance:
                 payload['owner_closed'] = True
                 row.payload = payload
                 row.status = 'RECOVERY_REQUIRED' if uncertain else 'APPLIED'
+                accounting.settle_process(session, 'configuration_assistance', operation_id, process,
+                                          outcome=row.status, now=self.repository.managed._now())
                 row.result = {'proposal': result, 'preview': preview, 'authority_changed': False,
                               **({'failure_type': failure_type} if failure_type else {})}
                 row.updated_at = self.repository.managed._now()
@@ -275,5 +279,10 @@ class ConfigurationAssistance:
             row.payload = {**row.payload, 'recovery': {'writers_stopped': True, 'actor': actor(),
                                                      'at': self.repository.managed._now()}}
             row.result = {**(row.result or {}), 'authority_changed': False, 'recovered_without_retry': True}
+            invocation = session.get(Invocation, accounting.key('configuration_assistance', row.id))
+            if invocation is not None and invocation.launch == 'pending':
+                # Recovery classifies the recorded evidence only; it never launches or retries inference.
+                accounting.settle_process(session, 'configuration_assistance', row.id, process,
+                                          outcome='APPLIED', now=self.repository.managed._now())
             row.updated_at = self.repository.managed._now()
             return operation_view(row)

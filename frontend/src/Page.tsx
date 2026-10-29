@@ -25,8 +25,10 @@ const SetupPage = lazy(() => import("./pages/Planning").then(module => ({ defaul
 const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.PlanPage })));
 // Statistics (H6.2 E6): charts and tables in their own chunk.
 const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
+// Accounting (P001-T005a): calculated valuations over the accounting API, in its own chunk too.
+const AccountingPage = lazy(() => import("./pages/Accounting").then(module => ({ default: module.AccountingPage })));
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "accounting" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
   switch (route.name) {
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;
@@ -36,6 +38,7 @@ function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "sta
     case "chat": return <Chat conversation={route.conversation} />;
     case "settings": return <SettingsPage />;
     case "project-stats": return <Suspense fallback={<Loading />}><ProjectStats /></Suspense>;
+    case "project-accounting": return <Suspense fallback={<Loading />}><ProjectAccounting /></Suspense>;
     case "docs": return <Suspense fallback={<Loading />}><DocsPage path={route.path} /></Suspense>;
     case "onboarding": return <Suspense fallback={<Loading />}><ImportPage conversation={route.conversation} path={route.path} /></Suspense>;
     case "setup": return <Suspense fallback={<Loading />}><SetupPage path={route.path} /></Suspense>;
@@ -48,6 +51,11 @@ function ProjectStats() {
   return <StatsPage project={project} refresh={refresh} />;
 }
 
+function ProjectAccounting() {
+  const { project, refresh } = useWorkspace();
+  return <AccountingPage project={project} refresh={refresh} />;
+}
+
 export function Page({ route }: { route: Route }) {
   const { t } = useI18n();
   const mode = useServiceMode();
@@ -58,13 +66,14 @@ export function Page({ route }: { route: Route }) {
       case "home": return <ArchiveHome />;
       case "run-short": return <ArchiveRun key={route.run} run={route.run} />;
       case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
+      case "accounting": return <Suspense fallback={<Loading />}><AccountingPage /></Suspense>;
       default: return <ArchiveBlocked />;
     }
   }
   if (mode.configuration_mode && mode.configuration_mode !== "READY") {
     // Consultation remains available without a project action workspace while setup closes admission.
     if (route.name === "run-short" || route.name === "run") return <ArchiveRun key={route.run} run={route.run} />;
-    if (!["preferences", "initial-setup", "configuration", "stats"].includes(route.name)) return <ConfigurationRedirect />;
+    if (!["preferences", "initial-setup", "configuration", "stats", "accounting"].includes(route.name)) return <ConfigurationRedirect />;
   }
   switch (route.name) {
     case "initial-setup":
@@ -72,6 +81,7 @@ export function Page({ route }: { route: Route }) {
     case "home": return <Home />;
     case "preferences": return <PreferencesPage />;
     case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
+    case "accounting": return <Suspense fallback={<Loading />}><AccountingPage /></Suspense>;
     case "project-new": return <RegisterPage />;
     case "run-short": return <RunRedirect run={route.run} />;
     case "not-found": return <>

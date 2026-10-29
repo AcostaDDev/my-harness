@@ -1204,6 +1204,146 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/accounting/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Summary
+         * @description Coverage, tokens, cache hit, wall throughput and compatible amount buckets of the scope.
+         */
+        get: operations["managed_accounting_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/accounting/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Groups
+         * @description Totals per group; each invocation enters exactly one group (mixed/unknown models are visible groups).
+         */
+        get: operations["managed_accounting_groups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/accounting/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Tasks
+         * @description Task spend per bucket against attempted and verified-COMMITTED tasks, with explicit denominators.
+         */
+        get: operations["managed_accounting_tasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/accounting/invocations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Invocations
+         * @description Expected invocations by UTC start, including those without a capture or a valuation.
+         */
+        get: operations["managed_accounting_invocations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/accounting/invocations/{invocation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Invocation
+         * @description One invocation: binding, latest allowlisted capture and its alternative component views.
+         */
+        get: operations["managed_accounting_invocation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/accounting/invocations/{invocation_id}/valuations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Valuations
+         * @description Every immutable valuation with lines, reference identity, discrepancy and cohort memberships.
+         */
+        get: operations["managed_accounting_valuations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/accounting/cohorts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Accounting Cohorts
+         * @description Named backfill/repricing cohorts, newest first; a BUILDING cohort yields no full amount.
+         */
+        get: operations["managed_accounting_cohorts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/conversations": {
         parameters: {
             query?: never;
@@ -1892,6 +2032,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/configuration/references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * References
+         * @description Available reference bundles. Independent of the configuration setup, so it also lists a restored archive.
+         */
+        get: operations["configuration_references"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/configuration/references/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** References Preview */
+        post: operations["configuration_references_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/configuration/references/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * References Import
+         * @description Writes immutable reference rows, not a configuration revision; equal bytes are idempotent (D263).
+         */
+        post: operations["configuration_references_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/configuration/revisions/{scope}/{revision}": {
         parameters: {
             query?: never;
@@ -2419,6 +2616,861 @@ export interface components {
             fingerprint: string;
             /** Changed Paths */
             changed_paths: string[];
+        };
+        /** AccountingAmountPairRead */
+        AccountingAmountPairRead: {
+            /** Amount */
+            amount: string | null;
+            /** Known Subtotal */
+            known_subtotal: string | null;
+        };
+        /** AccountingAmountRead */
+        AccountingAmountRead: {
+            /** Unit */
+            unit: string;
+            /** Platform */
+            platform: string | null;
+            /** Product */
+            product: string | null;
+            /** Scheme */
+            scheme: string;
+            /** Basis */
+            basis: string;
+            /** Counterfactual */
+            counterfactual: boolean;
+            /** Retrospective */
+            retrospective: boolean;
+            /** Invocations */
+            invocations: number;
+            /** Complete */
+            complete: number;
+            /** Incomplete */
+            incomplete: number;
+            /** Unsupported */
+            unsupported: number;
+            /**
+             * Denominator
+             * @description Expected invocations of the scope or group.
+             */
+            denominator: number;
+            /**
+             * Amount
+             * @description Null unless every valuation of this bucket is complete, no expected invocation is unpriced and the selection is complete.
+             */
+            amount: string | null;
+            /**
+             * Known Subtotal
+             * @description Complete amounts plus incomplete known subtotals.
+             */
+            known_subtotal: string | null;
+            /** Reasons */
+            reasons: {
+                [key: string]: number;
+            };
+            /** Discrepancies */
+            discrepancies: {
+                [key: string]: number;
+            };
+        };
+        /** AccountingCacheHitRead */
+        AccountingCacheHitRead: {
+            /** Cache Read Tokens */
+            cache_read_tokens: number;
+            /**
+             * Input Tokens
+             * @description Uncached input + cache reads + known cache writes.
+             */
+            input_tokens: number;
+            /**
+             * Invocations
+             * @description Complete usage with every input category known.
+             */
+            invocations: number;
+            /** Excluded */
+            excluded: number;
+            /** Ratio */
+            ratio: number | null;
+        };
+        /** AccountingCaptureDocumentRead */
+        AccountingCaptureDocumentRead: {
+            /** Digest */
+            digest: string;
+            /**
+             * Document
+             * @description Allowlisted capture: no prompts, argv, environment or paths.
+             */
+            document: {
+                [key: string]: unknown;
+            };
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            } | null;
+            /** Evidence Digest */
+            evidence_digest: string | null;
+        };
+        /** AccountingCaptureRefRead */
+        AccountingCaptureRefRead: {
+            /** Id */
+            id: number;
+            /** Version */
+            version: string;
+            /** Source */
+            source: string;
+            /** Recorded At */
+            recorded_at: string;
+        };
+        /** AccountingCohortRead */
+        AccountingCohortRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "backfill" | "repricing";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "BUILDING" | "CLOSED";
+            /** Expected */
+            expected: number;
+            /** Built */
+            built: number;
+            /** Selection Digest */
+            selection_digest: string;
+            /** Scenario Digest */
+            scenario_digest: string | null;
+            /** Reference Set Digest */
+            reference_set_digest: string | null;
+            /** Basis */
+            basis: string | null;
+            /** Retrospective */
+            retrospective: boolean | null;
+            /** Created At */
+            created_at: string;
+            /** Closed At */
+            closed_at: string | null;
+        };
+        /** AccountingCohortRefRead */
+        AccountingCohortRefRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** AccountingComponentRead */
+        AccountingComponentRead: {
+            /** Key */
+            key: string;
+            /** Grain */
+            grain: string;
+            /** Parent Key */
+            parent_key: string | null;
+            /** Inclusion */
+            inclusion: string | null;
+            /** Reported Model */
+            reported_model: string | null;
+            /** Model Source */
+            model_source: string | null;
+            /** Semantics */
+            semantics: string | null;
+            /** Coverage */
+            coverage: string;
+            /** Input Tokens */
+            input_tokens: number | null;
+            /** Cache Read Tokens */
+            cache_read_tokens: number | null;
+            /** Cache Write Tokens */
+            cache_write_tokens: number | null;
+            /** Write 5M */
+            write_5m: number | null;
+            /** Write 1H */
+            write_1h: number | null;
+            /** Output Tokens */
+            output_tokens: number | null;
+            /** Reasoning Tokens */
+            reasoning_tokens: number | null;
+            /** Reasons */
+            reasons: string[];
+        };
+        /** AccountingCoverageRead */
+        AccountingCoverageRead: {
+            /**
+             * Invocations
+             * @description Invocation rows in scope and selection, not-invoked included.
+             */
+            invocations: number;
+            /**
+             * Expected
+             * @description Invocations except not-invoked: the denominator of usage and spend.
+             */
+            expected: number;
+            launch: components["schemas"]["AccountingLaunchCountsRead"];
+            /** Captured */
+            captured: number;
+            usage: components["schemas"]["AccountingUsageCountsRead"];
+            valuation: components["schemas"]["AccountingValuationCountsRead"];
+            /** Unpriced Reasons */
+            unpriced_reasons: {
+                [key: string]: number;
+            };
+            /**
+             * Outside Selection
+             * @description Cohort policy: invocations in the filters but not members.
+             */
+            outside_selection: number | null;
+            /** Full Scope Priced */
+            full_scope_priced: boolean;
+        };
+        /** AccountingFiltersRead */
+        AccountingFiltersRead: {
+            /** Root */
+            root?: string | null;
+            /** Phase */
+            phase?: string | null;
+            /** Task */
+            task?: string | null;
+            /** Provider */
+            provider?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Purpose */
+            purpose?: string | null;
+            /** Source Kind */
+            source_kind?: ("managed_attempt" | "preparation_step" | "configuration_assistance") | null;
+            /** Outcome */
+            outcome?: string | null;
+            /** Launch */
+            launch?: ("pending" | "not_invoked" | "observed" | "unknown_execution") | null;
+            /** Requested Model */
+            requested_model?: string | null;
+            /** Effective Model */
+            effective_model?: string | null;
+            /** Effective Model Kind */
+            effective_model_kind?: ("reported" | "mixed" | "unknown") | null;
+            /**
+             * Work
+             * @description With a phase and no explicit work, the phase-work default: conversations and setup are excluded.
+             */
+            work?: ("task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other")[] | null;
+            /**
+             * Started From
+             * @description UTC invocation start, inclusive.
+             */
+            started_from?: string | null;
+            /**
+             * Started Before
+             * @description UTC invocation start, exclusive.
+             */
+            started_before?: string | null;
+        };
+        /** AccountingGroupRead */
+        AccountingGroupRead: {
+            coverage: components["schemas"]["AccountingCoverageRead"];
+            /** Tokens */
+            tokens: {
+                [key: string]: components["schemas"]["AccountingTokenSumRead"];
+            };
+            cache_hit: components["schemas"]["AccountingCacheHitRead"];
+            wall_throughput: components["schemas"]["AccountingThroughputRead"];
+            /**
+             * Amounts
+             * @description Only identical unit/platform/product/scheme/basis/counterfactual/retrospective valuations are added.
+             */
+            amounts: components["schemas"]["AccountingAmountRead"][];
+            /** Key */
+            key: string | null;
+            /**
+             * Key Kind
+             * @enum {string}
+             */
+            key_kind: "value" | "unknown" | "reported" | "mixed";
+            /**
+             * Root
+             * @description Phase and task groups are keyed within their root (and phase).
+             */
+            root: string | null;
+            /** Phase Code */
+            phase_code: string | null;
+        };
+        /** AccountingGroupsRead */
+        AccountingGroupsRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "accounting-aggregate-1";
+            /**
+             * Dimension
+             * @enum {string}
+             */
+            dimension: "provider" | "effective_model" | "requested_model" | "role" | "purpose" | "work" | "source_kind" | "root" | "phase" | "task" | "day" | "outcome" | "launch";
+            /**
+             * Order
+             * @enum {string}
+             */
+            order: "invocations" | "key";
+            filters: components["schemas"]["AccountingFiltersRead"];
+            selection: components["schemas"]["AccountingSelectionRead"];
+            /** Items */
+            items: components["schemas"]["AccountingGroupRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** AccountingIndicatorRead */
+        AccountingIndicatorRead: {
+            /** Unit */
+            unit: string;
+            /** Platform */
+            platform: string | null;
+            /** Product */
+            product: string | null;
+            /** Scheme */
+            scheme: string;
+            /** Basis */
+            basis: string;
+            /** Counterfactual */
+            counterfactual: boolean;
+            /** Retrospective */
+            retrospective: boolean;
+            /** @description All attempted task work: revisions, reviews, retries. */
+            total: components["schemas"]["AccountingAmountPairRead"];
+            /** @description Work of committed tasks only. */
+            committed_work: components["schemas"]["AccountingAmountPairRead"];
+            /**
+             * Per Committed Task
+             * @description Total / committed tasks, half-even to 12 places.
+             */
+            per_committed_task: string | null;
+            /** Per Attempted Task */
+            per_attempted_task: string | null;
+            /** Committed Work Per Committed Task */
+            committed_work_per_committed_task: string | null;
+        };
+        /** AccountingInvocationDetailRead */
+        AccountingInvocationDetailRead: {
+            /** Id */
+            id: string;
+            /**
+             * Source Kind
+             * @enum {string}
+             */
+            source_kind: "managed_attempt" | "preparation_step" | "configuration_assistance";
+            /** Source Id */
+            source_id: string;
+            /** Run Id */
+            run_id: string | null;
+            /** Attempt Id */
+            attempt_id: string | null;
+            /** Preparation Id */
+            preparation_id: string | null;
+            /** Preparation Step Id */
+            preparation_step_id: string | null;
+            /** Operation Id */
+            operation_id: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Root */
+            root: string | null;
+            /** Project Id */
+            project_id: string | null;
+            /** Phase Code */
+            phase_code: string | null;
+            /** Task Id */
+            task_id: string | null;
+            /** Purpose */
+            purpose: string;
+            /**
+             * Work
+             * @enum {string}
+             */
+            work: "task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other";
+            /** Role */
+            role: string;
+            /** Agent */
+            agent: string | null;
+            /** Provider */
+            provider: string | null;
+            /** Requested Model */
+            requested_model: string | null;
+            /** Requested Effort */
+            requested_effort: string | null;
+            /** Effective Model */
+            effective_model: string | null;
+            /**
+             * Effective Model Kind
+             * @enum {string}
+             */
+            effective_model_kind: "reported" | "mixed" | "unknown";
+            /**
+             * Launch
+             * @enum {string}
+             */
+            launch: "pending" | "not_invoked" | "observed" | "unknown_execution";
+            /** Outcome */
+            outcome: string | null;
+            /** Started At */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Wall Ms */
+            wall_ms: number | null;
+            /** @description Latest append-only capture. */
+            capture: components["schemas"]["AccountingCaptureRefRead"] | null;
+            usage: components["schemas"]["AccountingInvocationUsageRead"];
+            /** In Selection */
+            in_selection: boolean;
+            /**
+             * Valuations
+             * @description Valuations chosen by the selection policy.
+             */
+            valuations: components["schemas"]["AccountingValuationBriefRead"][];
+            /** Unpriced Reason */
+            unpriced_reason: string | null;
+            selection: components["schemas"]["AccountingSelectionRead"];
+            /** Versions */
+            versions: {
+                [key: string]: unknown;
+            };
+            /** Binding */
+            binding: {
+                [key: string]: unknown;
+            } | null;
+            /** Binding Sha256 */
+            binding_sha256: string | null;
+            /** Captures */
+            captures: number;
+            capture_document: components["schemas"]["AccountingCaptureDocumentRead"] | null;
+            /**
+             * Components
+             * @description Alternative views; never added together.
+             */
+            components: components["schemas"]["AccountingComponentRead"][];
+        };
+        /** AccountingInvocationRead */
+        AccountingInvocationRead: {
+            /** Id */
+            id: string;
+            /**
+             * Source Kind
+             * @enum {string}
+             */
+            source_kind: "managed_attempt" | "preparation_step" | "configuration_assistance";
+            /** Source Id */
+            source_id: string;
+            /** Run Id */
+            run_id: string | null;
+            /** Attempt Id */
+            attempt_id: string | null;
+            /** Preparation Id */
+            preparation_id: string | null;
+            /** Preparation Step Id */
+            preparation_step_id: string | null;
+            /** Operation Id */
+            operation_id: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Root */
+            root: string | null;
+            /** Project Id */
+            project_id: string | null;
+            /** Phase Code */
+            phase_code: string | null;
+            /** Task Id */
+            task_id: string | null;
+            /** Purpose */
+            purpose: string;
+            /**
+             * Work
+             * @enum {string}
+             */
+            work: "task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other";
+            /** Role */
+            role: string;
+            /** Agent */
+            agent: string | null;
+            /** Provider */
+            provider: string | null;
+            /** Requested Model */
+            requested_model: string | null;
+            /** Requested Effort */
+            requested_effort: string | null;
+            /** Effective Model */
+            effective_model: string | null;
+            /**
+             * Effective Model Kind
+             * @enum {string}
+             */
+            effective_model_kind: "reported" | "mixed" | "unknown";
+            /**
+             * Launch
+             * @enum {string}
+             */
+            launch: "pending" | "not_invoked" | "observed" | "unknown_execution";
+            /** Outcome */
+            outcome: string | null;
+            /** Started At */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Wall Ms */
+            wall_ms: number | null;
+            /** @description Latest append-only capture. */
+            capture: components["schemas"]["AccountingCaptureRefRead"] | null;
+            usage: components["schemas"]["AccountingInvocationUsageRead"];
+            /** In Selection */
+            in_selection: boolean;
+            /**
+             * Valuations
+             * @description Valuations chosen by the selection policy.
+             */
+            valuations: components["schemas"]["AccountingValuationBriefRead"][];
+            /** Unpriced Reason */
+            unpriced_reason: string | null;
+        };
+        /** AccountingInvocationUsageRead */
+        AccountingInvocationUsageRead: {
+            /**
+             * Coverage
+             * @description Null when not invoked.
+             */
+            coverage: ("complete" | "partial" | "absent") | null;
+            /** Partition */
+            partition: string | null;
+            /** Delegation */
+            delegation: string | null;
+            /** Charges Complete */
+            charges_complete: boolean | null;
+            /** Reasons */
+            reasons: string[];
+            /** Tokens */
+            tokens: {
+                [key: string]: number | null;
+            };
+        };
+        /** AccountingInvocationsRead */
+        AccountingInvocationsRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "accounting-aggregate-1";
+            filters: components["schemas"]["AccountingFiltersRead"];
+            selection: components["schemas"]["AccountingSelectionRead"];
+            /** Items */
+            items: components["schemas"]["AccountingInvocationRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** AccountingLaunchCountsRead */
+        AccountingLaunchCountsRead: {
+            /** Pending */
+            pending: number;
+            /** Not Invoked */
+            not_invoked: number;
+            /** Observed */
+            observed: number;
+            /** Unknown Execution */
+            unknown_execution: number;
+        };
+        /** AccountingLineRead */
+        AccountingLineRead: {
+            /** Number */
+            number: number;
+            /** Component Key */
+            component_key: string;
+            /** Category */
+            category: string;
+            /** Quantity */
+            quantity: number;
+            /** Rate */
+            rate: {
+                [key: string]: unknown;
+            };
+            /** Factors */
+            factors: unknown[];
+            /** Included Adjustments */
+            included_adjustments: unknown[];
+            /** Tariff Reference */
+            tariff_reference: string;
+            /** Identity Reference */
+            identity_reference: string | null;
+            /** Rate Case */
+            rate_case: string;
+            /**
+             * Exact Amount
+             * @description Exact decimal string; never a binary float.
+             */
+            exact_amount: string;
+        };
+        /** AccountingReferenceRead */
+        AccountingReferenceRead: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Format */
+            format: string;
+            /** Source */
+            source: string;
+            /** Provider */
+            provider: string | null;
+            /** Product */
+            product: string | null;
+            /** Model */
+            model: string | null;
+            /** Observed At */
+            observed_at: string | null;
+        };
+        /** AccountingSelectionRead */
+        AccountingSelectionRead: {
+            /**
+             * Policy
+             * @description Original admission-bound valuation per invocation, or the frozen membership of one named cohort.
+             * @enum {string}
+             */
+            policy: "admission" | "cohort";
+            cohort: components["schemas"]["AccountingCohortRead"] | null;
+            /**
+             * Complete
+             * @description False while the cohort is BUILDING: no full amount is available.
+             */
+            complete: boolean;
+        };
+        /** AccountingSummaryRead */
+        AccountingSummaryRead: {
+            coverage: components["schemas"]["AccountingCoverageRead"];
+            /** Tokens */
+            tokens: {
+                [key: string]: components["schemas"]["AccountingTokenSumRead"];
+            };
+            cache_hit: components["schemas"]["AccountingCacheHitRead"];
+            wall_throughput: components["schemas"]["AccountingThroughputRead"];
+            /**
+             * Amounts
+             * @description Only identical unit/platform/product/scheme/basis/counterfactual/retrospective valuations are added.
+             */
+            amounts: components["schemas"]["AccountingAmountRead"][];
+            /**
+             * Format
+             * @constant
+             */
+            format: "accounting-aggregate-1";
+            filters: components["schemas"]["AccountingFiltersRead"];
+            selection: components["schemas"]["AccountingSelectionRead"];
+        };
+        /** AccountingTaskCountsRead */
+        AccountingTaskCountsRead: {
+            /** Attempted */
+            attempted: number;
+            /**
+             * Committed
+             * @description Attempted tasks with a verified COMMITTED acceptance.
+             */
+            committed: number;
+            /** Acceptance Unknown */
+            acceptance_unknown: number;
+            /** Not Committed */
+            not_committed: number;
+        };
+        /** AccountingTasksRead */
+        AccountingTasksRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "accounting-aggregate-1";
+            filters: components["schemas"]["AccountingFiltersRead"];
+            selection: components["schemas"]["AccountingSelectionRead"];
+            tasks: components["schemas"]["AccountingTaskCountsRead"];
+            coverage: components["schemas"]["AccountingCoverageRead"];
+            committed_coverage: components["schemas"]["AccountingCoverageRead"];
+            /** Indicators */
+            indicators: components["schemas"]["AccountingIndicatorRead"][];
+        };
+        /** AccountingThroughputRead */
+        AccountingThroughputRead: {
+            /** Output Tokens */
+            output_tokens: number;
+            /** Wall Ms */
+            wall_ms: number;
+            /**
+             * Invocations
+             * @description Complete usage with output and a positive measured wall duration.
+             */
+            invocations: number;
+            /** Excluded */
+            excluded: number;
+            /**
+             * Output Tokens Per Wall Second
+             * @description Wall throughput, not generation speed.
+             */
+            output_tokens_per_wall_second: number | null;
+        };
+        /** AccountingTokenSumRead */
+        AccountingTokenSumRead: {
+            /**
+             * Sum
+             * @description Null when no invocation contributes: absence, not zero.
+             */
+            sum: number | null;
+            /** Invocations */
+            invocations: number;
+            /**
+             * Partial
+             * @description Contributing invocations whose usage is a partial subtotal.
+             */
+            partial: number;
+        };
+        /** AccountingUsageCountsRead */
+        AccountingUsageCountsRead: {
+            /** Complete */
+            complete: number;
+            /** Partial */
+            partial: number;
+            /** Absent */
+            absent: number;
+        };
+        /** AccountingValuationBriefRead */
+        AccountingValuationBriefRead: {
+            /** Id */
+            id: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "admission" | "backfill" | "repricing";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "complete" | "incomplete" | "unsupported";
+            /** Unit */
+            unit: string;
+            /** Platform */
+            platform: string | null;
+            /** Product */
+            product: string | null;
+            /** Scheme */
+            scheme: string;
+            /** Basis */
+            basis: string;
+            /** Counterfactual */
+            counterfactual: boolean;
+            /** Retrospective */
+            retrospective: boolean;
+            /** Amount */
+            amount: string | null;
+            /** Known Subtotal */
+            known_subtotal: string | null;
+            /** Reasons */
+            reasons: string[];
+            /** Warnings */
+            warnings: string[];
+            /**
+             * Discrepancy
+             * @description Comparison status against the client-reported estimate.
+             */
+            discrepancy: string | null;
+        };
+        /** AccountingValuationCountsRead */
+        AccountingValuationCountsRead: {
+            /** Complete */
+            complete: number;
+            /** Incomplete */
+            incomplete: number;
+            /** Unsupported */
+            unsupported: number;
+            /** Unpriced */
+            unpriced: number;
+        };
+        /** AccountingValuationRead */
+        AccountingValuationRead: {
+            /** Id */
+            id: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "admission" | "backfill" | "repricing";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "complete" | "incomplete" | "unsupported";
+            /** Unit */
+            unit: string;
+            /** Platform */
+            platform: string | null;
+            /** Product */
+            product: string | null;
+            /** Scheme */
+            scheme: string;
+            /** Basis */
+            basis: string;
+            /** Counterfactual */
+            counterfactual: boolean;
+            /** Retrospective */
+            retrospective: boolean;
+            /** Amount */
+            amount: string | null;
+            /** Known Subtotal */
+            known_subtotal: string | null;
+            /** Reasons */
+            reasons: string[];
+            /** Warnings */
+            warnings: string[];
+            /**
+             * Discrepancy
+             * @description Comparison status against the client-reported estimate.
+             */
+            discrepancy: string | null;
+            /** Capture Id */
+            capture_id: number;
+            /** Normalization */
+            normalization: string;
+            /** Calculator */
+            calculator: string;
+            /** Profile Digest */
+            profile_digest: string;
+            /** Reference Set Digest */
+            reference_set_digest: string;
+            /** Scenario Digest */
+            scenario_digest: string;
+            /** Evidence Digest */
+            evidence_digest: string;
+            /** Scenario */
+            scenario: {
+                [key: string]: unknown;
+            };
+            /** Exact Sum */
+            exact_sum: string | null;
+            /** Rounding Adjustment */
+            rounding_adjustment: string | null;
+            /** Selected Components */
+            selected_components: unknown[];
+            /** Discrepancy Detail */
+            discrepancy_detail: {
+                [key: string]: unknown;
+            } | null;
+            /** Supersedes */
+            supersedes: string | null;
+            /** Recorded At */
+            recorded_at: string;
+            /** Cohorts */
+            cohorts: components["schemas"]["AccountingCohortRefRead"][];
+            /** Lines */
+            lines: components["schemas"]["AccountingLineRead"][];
+            /** References */
+            references: components["schemas"]["AccountingReferenceRead"][];
         };
         /** AgentPresetRead */
         AgentPresetRead: {
@@ -4870,6 +5922,24 @@ export interface components {
             /** Profile Sha256 */
             profile_sha256: string;
         };
+        /** Page[AccountingCohortRead] */
+        Page_AccountingCohortRead_: {
+            /** Items */
+            items: components["schemas"]["AccountingCohortRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[AccountingValuationRead] */
+        Page_AccountingValuationRead_: {
+            /** Items */
+            items: components["schemas"]["AccountingValuationRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
         /** Page[AttemptMetricRead] */
         Page_AttemptMetricRead_: {
             /** Items */
@@ -4919,6 +5989,15 @@ export interface components {
         Page_PhaseTaskRead_: {
             /** Items */
             items: components["schemas"]["PhaseTaskRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[ReferenceBundleRead] */
+        Page_ReferenceBundleRead_: {
+            /** Items */
+            items: components["schemas"]["ReferenceBundleRead"][];
             /** Offset */
             offset: number;
             /** Next Offset */
@@ -6421,6 +7500,100 @@ export interface components {
             sha256: string;
             /** Source */
             source: string;
+        };
+        /** ReferenceBundleImport */
+        ReferenceBundleImport: {
+            /** Content */
+            content: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** ReferenceBundleInput */
+        ReferenceBundleInput: {
+            /** Content */
+            content: string;
+        };
+        /**
+         * ReferenceBundleRead
+         * @description D263: an available `metrics-reference-1` bundle (packaged or imported); listing never inserts rows.
+         */
+        ReferenceBundleRead: {
+            /** Id */
+            id: string;
+            /** Source */
+            source: string;
+            /** Recorded At */
+            recorded_at: string | null;
+            /** Available */
+            available: boolean;
+            /** References */
+            references: number;
+            /** Providers */
+            providers: string[];
+            /** Models */
+            models: string[];
+            /** Observed From */
+            observed_from: string | null;
+            /** Observed To */
+            observed_to: string | null;
+            /**
+             * Effective Period
+             * @enum {string}
+             */
+            effective_period: "unknown" | "known" | "mixed";
+            /** Schemes */
+            schemes: components["schemas"]["ReferenceSchemeRead"][];
+        };
+        /**
+         * ReferenceImportRead
+         * @description `sha256` seals bundle, raw bytes, count and conflicts; row counts are informative (D263).
+         */
+        ReferenceImportRead: {
+            /**
+             * Operation
+             * @constant
+             */
+            operation: "reference-import";
+            /** Bundle */
+            bundle: string;
+            /** Raw Sha256 */
+            raw_sha256: string;
+            /** References */
+            references: number;
+            /** Conflicts */
+            conflicts: string[];
+            /** Sha256 */
+            sha256: string;
+            /** New Rows */
+            new_rows: number;
+            /** Existing Rows */
+            existing_rows: number;
+            /** Inserted Rows */
+            inserted_rows?: number | null;
+        };
+        /**
+         * ReferenceSchemeRead
+         * @description One tariff scheme a billing profile can pin: its identity, bases, models and case conditions.
+         */
+        ReferenceSchemeRead: {
+            /** Provider */
+            provider: string;
+            /** Platform */
+            platform: string;
+            /** Product */
+            product: string;
+            /** Scheme */
+            scheme: string;
+            /** Unit */
+            unit: string;
+            /** Bases */
+            bases: string[];
+            /** Models */
+            models: string[];
+            /** Conditions */
+            conditions: {
+                [key: string]: string[];
+            };
         };
         /** RegeneratedDocumentRead */
         RegeneratedDocumentRead: {
@@ -11743,6 +12916,505 @@ export interface operations {
             };
         };
     };
+    managed_accounting_summary: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                provider?: string | null;
+                role?: string | null;
+                purpose?: string | null;
+                source_kind?: ("managed_attempt" | "preparation_step" | "configuration_assistance") | null;
+                outcome?: string | null;
+                launch?: ("pending" | "not_invoked" | "observed" | "unknown_execution") | null;
+                requested_model?: string | null;
+                effective_model?: string | null;
+                effective_model_kind?: ("reported" | "mixed" | "unknown") | null;
+                work?: ("task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other")[] | null;
+                started_from?: string | null;
+                started_before?: string | null;
+                cohort?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingSummaryRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accounting_groups: {
+        parameters: {
+            query: {
+                dimension: "provider" | "effective_model" | "requested_model" | "role" | "purpose" | "work" | "source_kind" | "root" | "phase" | "task" | "day" | "outcome" | "launch";
+                order?: "invocations" | "key";
+                offset?: number;
+                limit?: number;
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                provider?: string | null;
+                role?: string | null;
+                purpose?: string | null;
+                source_kind?: ("managed_attempt" | "preparation_step" | "configuration_assistance") | null;
+                outcome?: string | null;
+                launch?: ("pending" | "not_invoked" | "observed" | "unknown_execution") | null;
+                requested_model?: string | null;
+                effective_model?: string | null;
+                effective_model_kind?: ("reported" | "mixed" | "unknown") | null;
+                work?: ("task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other")[] | null;
+                started_from?: string | null;
+                started_before?: string | null;
+                cohort?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingGroupsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accounting_tasks: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                provider?: string | null;
+                role?: string | null;
+                purpose?: string | null;
+                source_kind?: ("managed_attempt" | "preparation_step" | "configuration_assistance") | null;
+                outcome?: string | null;
+                launch?: ("pending" | "not_invoked" | "observed" | "unknown_execution") | null;
+                requested_model?: string | null;
+                effective_model?: string | null;
+                effective_model_kind?: ("reported" | "mixed" | "unknown") | null;
+                work?: ("task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other")[] | null;
+                started_from?: string | null;
+                started_before?: string | null;
+                cohort?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingTasksRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accounting_invocations: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                provider?: string | null;
+                role?: string | null;
+                purpose?: string | null;
+                source_kind?: ("managed_attempt" | "preparation_step" | "configuration_assistance") | null;
+                outcome?: string | null;
+                launch?: ("pending" | "not_invoked" | "observed" | "unknown_execution") | null;
+                requested_model?: string | null;
+                effective_model?: string | null;
+                effective_model_kind?: ("reported" | "mixed" | "unknown") | null;
+                work?: ("task_first_pass" | "task_rework" | "phase" | "conversation" | "setup" | "other")[] | null;
+                started_from?: string | null;
+                started_before?: string | null;
+                cohort?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingInvocationsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accounting_invocation: {
+        parameters: {
+            query?: {
+                cohort?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                invocation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingInvocationDetailRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accounting_valuations: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                invocation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AccountingValuationRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accounting_cohorts: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AccountingCohortRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
     managed_conversations: {
         parameters: {
             query?: never;
@@ -14347,6 +16019,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConfigurationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_references: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ReferenceBundleRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_references_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferenceBundleInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceImportRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_references_import: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferenceBundleImport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceImportRead"];
                 };
             };
             /** @description Forbidden */

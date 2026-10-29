@@ -363,6 +363,8 @@ export function SaveImpact({ preview }: { preview: { impact?: string[]; changes?
   if (!isObject(effects)) return null;
   const projects: Obj[] = Array.isArray(effects.projects) ? effects.projects.filter(isObject) : [];
   const jobs = Array.isArray(effects.jobs) ? effects.jobs.length : 0;
+  // D263: roles whose inherited global billing default would resolve as unknown (reported, not refused).
+  const unknown: Obj[] = Array.isArray(effects.billing_unknown) ? effects.billing_unknown.filter(isObject) : [];
   const global = (preview.impact ?? []).includes("global");
   const derived = (preview.changes ?? []).map(change => change.scope).filter((scope): scope is string => typeof scope === "string" && scope !== "global");
   return <div className="save-impact">
@@ -371,6 +373,8 @@ export function SaveImpact({ preview }: { preview: { impact?: string[]; changes?
       {global && <li>{t(derived.length ? "editor.impact_derived" : "editor.impact_global_only", { scopes: derived.join(", ") })}</li>}
       {projects.filter(project => !global || project.preparation_required).map(project => <li key={String(project.scope)}>
         <code>{String(project.scope)}</code> · {t(project.preparation_required ? "editor.impact_preparation" : "editor.impact_reuse")}</li>)}
+      {unknown.map(item => <li key={`${String(item.scope)}:${String(item.role)}`} className="state state-attention">
+        <code>{String(item.scope)}</code> · {t("billing.impact_unknown", { role: String(item.role), name: item.profile ? String(item.profile) : t("billing.no_default") })}</li>)}
       <li>{t("editor.impact_frozen", { count: jobs })}</li>
     </ul>
   </div>;

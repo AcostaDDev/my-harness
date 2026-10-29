@@ -107,6 +107,20 @@ freezes active clients and authorized context. The reviewer returns a proposal i
 can inspect a private scope without global file writes, commands, installs or network. Applying a result changes
 only the draft. Job/client snapshots admitted earlier are never rewritten or silently replaced.
 
+Billing metadata (P001-T003, [D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives))
+is an explicit new-format save: global `local-config-10` adds `billing.profiles` and `billing.defaults` by configured
+role, project `project-config-2` adds `billing` selections. v9/v1 documents are never converted on load. Billing is
+validated separately, removed before the runtime is composed and excluded from the technical receipt binding, so a
+billing-only edit keeps a compatible receipt; it never selects authentication. Queued work keeps the revision frozen at
+its admission; assistance binds the active revision of its confirmed preview. The guided editors (P001-T005b,
+[D265](../DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review)) convert only through an
+explicit button shown in the save diff. A validated save preview refuses (`billing_configuration_refused`, naming
+setting and project) a profile pinning an unavailable bundle and an explicit project selection its global revision —
+or the global candidate of the same save, including derived copies — lacks or gives another provider; roles whose
+inherited default would resolve as unknown are listed in `effects.billing_unknown`. Reference bundles are listed and
+imported through `/api/managed/configuration/references*` with an exact preview; an import writes immutable reference
+rows, not a configuration revision, and a profile adopts a bundle only through a confirmed save.
+
 Formats 1–8 retain entry and hashes. Explicit import previews source/hash/effective registry, saves a v9 global
 and project drafts together, and retains legacy authority until every converted profile is newly prepared,
 confirmed and promoted on restart. Old recipe receipts are not converted. This converts product configuration,
@@ -114,7 +128,7 @@ separately from onboarding source code. Conflicts and incomplete permissions blo
 
 Recovery compares journaled bytes and requires explicit stopped-writer confirmation where applicable; no timeout,
 GET or reload certifies death or retries effects. Browser drafts and exact request envelopes survive conflicts in
-the tab; retries are explicit. Backup format 2 inventories TOML versions, working copies, intents and referenced
-evidence under explicitly authorized roots. Restore reads its own verified bundle without original paths or
+the tab; retries are explicit. Backup format 2 (format 3 since schema 0028) inventories TOML versions, working
+copies, intents and referenced evidence under explicitly authorized roots. Restore reads its own verified bundle without original paths or
 clients; mutations, assistance, preparation and activation remain disabled. Format 1 without new configuration
 remains readable. Consultation does not certify that historical writers stopped.

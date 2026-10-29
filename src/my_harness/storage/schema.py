@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0027_profile_proposals"
+SCHEMA_REVISION = "0028_usage_accounting"
 
 
 def require_schema(engine: Engine) -> None:
@@ -27,7 +27,9 @@ def require_schema(engine: Engine) -> None:
                           "run_projection_stops", "run_projection_cycles", "run_projection_diff_chunks",
                           "run_projection_reports", "run_projection_cases", "product_preferences",
                           "product_preference_events", "project_work_languages", "configuration_scopes",
-                          "configuration_revisions", "configuration_operations"):
+                          "configuration_revisions", "configuration_operations", "usage_invocations", "usage_captures",
+                          "usage_components", "metrics_references", "usage_valuations", "usage_valuation_lines",
+                          "valuation_cohorts", "valuation_cohort_members"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
     except SQLAlchemyError as error:
         raise RuntimeError(tr('database.not_prepared')) from error

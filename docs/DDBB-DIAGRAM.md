@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0027_profile_proposals`, 54 tables, defined in
+SQLite schema of the local service: Alembic head `0028_usage_accounting`, 62 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -921,7 +921,8 @@ table and the column ([flow](flows/project-work-language.md)).
 ## Versioned configuration
 
 Alembic `0026_configuration` adds the three tables below; `0027_profile_proposals` makes registered-project
-`composition` and `profile` nullable for documentary intake. Current head: `0027_profile_proposals`, **54 tables**.
+`composition` and `profile` nullable for documentary intake. `0028_usage_accounting` adds the
+[accounting records](#p001-accounting-records) (**62 tables**).
 References to saved/active/pending revisions are checked transactionally by the service; revision numbers are
 scoped composite keys. The content authority is immutable private TOML, while SQLite owns executable references.
 
@@ -982,3 +983,189 @@ Own configuration authority is in scope references, while nullable registry comp
 Jobs seal project revision/hash and environment receipt in `versions_json`; earlier snapshots retain their bytes.
 A backup inventory covers all three tables plus referenced configuration/evidence. Restore keeps the existing
 query-only mark and execution disabled, without interpreting original paths as writable destinations.
+
+## P001 accounting records
+
+<a id="planned-p001-accounting-records-not-implemented"></a>
+Alembic `0028_usage_accounting` (P001-T003, [D254–D257](DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
+[D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)) adds eight tables;
+current head `0028_usage_accounting`, 62 tables. The migration only creates them: it never backfills or reprices,
+and its downgrade refuses while any accounting row exists. Existing metrics, histories and configuration bytes are
+unchanged. T004's bounded read-only queries/API (`storage/accounting_views.py`, D262) read these rows without a schema
+change ([flow](flows/metrics-accounting.md)).
+
+```mermaid
+erDiagram
+    usage_invocations {
+        string id PK "source_kind:source_id"
+        string source_kind "managed_attempt|preparation_step|configuration_assistance"
+        string source_id
+        string attempt_id FK "null; → managed_attempts.id"
+        string run_id FK "null; → managed_runs.id"
+        string preparation_id FK "null; → project_preparation_operations.id"
+        string preparation_step_id FK "null; → project_preparation_steps.id"
+        string operation_id FK "null; → configuration_operations.id"
+        string request_id "null"
+        string root "null"
+        string project_id "null"
+        string phase_code "null"
+        string task_id "null"
+        string purpose
+        string role
+        string agent "null"
+        string requested_model "null"
+        string requested_effort "null"
+        json versions
+        json binding "null; billing-binding-1"
+        string binding_sha256 "null"
+        string launch "pending|not_invoked|observed|unknown_execution"
+        string outcome "null"
+        string started_at
+        string finished_at "null"
+        string recorded_at
+        string updated_at
+    }
+    usage_captures {
+        integer id PK
+        string invocation_id FK "→ usage_invocations.id"
+        string version "usage-capture-1|legacy-metrics-1"
+        string digest
+        json document
+        json evidence "null; usage-accounting-1"
+        string evidence_digest "null"
+        string source "capture|backfill"
+        string recorded_at
+    }
+    usage_components {
+        integer capture_id PK, FK "→ usage_captures.id"
+        string key PK
+        string grain "invocation_total|model_total|request"
+        string parent_key "null"
+        string inclusion "null"
+        string reported_model "null"
+        string model_source "null"
+        string semantics "null"
+        string coverage
+        integer input_tokens "null"
+        integer cache_read_tokens "null"
+        integer cache_write_tokens "null"
+        integer write_5m "null"
+        integer write_1h "null"
+        integer output_tokens "null"
+        integer reasoning_tokens "null"
+        json reasons
+    }
+    metrics_references {
+        string id PK "SHA-256 of canonical content"
+        string kind "model_identity|tariff|bundle"
+        string format
+        text content
+        string source "packaged|import"
+        string provider "null"
+        string product "null"
+        string model "null"
+        string observed_at "null"
+        string recorded_at
+    }
+    usage_valuations {
+        string id PK "digest of the valuation identity"
+        string invocation_id FK "→ usage_invocations.id"
+        integer capture_id FK "→ usage_captures.id"
+        string origin "admission|backfill|repricing"
+        string normalization
+        string calculator
+        string profile_digest
+        string reference_set_digest FK "→ metrics_references.id"
+        string basis
+        string scenario_digest
+        string evidence_digest
+        json scenario
+        string status "complete|incomplete|unsupported"
+        string unit
+        string scheme
+        string amount "null; decimal string"
+        string known_subtotal "null; decimal string"
+        text exact_sum "null"
+        text rounding_adjustment "null"
+        boolean counterfactual
+        boolean retrospective
+        json reasons
+        json warnings
+        json selected_components
+        json discrepancy "null"
+        string supersedes FK "null; → usage_valuations.id"
+        string recorded_at
+    }
+    usage_valuation_lines {
+        string valuation_id PK, FK "→ usage_valuations.id"
+        integer number PK
+        string component_key
+        string category
+        integer quantity
+        json rate
+        json factors
+        json included_adjustments
+        string tariff_reference FK "→ metrics_references.id"
+        string identity_reference FK "null; → metrics_references.id"
+        string rate_case
+        text exact_amount
+    }
+    valuation_cohorts {
+        string id PK
+        string name UK
+        string kind "backfill|repricing"
+        string idempotency_key UK
+        string request_sha256
+        json selection "frozen members"
+        string selection_digest
+        json scenario "null"
+        string scenario_digest "null"
+        string reference_set_digest FK "null; → metrics_references.id"
+        string status "BUILDING|CLOSED"
+        integer expected
+        integer built
+        string cursor "null"
+        json report "null"
+        string created_at
+        string closed_at "null"
+    }
+    valuation_cohort_members {
+        string cohort_id PK, FK "→ valuation_cohorts.id"
+        string invocation_id PK, FK "→ usage_invocations.id"
+        string basis PK
+        string valuation_id FK "null; → usage_valuations.id"
+        string reason "null"
+        string recorded_at
+    }
+    usage_invocations ||--o{ usage_captures : "invocation_id"
+    usage_captures ||--o{ usage_components : "capture_id"
+    usage_invocations ||--o{ usage_valuations : "invocation_id"
+    usage_captures ||--o{ usage_valuations : "capture_id"
+    usage_valuations ||--o{ usage_valuation_lines : "valuation_id"
+    metrics_references ||--o{ usage_valuations : "reference_set_digest"
+    metrics_references ||--o{ usage_valuation_lines : "tariff/identity"
+    valuation_cohorts ||--o{ valuation_cohort_members : "cohort_id"
+    usage_invocations ||--o{ valuation_cohort_members : "invocation_id"
+    usage_valuations ||--o{ valuation_cohort_members : "valuation_id"
+```
+
+Uniqueness: `usage_invocations` (source_kind, source_id); `usage_captures` (invocation_id, version, digest);
+`usage_valuations` (invocation_id, capture_id, normalization, calculator, profile_digest, reference_set_digest,
+basis, scenario_digest). Indexes: `ix_usage_invocations_scope` (root, phase_code, task_id) and
+`ix_usage_invocations_started` (started_at). Checks: source kind and launch vocabularies; the native link must match
+the source kind (`attempt_id = source_id` with a run, `preparation_step_id = source_id` with its operation, or
+`operation_id = source_id`); valuation status/origin; cohort kind/status; a member has exactly one of a valuation or
+an explicit reason.
+
+- An invocation is written with its native intent (attempt row, preparation `executor_intended`, assistance
+  INTENDED operation) and settled in the transaction that records the native result/capture. Lifecycle columns may
+  advance; captures, components, references, valuations, lines and closed memberships are append-only.
+- `binding` dereferences only the immutable configuration revision frozen at admission (`billing-binding-1`,
+  [D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)); null means no
+  billing-capable format was frozen. Global `local-config-10` owns `billing.profiles`/`billing.defaults`;
+  `project-config-2` may select profiles per configured role. Both are explicit new formats; v9/v1 keep their bytes.
+- References are content-addressed canonical JSON. A valuation stores its scenario, digests, exact sum and rounded
+  decimal strings; never SQLite REAL. Admission-bound valuations (`origin = admission`) are the default selection;
+  backfill/repricing values are only reachable through an explicit cohort membership.
+- Retention removes authorized stream bytes only; these rows never depend on them. Backup format 3 recomputes all
+  digests and the exact line sums in the same snapshot; an older-schema bundle needs the explicit upgraded copy.

@@ -23,6 +23,7 @@ from my_harness.storage.database import make_engine
 from my_harness.storage.managed import Conflict
 from my_harness.storage.models import (ProjectPreparationOperationRow as Operation, ProjectPreparationStepRow as Step,
                                          ManagedProcessRow as Process, CheckoutLockRow as Lock)
+from conftest import clear_accounting
 from test_definition import World, ready, DRAFTS
 import test_definition
 from test_project_creation import select_root, request
@@ -362,6 +363,7 @@ def test_migration_preserves_prior_job_process_and_exclusive_owner_constraints(p
         session.add(Lock(root='/synthetic-prior-lock',job_id=job))
         # 0025 refuses to drop a confirmed work language (D167); this test is about the 0021 constraints.
         session.execute(text('DELETE FROM project_work_languages'))
+    clear_accounting(database[0])  # 0028 likewise refuses to drop accounting records
     command.downgrade(database[1],'0021_project_creation')
     command.upgrade(database[1],'head')
     with Session(service.runtime.engine) as session:

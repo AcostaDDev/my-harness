@@ -13,7 +13,7 @@ from my_harness.adapters.cli_agents import EFFORTS
 from my_harness.adapters.cli_diagnostics import preflight_config
 from my_harness.i18n import tr
 from my_harness.services import local_config as legacy
-from my_harness.services.configuration import GLOBAL, parse
+from my_harness.services.configuration import GLOBAL, GLOBALS, parse, runtime
 from my_harness.services.managed_runtime import CONFIG_ENV, ManagedConfig, load_config
 from my_harness.storage.backup import is_read_only_archive, RESTORED_USER_VERSION
 from my_harness.storage.configuration import ConfigurationConflict, ConfigurationRepository, UNRESOLVED, live
@@ -101,8 +101,7 @@ class ConfigurationSetup:
                 text = self.repository.document('global', state['active']['revision'])
                 data = parse(text, 'global')
                 self.loaded = state['active']
-                candidate = copy.deepcopy(data)
-                candidate.setdefault('compositions', {})
+                candidate = runtime(data)
                 return legacy._build(candidate, self.directory / 'global.toml',
                                      allow_empty_compositions=True, editor=True)[0]
             if state['status'] == 'RECOVERY_REQUIRED' or state['version'] and not importing:
@@ -115,7 +114,7 @@ class ConfigurationSetup:
                     raise ValueError(tr('setup.invalid'))
                 # A v9 working copy alone is not authorized. Legacy remains a separate explicit input.
                 data = legacy._read(self.source)
-                if data.get('format') == GLOBAL:
+                if data.get('format') in GLOBALS:
                     return ManagedConfig()
                 config = legacy.build(data, self.source)
                 self.legacy = True

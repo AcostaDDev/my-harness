@@ -32,7 +32,9 @@ agents; its work language is English.
   completion separately from integration, distribution and installation; do not drop pending delivery (D242).
 - Work on a topic branch from `develop` (`<kind>/<topic>`); `main` only receives release merges. Check the current
   branch at the start of a session
-  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
+  ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)). One-off tasks are the
+  exception: they branch from the latest release on `main`, never from `develop`
+  ([D261](docs/DECISIONS.md#d261--one-off-tasks-branch-from-the-latest-release-not-from-develop)).
 - Never present as implemented what is only designed. Frozen histories, snapshots, catalogs and fingerprinted
   recipe sources are not rewritten.
 - When finishing: relevant checks, reviewed diff and current STATE/NEXT_STEPS/ONE_OFF_TASKS. Record durable
@@ -41,6 +43,23 @@ agents; its work language is English.
   Say what was tested and what was not.
 
 ## Commands (from the root; offline after the first installation)
+
+Prefer the quiet wrappers ([D260](docs/DECISIONS.md#d260--quiet-development-checks-and-economical-agent-workflow)).
+They print one line per suite plus failing IDs with their first error line, keep the full output in
+`.local/check/<suite>.log`, and exit nonzero on any failure:
+
+```sh
+scripts/check tests/product/test_x.py   # focused pytest only; options after `--`, e.g. -- -k name -n 0
+scripts/check                           # unittest, alembic check on a temporary SQLite, full pytest
+scripts/check --frontend                # adds the Node tests and the frontend build (which runs tsc)
+scripts/check-docs                      # local links/anchors, fences, en/es keys, DDBB head and table count
+```
+
+To save tokens: run the cheapest sufficient check first (focused paths, then the full suite only for shared code or
+at task closure), and inspect a log with `grep`/a line range instead of re-running verbosely. Read source and long
+documents by range or after `grep -n`, not whole. Do not write ad hoc link checkers; extend `scripts/check-docs`.
+
+The wrapped commands (direct `alembic check` uses `.local/harness.sqlite3`):
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_*.py'

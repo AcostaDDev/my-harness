@@ -8,12 +8,44 @@ first public snapshot is summarized below as the starting baseline; its decision
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md). It is the
 normally empty priority queue for bounded fixes/improvements outside roadmap phases
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work)).
-The queue contains **OT007**: task-run lease renewal and stream journal pressure, the wider issue OT006 scoped
-out. Its owner-confirmed delivery target is **0.1.8**, on `fix/ot007-task-run-lease` from `b8e1a90`. Source is
-qualified (2185 pytest cases passed); integration, release and offline installation remain pending
-([evidence](phase/OT007-task-run-lease.md), D252).
-It comes before the unchanged Metrics Records task P001-T001 (D246). OT001/OT002/OT003/OT005/OT004/OT006 were
-released separately as 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/**0.1.7** (D239). No Metrics task is complete.
+The one-off queue is **empty**. **OT008** (quiet development checks and agent workflow guidance, D260) was delivered
+source-only through `chore/ot008-development-checks` → `develop`/`origin`, with no release; it reaches `main`
+with the P001 closure (D261: later one-offs branch from the latest release, not `develop`). Develop with
+`scripts/check` and `scripts/check-docs` ([evidence](phase/OT008-development-checks.md)). **P001-T003**
+(capture, storage and historical compatibility) is complete and delivered through `feat/p001-t003-capture-storage`
+→ `develop`/`origin`. **P001-T004** (aggregates and API) is complete and delivered through `feat/p001-t004-aggregates-api`
+→ `develop`/`origin` ([T004 evidence](phase/P001-T004-aggregates-api.md), D262). **P001-T005** is split by [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) into **T005a** (accounting UI) and **T005b** (billing/reference
+controls); the split was recorded through `docs/p001-t005-split` → `develop`/`origin` before any T005 code.
+**P001-T005a** (read-only accounting page, D264) is complete and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin` ([T005a evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)).
+**P001-T005b** (billing-profile/reference controls, D265) is complete and delivered through
+`feat/p001-t005b-billing-controls` → `develop`/`origin` ([T005b evidence](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)), so **P001-T005 is complete**.
+**P001-T006** (qualification and phase handoff) is complete as source qualification on
+`chore/p001-t006-qualification` ([T006 evidence](phase/P001-T006-qualification.md)): every exit criterion maps to
+implementation and synthetic checks, an integrated capture → valuation → API/UI → retention → backup → query-only
+restore journey passes, one UI labelling defect was fixed, and the shared version metadata is the **0.1.9
+candidate** (offline distribution built and checked). It was delivered through that topic → `develop`/`origin`.
+**Next: the 0.1.9 release and P001 closure**, each separately authorized (release PR to `main`, tag,
+GitHub Release/archive verification, then closure); after that, P002 planning. No real provider or billing validation
+exists.
+OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
+0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). P001 targets **0.1.9 at phase closure**; P002 targets
+**0.2.0 at its closure** (D253).
+
+**OT007 / 0.1.8 (D252):** managed-run heartbeat renewal retries transient failures within the existing lease;
+stream chunks journal their events in one transaction; closing owners retain interrupted captures and settle
+process rows from independent liveness. Fencing, checkout exclusion, explicit confirm-stopped and histories remain
+unchanged. Source `df4d7dd`, develop integration `a6c0f28`, [PR #7](https://github.com/AcostaDDev/my-harness/pull/7),
+release merge/tag **`c005298` / `v0.1.8`**. The
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.8) archive and checksum match local
+assets byte for byte from both draft and public downloads; all inner hashes pass. Final full pytest:
+**2185 passed, 2 skipped, 29 subtests**; 230 frontend tests, 10 unittest cases, typecheck/build, temporary schema,
+distribution and installed-wheel checks passed. [Evidence](phase/OT007-task-run-lease.md).
+
+**Current operator installation:** 0.1.8 installed offline from the verified public package into the default paths,
+generation **`gen-bb9bf97436d64ba5b20196784c1e229a`**, READY; earlier generations retained. Service and writers were
+absent beforehand and the service remains **stopped**. Data/configuration file hashes are unchanged; schema head
+`0027_profile_proposals` needed no migration. The failed OT006 preparation stays FAILED; no project retry or
+configuration change was made. Start the service explicitly with `scripts/start` when ready.
 
 **OT006 / 0.1.7 (D251):** the failed preparation launched its Claude executor with no tools (`--tools ''`) and asked
 it to write. Generic preparation now refuses such a writer at preview and before launch. `output-guard-1` stops
@@ -26,7 +58,7 @@ byte for byte from the public URLs. Full pytest: **2166 passed, 2 skipped, 29 su
 10 unittest cases, typecheck, temporary schema, distribution build/check and installed-wheel checks passed.
 [Evidence](phase/OT006-preparation-consumption.md).
 
-**Operator installation:** at the owner's request, 0.1.7 was installed offline from the public package into the
+**OT006 installation history:** at the owner's request, 0.1.7 was installed offline from the public package into the
 default paths (generation `gen-8570ad96…`, READY; earlier generations kept). Nothing was running beforehand. The
 database was already at schema head `0027`, so no migration ran. The service was **not started**; start it with
 `scripts/start`. The failed OT006 preparation remains `FAILED`, and retrying it needs `Write`/`Edit` configured for
@@ -66,7 +98,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - **Engine.** Package `my_harness` with an explicit context per project, frozen task contracts, planning by the
   reviewer or deterministic from `NEXT_STEPS`, the execute → format → validate → review loop with a correction limit,
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
-- **Persistence and recovery.** SQLite schema `0027_profile_proposals` managed by Alembic; idempotent job queue
+- **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (on the T003 topic branch;
+  the published 0.1.8 and the operator installation remain at `0027_profile_proposals`); idempotent job queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
   a verified snapshot (D150). Derived run projection written with each history (D144).
@@ -104,8 +137,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   metrics, without project configuration, a checkout, execution polling or mutation controls
   ([flow](flows/backup-consultation.md)).
 - **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
-  member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
-  `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
+  member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup/upgrade, retention,
+  `metrics-backfill`, explicit accounting operations (T003) and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
   package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md). The repository is public;
   the protected `main` only carries releases merged from `develop` by pull request, and work goes through topic
   branches into `develop` (D235).
@@ -147,8 +180,9 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   freeze active clients/context; they cannot change machine-wide settings or earlier job snapshots.
 - Formats 1–8 preserve entry and hashes. Explicit conversion keeps legacy authority until converted profiles are
   newly prepared and the complete set is confirmed/promoted. Backup format 2 includes configuration versions,
-  working copies, intents and referenced evidence. Query-only restore uses bundle bytes without original roots,
-  clients or execution authority. Schema 0027 has 54 tables; data/flows are documented alongside the implementation.
+  working copies, intents and referenced evidence; T003's format 3 adds verified accounting records and an explicit
+  `backup-upgrade` copy for older bundles. Query-only restore uses bundle bytes without original roots, clients or
+  execution authority. Schema 0028 has 62 tables; data/flows are documented alongside the implementation.
 - Installed first-use checks use fake Claude and Go tools, disposable projects and temporary Git/SQLite on macOS
   ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
   above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
@@ -190,26 +224,59 @@ the frontend suites; no visual QA was run for these controls. Published as the G
 `e252fdc`) with a self-contained package built and checked locally
 ([work notes](phase/v0.1.1-model-selectors.md)).
 
-## Active phase — P001 Metrics Records (target: next patch after the one-off queue)
+## Active phase — P001 Metrics Records (target: 0.1.9 at phase closure; candidate qualified)
 
 Documentation initialized on 2026-10-27 at the user's request
 ([D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries)); reordered as P001 with target `0.1.2`
 by [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020), then moved after the
-one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions).
+one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions); the owner confirmed
+0.1.9 at phase closure in [D253](DECISIONS.md#d253--phase-release-targets-after-018).
 The [handoff](phase/P001-metrics-records.md) records the implemented `metrics-1` baseline, missing billing inputs,
 scope and verification matrix. [Reference notes](phase/P001-metrics-records-references.md) contain
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
-independent USD/credit valuation and versioned reference records are planned, not implemented.
-[NEXT_STEPS](NEXT_STEPS.md) now contains the six pending task sections with dependencies, scope, acceptance,
-validation and deliverables; **next phase task is P001-T001**, the accounting contract/evidence inventory
-([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)). No task is complete and technical design remains pending
-T001. Assigning a release target does not release it.
+independent USD/credit valuation, capture/storage, API/UI and versioned database records are implemented (T002–T005)
+and qualified together by T006 with synthetic evidence.
+[NEXT_STEPS](NEXT_STEPS.md) contains the six task sections with dependencies, scope, acceptance,
+validation and deliverables ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)).
+**P001-T001 is complete as design/inventory only**; [its contract](phase/P001-T001-accounting-contract.md) and
+D254–D257 define native invocation accounting, evidence limits, immutable references/billing profiles, exact Decimal
+valuation, compatibility and synthetic acceptance cases. **P001-T002 is complete** as `metrics-reference-1` identity/
+tariff documents, offline validation and pure `valuation-1` calculation (D258), without operational callers.
+[T002 evidence](phase/P001-T002-reference-calculator.md) records supported scenarios, exact checks and delivery.
+Final T002 checks: 2283 pytest cases passed, 2 skipped, 29 subtests; 102 focused calculator/core cases, 10 unittest
+cases and 230 frontend tests passed, as did typecheck/build, exact distribution and isolated installed-wheel checks.
+All evidence is synthetic/offline; no real provider or billing validation was performed.
+**P001-T003 is complete as source** (D259): native invocation ledger for managed attempts, preparation executor steps
+and configuration assistance; allowlisted `usage-capture-1` evidence; `local-config-10`/`project-config-2` billing
+profiles dereferenced from frozen revisions; admission-bound valuations; previewed reference import, accounting
+backfill and repricing cohorts; migration `0028_usage_accounting`; format-3 backups and `backup-upgrade`.
+`metrics-1`, existing endpoints/OpenAPI and runtime version 0.1.8 are unchanged. Checks and omissions:
+[T003 evidence](phase/P001-T003-capture-storage.md); source delivered through its topic → `develop`/`origin` merge.
+**P001-T004 is complete as source** (D262): `storage/accounting_views.py` and `GET /api/managed/accounting/{summary,
+groups,tasks,invocations,cohorts}` plus invocation detail/valuations read the ledger with an explicit selection policy
+(original admission valuation or one named cohort), separate compatible amount buckets, coverage with unpriced reasons,
+effective/requested model and work-class dimensions and task indicators with explicit denominators; reads never
+price, write or decode histories. OpenAPI/types are regenerated; `/metrics/*` is unchanged
+([T004 evidence](phase/P001-T004-aggregates-api.md)); source delivered through its topic → `develop`/`origin` merge.
+**P001-T005a is complete as source** (D264): `/accounting` and `/projects/:p/accounting` read only the D262 API, keep
+bases apart, show exact amounts or partial known subtotals, and work on query-only archives without polling ([T005a evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui));
+source delivered through its topic → `develop`/`origin` merge. **P001-T005b is complete as source** (D265): reference
+list/preview/import routes (`/api/managed/configuration/references*`, idempotent preview digest), save-time billing
+refusals and unknown-default effects, explicit v10/v2 conversion and guided billing controls, and a read-only reference
+list on the global accounting page (also on archives); OpenAPI/types regenerated ([T005b evidence](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)); source delivered through its topic →
+`develop`/`origin` merge. **P001-T006 is complete as source qualification** (see the routing note above and its
+[evidence](phase/P001-T006-qualification.md)); next are the authorized 0.1.9 release and P001 closure. T001 source delivery is
+`docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge; T002 uses
+`feat/p001-t002-reference-calculator` → `develop`/`origin`;
+release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.
+Static links, design/source consistency and independent arithmetic are checked; application suites/provider calls
+are not T001 evidence. Exact checks/delivery are recorded in the task contract.
 
 ## Planned phase — P002 Continuous Mode (target 0.2.0)
 
 After Metrics Records, automate closing/archiving a completed phase and opening/planning its successor under one
 explicit bounded authorization, retaining stop conditions, READY and recovery guarantees. Design and tasks remain
-pending; this is not implemented
+pending; this is not implemented. Starting context: [T006 handoff](phase/P001-T006-qualification.md#p002-handoff)
 ([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
 
@@ -248,7 +315,7 @@ in the task artifact. Frozen histories/catalogs remain unchanged.
 Released through PR #3 as 0.1.4, with full offline regression, package verification and matching GitHub downloads.
 OT003 was removed from ONE_OFF_TASKS only after publication/verification (D242). Subsequent preparation diagnosis
 and the owner's D246 priority decision now put OT005 before OT004.
-See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. No Metrics Records task is complete.
+See [OT003](phase/OT003-intake-profile-diagnostics.md) for results and limits. That delivery completed no Metrics task.
 
 ## Patch 0.1.5 — read-only preparation tool aliases and complete review (OT005)
 

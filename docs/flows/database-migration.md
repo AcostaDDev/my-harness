@@ -41,7 +41,9 @@ does not replace `backup-create` and is not a query-only restore. Restored query
 If the copy or its seal fails, Alembic is not called; partial files are kept. If the migration fails, the resulting
 state and the earlier copy are kept, without hiding changes through an automatic restore. The operator keeps writers
 stopped during the whole operation. Earlier histories and snapshots are preserved; revision `0023` fills the derived
-run projection by reading history formats 1–8.
+run projection by reading history formats 1–8. Revision `0028` only creates the P001 accounting tables: it never
+backfills, reprices or reads streams, and its downgrade refuses while accounting rows exist. Accounting backfill and
+repricing are separate explicit, previewed CLI operations ([accounting flow](metrics-accounting.md)).
 
 `scripts/dev` uses the same preparation for its development database: it may create it and keeps its own snapshot
 location. It shares the extended owner and group checks and the verified snapshot, without the installed CLI's

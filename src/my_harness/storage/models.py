@@ -920,3 +920,196 @@ class ConfigurationOperationRow(Base):
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
+
+
+# --- P001-T003 (D254–D257, D259): additive invocation accounting -------------------------------------
+
+
+class UsageInvocationRow(Base):
+    """One logical model invocation per native source; no synthetic run/attempt for other sources.
+
+    The lifecycle columns advance under the native source owner; captures and valuations are append-only."""
+    __tablename__ = 'usage_invocations'
+    __table_args__ = (
+        UniqueConstraint('source_kind', 'source_id'),
+        CheckConstraint("source_kind IN ('managed_attempt', 'preparation_step', 'configuration_assistance')",
+                        name='ck_usage_invocation_source'),
+        CheckConstraint("launch IN ('pending', 'not_invoked', 'observed', 'unknown_execution')",
+                        name='ck_usage_invocation_launch'),
+        CheckConstraint("(source_kind = 'managed_attempt' AND attempt_id = source_id AND run_id IS NOT NULL "
+                        "AND preparation_step_id IS NULL AND operation_id IS NULL) OR "
+                        "(source_kind = 'preparation_step' AND preparation_step_id = source_id "
+                        "AND preparation_id IS NOT NULL AND attempt_id IS NULL AND operation_id IS NULL) OR "
+                        "(source_kind = 'configuration_assistance' AND operation_id = source_id "
+                        "AND attempt_id IS NULL AND preparation_step_id IS NULL)", name='ck_usage_invocation_link'),
+        Index('ix_usage_invocations_scope', 'root', 'phase_code', 'task_id'),
+        Index('ix_usage_invocations_started', 'started_at'))
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    source_kind: Mapped[str] = mapped_column(String(40))
+    source_id: Mapped[str] = mapped_column(String(36))
+    attempt_id: Mapped[str | None] = mapped_column(ForeignKey('managed_attempts.id'), nullable=True)
+    run_id: Mapped[str | None] = mapped_column(ForeignKey('managed_runs.id'), nullable=True)
+    preparation_id: Mapped[str | None] = mapped_column(ForeignKey('project_preparation_operations.id'), nullable=True)
+    preparation_step_id: Mapped[str | None] = mapped_column(ForeignKey('project_preparation_steps.id'), nullable=True)
+    operation_id: Mapped[str | None] = mapped_column(ForeignKey('configuration_operations.id'), nullable=True)
+    request_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    root: Mapped[str | None] = mapped_column(String, nullable=True)
+    project_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    phase_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    task_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    purpose: Mapped[str] = mapped_column(String(40))
+    role: Mapped[str] = mapped_column(String(40))
+    agent: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    requested_model: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    requested_effort: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    versions: Mapped[dict] = mapped_column(JSON)
+    binding: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    binding_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    launch: Mapped[str] = mapped_column(String(20))
+    outcome: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    started_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    recorded_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class UsageCaptureRow(Base):
+    """Append-only allowlisted evidence; identical replays are no-ops, changed evidence is another row."""
+    __tablename__ = 'usage_captures'
+    __table_args__ = (UniqueConstraint('invocation_id', 'version', 'digest'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('usage_invocations.id'))
+    version: Mapped[str] = mapped_column(String(40))
+    digest: Mapped[str] = mapped_column(String(64))
+    document: Mapped[dict] = mapped_column(JSON)
+    evidence: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    evidence_digest: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    source: Mapped[str] = mapped_column(String(20))
+    recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class UsageComponentRow(Base):
+    """Alternative views of one capture (terminal, model, request); inclusive views are never added."""
+    __tablename__ = 'usage_components'
+    capture_id: Mapped[int] = mapped_column(ForeignKey('usage_captures.id'), primary_key=True)
+    key: Mapped[str] = mapped_column(String(250), primary_key=True)
+    grain: Mapped[str] = mapped_column(String(20))
+    parent_key: Mapped[str | None] = mapped_column(String(250), nullable=True)
+    inclusion: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    reported_model: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    model_source: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    semantics: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    coverage: Mapped[str] = mapped_column(String(20))
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_read_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_write_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    write_5m: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    write_1h: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasoning_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasons: Mapped[list] = mapped_column(JSON)
+
+
+class MetricsReferenceRow(Base):
+    """Content-addressed immutable identity/tariff documents and bundle envelopes (canonical UTF-8 JSON)."""
+    __tablename__ = 'metrics_references'
+    __table_args__ = (CheckConstraint("kind IN ('model_identity', 'tariff', 'bundle')", name='ck_metrics_reference_kind'),)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(20))
+    format: Mapped[str] = mapped_column(String(40))
+    content: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(20))
+    provider: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    product: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    model: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    observed_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class UsageValuationRow(Base):
+    """Immutable valuation; another interpretation is another row, optionally superseding an earlier one."""
+    __tablename__ = 'usage_valuations'
+    __table_args__ = (UniqueConstraint('invocation_id', 'capture_id', 'normalization', 'calculator', 'profile_digest',
+                                       'reference_set_digest', 'basis', 'scenario_digest'),
+                      CheckConstraint("status IN ('complete', 'incomplete', 'unsupported')", name='ck_usage_valuation_status'),
+                      CheckConstraint("origin IN ('admission', 'backfill', 'repricing')", name='ck_usage_valuation_origin'))
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('usage_invocations.id'))
+    capture_id: Mapped[int] = mapped_column(ForeignKey('usage_captures.id'))
+    origin: Mapped[str] = mapped_column(String(20))
+    normalization: Mapped[str] = mapped_column(String(40))
+    calculator: Mapped[str] = mapped_column(String(40))
+    profile_digest: Mapped[str] = mapped_column(String(64))
+    reference_set_digest: Mapped[str] = mapped_column(ForeignKey('metrics_references.id'))
+    basis: Mapped[str] = mapped_column(String(40))
+    scenario_digest: Mapped[str] = mapped_column(String(64))
+    evidence_digest: Mapped[str] = mapped_column(String(64))
+    scenario: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(20))
+    unit: Mapped[str] = mapped_column(String(80))
+    scheme: Mapped[str] = mapped_column(String(80))
+    amount: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    known_subtotal: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    exact_sum: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rounding_adjustment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    counterfactual: Mapped[bool] = mapped_column(Boolean)
+    retrospective: Mapped[bool] = mapped_column(Boolean)
+    reasons: Mapped[list] = mapped_column(JSON)
+    warnings: Mapped[list] = mapped_column(JSON)
+    selected_components: Mapped[list] = mapped_column(JSON)
+    discrepancy: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    supersedes: Mapped[str | None] = mapped_column(ForeignKey('usage_valuations.id'), nullable=True)
+    recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class UsageValuationLineRow(Base):
+    """Exact decimal-string line amounts; never SQLite REAL."""
+    __tablename__ = 'usage_valuation_lines'
+    valuation_id: Mapped[str] = mapped_column(ForeignKey('usage_valuations.id'), primary_key=True)
+    number: Mapped[int] = mapped_column(Integer, primary_key=True)
+    component_key: Mapped[str] = mapped_column(String(250))
+    category: Mapped[str] = mapped_column(String(40))
+    quantity: Mapped[int] = mapped_column(Integer)
+    rate: Mapped[dict] = mapped_column(JSON)
+    factors: Mapped[list] = mapped_column(JSON)
+    included_adjustments: Mapped[list] = mapped_column(JSON)
+    tariff_reference: Mapped[str] = mapped_column(ForeignKey('metrics_references.id'))
+    identity_reference: Mapped[str | None] = mapped_column(ForeignKey('metrics_references.id'), nullable=True)
+    rate_case: Mapped[str] = mapped_column(String(200))
+    exact_amount: Mapped[str] = mapped_column(Text)
+
+
+class ValuationCohortRow(Base):
+    """Explicit backfill/repricing selection; closed cohorts freeze their membership."""
+    __tablename__ = 'valuation_cohorts'
+    __table_args__ = (CheckConstraint("kind IN ('backfill', 'repricing')", name='ck_valuation_cohort_kind'),
+                      CheckConstraint("status IN ('BUILDING', 'CLOSED')", name='ck_valuation_cohort_status'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True)
+    kind: Mapped[str] = mapped_column(String(20))
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    selection: Mapped[dict] = mapped_column(JSON)
+    selection_digest: Mapped[str] = mapped_column(String(64))
+    scenario: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    scenario_digest: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    reference_set_digest: Mapped[str | None] = mapped_column(ForeignKey('metrics_references.id'), nullable=True)
+    status: Mapped[str] = mapped_column(String(20))
+    expected: Mapped[int] = mapped_column(Integer)
+    built: Mapped[int] = mapped_column(Integer)
+    cursor: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    report: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    closed_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class ValuationCohortMemberRow(Base):
+    """One member per (cohort, invocation, basis): a selected immutable valuation or an explicit reason."""
+    __tablename__ = 'valuation_cohort_members'
+    __table_args__ = (CheckConstraint('(valuation_id IS NULL) <> (reason IS NULL)', name='ck_valuation_cohort_member'),)
+    cohort_id: Mapped[str] = mapped_column(ForeignKey('valuation_cohorts.id'), primary_key=True)
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('usage_invocations.id'), primary_key=True)
+    basis: Mapped[str] = mapped_column(String(40), primary_key=True)
+    valuation_id: Mapped[str | None] = mapped_column(ForeignKey('usage_valuations.id'), nullable=True)
+    reason: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    recorded_at: Mapped[str] = mapped_column(String(40))

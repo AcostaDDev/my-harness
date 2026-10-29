@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "My Harness",
-    "version": "0.1.8"
+    "version": "0.1.9"
   },
   "paths": {
     "/api/session": {
@@ -7530,6 +7530,1953 @@
         }
       }
     },
+    "/api/managed/accounting/summary": {
+      "get": {
+        "summary": "Accounting Summary",
+        "description": "Coverage, tokens, cache hit, wall throughput and compatible amount buckets of the scope.",
+        "operationId": "managed_accounting_summary",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Purpose"
+            }
+          },
+          {
+            "name": "source_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "managed_attempt",
+                    "preparation_step",
+                    "configuration_assistance"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "launch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pending",
+                    "not_invoked",
+                    "observed",
+                    "unknown_execution"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Launch"
+            }
+          },
+          {
+            "name": "requested_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Requested Model"
+            }
+          },
+          {
+            "name": "effective_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model"
+            }
+          },
+          {
+            "name": "effective_model_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "reported",
+                    "mixed",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model Kind"
+            }
+          },
+          {
+            "name": "work",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "task_first_pass",
+                      "task_rework",
+                      "phase",
+                      "conversation",
+                      "setup",
+                      "other"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 6
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Work"
+            }
+          },
+          {
+            "name": "started_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started From"
+            }
+          },
+          {
+            "name": "started_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started Before"
+            }
+          },
+          {
+            "name": "cohort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cohort"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountingSummaryRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/accounting/groups": {
+      "get": {
+        "summary": "Accounting Groups",
+        "description": "Totals per group; each invocation enters exactly one group (mixed/unknown models are visible groups).",
+        "operationId": "managed_accounting_groups",
+        "parameters": [
+          {
+            "name": "dimension",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "provider",
+                "effective_model",
+                "requested_model",
+                "role",
+                "purpose",
+                "work",
+                "source_kind",
+                "root",
+                "phase",
+                "task",
+                "day",
+                "outcome",
+                "launch"
+              ],
+              "type": "string",
+              "title": "Dimension"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "invocations",
+                "key"
+              ],
+              "type": "string",
+              "default": "invocations",
+              "title": "Order"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Purpose"
+            }
+          },
+          {
+            "name": "source_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "managed_attempt",
+                    "preparation_step",
+                    "configuration_assistance"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "launch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pending",
+                    "not_invoked",
+                    "observed",
+                    "unknown_execution"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Launch"
+            }
+          },
+          {
+            "name": "requested_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Requested Model"
+            }
+          },
+          {
+            "name": "effective_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model"
+            }
+          },
+          {
+            "name": "effective_model_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "reported",
+                    "mixed",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model Kind"
+            }
+          },
+          {
+            "name": "work",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "task_first_pass",
+                      "task_rework",
+                      "phase",
+                      "conversation",
+                      "setup",
+                      "other"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 6
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Work"
+            }
+          },
+          {
+            "name": "started_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started From"
+            }
+          },
+          {
+            "name": "started_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started Before"
+            }
+          },
+          {
+            "name": "cohort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cohort"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountingGroupsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/accounting/tasks": {
+      "get": {
+        "summary": "Accounting Tasks",
+        "description": "Task spend per bucket against attempted and verified-COMMITTED tasks, with explicit denominators.",
+        "operationId": "managed_accounting_tasks",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Purpose"
+            }
+          },
+          {
+            "name": "source_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "managed_attempt",
+                    "preparation_step",
+                    "configuration_assistance"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "launch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pending",
+                    "not_invoked",
+                    "observed",
+                    "unknown_execution"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Launch"
+            }
+          },
+          {
+            "name": "requested_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Requested Model"
+            }
+          },
+          {
+            "name": "effective_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model"
+            }
+          },
+          {
+            "name": "effective_model_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "reported",
+                    "mixed",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model Kind"
+            }
+          },
+          {
+            "name": "work",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "task_first_pass",
+                      "task_rework",
+                      "phase",
+                      "conversation",
+                      "setup",
+                      "other"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 6
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Work"
+            }
+          },
+          {
+            "name": "started_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started From"
+            }
+          },
+          {
+            "name": "started_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started Before"
+            }
+          },
+          {
+            "name": "cohort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cohort"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountingTasksRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/accounting/invocations": {
+      "get": {
+        "summary": "Accounting Invocations",
+        "description": "Expected invocations by UTC start, including those without a capture or a valuation.",
+        "operationId": "managed_accounting_invocations",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Purpose"
+            }
+          },
+          {
+            "name": "source_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "managed_attempt",
+                    "preparation_step",
+                    "configuration_assistance"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Kind"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "launch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pending",
+                    "not_invoked",
+                    "observed",
+                    "unknown_execution"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Launch"
+            }
+          },
+          {
+            "name": "requested_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Requested Model"
+            }
+          },
+          {
+            "name": "effective_model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model"
+            }
+          },
+          {
+            "name": "effective_model_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "reported",
+                    "mixed",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Effective Model Kind"
+            }
+          },
+          {
+            "name": "work",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "task_first_pass",
+                      "task_rework",
+                      "phase",
+                      "conversation",
+                      "setup",
+                      "other"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 6
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Work"
+            }
+          },
+          {
+            "name": "started_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started From"
+            }
+          },
+          {
+            "name": "started_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Started Before"
+            }
+          },
+          {
+            "name": "cohort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cohort"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountingInvocationsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/accounting/invocations/{invocation_id}": {
+      "get": {
+        "summary": "Accounting Invocation",
+        "description": "One invocation: binding, latest allowlisted capture and its alternative component views.",
+        "operationId": "managed_accounting_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Invocation Id"
+            }
+          },
+          {
+            "name": "cohort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cohort"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountingInvocationDetailRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/accounting/invocations/{invocation_id}/valuations": {
+      "get": {
+        "summary": "Accounting Valuations",
+        "description": "Every immutable valuation with lines, reference identity, discrepancy and cohort memberships.",
+        "operationId": "managed_accounting_valuations",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Invocation Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AccountingValuationRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/accounting/cohorts": {
+      "get": {
+        "summary": "Accounting Cohorts",
+        "description": "Named backfill/repricing cohorts, newest first; a BUILDING cohort yields no full amount.",
+        "operationId": "managed_accounting_cohorts",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AccountingCohortRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/conversations": {
       "get": {
         "summary": "Conversations",
@@ -11710,6 +13657,286 @@
         }
       }
     },
+    "/api/managed/configuration/references": {
+      "get": {
+        "summary": "References",
+        "description": "Available reference bundles. Independent of the configuration setup, so it also lists a restored archive.",
+        "operationId": "configuration_references",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ReferenceBundleRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/configuration/references/preview": {
+      "post": {
+        "summary": "References Preview",
+        "operationId": "configuration_references_preview",
+        "parameters": [
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferenceBundleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceImportRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/configuration/references/import": {
+      "post": {
+        "summary": "References Import",
+        "description": "Writes immutable reference rows, not a configuration revision; equal bytes are idempotent (D263).",
+        "operationId": "configuration_references_import",
+        "parameters": [
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferenceBundleImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceImportRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/configuration/revisions/{scope}/{revision}": {
       "get": {
         "summary": "Revision",
@@ -14478,6 +16705,2846 @@
           "changed_paths"
         ],
         "title": "AcceptanceRead"
+      },
+      "AccountingAmountPairRead": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "known_subtotal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Known Subtotal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "known_subtotal"
+        ],
+        "title": "AccountingAmountPairRead"
+      },
+      "AccountingAmountRead": {
+        "properties": {
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "counterfactual": {
+            "type": "boolean",
+            "title": "Counterfactual"
+          },
+          "retrospective": {
+            "type": "boolean",
+            "title": "Retrospective"
+          },
+          "invocations": {
+            "type": "integer",
+            "title": "Invocations"
+          },
+          "complete": {
+            "type": "integer",
+            "title": "Complete"
+          },
+          "incomplete": {
+            "type": "integer",
+            "title": "Incomplete"
+          },
+          "unsupported": {
+            "type": "integer",
+            "title": "Unsupported"
+          },
+          "denominator": {
+            "type": "integer",
+            "title": "Denominator",
+            "description": "Expected invocations of the scope or group."
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "Null unless every valuation of this bucket is complete, no expected invocation is unpriced and the selection is complete."
+          },
+          "known_subtotal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Known Subtotal",
+            "description": "Complete amounts plus incomplete known subtotals."
+          },
+          "reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Reasons"
+          },
+          "discrepancies": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Discrepancies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit",
+          "platform",
+          "product",
+          "scheme",
+          "basis",
+          "counterfactual",
+          "retrospective",
+          "invocations",
+          "complete",
+          "incomplete",
+          "unsupported",
+          "denominator",
+          "amount",
+          "known_subtotal",
+          "reasons",
+          "discrepancies"
+        ],
+        "title": "AccountingAmountRead"
+      },
+      "AccountingCacheHitRead": {
+        "properties": {
+          "cache_read_tokens": {
+            "type": "integer",
+            "title": "Cache Read Tokens"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "description": "Uncached input + cache reads + known cache writes."
+          },
+          "invocations": {
+            "type": "integer",
+            "title": "Invocations",
+            "description": "Complete usage with every input category known."
+          },
+          "excluded": {
+            "type": "integer",
+            "title": "Excluded"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cache_read_tokens",
+          "input_tokens",
+          "invocations",
+          "excluded",
+          "ratio"
+        ],
+        "title": "AccountingCacheHitRead"
+      },
+      "AccountingCaptureDocumentRead": {
+        "properties": {
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          },
+          "document": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Document",
+            "description": "Allowlisted capture: no prompts, argv, environment or paths."
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "evidence_digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Digest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "digest",
+          "document",
+          "evidence",
+          "evidence_digest"
+        ],
+        "title": "AccountingCaptureDocumentRead"
+      },
+      "AccountingCaptureRefRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "source",
+          "recorded_at"
+        ],
+        "title": "AccountingCaptureRefRead"
+      },
+      "AccountingCohortRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "backfill",
+              "repricing"
+            ],
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "BUILDING",
+              "CLOSED"
+            ],
+            "title": "Status"
+          },
+          "expected": {
+            "type": "integer",
+            "title": "Expected"
+          },
+          "built": {
+            "type": "integer",
+            "title": "Built"
+          },
+          "selection_digest": {
+            "type": "string",
+            "title": "Selection Digest"
+          },
+          "scenario_digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Digest"
+          },
+          "reference_set_digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Set Digest"
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis"
+          },
+          "retrospective": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrospective"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "status",
+          "expected",
+          "built",
+          "selection_digest",
+          "scenario_digest",
+          "reference_set_digest",
+          "basis",
+          "retrospective",
+          "created_at",
+          "closed_at"
+        ],
+        "title": "AccountingCohortRead"
+      },
+      "AccountingCohortRefRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "AccountingCohortRefRead"
+      },
+      "AccountingComponentRead": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "grain": {
+            "type": "string",
+            "title": "Grain"
+          },
+          "parent_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Key"
+          },
+          "inclusion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inclusion"
+          },
+          "reported_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reported Model"
+          },
+          "model_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Source"
+          },
+          "semantics": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Semantics"
+          },
+          "coverage": {
+            "type": "string",
+            "title": "Coverage"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "cache_read_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Tokens"
+          },
+          "cache_write_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Tokens"
+          },
+          "write_5m": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Write 5M"
+          },
+          "write_1h": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Write 1H"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "reasoning_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Tokens"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "grain",
+          "parent_key",
+          "inclusion",
+          "reported_model",
+          "model_source",
+          "semantics",
+          "coverage",
+          "input_tokens",
+          "cache_read_tokens",
+          "cache_write_tokens",
+          "write_5m",
+          "write_1h",
+          "output_tokens",
+          "reasoning_tokens",
+          "reasons"
+        ],
+        "title": "AccountingComponentRead"
+      },
+      "AccountingCoverageRead": {
+        "properties": {
+          "invocations": {
+            "type": "integer",
+            "title": "Invocations",
+            "description": "Invocation rows in scope and selection, not-invoked included."
+          },
+          "expected": {
+            "type": "integer",
+            "title": "Expected",
+            "description": "Invocations except not-invoked: the denominator of usage and spend."
+          },
+          "launch": {
+            "$ref": "#/components/schemas/AccountingLaunchCountsRead"
+          },
+          "captured": {
+            "type": "integer",
+            "title": "Captured"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/AccountingUsageCountsRead"
+          },
+          "valuation": {
+            "$ref": "#/components/schemas/AccountingValuationCountsRead"
+          },
+          "unpriced_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Unpriced Reasons"
+          },
+          "outside_selection": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outside Selection",
+            "description": "Cohort policy: invocations in the filters but not members."
+          },
+          "full_scope_priced": {
+            "type": "boolean",
+            "title": "Full Scope Priced"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invocations",
+          "expected",
+          "launch",
+          "captured",
+          "usage",
+          "valuation",
+          "unpriced_reasons",
+          "outside_selection",
+          "full_scope_priced"
+        ],
+        "title": "AccountingCoverageRead"
+      },
+      "AccountingFiltersRead": {
+        "properties": {
+          "root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose"
+          },
+          "source_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "managed_attempt",
+                  "preparation_step",
+                  "configuration_assistance"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Kind"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "launch": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "not_invoked",
+                  "observed",
+                  "unknown_execution"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launch"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "effective_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model"
+          },
+          "effective_model_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "mixed",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model Kind"
+          },
+          "work": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "task_first_pass",
+                    "task_rework",
+                    "phase",
+                    "conversation",
+                    "setup",
+                    "other"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work",
+            "description": "With a phase and no explicit work, the phase-work default: conversations and setup are excluded."
+          },
+          "started_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started From",
+            "description": "UTC invocation start, inclusive."
+          },
+          "started_before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started Before",
+            "description": "UTC invocation start, exclusive."
+          }
+        },
+        "type": "object",
+        "title": "AccountingFiltersRead"
+      },
+      "AccountingGroupRead": {
+        "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/AccountingCoverageRead"
+          },
+          "tokens": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AccountingTokenSumRead"
+            },
+            "type": "object",
+            "title": "Tokens"
+          },
+          "cache_hit": {
+            "$ref": "#/components/schemas/AccountingCacheHitRead"
+          },
+          "wall_throughput": {
+            "$ref": "#/components/schemas/AccountingThroughputRead"
+          },
+          "amounts": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingAmountRead"
+            },
+            "type": "array",
+            "title": "Amounts",
+            "description": "Only identical unit/platform/product/scheme/basis/counterfactual/retrospective valuations are added."
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "key_kind": {
+            "type": "string",
+            "enum": [
+              "value",
+              "unknown",
+              "reported",
+              "mixed"
+            ],
+            "title": "Key Kind"
+          },
+          "root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root",
+            "description": "Phase and task groups are keyed within their root (and phase)."
+          },
+          "phase_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "coverage",
+          "tokens",
+          "cache_hit",
+          "wall_throughput",
+          "amounts",
+          "key",
+          "key_kind",
+          "root",
+          "phase_code"
+        ],
+        "title": "AccountingGroupRead"
+      },
+      "AccountingGroupsRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "accounting-aggregate-1",
+            "title": "Format"
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "provider",
+              "effective_model",
+              "requested_model",
+              "role",
+              "purpose",
+              "work",
+              "source_kind",
+              "root",
+              "phase",
+              "task",
+              "day",
+              "outcome",
+              "launch"
+            ],
+            "title": "Dimension"
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "invocations",
+              "key"
+            ],
+            "title": "Order"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/AccountingFiltersRead"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/AccountingSelectionRead"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingGroupRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "dimension",
+          "order",
+          "filters",
+          "selection",
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "AccountingGroupsRead"
+      },
+      "AccountingIndicatorRead": {
+        "properties": {
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "counterfactual": {
+            "type": "boolean",
+            "title": "Counterfactual"
+          },
+          "retrospective": {
+            "type": "boolean",
+            "title": "Retrospective"
+          },
+          "total": {
+            "$ref": "#/components/schemas/AccountingAmountPairRead",
+            "description": "All attempted task work: revisions, reviews, retries."
+          },
+          "committed_work": {
+            "$ref": "#/components/schemas/AccountingAmountPairRead",
+            "description": "Work of committed tasks only."
+          },
+          "per_committed_task": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per Committed Task",
+            "description": "Total / committed tasks, half-even to 12 places."
+          },
+          "per_attempted_task": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per Attempted Task"
+          },
+          "committed_work_per_committed_task": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committed Work Per Committed Task"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit",
+          "platform",
+          "product",
+          "scheme",
+          "basis",
+          "counterfactual",
+          "retrospective",
+          "total",
+          "committed_work",
+          "per_committed_task",
+          "per_attempted_task",
+          "committed_work_per_committed_task"
+        ],
+        "title": "AccountingIndicatorRead"
+      },
+      "AccountingInvocationDetailRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "managed_attempt",
+              "preparation_step",
+              "configuration_assistance"
+            ],
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "preparation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preparation Id"
+          },
+          "preparation_step_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preparation Step Id"
+          },
+          "operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operation Id"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "phase_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase Code"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "work": {
+            "type": "string",
+            "enum": [
+              "task_first_pass",
+              "task_rework",
+              "phase",
+              "conversation",
+              "setup",
+              "other"
+            ],
+            "title": "Work"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "requested_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Effort"
+          },
+          "effective_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model"
+          },
+          "effective_model_kind": {
+            "type": "string",
+            "enum": [
+              "reported",
+              "mixed",
+              "unknown"
+            ],
+            "title": "Effective Model Kind"
+          },
+          "launch": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "not_invoked",
+              "observed",
+              "unknown_execution"
+            ],
+            "title": "Launch"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "wall_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wall Ms"
+          },
+          "capture": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountingCaptureRefRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest append-only capture."
+          },
+          "usage": {
+            "$ref": "#/components/schemas/AccountingInvocationUsageRead"
+          },
+          "in_selection": {
+            "type": "boolean",
+            "title": "In Selection"
+          },
+          "valuations": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingValuationBriefRead"
+            },
+            "type": "array",
+            "title": "Valuations",
+            "description": "Valuations chosen by the selection policy."
+          },
+          "unpriced_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unpriced Reason"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/AccountingSelectionRead"
+          },
+          "versions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Versions"
+          },
+          "binding": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding"
+          },
+          "binding_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding Sha256"
+          },
+          "captures": {
+            "type": "integer",
+            "title": "Captures"
+          },
+          "capture_document": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountingCaptureDocumentRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingComponentRead"
+            },
+            "type": "array",
+            "title": "Components",
+            "description": "Alternative views; never added together."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_kind",
+          "source_id",
+          "run_id",
+          "attempt_id",
+          "preparation_id",
+          "preparation_step_id",
+          "operation_id",
+          "request_id",
+          "root",
+          "project_id",
+          "phase_code",
+          "task_id",
+          "purpose",
+          "work",
+          "role",
+          "agent",
+          "provider",
+          "requested_model",
+          "requested_effort",
+          "effective_model",
+          "effective_model_kind",
+          "launch",
+          "outcome",
+          "started_at",
+          "finished_at",
+          "wall_ms",
+          "capture",
+          "usage",
+          "in_selection",
+          "valuations",
+          "unpriced_reason",
+          "selection",
+          "versions",
+          "binding",
+          "binding_sha256",
+          "captures",
+          "capture_document",
+          "components"
+        ],
+        "title": "AccountingInvocationDetailRead"
+      },
+      "AccountingInvocationRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "managed_attempt",
+              "preparation_step",
+              "configuration_assistance"
+            ],
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "preparation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preparation Id"
+          },
+          "preparation_step_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preparation Step Id"
+          },
+          "operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operation Id"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "phase_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase Code"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "work": {
+            "type": "string",
+            "enum": [
+              "task_first_pass",
+              "task_rework",
+              "phase",
+              "conversation",
+              "setup",
+              "other"
+            ],
+            "title": "Work"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "requested_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Effort"
+          },
+          "effective_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model"
+          },
+          "effective_model_kind": {
+            "type": "string",
+            "enum": [
+              "reported",
+              "mixed",
+              "unknown"
+            ],
+            "title": "Effective Model Kind"
+          },
+          "launch": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "not_invoked",
+              "observed",
+              "unknown_execution"
+            ],
+            "title": "Launch"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "wall_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wall Ms"
+          },
+          "capture": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountingCaptureRefRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest append-only capture."
+          },
+          "usage": {
+            "$ref": "#/components/schemas/AccountingInvocationUsageRead"
+          },
+          "in_selection": {
+            "type": "boolean",
+            "title": "In Selection"
+          },
+          "valuations": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingValuationBriefRead"
+            },
+            "type": "array",
+            "title": "Valuations",
+            "description": "Valuations chosen by the selection policy."
+          },
+          "unpriced_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unpriced Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_kind",
+          "source_id",
+          "run_id",
+          "attempt_id",
+          "preparation_id",
+          "preparation_step_id",
+          "operation_id",
+          "request_id",
+          "root",
+          "project_id",
+          "phase_code",
+          "task_id",
+          "purpose",
+          "work",
+          "role",
+          "agent",
+          "provider",
+          "requested_model",
+          "requested_effort",
+          "effective_model",
+          "effective_model_kind",
+          "launch",
+          "outcome",
+          "started_at",
+          "finished_at",
+          "wall_ms",
+          "capture",
+          "usage",
+          "in_selection",
+          "valuations",
+          "unpriced_reason"
+        ],
+        "title": "AccountingInvocationRead"
+      },
+      "AccountingInvocationUsageRead": {
+        "properties": {
+          "coverage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "complete",
+                  "partial",
+                  "absent"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage",
+            "description": "Null when not invoked."
+          },
+          "partition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partition"
+          },
+          "delegation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delegation"
+          },
+          "charges_complete": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charges Complete"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "tokens": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "coverage",
+          "partition",
+          "delegation",
+          "charges_complete",
+          "reasons",
+          "tokens"
+        ],
+        "title": "AccountingInvocationUsageRead"
+      },
+      "AccountingInvocationsRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "accounting-aggregate-1",
+            "title": "Format"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/AccountingFiltersRead"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/AccountingSelectionRead"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingInvocationRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "filters",
+          "selection",
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "AccountingInvocationsRead"
+      },
+      "AccountingLaunchCountsRead": {
+        "properties": {
+          "pending": {
+            "type": "integer",
+            "title": "Pending"
+          },
+          "not_invoked": {
+            "type": "integer",
+            "title": "Not Invoked"
+          },
+          "observed": {
+            "type": "integer",
+            "title": "Observed"
+          },
+          "unknown_execution": {
+            "type": "integer",
+            "title": "Unknown Execution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pending",
+          "not_invoked",
+          "observed",
+          "unknown_execution"
+        ],
+        "title": "AccountingLaunchCountsRead"
+      },
+      "AccountingLineRead": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "component_key": {
+            "type": "string",
+            "title": "Component Key"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "rate": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Rate"
+          },
+          "factors": {
+            "items": {},
+            "type": "array",
+            "title": "Factors"
+          },
+          "included_adjustments": {
+            "items": {},
+            "type": "array",
+            "title": "Included Adjustments"
+          },
+          "tariff_reference": {
+            "type": "string",
+            "title": "Tariff Reference"
+          },
+          "identity_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identity Reference"
+          },
+          "rate_case": {
+            "type": "string",
+            "title": "Rate Case"
+          },
+          "exact_amount": {
+            "type": "string",
+            "title": "Exact Amount",
+            "description": "Exact decimal string; never a binary float."
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "component_key",
+          "category",
+          "quantity",
+          "rate",
+          "factors",
+          "included_adjustments",
+          "tariff_reference",
+          "identity_reference",
+          "rate_case",
+          "exact_amount"
+        ],
+        "title": "AccountingLineRead"
+      },
+      "AccountingReferenceRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "format",
+          "source",
+          "provider",
+          "product",
+          "model",
+          "observed_at"
+        ],
+        "title": "AccountingReferenceRead"
+      },
+      "AccountingSelectionRead": {
+        "properties": {
+          "policy": {
+            "type": "string",
+            "enum": [
+              "admission",
+              "cohort"
+            ],
+            "title": "Policy",
+            "description": "Original admission-bound valuation per invocation, or the frozen membership of one named cohort."
+          },
+          "cohort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountingCohortRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete",
+            "description": "False while the cohort is BUILDING: no full amount is available."
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy",
+          "cohort",
+          "complete"
+        ],
+        "title": "AccountingSelectionRead"
+      },
+      "AccountingSummaryRead": {
+        "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/AccountingCoverageRead"
+          },
+          "tokens": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AccountingTokenSumRead"
+            },
+            "type": "object",
+            "title": "Tokens"
+          },
+          "cache_hit": {
+            "$ref": "#/components/schemas/AccountingCacheHitRead"
+          },
+          "wall_throughput": {
+            "$ref": "#/components/schemas/AccountingThroughputRead"
+          },
+          "amounts": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingAmountRead"
+            },
+            "type": "array",
+            "title": "Amounts",
+            "description": "Only identical unit/platform/product/scheme/basis/counterfactual/retrospective valuations are added."
+          },
+          "format": {
+            "type": "string",
+            "const": "accounting-aggregate-1",
+            "title": "Format"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/AccountingFiltersRead"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/AccountingSelectionRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "coverage",
+          "tokens",
+          "cache_hit",
+          "wall_throughput",
+          "amounts",
+          "format",
+          "filters",
+          "selection"
+        ],
+        "title": "AccountingSummaryRead"
+      },
+      "AccountingTaskCountsRead": {
+        "properties": {
+          "attempted": {
+            "type": "integer",
+            "title": "Attempted"
+          },
+          "committed": {
+            "type": "integer",
+            "title": "Committed",
+            "description": "Attempted tasks with a verified COMMITTED acceptance."
+          },
+          "acceptance_unknown": {
+            "type": "integer",
+            "title": "Acceptance Unknown"
+          },
+          "not_committed": {
+            "type": "integer",
+            "title": "Not Committed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attempted",
+          "committed",
+          "acceptance_unknown",
+          "not_committed"
+        ],
+        "title": "AccountingTaskCountsRead"
+      },
+      "AccountingTasksRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "accounting-aggregate-1",
+            "title": "Format"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/AccountingFiltersRead"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/AccountingSelectionRead"
+          },
+          "tasks": {
+            "$ref": "#/components/schemas/AccountingTaskCountsRead"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/AccountingCoverageRead"
+          },
+          "committed_coverage": {
+            "$ref": "#/components/schemas/AccountingCoverageRead"
+          },
+          "indicators": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingIndicatorRead"
+            },
+            "type": "array",
+            "title": "Indicators"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "filters",
+          "selection",
+          "tasks",
+          "coverage",
+          "committed_coverage",
+          "indicators"
+        ],
+        "title": "AccountingTasksRead"
+      },
+      "AccountingThroughputRead": {
+        "properties": {
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "wall_ms": {
+            "type": "integer",
+            "title": "Wall Ms"
+          },
+          "invocations": {
+            "type": "integer",
+            "title": "Invocations",
+            "description": "Complete usage with output and a positive measured wall duration."
+          },
+          "excluded": {
+            "type": "integer",
+            "title": "Excluded"
+          },
+          "output_tokens_per_wall_second": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens Per Wall Second",
+            "description": "Wall throughput, not generation speed."
+          }
+        },
+        "type": "object",
+        "required": [
+          "output_tokens",
+          "wall_ms",
+          "invocations",
+          "excluded",
+          "output_tokens_per_wall_second"
+        ],
+        "title": "AccountingThroughputRead"
+      },
+      "AccountingTokenSumRead": {
+        "properties": {
+          "sum": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum",
+            "description": "Null when no invocation contributes: absence, not zero."
+          },
+          "invocations": {
+            "type": "integer",
+            "title": "Invocations"
+          },
+          "partial": {
+            "type": "integer",
+            "title": "Partial",
+            "description": "Contributing invocations whose usage is a partial subtotal."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sum",
+          "invocations",
+          "partial"
+        ],
+        "title": "AccountingTokenSumRead"
+      },
+      "AccountingUsageCountsRead": {
+        "properties": {
+          "complete": {
+            "type": "integer",
+            "title": "Complete"
+          },
+          "partial": {
+            "type": "integer",
+            "title": "Partial"
+          },
+          "absent": {
+            "type": "integer",
+            "title": "Absent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "complete",
+          "partial",
+          "absent"
+        ],
+        "title": "AccountingUsageCountsRead"
+      },
+      "AccountingValuationBriefRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "admission",
+              "backfill",
+              "repricing"
+            ],
+            "title": "Origin"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "incomplete",
+              "unsupported"
+            ],
+            "title": "Status"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "counterfactual": {
+            "type": "boolean",
+            "title": "Counterfactual"
+          },
+          "retrospective": {
+            "type": "boolean",
+            "title": "Retrospective"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "known_subtotal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Known Subtotal"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "discrepancy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancy",
+            "description": "Comparison status against the client-reported estimate."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "origin",
+          "status",
+          "unit",
+          "platform",
+          "product",
+          "scheme",
+          "basis",
+          "counterfactual",
+          "retrospective",
+          "amount",
+          "known_subtotal",
+          "reasons",
+          "warnings",
+          "discrepancy"
+        ],
+        "title": "AccountingValuationBriefRead"
+      },
+      "AccountingValuationCountsRead": {
+        "properties": {
+          "complete": {
+            "type": "integer",
+            "title": "Complete"
+          },
+          "incomplete": {
+            "type": "integer",
+            "title": "Incomplete"
+          },
+          "unsupported": {
+            "type": "integer",
+            "title": "Unsupported"
+          },
+          "unpriced": {
+            "type": "integer",
+            "title": "Unpriced"
+          }
+        },
+        "type": "object",
+        "required": [
+          "complete",
+          "incomplete",
+          "unsupported",
+          "unpriced"
+        ],
+        "title": "AccountingValuationCountsRead"
+      },
+      "AccountingValuationRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "admission",
+              "backfill",
+              "repricing"
+            ],
+            "title": "Origin"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "incomplete",
+              "unsupported"
+            ],
+            "title": "Status"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "counterfactual": {
+            "type": "boolean",
+            "title": "Counterfactual"
+          },
+          "retrospective": {
+            "type": "boolean",
+            "title": "Retrospective"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "known_subtotal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Known Subtotal"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "discrepancy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancy",
+            "description": "Comparison status against the client-reported estimate."
+          },
+          "capture_id": {
+            "type": "integer",
+            "title": "Capture Id"
+          },
+          "normalization": {
+            "type": "string",
+            "title": "Normalization"
+          },
+          "calculator": {
+            "type": "string",
+            "title": "Calculator"
+          },
+          "profile_digest": {
+            "type": "string",
+            "title": "Profile Digest"
+          },
+          "reference_set_digest": {
+            "type": "string",
+            "title": "Reference Set Digest"
+          },
+          "scenario_digest": {
+            "type": "string",
+            "title": "Scenario Digest"
+          },
+          "evidence_digest": {
+            "type": "string",
+            "title": "Evidence Digest"
+          },
+          "scenario": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scenario"
+          },
+          "exact_sum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exact Sum"
+          },
+          "rounding_adjustment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Exact decimal string; never a binary float."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rounding Adjustment"
+          },
+          "selected_components": {
+            "items": {},
+            "type": "array",
+            "title": "Selected Components"
+          },
+          "discrepancy_detail": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancy Detail"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          },
+          "cohorts": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingCohortRefRead"
+            },
+            "type": "array",
+            "title": "Cohorts"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingLineRead"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingReferenceRead"
+            },
+            "type": "array",
+            "title": "References"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "origin",
+          "status",
+          "unit",
+          "platform",
+          "product",
+          "scheme",
+          "basis",
+          "counterfactual",
+          "retrospective",
+          "amount",
+          "known_subtotal",
+          "reasons",
+          "warnings",
+          "discrepancy",
+          "capture_id",
+          "normalization",
+          "calculator",
+          "profile_digest",
+          "reference_set_digest",
+          "scenario_digest",
+          "evidence_digest",
+          "scenario",
+          "exact_sum",
+          "rounding_adjustment",
+          "selected_components",
+          "discrepancy_detail",
+          "supersedes",
+          "recorded_at",
+          "cohorts",
+          "lines",
+          "references"
+        ],
+        "title": "AccountingValuationRead"
       },
       "AgentPresetRead": {
         "properties": {
@@ -21838,6 +26905,72 @@
         ],
         "title": "OnboardingConfirmCreate"
       },
+      "Page_AccountingCohortRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingCohortRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[AccountingCohortRead]"
+      },
+      "Page_AccountingValuationRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AccountingValuationRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[AccountingValuationRead]"
+      },
       "Page_AttemptMetricRead_": {
         "properties": {
           "items": {
@@ -22035,6 +27168,39 @@
           "next_offset"
         ],
         "title": "Page[PhaseTaskRead]"
+      },
+      "Page_ReferenceBundleRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceBundleRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[ReferenceBundleRead]"
       },
       "Page_TaskMetricsRead_": {
         "properties": {
@@ -26254,6 +31420,268 @@
           "source"
         ],
         "title": "PromptVersionRead"
+      },
+      "ReferenceBundleImport": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1048576,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Preview Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content",
+          "preview_sha256"
+        ],
+        "title": "ReferenceBundleImport"
+      },
+      "ReferenceBundleInput": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1048576,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "ReferenceBundleInput"
+      },
+      "ReferenceBundleRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "references": {
+            "type": "integer",
+            "title": "References"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "observed_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed From"
+          },
+          "observed_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed To"
+          },
+          "effective_period": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "known",
+              "mixed"
+            ],
+            "title": "Effective Period"
+          },
+          "schemes": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceSchemeRead"
+            },
+            "type": "array",
+            "title": "Schemes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "recorded_at",
+          "available",
+          "references",
+          "providers",
+          "models",
+          "observed_from",
+          "observed_to",
+          "effective_period",
+          "schemes"
+        ],
+        "title": "ReferenceBundleRead",
+        "description": "D263: an available `metrics-reference-1` bundle (packaged or imported); listing never inserts rows."
+      },
+      "ReferenceImportRead": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "const": "reference-import",
+            "title": "Operation"
+          },
+          "bundle": {
+            "type": "string",
+            "title": "Bundle"
+          },
+          "raw_sha256": {
+            "type": "string",
+            "title": "Raw Sha256"
+          },
+          "references": {
+            "type": "integer",
+            "title": "References"
+          },
+          "conflicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conflicts"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "new_rows": {
+            "type": "integer",
+            "title": "New Rows"
+          },
+          "existing_rows": {
+            "type": "integer",
+            "title": "Existing Rows"
+          },
+          "inserted_rows": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inserted Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation",
+          "bundle",
+          "raw_sha256",
+          "references",
+          "conflicts",
+          "sha256",
+          "new_rows",
+          "existing_rows"
+        ],
+        "title": "ReferenceImportRead",
+        "description": "`sha256` seals bundle, raw bytes, count and conflicts; row counts are informative (D263)."
+      },
+      "ReferenceSchemeRead": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "bases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bases"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "conditions": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Conditions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "platform",
+          "product",
+          "scheme",
+          "unit",
+          "bases",
+          "models",
+          "conditions"
+        ],
+        "title": "ReferenceSchemeRead",
+        "description": "One tariff scheme a billing profile can pin: its identity, bases, models and case conditions."
       },
       "RegeneratedDocumentRead": {
         "properties": {

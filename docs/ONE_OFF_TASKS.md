@@ -22,6 +22,11 @@ file or use it as a new project-document contract.
 - Before removing a completed task, satisfy its acceptance, review the diff, run
   relevant checks and record results/omissions in `docs/phase/OTNNN-<topic>.md`.
   Record durable choices in DECISIONS and update affected current docs/parity.
+  Once the change reaches `main`, move that evidence to
+  [`docs/archive/one_off_tasks/`](archive/one_off_tasks/README.md), update its index/references and preserve the
+  historical text/results ([D267](DECISIONS.md#d267--archive-completed-one-offs-separately-from-active-phase-work)).
+  Main integration is the archive gate, not proof of publication or installation; outstanding agreed delivery
+  stays in this queue with a link to the archived evidence until completed or explicitly deferred.
   After agreed delivery is complete or explicitly deferred (D242), remove the task section and update Queue/Next.
   Completed tasks and their history do not accumulate here. Commit only when the user requests it.
 - Keep scope proportional. If work needs multiple independently planned tasks or

@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-27.
 **Status:** documentation setup complete; OT001 implementation remains pending.
-**Decision:** [D237](../DECISIONS.md#d237--one-off-development-queue-before-phase-work).
+**Decision:** [D237](../../DECISIONS.md#d237--one-off-development-queue-before-phase-work).
 
 ## Requested sequence and result
 

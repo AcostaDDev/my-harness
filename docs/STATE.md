@@ -10,9 +10,15 @@ Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md); the o
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work); later one-offs branch from the latest release
 on `main`, D261). **P001 Metrics Records is closed** (D266): released as **0.1.9**, installed on the operator machine
 and archived in [`archive/phase-001/`](archive/phase-001/SUMMARY.md). **Active phase: P002 Continuous Mode** (target
-**0.2.0** at its closure, D253), opened **without a plan**: its design and task plan must be proposed and confirmed by
-the owner before any code. Start from the [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
+**0.2.0** at its closure, D253), opened without a plan. A **draft v0.2 with 23 proposed tasks** now covers the owner's
+expanded autonomous-mode/database-authority design; see [NEXT_STEPS](NEXT_STEPS.md) and the
+[design basis](phase/P002-design-basis.md). The plan is **pending owner review; no task has started and no product
+change is implemented**. Design/plan adoption precedes code. Historical starting context:
+[P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
+Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
+are in [project history](archive/project-history/README.md). [D267](DECISIONS.md#d267--archive-completed-one-offs-separately-from-active-phase-work)
+keeps main integration separate from pending publication/installation. `docs/phase/` now contains current P002 work.
 
 ## Releases
 
@@ -22,17 +28,17 @@ Release with the self-contained archive and checksum verified after download (D2
 | Version | Content | Release merge | Evidence |
 |---|---|---|---|
 | 0.1.9 | P001 Metrics Records (D232–D266); includes OT008's development checks | [PR #8](https://github.com/AcostaDDev/my-harness/pull/8), `5cc1bc1` | [summary](archive/phase-001/SUMMARY.md) |
-| 0.1.8 | OT007 managed-run lease renewal and stream journals (D252) | [PR #7](https://github.com/AcostaDDev/my-harness/pull/7), `c005298` | [OT007](phase/OT007-task-run-lease.md) |
-| 0.1.7 | OT006 preparation consumption and output guard (D251) | [PR #6](https://github.com/AcostaDDev/my-harness/pull/6), `a3e9794` | [OT006](phase/OT006-preparation-consumption.md) |
-| 0.1.6 | OT004 visual profile and agent configuration editor (D250) | [PR #5](https://github.com/AcostaDDev/my-harness/pull/5), `0319b66` | [OT004](phase/OT004-visual-profile-editor.md) |
-| 0.1.5 | OT005 read-only preparation tool aliases (D247–D249) | [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), `b0d035d` | [OT005](phase/OT005-preparation-tool-links.md) |
-| 0.1.4 | OT003 intake diagnostics, adoption guards, joint document review (D241/D244/D245) | [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), `9985b0a` | [OT003](phase/OT003-intake-profile-diagnostics.md) |
-| 0.1.3 | OT002 question-first answers and live activity (D240) | `64c21d0` | [OT002](phase/OT002-question-answers.md) |
-| 0.1.2 | OT001 live agent configuration (D238) | `c606116` | [OT001](phase/OT001-live-agent-configuration.md) |
-| 0.1.1 | Model selectors (D231) | `e252fdc` | [notes](phase/v0.1.1-model-selectors.md) |
+| 0.1.8 | OT007 managed-run lease renewal and stream journals (D252) | [PR #7](https://github.com/AcostaDDev/my-harness/pull/7), `c005298` | [OT007](archive/one_off_tasks/OT007-task-run-lease.md) |
+| 0.1.7 | OT006 preparation consumption and output guard (D251) | [PR #6](https://github.com/AcostaDDev/my-harness/pull/6), `a3e9794` | [OT006](archive/one_off_tasks/OT006-preparation-consumption.md) |
+| 0.1.6 | OT004 visual profile and agent configuration editor (D250) | [PR #5](https://github.com/AcostaDDev/my-harness/pull/5), `0319b66` | [OT004](archive/one_off_tasks/OT004-visual-profile-editor.md) |
+| 0.1.5 | OT005 read-only preparation tool aliases (D247–D249) | [PR #4](https://github.com/AcostaDDev/my-harness/pull/4), `b0d035d` | [OT005](archive/one_off_tasks/OT005-preparation-tool-links.md) |
+| 0.1.4 | OT003 intake diagnostics, adoption guards, joint document review (D241/D244/D245) | [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), `9985b0a` | [OT003](archive/one_off_tasks/OT003-intake-profile-diagnostics.md) |
+| 0.1.3 | OT002 question-first answers and live activity (D240) | `64c21d0` | [OT002](archive/one_off_tasks/OT002-question-answers.md) |
+| 0.1.2 | OT001 live agent configuration (D238) | `c606116` | [OT001](archive/one_off_tasks/OT001-live-agent-configuration.md) |
+| 0.1.1 | Model selectors (D231) | `e252fdc` | [notes](archive/project-history/v0.1.1-model-selectors.md) |
 
 The bounded activation fix after an empty failed intake (D236) is documented in
-[failed-intake-activation](phase/failed-intake-activation.md).
+[failed-intake-activation](archive/one_off_tasks/failed-intake-activation.md).
 
 ## Current operator installation
 
@@ -156,4 +162,11 @@ Automate closing/archiving a completed phase and opening/planning its successor 
 authorization, retaining stop conditions, READY and recovery guarantees ([ROADMAP](ROADMAP.md#p002--continuous-mode),
 [D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)). Opened at the P001 closure
-without tasks; nothing is designed or implemented yet. [NEXT_STEPS](NEXT_STEPS.md) holds the objective and criteria.
+without tasks. The owner subsequently broadened the design to LangGraph orchestration, database-owned structured
+knowledge, scoped discoverable tools, judge duties, correlated tracing, generated/manual-importable documents,
+a global inbox and task-instance graph. The [discussion](phase/P002-autonomous-mode-discussion.md) is preserved;
+the [design basis](phase/P002-design-basis.md) consolidates directions and open gates. [NEXT_STEPS](NEXT_STEPS.md)
+contains **23 proposed tasks, draft v0.2**, pending owner review/adoption. The discovery/tool contract is proposed as
+client-neutral to prepare future OpenCode integration, without claiming an implemented adapter. No task has started,
+no new dependency is adopted, and none of the proposed product behavior is implemented. Current installed behavior
+remains 0.1.9.

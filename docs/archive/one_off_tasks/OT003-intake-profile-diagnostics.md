@@ -1,7 +1,7 @@
 # OT003 — Intake profile rejection diagnostics
 
 Released as **0.1.4** on 2026-10-27; implementation branch `fix/intake-profile-diagnostics`. Decision:
-[D241](../DECISIONS.md#d241--actionable-intake-profile-rejections). This is a bounded correction outside P001,
+[D241](../../DECISIONS.md#d241--actionable-intake-profile-rejections). This is a bounded correction outside P001,
 assigned its own **0.1.4** patch. D242 records the owner's requirement to track source and delivery separately;
 OT003 remained in ONE_OFF_TASKS until publication/verification completed; the historical work notes follow.
 The owner later extended OT003 with the adoption blockers found during manual testing (D244); that follow-up

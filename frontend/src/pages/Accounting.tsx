@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { BASES, WORK, accountingQuery, activeFilters, ageDays, bucketState, captureFacts, counted, groupFilter, money,
-  periodState, rateParts, reasonKey } from "../accounting.ts";
+import { BASES, WORK, accountingQuery, activeFilters, ageDays, bucketState, captureFacts, counted, groupFilter, invocationLabel,
+  money, periodState, rateParts, reasonKey } from "../accounting.ts";
 import type { Filters, Work } from "../accounting.ts";
 import { useFormats } from "../charts";
 import { useArchive } from "../ServiceMode";
@@ -489,7 +489,7 @@ function Invocations({ scope, filters, selection, projects, refresh, selected, o
           <td>{item.usage.coverage ? code("usage", item.usage.coverage) : <span className="muted">—</span>}</td>
           <td><Priced item={item} /></td>
           <td><button type="button" className="button-quiet" aria-pressed={selected === item.id} onClick={() => onSelect(item.id)}
-            aria-label={t("accounting.invocation.open_named", { id: item.id.slice(0, 8) })}>{t("accounting.invocation.open")}</button></td>
+            aria-label={t("accounting.invocation.open_named", { id: invocationLabel(item.id) })}>{t("accounting.invocation.open")}</button></td>
         </tr>)}</tbody>
       </table>
     </Scroll>}
@@ -517,7 +517,7 @@ function InvocationDetail({ id, cohort, onClose }: { id: string; cohort?: string
   const none = <span className="muted">{t("metrics.no_data")}</span>;
   return <section className="panel" aria-labelledby="accounting-detail">
     <div className="panel-head">
-      <h2 id="accounting-detail" tabIndex={-1}>{t("accounting.invocation.title", { id: id.slice(0, 8) })}</h2>
+      <h2 id="accounting-detail" tabIndex={-1}>{t("accounting.invocation.title", { id: invocationLabel(id) })}</h2>
       <button type="button" className="button-quiet" onClick={onClose}>{t("accounting.invocation.close")}</button>
     </div>
     <Stale error={d ? read.error : undefined} />

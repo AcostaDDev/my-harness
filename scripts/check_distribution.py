@@ -264,6 +264,11 @@ def main():
                     return read(base, f'/api/managed/runs/{run_id}')
                 time.sleep(.05)
             raise AssertionError('Installed managed job did not settle')
+        def accounting(base):
+            paths = {'summary': '/api/managed/accounting/summary', 'invocations': '/api/managed/accounting/invocations',
+                     'groups': '/api/managed/accounting/groups?dimension=provider',
+                     'references': '/api/managed/configuration/references'}
+            return {name: read(base, path) for name, path in paths.items()}
         def roles():
             calls = area / 'calls.jsonl'
             return [json.loads(line)['role'] for line in calls.read_text().splitlines()] if calls.exists() else []
@@ -308,6 +313,14 @@ def main():
             assert post(base, action_path, action_body, 'checkpoint')['id'] == checkpoint['id']
             historical_attempts = read(base, f"/api/managed/runs/{task['run_id']}/attempts")
             historical_events = read(base, f"/api/managed/runs/{task['run_id']}/events?limit=100")
+            # P001: the scripted ports leave expected invocations without captures or a billing profile: visible
+            # and unpriced, never zero. The accounting page route and the packaged references are served too.
+            ledger = accounting(base)
+            coverage = ledger['summary']['coverage']
+            assert ledger['summary']['amounts'] == [] and coverage['expected'] >= 2, coverage
+            assert sum(coverage['unpriced_reasons'].values()) == coverage['expected'], coverage
+            assert [item['source'] for item in ledger['references']['items']] == ['packaged']
+            assert request(base, '/accounting')[0] == request(base, '/projects/offline/accounting')[0] == 200
         calls = (area / 'calls.jsonl').read_bytes()
         assert roles() == ['definition', 'executor', 'reviewer']
         with server(db, fixture_env) as base:
@@ -347,8 +360,10 @@ def main():
             assert read(base, f"/api/managed/runs/{task['run_id']}/events?limit=100") == historical_events
             assert read(base, '/api/managed/supervisor')['enabled'] is False
             assert request(base, action_path, action_body, headers | {'Idempotency-Key': 'archive-refused'})[0] == 409
+            assert accounting(base) == ledger and request(base, '/accounting')[0] == 200
+            assert request(base, '/api/managed/configuration/references/preview', {'content': '{}'}, headers)[0] == 409
             assert (area / 'calls.jsonl').read_bytes() == calls
-        print('Artifacts: exact members, metadata, licenses and SHA256SUMS. Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, errors and restored evidence OK.')
+        print('Artifacts: exact members, metadata, licenses and SHA256SUMS. Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, accounting reads, errors and restored evidence OK.')
 
 
 if __name__ == '__main__':

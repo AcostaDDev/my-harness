@@ -15,7 +15,9 @@ evolving baseline (**v0.3, 23 tasks**,
 [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
 **P002-T001 is completed as design** ([contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md),
 [threat model](phase/P002-T001-threat-model.md), D268–D279) on `docs/p002-t001-contracts`, committed and merged
-into local develop at the owner's authorization; push pending. **Next: P002-T002**, not started. No product change is implemented. Historical starting
+into develop at the owner's authorization. **P002-T002 is completed** ([feasibility](phase/P002-T002-feasibility.md);
+D280–D281 accepted) on `docs/p002-t002-feasibility`, merged into develop and pushed with it. **Next: P002-T003**, not
+started. No product change is implemented. Historical starting
 context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
@@ -171,5 +173,9 @@ D156. The [discussion](phase/P002-autonomous-mode-discussion.md) and [design bas
 preserved. **T001 (completed as design, integrated into develop)** formalized the supersession map, authority invariants,
 judge/permission/tool/autonomy/trace contracts, flows FL01–FL14 with guards and recovery, threats TM01–TM20, gates
 G01–G17 with owning tasks and requirement coverage; SPECIFICATION §14 and ARCHITECTURE §13 carry the design labelled
-not implemented. [NEXT_STEPS](NEXT_STEPS.md) holds plan v0.3; T002–T023 are planned. No dependency is adopted, no
-OpenCode adapter exists, and installed behavior remains 0.1.9.
+not implemented. **T002 (completed, integrated)** characterized LangGraph 1.2.18 (lockable with 27
+additions and no pin change, offline install, re-executed nodes, silent graph-version drift, hosted tracing by
+inherited environment) and the per-invocation MCP broker on Claude Code 2.1.312 and Codex 0.165.0 with 14 bounded
+real runs; D280 (dependency set and placement) and D281 (transport and minimum capability contract) are accepted.
+[NEXT_STEPS](NEXT_STEPS.md) holds plan v0.3; T003–T023 are planned. No dependency is adopted, no OpenCode adapter
+exists, and installed behavior remains 0.1.9.

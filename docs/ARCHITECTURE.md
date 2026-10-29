@@ -405,7 +405,8 @@ flowchart TD
 
 - **Responsibilities.** The graph routes and waits with references only; the domain model is the authority; services
   validate and perform effects; the supervisor remains the only launcher with one writer per checkout. Where the
-  LangGraph integration lives relative to the standard-library-only core is gate G01.
+  LangGraph integration lives relative to the standard-library-only core is accepted in D280 (not implemented): one
+  supervisor-owned orchestration package is the only importer; the core never imports it.
 - **Operations and recovery.** Recoverable operations link project tasks to invocations and sealed effect intents; a
   replayed node reconciles the same operation. The continuation/journal consistency contract is G02.
 - **Tools.** A harness-owned versioned catalogue behind a small discovery surface over a transport characterized per

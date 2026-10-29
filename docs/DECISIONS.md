@@ -2024,3 +2024,43 @@ to implementing and qualifying tasks; the [gate register](phase/P002-T001-contra
 each open question one owning task. Accepted P002 design lives in `docs/phase/` and in SPECIFICATION §14/ARCHITECTURE
 §13 labelled as not implemented; `docs/flows/`, DDBB-DIAGRAM, OpenAPI and client types change only with the
 implementation, in the same task. These records follow the phase into its archive at closure.
+
+## D280 — LangGraph 1.2.18 dependency set, placement and runtime hygiene
+
+Status: accepted in P002-T002 (owner, 2026-10-29); the dependency is added in T003, not before.
+Resolves G01 and bounds G02; evidence in the [T002 feasibility record](phase/P002-T002-feasibility.md#2-langgraph-feasibility-g01-g02-feasibility).
+
+Adopt `langgraph==1.2.18` as a runtime dependency in T003, locked with exactly the 27 additions measured in T002
+(`langgraph-checkpoint` 4.3.1, `langgraph-prebuilt` 1.1.1, `langgraph-sdk` 0.4.10, `langchain-core` 1.7.1,
+`langchain-protocol` 0.0.20, `langsmith` 0.14.15 and their transitive set) and no change to existing pins; offline
+installation through the existing `pylock.toml` route; `NOTICE-THIRD-PARTY.md` updated in the same task. Do not add
+`langgraph-checkpoint-sqlite`; T003 implements continuation as a harness saver over Alembic-managed tables unless the
+owner later decides otherwise. The standard-library-only core never imports LangGraph: one orchestration package,
+owned by the supervisor runtime, is the only importer, enforced by an import-boundary test.
+
+Runtime hygiene: the service neutralizes inherited `LANGSMITH_*`/`LANGCHAIN_*` tracing variables and runs graphs
+inside a disabled LangSmith tracing context, with a blocked-network test; checkpoints use a strict serializer and
+`durability="sync"`; graph state holds only identities and revision references. Because a resumed or replayed node
+re-executes from its start and LangGraph silently ignores graph-version drift, every effect goes through a journaled
+deterministic operation identity (INV-02, INV-05) and the harness checks a stamped graph version before resume.
+
+## D281 — Per-invocation MCP broker transport and minimum client capability contract
+
+Status: accepted in P002-T002 (owner, 2026-10-29); implementation in T008 (transport), T006 (observation records)
+and T021 (audit). Resolves the T002 part of G04 and G05; evidence in the
+[T002 feasibility record](phase/P002-T002-feasibility.md#3-tool-transport-per-client-g04).
+
+The 0.2.0 transport is a harness-owned stdio MCP server exposing only the D275 broker tools, launched per invocation
+with the caller bound in its launcher-set environment. Claude Code receives it through `--strict-mcp-config
+--mcp-config` and `--allowedTools mcp__<server>__<tool>`; Codex through `-c mcp_servers.<server>.*` with
+`enabled_tools` and `default_tools_approval_mode="approve"` scoped to that server only; neither reads or writes user or
+global configuration. Claude's native ToolSearch stays an optional optimization behind the same semantics, not the
+default. The bridge runs outside client confinement, so it carries no authority beyond the broker; it exits on stdin
+EOF or parent loss, and the supervisor records and reaps it because Codex leaves it orphaned on cancellation.
+Cancellation is classified from the supervisor's record, never from the exit status; an in-flight invocation is
+uncertain and reconciled, never reissued.
+
+Admission requires evidence of capabilities MC1–MC7 of the
+[minimum contract](phase/P002-T002-feasibility.md#5-minimum-client-capability-contract-d281) per client,
+version and role; a missing one blocks admission. Usage, reported model and cancellation telemetry are recorded where
+the client provides them and stay unknown otherwise (Codex reports no model and no usage after cancellation).

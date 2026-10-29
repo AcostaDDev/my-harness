@@ -3,7 +3,7 @@
 Status: accepted design; source inventory completed on 2026-10-27 against `2dcf9d4` (released code `v0.1.8`).
 Implementation belongs to T002–T005; no new runtime format, table, configuration, route or calculator exists yet.
 Authority: D074/D144/D150/D173–D174/D216–D228/D231–D234 and
-[D253–D257](../DECISIONS.md#d253--phase-release-targets-after-018).
+[D253–D257](../../DECISIONS.md#d253--phase-release-targets-after-018).
 
 Owner/delivery: P001-T001, branch `docs/p001-t001-accounting-contract`, topic → `develop`, commit/merge/push
 authorized by the owner. P001 targets **0.1.9 at phase closure**; P002 targets **0.2.0 at its closure**. No individual
@@ -270,7 +270,7 @@ precision the evidence cannot establish. No discrepancy auto-correction.
 ## 7. Additive persistence, compatibility and operations (D257)
 
 Planned tables/relationships are documented separately in
-[DDBB-DIAGRAM](../DDBB-DIAGRAM.md#planned-p001-accounting-records-not-implemented). They do not change schema head
+[DDBB-DIAGRAM](../../DDBB-DIAGRAM.md#planned-p001-accounting-records-not-implemented). They do not change schema head
 `0027_profile_proposals` or its 54 tables in T001. T003 adds the migration under D150 with a verified premigration
 snapshot; no mass reinterpretation occurs inside that migration. Original histories, `metrics-1`, `terminal-1/2`,
 old configuration versions, `run-projection-1`, phase summaries/catalogs and recipe sources retain bytes/hashes.

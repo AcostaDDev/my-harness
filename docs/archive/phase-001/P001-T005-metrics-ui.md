@@ -1,13 +1,13 @@
 # P001-T005 — Billing/reference controls and metrics UI
 
-T005 is split by [D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts)
+T005 is split by [D263](../../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts)
 into two sequential deliveries; it is complete when both are delivered. One section per delivery.
 
 ## T005a — Accounting UI
 
 Status: complete; source delivered through `feat/p001-t005a-accounting-ui` (branched from `develop` at `c769b0e`).
 Owner: P001-T005a; implementation detail
-[D264](../DECISIONS.md#d264--accounting-page-routes-exact-amounts-and-derived-reference-period).
+[D264](../../DECISIONS.md#d264--accounting-page-routes-exact-amounts-and-derived-reference-period).
 Delivery route: topic → `develop`/`origin`, as for T001–T004; commit, merge and push were authorized by the owner after
 review. Git records the source and merge commit IDs; the local topic branch is removed after the merge.
 No task release or version bump: 0.1.9 qualification/publication stays at P001 closure (T006). Distribution, operator
@@ -53,7 +53,7 @@ types, router tests and code review, not in the browser. No distribution build, 
 
 Status: complete; source delivered through `feat/p001-t005b-billing-controls` (branched from `develop` at `0d51449`).
 Owner: P001-T005b; implementation detail
-[D265](../DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review) within D263.
+[D265](../../DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review) within D263.
 Delivery route: topic → `develop`/`origin`, like T001–T005a; commit, merge and push were authorized by the owner after
 review. Git records the source and merge commit IDs; the local topic branch is removed after the merge. No task release or version bump: 0.1.9 qualification/publication stays at P001 closure (T006).
 Distribution, operator installation and service restart are outside T005b. With both deliveries integrated, T005 is

@@ -2,7 +2,7 @@
 
 Status: complete; source delivered through `feat/p001-t003-capture-storage` (branched from `develop` at `1cebe03`).
 Owner: P001-T003; accepted D254–D257/T001 contract, T002 boundary (D258) and implementation detail
-[D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives).
+[D259](../../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives).
 Delivery route: topic → `develop`/`origin`, as for T001/T002; commit, merge and push were authorized by the owner after
 review. Git records the source and merge commit IDs; the local topic branch is removed after the merge. No task release or version bump: 0.1.9 qualification/publication stays at P001 closure (T006).
 Distribution, operator installation, migration of the operator's database and service restart are outside T003.

@@ -2,7 +2,7 @@
 
 Status: complete; source delivered through `feat/p001-t004-aggregates-api` (branched from `develop` at `e2aec3f`).
 Owner: P001-T004; accepted D254–D257/T001 §8 contract over the T003 ledger (D259) and implementation detail
-[D262](../DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api).
+[D262](../../DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api).
 Delivery route: topic → `develop`/`origin`, as for T001–T003; commit, merge and push were authorized by the owner after
 review. Git records the source and merge commit IDs; the local topic branch is removed after the merge. No task release or version bump: 0.1.9 qualification/publication stays at P001 closure (T006).
 Distribution, operator installation and service restart are outside T004.

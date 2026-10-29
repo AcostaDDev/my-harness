@@ -643,7 +643,7 @@ again a project already managed by this harness is a normal registration.
 
 ## D156 — Continuous mode between phases reserved for v0.2.0
 
-Status: accepted; not implemented.
+Status: superseded by D268 (scope and stop conditions); it was never implemented. The 0.2.0 target is retained.
 
 An optional continuous mode — tasks, commits, check, closure and archive, then planning and execution of the next
 phase — is reserved for v0.2.0, after the first public release. It will start from a bounded initial authorization
@@ -1010,7 +1010,8 @@ No real calls, network installation, global configuration change, commit or publ
 
 ## D233 — Metrics Records first in 0.1.2, Continuous Mode second in 0.2.0
 
-Status: accepted (roadmap order and release targets; implementation pending); the `0.1.2` target is superseded by D239.
+Status: accepted (roadmap order and release targets; implementation pending); the `0.1.2` target is superseded by D239
+and the Continuous Mode description by D268.
 
 At the user's explicit direction, P001 is **Metrics Records**, targeting `0.1.2`; P002 is **Continuous Mode**,
 targeting `0.2.0`. This supersedes the initial ordering and unassigned metrics release in D232. P001 is the active
@@ -1843,3 +1844,183 @@ rewrite archived facts, frozen histories, fingerprints, catalogues, recipe sourc
 
 Evidence: [P002 planning maintenance](phase/P002-portable-tools-and-archive-maintenance.md) and the
 [archive index](archive/README.md).
+
+## D268 — P002 scope: complete-roadmap autonomy and evolving plan baseline
+
+Status: accepted at the owner's explicit authorization of P002-T001 (2026-10-29); implementation pending T002–T023.
+Supersedes D156 and D233's Continuous Mode description; the 0.2.0 target of D253 is retained.
+
+P002 delivers optional autonomy over the **whole authorized roadmap** of a defined or onboarded project, without a
+phase-count cap, together with the authority redesign the owner requested: LangGraph orchestration, database-owned
+structured knowledge, generated documentation with explicit import, portable tool discovery, a configurable judge,
+standing revocable grants, correlated tracing, a global inbox and a task-instance graph. Manual mode remains and
+shares the same domain operations. No new objective, extra roadmap phase, push, release, publication or deployment
+follows from autonomy; completion means every authorized phase CLOSED with satisfied criteria.
+
+The draft v0.2 plan and the [design basis](phase/P002-design-basis.md) are adopted as the evolving baseline; the
+[T001 contracts](phase/P002-T001-contracts.md) refine the plan to v0.3. Tasks keep stable IDs and may be refined,
+split or added with recorded reasons, without dropping acceptance, qualification or pending delivery. Accepted
+design binds implementing tasks but is never reported as implemented; SPECIFICATION §§1–13, ARCHITECTURE §§1–12
+and `docs/flows/` describe 0.1.9 until each owning task replaces them with parity. Adoption authorizes no source work,
+dependency, harness or agent execution, commit or delivery.
+
+## D269 — LangGraph orchestration over SQLite domain authority
+
+Status: accepted design in P002-T001 (owner direction); dependency adoption pending T002, implementation T003–T006.
+
+LangGraph is the orchestration direction: a versioned graph definition decides stages, branches and resumable waits.
+SQLite domain records own project knowledge, accepted revisions, decisions, grants, rulings and operation outcomes;
+trusted application services validate and perform effects behind typed commands. Graph state holds identities and
+revision references, never an editable copy of authority. The supervisor stays the only process launcher with one
+writer per checkout; a replayed node reconciles the same operation instead of creating a new effect.
+
+The invariants INV-01–INV-12 of the [contracts](phase/P002-T001-contracts.md#3-authority-model) bind every task. The
+exact version, locked dependency set, offline packaging, placement relative to the standard-library-only core and the
+continuation/journal consistency contract are gates G01–G03; a feasibility blocker returns to the owner rather than
+silently selecting another runtime. Adding the dependency needs its own recorded decision with exact versions.
+
+## D270 — Database-owned project knowledge and immutable accepted revisions
+
+Status: accepted design in P002-T001 (owner direction); implementation pending T004, T007, T011–T013. When implemented
+it replaces the Markdown authority of SPECIFICATION §§2/6 and ARCHITECTURE §5 for managed projects.
+
+Requirements and criteria, phases, tasks and dependencies, product decisions and supporting rich content become
+structured, related and revisioned database records. Concepts that need identity, constraints, querying or history
+are normalized; descriptive prose and Mermaid stay versioned rich content. Adoption creates an immutable accepted
+revision against an expected revision; history is never rewritten. Each invocation freezes the revision it receives
+and its tool reads default to it; later revisions apply at a new invocation or attempt. Validation, review,
+acceptance, READY and closure bind that revision with the exact code content.
+
+Both entries are kept: definition creates database drafts and accepted knowledge; onboarding keeps static inventory
+and reverse engineering, storing known, inferred and unknown provenance in the database. Entity boundaries (G06) and
+the authority of instruction files (G07, D094 meanwhile) remain open. This repository keeps Markdown authority.
+
+## D271 — Generated documentation targets and explicit manual import
+
+Status: accepted design in P002-T001 (owner direction; replacement policy as a T001 resolution); implementation
+pending T013–T015. It redefines SPECIFICATION §5 rule 8 for owned generated targets only.
+
+Exported Markdown is a generated view. The harness never compares exported files with the database, warns about drift,
+creates conflict items or imports IDE edits automatically. A versioned ownership manifest declares the generated
+targets; at task commit, closure, owner regeneration or manual adoption the harness renders the accepted revision and
+replaces them. The expected prior state of an owned target is HEAD's committed bytes or absence on a clean baseline;
+uncommitted edits refuse the operation, so no uncommitted bytes are discarded. Root, link, traversal and
+unowned-collision guards remain. Export intents, per-target outcomes and generation manifests make partial exports
+recoverable without rerunning inference; a task commit requires its required generated documentation. Agents never
+write owned targets.
+
+An explicit UI import parses a supported format, stages proposals, reports unsupported or lossy content and adopts a
+previewed canonical change by hash. Imports never create runs, approvals, grants, rulings, usage or execution states.
+Document import, portable project transfer and evidence-bearing backup/restore are separate capabilities. The format,
+manifest and identity mapping are G09
+([contracts §6](phase/P002-T001-contracts.md#6-generated-documentation-and-explicit-import)).
+
+## D272 — Authorization origins, product decisions and operational rulings
+
+Status: accepted design in P002-T001 (owner direction; origin vocabulary as a T001 resolution); implementation pending
+T004, T005, T009, T010, T012, T016.
+
+Every authorization, adoption, grant and effect records its origin: `owner_confirmed` (exact preview hash in the UI
+or inbox), `owner_delegated` (derived by the harness from an active autonomous authorization for a concrete sealed
+preview, naming the parent, policy rule and any ruling) or `harness_deterministic` (mechanical effects already
+covered). A parent authorization never confirms future content; children never exceed it. Delegated approvals are
+never shown as owner approvals.
+
+Product decisions are canonical versioned records exported to the project's `DECISIONS.md`, adopted through
+propose/adopt and superseded, never rewritten. Operational rulings (permission outcomes, planning choices, gap
+resolutions, blocked-check classifications, owner answers) are append-only workflow audit records in SQLite. A ruling
+that establishes a durable product choice links to a decision adopted through the decision path, never implicitly.
+
+## D273 — Judge role and duty-specific contracts
+
+Status: accepted design in P002-T001 (owner direction); implementation pending T009.
+
+A judge joins reviewer and executor, with its own owner-selected provider, model and effort; provider diversity is
+optional and there is no fallback. One configuration serves several duties — `permission`, `planning_choice`,
+`spec_gap`, `blocked_check` — each with its own prompt, typed inputs and outputs, scoped tools, validation and failure
+routes. Each request is a fresh, accounted invocation with read-only code access and only its duty's ruling command;
+the service validates the outcome. The judge may abstain, never overrides integrity, acceptance or READY, never edits
+its policy and cannot grant owner-only capabilities (secrets, global configuration, outside-root writes, policy or
+prompt changes, destructive Git, push/publication/deployment, undelegated network installs, changes to objectives,
+phases, requirement meaning or criteria). Malformed output, refusal and missing evidence escalate; provider, quota,
+authentication and timeout failures stop without retry
+([contracts §7](phase/P002-T001-contracts.md#7-roles-and-judge-duties)). Prompts and the evaluation corpus are G16.
+
+## D274 — Permission dimensions, standing grants and revocation
+
+Status: accepted design in P002-T001 (owner direction); implementation pending T010. Extends SPECIFICATION §5 rule 6.
+
+The five dimensions stay separate. An autonomous authorization declares active, delegable and owner-only tiers; manual
+mode has no delegable tier. Grants are per-operation, time-limited or **permanent** (no time expiry, revocable), bound
+to project, role, dimension, exact targets, purpose, origin, parent authorization and policy version. Permanence never
+widens scope. Effective authority is the compound of grants within current ceilings, checked at every mediated command
+and admission, and combinations never yield an owner-only capability. A grant applies only at a new attempt through a
+frozen permission snapshot. Revocation is immediate for new commands and admissions; an active native writer is
+stopped through process control and its effects settled, without claiming that cooperative containment prevents every
+in-flight action (D064). Equivalent requests without new evidence do not reach the judge again. Cascade on
+authorization end, use in manual mode and target normalization are G10.
+
+## D275 — Client-neutral tool discovery and invocation contract
+
+Status: accepted design in P002-T001 (owner direction); characterization T002, implementation T005 and T008.
+
+The harness owns a versioned logical catalogue and a small discovery surface (illustratively `search_tools`,
+`describe_tool`, `invoke_tool`) over an existing suitable transport, so model contexts load only scoped definitions on
+demand. Discovery is not a grant: unscoped tools are not disclosed, and every invocation binds the caller from the
+transport session and revalidates schema digest, authority, expected revision and idempotency as the underlying
+command. No SQL, arbitrary code or full-catalogue fallback; broker and logical tool identities are both traced.
+Anthropic's native Tool Search or other native deferred loading may optimize the same semantics but is never required.
+Client kind, inference provider and model are separate dimensions. Claude Code and Codex are the 0.2.0 clients;
+OpenCode is future work with an extension point and a synthetic conformance fixture, not an adapter. A client that
+lacks the minimum capability contract (G04) is blocked at admission.
+
+## D276 — Autonomous roadmap runs, local bounds and stops
+
+Status: accepted design in P002-T001 (owner direction; optional-cap semantics and stop classes as T001 resolutions);
+implementation pending T016, with T014/T015.
+
+A run starts from a readiness preview and an owner-confirmed authorization binding the accepted roadmap revision,
+delegation policy, finite local bounds, optional caps and risk acknowledgement. There is no phase-count cap; adding
+phases or changing objectives, criteria or requirement meaning is an owner amendment. Local bounds cover task attempts
+across lineage, judge reconsiderations, replacement plans, remediation per cause and no-progress fingerprints; they
+survive resume, phase change, split and rename. Optional caps (deadline, invocations, observed tokens, valuation on
+one basis) are checked before each inference, stop on unknown usage when set and may be exceeded by an in-flight
+call. Stops are `WAITING_FOR_OWNER`, `PAUSED`, `LIMIT_REACHED`, `FAILED`, `RECOVERY_REQUIRED`, `REVOKED` and
+`COMPLETED`; resume is explicit and revalidates. Defaults (G11), readiness criteria (G12) and the acknowledgement text
+(G17) are open ([flows FL01–FL03](phase/P002-T001-flows.md#fl02--autonomous-run-states)).
+
+## D277 — Correlated traces, operations and knowledge-access receipts
+
+Status: accepted design in P002-T001 (owner direction); implementation pending T006–T008, T018, T019.
+
+Requests, workflow runs, recoverable operations, agent invocations/attempts, observed turns and tool calls are
+correlated by stable IDs, parent and causation links, ordered events and source labels (supplied, reported, derived,
+measured, absent). Project task, operation and invocation are distinct (naming G08); no second scheduler is created.
+A harness attempt, a revision round and a provider-reported turn are different counters; unobserved turns are never
+manufactured and missing coverage stays visible. Each knowledge delivery records invocation, channel, entity, stable
+ID, revision, sections, exposure level, digest and truncation; it shows availability, not comprehension. Native file
+reads are recorded only when observed. Command outcomes and their events commit together.
+
+## D278 — Global inbox and task-instance graph
+
+Status: accepted design in P002-T001 (owner direction); implementation pending T017 and T018.
+
+One global inbox serves manual and autonomous modes. Items are derived and deduplicated from committed events, name
+the project and optional phase, task, run, operation or request, and keep read and resolved states separate. Actions
+call the ordinary guarded commands with fresh checks; an item never carries an approval; query-only archives stay
+read-only; optional OS notifications carry no sensitive content. The graph is a read-only projection of persisted
+phases and task instances with their actual reviewer, executor, judge and Harness involvement, including phase
+opening, check and closure; it is neither a workflow editor nor the runtime topology. Polling remains the default.
+Inbox taxonomy and shortcuts (G13) and the visual direction (G14) come from the owner.
+
+## D279 — P002 threat model, coverage and design-record placement
+
+Status: accepted in P002-T001; repository documentation practice for P002.
+
+The [initial threat model](phase/P002-T001-threat-model.md) (TM01–TM20) assigns each threat a control and owning
+tasks; each implementing task cites the threats it controls, and T021 audits the integrated result. The
+[requirement coverage](phase/P002-T001-contracts.md#15-requirement-coverage) maps owner requirements and exit criteria
+to implementing and qualifying tasks; the [gate register](phase/P002-T001-contracts.md#12-open-gate-register) gives
+each open question one owning task. Accepted P002 design lives in `docs/phase/` and in SPECIFICATION §14/ARCHITECTURE
+§13 labelled as not implemented; `docs/flows/`, DDBB-DIAGRAM, OpenAPI and client types change only with the
+implementation, in the same task. These records follow the phase into its archive at closure.

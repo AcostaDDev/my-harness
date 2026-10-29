@@ -1,13 +1,15 @@
 # P002 — Design basis and owner directions
 
-Status: **draft v0.2, 2026-10-29**. This is the granular working reference requested by the owner for the proposed
+Status: **adopted as the evolving baseline (D268), v0.2 text, 2026-10-29**; formalized by P002-T001 in the
+[contracts](P002-T001-contracts.md), [flows](P002-T001-flows.md), [threat model](P002-T001-threat-model.md) and
+D268–D279, which prevail where more precise. This is the granular working reference requested by the owner for the
 0.2.0 redesign. It consolidates the [discussion](P002-autonomous-mode-discussion.md), including its later corrections,
 and supports the [draft task plan](../NEXT_STEPS.md). It is not an implementation claim or an approved final schema.
 
 **Owner direction** records a stated requirement or agreement. **Recommendation** records a proposed implementation
 boundary. **Open** requires design/qualification before adoption. Earlier contradictory review recommendations in
-the discussion are historical. This document is the consolidated planning reference; SPECIFICATION, DECISIONS and
-implemented flows remain the current product contract until explicit adoption/supersession during P002-T001.
+the discussion are historical. Recommendations here are adopted only where the T001 records restate them; the
+implemented 0.1.9 contract (SPECIFICATION §§1–13, flows) stays in force until each owning task replaces it.
 
 No code, dependency installation, harness/provider execution, commit, merge, push, publication or installation is
 authorized by this record. This repository remains developed by hand under AGENTS; the proposed database-first
@@ -351,6 +353,9 @@ rule, not a new managed-project entity or runtime behavior; P002 source work rem
 **Coverage:** all draft tasks, especially P002-T001 and P002-T023.
 
 ## Open design gates
+
+T001 replaced this list with the [gate register G01–G17](P002-T001-contracts.md#12-open-gate-register); item 1 and the
+generated-target ownership part of item 4 are resolved. The original list is kept for reference:
 
 1. Approve/refine the draft task plan and formalize the changed normative contracts before source work.
 2. Characterize lazy tool discovery and scoped calls for each CLI; choose exact dependencies and supported profiles.

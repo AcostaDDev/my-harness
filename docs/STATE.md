@@ -10,11 +10,13 @@ Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md); the o
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work); later one-offs branch from the latest release
 on `main`, D261). **P001 Metrics Records is closed** (D266): released as **0.1.9**, installed on the operator machine
 and archived in [`archive/phase-001/`](archive/phase-001/SUMMARY.md). **Active phase: P002 Continuous Mode** (target
-**0.2.0** at its closure, D253), opened without a plan. A **draft v0.2 with 23 proposed tasks** now covers the owner's
-expanded autonomous-mode/database-authority design; see [NEXT_STEPS](NEXT_STEPS.md) and the
-[design basis](phase/P002-design-basis.md). The plan is **pending owner review; no task has started and no product
-change is implemented**. Design/plan adoption precedes code. Historical starting context:
-[P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
+**0.2.0** at its closure, D253). The owner adopted the expanded autonomous-mode/database-authority plan as the
+evolving baseline (**v0.3, 23 tasks**,
+[D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
+**P002-T001 is completed as design** ([contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md),
+[threat model](phase/P002-T001-threat-model.md), D268–D279) on `docs/p002-t001-contracts`, committed and merged
+into local develop at the owner's authorization; push pending. **Next: P002-T002**, not started. No product change is implemented. Historical starting
+context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
 are in [project history](archive/project-history/README.md). [D267](DECISIONS.md#d267--archive-completed-one-offs-separately-from-active-phase-work)
@@ -162,11 +164,12 @@ Automate closing/archiving a completed phase and opening/planning its successor 
 authorization, retaining stop conditions, READY and recovery guarantees ([ROADMAP](ROADMAP.md#p002--continuous-mode),
 [D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)). Opened at the P001 closure
-without tasks. The owner subsequently broadened the design to LangGraph orchestration, database-owned structured
-knowledge, scoped discoverable tools, judge duties, correlated tracing, generated/manual-importable documents,
-a global inbox and task-instance graph. The [discussion](phase/P002-autonomous-mode-discussion.md) is preserved;
-the [design basis](phase/P002-design-basis.md) consolidates directions and open gates. [NEXT_STEPS](NEXT_STEPS.md)
-contains **23 proposed tasks, draft v0.2**, pending owner review/adoption. The discovery/tool contract is proposed as
-client-neutral to prepare future OpenCode integration, without claiming an implemented adapter. No task has started,
-no new dependency is adopted, and none of the proposed product behavior is implemented. Current installed behavior
-remains 0.1.9.
+without tasks. The owner broadened it to whole-roadmap autonomy with LangGraph orchestration, database-owned
+structured knowledge, generated documents with explicit UI import, client-neutral discoverable tools, a configurable
+judge, permanent revocable grants, correlated tracing, a global inbox and a task-instance graph; D268 supersedes
+D156. The [discussion](phase/P002-autonomous-mode-discussion.md) and [design basis](phase/P002-design-basis.md) are
+preserved. **T001 (completed as design, integrated into develop)** formalized the supersession map, authority invariants,
+judge/permission/tool/autonomy/trace contracts, flows FL01–FL14 with guards and recovery, threats TM01–TM20, gates
+G01–G17 with owning tasks and requirement coverage; SPECIFICATION §14 and ARCHITECTURE §13 carry the design labelled
+not implemented. [NEXT_STEPS](NEXT_STEPS.md) holds plan v0.3; T002–T023 are planned. No dependency is adopted, no
+OpenCode adapter exists, and installed behavior remains 0.1.9.

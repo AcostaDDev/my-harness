@@ -267,9 +267,10 @@ authentication are verified, a portable `project.yaml`, physical operating-syste
 isolation, and providers other than Codex and Claude Code (Gemini CLI only gets the `GEMINI.md` wrapper). Any real use
 of providers by the harness on a project requires the user's own configuration and confirmations.
 
-The optional continuous mode between phases (tasks → commits → check → closure → planning and execution of the next
-phase under one bounded authorization) is planned for v0.2.0 and is not implemented
-([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020), [ROADMAP](ROADMAP.md)).
+Autonomous execution of a whole authorized roadmap, database-owned project knowledge and the related authority
+redesign are accepted design for v0.2.0 and are not implemented
+([§14](#14-p002-autonomous-mode-and-project-authority-accepted-design-not-implemented),
+[D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), [ROADMAP](ROADMAP.md)).
 
 ## 12. Guided configuration
 
@@ -360,3 +361,33 @@ T006 [qualified the whole chain](archive/phase-001/P001-T006-qualification.md) w
 - Preserve histories, `metrics-1`, frozen summaries/catalogs and recipes. New interpretations/repricing are explicit
   append-only operations; ordinary reads never price, backfill or fetch. Additive migration, retained evidence and
   verified offline query-only archive consultation must ship together with data/flow/API/type/en-es parity.
+
+## 14. P002 autonomous mode and project authority (accepted design; not implemented)
+
+[D268–D279](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), the
+[T001 contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md) and
+[threat model](phase/P002-T001-threat-model.md) define the 0.2.0 target. Sections 1–13 remain the contract of the
+released 0.1.9 product; each owning P002 task updates them, the flows, data diagram and API with parity when it
+implements a change. The [supersession map](phase/P002-T001-contracts.md#2-supersession-map) lists which sections and
+rules change.
+
+- **Autonomy.** Optional execution of the whole authorized roadmap without a phase-count cap, from a readiness preview
+  and an owner-confirmed authorization with delegation, finite local bounds and optional caps; explicit stop classes
+  and resume; completion only with every authorized phase CLOSED and its criteria evidenced. Manual mode keeps its
+  confirmations and uses the same domain commands.
+- **Authority.** LangGraph orchestrates stages and waits; SQLite owns structured knowledge, accepted revisions,
+  decisions, grants, rulings and operation outcomes; typed services perform every effect; one writer per checkout.
+  Delegated approvals carry their origin and are never shown as owner approvals.
+- **Knowledge and documents.** Definition and reverse-engineering onboarding produce database knowledge. Markdown is a
+  generated view replaced at defined boundaries without drift detection; IDE edits matter only through an explicit,
+  previewed UI import, which never fabricates execution, approval or usage history.
+- **Roles and permissions.** Reviewer, executor and judge are configured by provider, model and effort; the judge has
+  duty-specific contracts and cannot grant owner-only capabilities. The five permission dimensions gain per-operation,
+  time-limited and permanent revocable grants, enforced outside the model.
+- **Tools and traces.** A client-neutral discovery/description/invocation contract, independent of native tool search,
+  prepares future clients such as OpenCode without implementing them. Requests, operations, invocations, observed
+  turns, tool calls and delivered knowledge are correlated with exact revisions and explicit coverage.
+- **Observation.** A global inbox for both modes and a read-only task-instance graph; their taxonomy and visual design
+  come later from the owner.
+- **Preserved.** Acceptance by exact content, READY binding, single writer, intent before effect, conservative recovery,
+  no hidden fallback or retry, unknown is not zero, frozen histories and cooperative containment without isolation.

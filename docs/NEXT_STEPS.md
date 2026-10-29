@@ -5,7 +5,8 @@ refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-
 **P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
 develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
-T005–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+**P002-T005 is completed (D286 accepted) and integrated into develop.** T006–T023 are planned and not
+started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
 data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -77,7 +78,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; every other task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005 is **completed (integrated)**; every other task is **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -86,7 +87,7 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T002 | Characterize graph/tool-discovery/provider integration and pin dependencies (**completed; D280–D281 accepted**) | T001 |
 | P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary (**completed; integrated; D282–D283**) | T002 |
 | P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions (**completed; integrated; D284–D285**) | T001, T002 |
-| P002-T005 | Centralize typed domain commands, queries and capability enforcement | T003, T004 |
+| P002-T005 | Centralize typed domain commands, queries and capability enforcement (**completed; integrated; D286**) | T003, T004 |
 | P002-T006 | Establish operations, agent invocations, correlated events and recovery records | T003, T004, T005 |
 | P002-T007 | Assemble frozen context and record knowledge-access receipts | T004, T005, T006 |
 | P002-T008 | Expose scoped tools with on-demand discovery through qualified CLI adapters | T002, T005, T006, T007 |
@@ -248,6 +249,14 @@ import (T013), installed conversion (T020). Committed, merged into develop and p
 **Evidence:** command/API misuse, concurrency/idempotency and delegation checks. **Basis:** B02, B04, B06–B09, B13–B15.
 
 **Gates:** —. **Threats:** TM01–TM05, TM18.
+
+**Status (2026-10-29):** completed on `feat/p002-t005-domain-operations` from develop `95ac6df`;
+record: [T005 domain operations](phase/P002-T005-domain-operations.md). The owner accepted the refinement with Q1(a),
+the 0.1.9 ceiling correspondence and E21, and [D286](DECISIONS.md#d286--typed-domain-operation-service-capability-policy-and-command-outcome-record)
+(service, capability policy, `domain_commands`). Implemented: ten knowledge operations behind one pipeline, owner API
+routes, graph binding, schema `0031_domain_commands`; agent calls, permission state, delegated adoption and receipts
+fail closed until T006–T010/T016. Committed, merged into develop and pushed at the owner's authorization; the
+0.2.0 route (release → distribution/publication → installation) remains pending, each stage separately authorized.
 ## P002-T006 — Operations, invocations and correlated events
 
 **Problem:** a single task status cannot explain agent activity or safely resume an uncertain effect.
@@ -607,5 +616,6 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
    authorization; part of 0.2.0.
 3. **P002-T004** is complete on `feat/p002-t004-structured-knowledge`, merged into develop and pushed at the owner's
    authorization; part of 0.2.0.
-4. Then: **P002-T005** (typed domain operations and capability policy) on a new topic branch from develop. Not
-   started.
+4. **P002-T005** is complete on `feat/p002-t005-domain-operations`, merged into develop and pushed at the owner's
+   authorization; part of 0.2.0.
+5. Then: **P002-T006** (operations, invocations and correlated events) on a new topic branch from develop.

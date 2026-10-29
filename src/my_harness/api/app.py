@@ -68,6 +68,8 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     app.include_router(configuration_assistance_router(runtime))
     from my_harness.api.project_configuration import project_configuration_router
     app.include_router(project_configuration_router(runtime))
+    from my_harness.api.knowledge import knowledge_router
+    app.include_router(knowledge_router(runtime))
     app.state.runtime = runtime
 
     @app.middleware('http')

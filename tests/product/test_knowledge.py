@@ -414,8 +414,9 @@ def test_substitution_bypasses_are_refused_by_the_database(world):
                             'LIMIT 1', (first.id,)).fetchone()
         link = db.execute('SELECT kind, source_item_id, target_item_id FROM knowledge_revision_links '
                           'WHERE revision_id = ? LIMIT 1', (first.id,)).fetchone()
-        other_version = db.execute('SELECT v.id FROM knowledge_item_versions v WHERE v.item_id <> ? LIMIT 1',
-                                   (member[0],)).fetchone()[0]
+        # Neither the member's nor the spare item's own version, so the insertion below is always another item's.
+        other_version = db.execute('SELECT v.id FROM knowledge_item_versions v WHERE v.item_id NOT IN (?, ?) LIMIT 1',
+                                   (member[0], spare)).fetchone()[0]
         foreign_version = db.execute('SELECT id FROM knowledge_item_versions WHERE item_id = ?',
                                      (foreign,)).fetchone()[0]
         attempts = [
@@ -517,7 +518,8 @@ def test_migration_installs_the_expected_triggers_and_refuses_a_downgrade_with_k
     url, repo, project = world
     with raw(url) as db:
         triggers = db.execute("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'").fetchall()
-    assert len(triggers) == 21 and trigger_digest(triggers) == SCHEMA_TRIGGERS_SHA256
+    assert len([name for name, _sql in triggers if name.startswith('knowledge_')]) == 21
+    assert trigger_digest(triggers) == SCHEMA_TRIGGERS_SHA256
     require_schema(make_engine(url))
     with pytest.raises(RuntimeError):
         command.downgrade(migrated_database[1], '0029_graph_continuations')

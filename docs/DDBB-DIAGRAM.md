@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0030_structured_knowledge`, 72 tables, defined in
+SQLite schema of the local service: Alembic head `0031_domain_commands`, 73 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -1233,8 +1233,9 @@ Index: `ix_graph_threads_status` (status). Check: `status` in `RUNNING`, `WAITIN
 Project knowledge with stable identities, immutable versions and accepted revisions
 ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability),
 [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files); migration
-`0030_structured_knowledge`, no backfill). A revision is the complete manifest of members and links. No product path
-writes these tables yet; P002-T004 exercises them with synthetic knowledge. `knowledge_projects.root` relates to the
+`0030_structured_knowledge`, no backfill). A revision is the complete manifest of members and links. Product paths
+write these tables only through the P002-T005 domain service ([below](#p002-domain-command-outcomes)), so far reached
+by the owner API and synthetic graphs. `knowledge_projects.root` relates to the
 roots of the managed tables logically, without a foreign key.
 
 ```mermaid
@@ -1331,8 +1332,58 @@ in `specification`, `architecture`, `data_model`, `flows`, `instructions`; `prov
   existing key, so REPLACE and upsert cannot substitute a row. Revisions are inserted as `DRAFT` on an accepted base,
   change once to `ACCEPTED` (number = base number + 1) or `DISCARDED`, and are never deleted. Members and links change
   only while their revision is a draft, checked on the old and the new revision. The schema check, backups, bundle
-  verification and restore compare the trigger set with a fixed digest.
+  verification and restore compare the trigger set with a fixed digest (shared with the 0031 triggers).
 - Content (`knowledge-content-1`), relationship and order rules and the canonical hashes are checked by the
   repository at adoption and again on every retrieval, together with the chain to the root revision.
 - Downgrade below 0030 is refused while any row exists. Backups copy the tables and triggers with the database; a
   query-only restore refuses every repository write.
+
+## P002 domain command outcomes
+
+One row per accepted typed domain command, written in the mutation's own transaction, and one per recorded refusal
+([D286](DECISIONS.md#d286--typed-domain-operation-service-capability-policy-and-command-outcome-record); migration
+`0031_domain_commands`, no backfill). The opener of a knowledge draft is its accepted `knowledge.draft.open` row.
+
+```mermaid
+erDiagram
+    domain_commands {
+        integer id PK
+        string command_id UK
+        string knowledge_project_id FK "null for refusals before a project; → knowledge_projects.id"
+        string operation_id
+        integer operation_version
+        string schema_sha256 "null when the operation is unknown"
+        string catalogue_sha256
+        string principal
+        string channel
+        json caller "role, invocation, attempt, thread, operation key, frozen revision"
+        json actor
+        string origin "null; adoptions"
+        string scope "owner, harness:<thread>, invocation:<id>"
+        string idempotency_key "null for refusals without a key"
+        string request_sha256 "null"
+        string outcome
+        string refusal_code "null"
+        json capability "null for refusals"
+        json result "null for refusals"
+        string draft_id FK "null; (knowledge_project_id, draft_id) → knowledge_revisions"
+        string revision_id FK "null; (knowledge_project_id, revision_id) → knowledge_revisions"
+        string recorded_at
+    }
+    knowledge_projects ||--o{ domain_commands : "knowledge_project_id"
+    knowledge_revisions |o--o{ domain_commands : "draft_id / revision_id"
+```
+
+Uniqueness: `command_id`; `uq_domain_commands_key` (knowledge_project_id, scope, idempotency_key) where outcome =
+'ACCEPTED'. Index `ix_domain_commands_draft` (draft_id, operation_id).
+
+Checks: `principal` in `owner`, `harness`, `agent`; `channel` in `api`, `graph`, `internal`, `broker`; `origin` null or
+one of the three knowledge origins; an `ACCEPTED` row has project, key, request hash, schema digest, capability and
+result and no refusal code; a `REFUSED` row has a refusal code and no result, draft or revision. Null JSON values are
+stored as SQL NULL.
+
+- **Triggers (3).** Rows are insert-only: updates and deletes abort, and an insert over an existing id, command id or
+  accepted (project, scope, key) aborts, so REPLACE cannot substitute an outcome. They join the knowledge triggers in
+  the fixed digest compared by the schema check, backups, bundle verification and restore (24 triggers).
+- Downgrade below 0031 is refused while any row exists. Backups copy the table; a query-only restore writes nothing,
+  not even refusals.

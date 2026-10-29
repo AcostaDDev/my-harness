@@ -211,6 +211,7 @@ class ManagedRuntime:
         self._apply_lock = Lock()
         # Projects whose active configuration could not be installed (documentary capabilities only).
         self.degraded: dict[str, str] = {}
+        self._domain_operations = None
 
     def start(self) -> None:
         from my_harness.storage.backup import is_read_only_archive
@@ -485,6 +486,15 @@ class ManagedRuntime:
         """P002-T003 (D280): graph orchestration is owned here; LangGraph is imported on first use, never at start."""
         from my_harness.orchestration import GraphRunner
         return GraphRunner(self.engine, registry)
+
+    def domain_operations(self):
+        """P002-T005 (D286): the shared typed-command service. Agent callers, permission state, delegated adoption
+        and receipts keep their fail-closed defaults until T006–T010/T016 provide them; reads need only the engine,
+        so they also serve restored query-only copies."""
+        if self._domain_operations is None:
+            from my_harness.services.domain_operations import DomainOperations
+            self._domain_operations = DomainOperations(self.engine)
+        return self._domain_operations
 
     def project(self, project_id: str) -> ManagedProject:
         self.ready()

@@ -10,7 +10,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 |---|---|
 | Core | Python 3.14.4, standard library, package `my-harness` 0.1.1 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
-| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0030_structured_knowledge`) |
+| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0031_domain_commands`) |
 | Orchestration | LangGraph 1.2.18 (`langgraph-checkpoint` 4.3.1), confined to `orchestration/` ([D280](DECISIONS.md#d280--langgraph-1218-dependency-set-placement-and-runtime-hygiene)) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
 | Client types | `openapi-typescript` 7.13.0 from the exported OpenAPI |
@@ -201,6 +201,10 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   `GET …/projects/{p}/onboarding` and `POST …/planning/{c}/onboarding/preview` / `…/onboarding/confirm` confirm
   documents and `profile_sha256`. `GET …/projects/{p}/mode` only diagnoses managed admission. Mutations carry an
   `Idempotency-Key` and an expected version; 409 with `{code, diagnostic}`; 422 on an invalid contract.
+- Knowledge (P002-T005, D286): `GET …/knowledge/projects[/{k}[/revisions/{n}/items[/{item}]|/drafts/{d}]]` read
+  persisted knowledge, also on restored archives; `POST …/projects/{p}/knowledge/drafts[/{d}/changes|discard|
+  adoption/preview|adopt]` change it with `Idempotency-Key`, expected draft hash, expected head and preview hash
+  ([flow](flows/domain-operations.md)).
 - `GET/PUT /api/managed/preferences`: global languages with an expected version and `Idempotency-Key`; each job
   exposes the `language_context` sealed when it was admitted ([flow](flows/language-preferences.md)).
 - Work language ([flow](flows/project-work-language.md)): `work_language` is required in registration
@@ -391,8 +395,10 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
 the P002-T003 runtime foundation and the P002-T004 knowledge model; of the design below only the graph runtime and
 continuation storage (T003, D280/D282/D283) and the structured knowledge storage with immutable accepted revisions
-(T004, D284/D285) exist, exercised with synthetic data only. Typed commands, the tool broker, the production
-operation journal, product use of knowledge, exports, the inbox and the graph view are not implemented.
+(T004, D284/D285) exist, exercised with synthetic data only, and the typed command service (T005, D286) with its
+catalogue, capability policy and `domain_commands` outcomes, reached by owner API routes and synthetic graphs only.
+The tool broker, the production operation journal, agent use of knowledge, exports, the inbox and the graph view are
+not implemented.
 
 ```mermaid
 flowchart TD
@@ -419,6 +425,9 @@ flowchart TD
   checkpoint is routing progress only and nodes act through an operation port with deterministic keys; the
   production journal behind that port is T006. Segments, version stamping and quarantine (G03) are D283.
 - **Tools.** A harness-owned versioned catalogue behind a small discovery surface over a transport characterized per
-  client (G04). Deterministic nodes call services directly. Agents never receive database access.
+  client (G04). Deterministic nodes call services directly. Agents never receive database access. Implemented (D286):
+  `core/engine/domain_catalogue.py` (entries, digests, schema subset validator), `core/engine/domain_policy.py`
+  (classification, capability evaluator), `services/domain_operations.py` (`execute`, callers, fail-closed providers),
+  `api/knowledge.py` and `orchestration/domain.py`; the broker transport is T008 ([flow](flows/domain-operations.md)).
 - **Exports.** An outbox-driven exporter renders accepted revisions to owned targets with generation manifests and
   recoverable per-target outcomes.

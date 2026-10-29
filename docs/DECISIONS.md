@@ -2162,3 +2162,29 @@ authorized adoption (T012), as for other knowledge. Exported files remain genera
 changed only by regeneration or explicit import (D271). Changes to instructions are sensitive in the change summary
 for T005's owner-only enforcement. T007 supersedes D094 when it delivers the accepted instructions in context; until
 then the engine still injects the checkout's `AGENTS.md`.
+
+## D286 — Typed domain operation service, capability policy and command outcome record
+
+Status: accepted in P002-T005 (owner, 2026-10-29, with Q1 option (a)); implemented in T005 for the knowledge
+operations. Evidence in the [T005 record](phase/P002-T005-domain-operations.md); binds T006–T016 to its interfaces.
+
+UI/API, deterministic graph nodes and (from T008) the tool broker reach domain mutations only through one
+`execute` pipeline over a versioned logical catalogue (`domain-catalogue-1`): entry and schema digest without
+fallback, closed arguments, caller principal/role/frozen tool policy, then in one transaction query-only refusal,
+caller re-verification, project membership, idempotency, per-operation capabilities, preconditions, the handler and
+an insert-only outcome row in `domain_commands` (`0031_domain_commands`). Caller identity, project and origin are
+bound by trusted infrastructure, never by arguments; foreign identifiers answer like missing ones. T005 catalogues
+ten knowledge operations (head, list, get, projects, draft get/open/apply/discard, adoption preview, adopt).
+
+Agents never adopt; the owner adopts the exact previewed draft (`owner_confirmed`), with a reason for sensitive
+changes; delegated and deterministic adoption fail closed until T016. Every change is classified with a class
+(`owner_only`, `product`, `planning`) and a separate sensitivity; owner-only changes (requirements, criteria other than
+those created with a new task, phases and their addresses, instructions, supersession of accepted decisions) map to
+a target no grant can satisfy. Agent capabilities need, per operation, an exact unrevoked grant of the frozen snapshot
+within all four 0.1.9 `permission_authority` layers (frozen and current copies intersected) and the role ceiling,
+read by `PermissionProvider` in the command's transaction; path rules, the client capability contract, the tool
+policy and the 0.1.9 permission ledger keep their own evaluation. Agents see only their frozen revision. Idempotency
+keys are scoped by project and principal; a repeat returns the stored outcome without executing again. Reads resolve
+persisted knowledge projects and serve restored query-only copies. Product composition has no agent resolver,
+permission provider, authorization provider or receipt sink: agent calls and delegated adoption are refused until
+T006–T010/T016 provide them.

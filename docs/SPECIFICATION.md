@@ -377,7 +377,10 @@ rules change.
   confirmations and uses the same domain commands.
 - **Authority.** LangGraph orchestrates stages and waits; SQLite owns structured knowledge, accepted revisions,
   decisions, grants, rulings and operation outcomes; typed services perform every effect; one writer per checkout.
-  Delegated approvals carry their origin and are never shown as owner approvals.
+  Delegated approvals carry their origin and are never shown as owner approvals. The typed command service exists for
+  knowledge (P002-T005, D286): owner API routes and synthetic graphs share one pipeline with catalogue digests, caller
+  binding, per-operation capabilities within every permission ceiling, idempotent outcome records and owner-only
+  adoption of previewed drafts; agent calls and delegated adoption stay refused until T006–T010/T016.
 - **Knowledge and documents.** Definition and reverse-engineering onboarding produce database knowledge. Markdown is a
   generated view replaced at defined boundaries without drift detection; IDE edits matter only through an explicit,
   previewed UI import, which never fabricates execution, approval or usage history. The knowledge model is D284:

@@ -343,7 +343,7 @@ version regardless of executable path. Builds disable uv's output `.gitignore` t
 
 ## 12. P001 accounting architecture (capture/storage, queries/API, accounting page and billing controls implemented)
 
-[T001 contract](phase/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
+[T001 contract](archive/phase-001/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
 storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
 `terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 added bounded read-only queries/API
 ([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005a added the read-only

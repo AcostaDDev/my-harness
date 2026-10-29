@@ -2,11 +2,11 @@
 
 Status: complete as source qualification; delivered through `chore/p001-t006-qualification` (branched from `develop`
 at `3346d97`).
-Owner: P001-T006 ([task](../NEXT_STEPS.md#p001-t006--qualification-and-phase-handoff)); release target **0.1.9 at P001
-closure** ([D253](../DECISIONS.md#d253--phase-release-targets-after-018)).
+Owner: P001-T006 ([task](NEXT_STEPS.md#p001-t006--qualification-and-phase-handoff)); release target **0.1.9 at P001
+closure** ([D253](../../DECISIONS.md#d253--phase-release-targets-after-018)).
 Delivery route: topic → `develop`/`origin`, like T001–T005; commit, merge and push were authorized by the owner after
-review. Git records the source and merge commit IDs; the local topic branch is removed after the merge. The 0.1.9 release PR to `main`, tag, GitHub Release/archive, P001 closure and the operator's
-installation and database migration are separate, later actions (D235/D242); none was performed.
+review. Git records the source and merge commit IDs; the local topic branch is removed after the merge. The 0.1.9 release, the operator's installation/migration and the P001 closure followed as separately
+authorized actions, recorded in [Release, installation and closure](#release-installation-and-closure).
 
 ## Result
 
@@ -19,13 +19,13 @@ pinned public prices, and their limits remain visible rather than accepted silen
 
 ## Criterion → implementation → evidence
 
-| Exit criterion ([ROADMAP](../ROADMAP.md#p001--metrics-records)) | Implementation | Evidence (synthetic) |
+| Exit criterion ([ROADMAP](../../ROADMAP.md#p001--metrics-records)) | Implementation | Evidence (synthetic) |
 |---|---|---|
 | Attempts preserve provider/client versions, requested and reported model/effort, token categories, durations, tools, outcome and provenance, without double counting or missing-as-zero | `adapters/streams.py` (`usage-stream-1`), `core/engine/usage_capture.py` (`usage-capture-1`, launch gate, evidence selection), `storage/accounting.py`, migration `0028_usage_accounting` (D254/D259) | `test_usage_accounting.py` (A15–A19: terminal once, cumulative deltas replace, conflicting ids, model partitions, Codex requested ≠ reported, launch gate, native sources, equal bytes → two captures); `test_metrics*.py` keep `metrics-1`; T006 journey: requested model never an effective group, observed zero vs "no data" on the restored page |
 | Each supported billing case has a reproducible valuation or an explicit reason; reported, calculated USD, calculated credits and confirmed billing stay distinct | `core/engine/valuation.py`, `metric_references.py` (D256/D258); `confirmed_billed` reserved with no producer | `test_valuation.py` (A01–A14, A20–A26: C1 0.44, C2 0.47, X1 9.75 credits, tiers, factors, half-even, discrepancies, 28 reason codes); A25 buckets in `test_accounting_views.py`; journey: one USD/API bucket 0.440000000000, admission policy "billing_profile_unknown" ×3 with no amount |
 | Versioned references identify provider, model, scheme, units, source, observation date, effective period and conditions; updates never change historical valuations | Packaged `metrics-reference-1` bundle `41d20094709e…` (38 references), previewed import, immutable valuations, cohorts (D255/D257/D265) | `test_valuation.py` (A20/A21 alias drift, periods, old bundle reproduces values); `test_usage_accounting.py` (A27 cohorts reuse immutable valuations, A30 legacy rows byte-identical); `test_billing_controls.py` (stable digest, conflict, archive refusal); journey: legacy `/metrics/*` and attempts answer identically before and after repricing |
 | Statistics by provider/model, role, project, phase, task and time with coverage and compatible units; no allowance or invoice inferred from tokens | `storage/accounting_views.py`, `/api/managed/accounting/*` (D262), `pages/Accounting.tsx` (D264), billing controls (D265) | `test_accounting_views.py` (A16/A28/A29: 13 dimensions, UTC bounds, mixed/unknown models, denominators, task indicators); `accounting.test.mjs` (page reads only the accounting API, bases separate, en/es, live/archive); journey reads summary/groups/tasks/invocations/detail/valuations/cohorts/references |
-| Synthetic checks cover calculation, capture, aggregation, historical compatibility, retention, backup and query-only consultation; diagrams, flows, OpenAPI/types and en/es UI in parity | Format-3 backup, `backup-upgrade`, unchanged retention (D259); [DDBB](../DDBB-DIAGRAM.md#p001-accounting-records), [accounting flow](../flows/metrics-accounting.md), `frontend/openapi.json`/`api.generated.ts`, en/es catalogs | `test_usage_accounting.py` (A30/A31: snapshot-first migration, retention, verified backup, corrupt reference rejected, older bundle upgrade); **`test_p001_qualification.py`** (whole chain, A30/A31); installed-wheel journey and browser QA below; `scripts/check-docs` (en/es keys, schema head) |
+| Synthetic checks cover calculation, capture, aggregation, historical compatibility, retention, backup and query-only consultation; diagrams, flows, OpenAPI/types and en/es UI in parity | Format-3 backup, `backup-upgrade`, unchanged retention (D259); [DDBB](../../DDBB-DIAGRAM.md#p001-accounting-records), [accounting flow](../../flows/metrics-accounting.md), `frontend/openapi.json`/`api.generated.ts`, en/es catalogs | `test_usage_accounting.py` (A30/A31: snapshot-first migration, retention, verified backup, corrupt reference rejected, older bundle upgrade); **`test_p001_qualification.py`** (whole chain, A30/A31); installed-wheel journey and browser QA below; `scripts/check-docs` (en/es keys, schema head) |
 
 T001's synthetic matrix A01–A32 is covered by the owning tasks' evidence ([T002](P001-T002-reference-calculator.md),
 [T003](P001-T003-capture-storage.md), [T004](P001-T004-aggregates-api.md), [T005](P001-T005-metrics-ui.md)); T006
@@ -70,8 +70,8 @@ No API, catalog text or other component changed.
 
 Version **0.1.9** in `pyproject.toml`, `uv.lock`, the API (`api/app.py`, exported `frontend/openapi.json`, which
 differs only in `info.version`; generated client types unchanged), `frontend/package.json` and its lockfile; README
-(en/es) status and download commands; the [changelog](../../CHANGELOG.md#019--2026-10-29) entry, marked as a not yet
-published candidate, carries the upgrade notes:
+(en/es) status and download commands; the [changelog](../../../CHANGELOG.md#019--2026-10-29) entry, marked as a not yet
+published candidate at qualification time (the release record was added at closure), carries the upgrade notes:
 
 - Stop the service and writers, install with `--upgrade --writers-stopped`, then run the new generation's
   `my-harness migrate` (`0027_profile_proposals` → `0028_usage_accounting`, eight empty tables, verified snapshot
@@ -109,18 +109,52 @@ published candidate, carries the upgrade notes:
 | Offline distribution | `scripts/build_distribution.py --offline --out-dir .local/p001-t006/distribution` and `scripts/check_distribution.py --dist .local/p001-t006/distribution`, rerun on the final sources: passed (exact members, metadata, licenses, `SHA256SUMS`; isolated wheel UI/assets/API/session, definition/task/commit/restart, accounting reads, errors and restored evidence). Existing large-chunk advisory only; packaging changed no source. |
 | Documentation | `scripts/check-docs`: 72 Markdown files, 0 errors; `git diff --check` clean. |
 
-Omissions: no real provider/CLI, private run, configuration or billing data; no operator database, installation,
-migration or service restart; no harness operation on this checkout; no release PR, tag, GitHub Release or archive
-download verification (those follow the owner's authorization); browser QA limited as stated above.
+Omissions at qualification: no real provider/CLI, private run, configuration or billing data; no harness operation
+on this checkout; browser QA limited as stated above. Release and installation followed separately (next section);
+the service was never started.
+
+## Release, installation and closure
+
+All three were explicitly authorized by the owner on 2026-10-29.
+
+- **Release.** Distribution rebuilt offline from the clean integration checkout `34fc8bc` and verified with
+  `check_distribution.py` against that tree; the eight bundled scripts equal their committed sources. Outer archive
+  `my-harness-0.1.9-distribution.tar.gz`: **3,869,656 bytes**, SHA-256
+  **`6eebdbc2d7df3ab8535fa457527f43f4b1515dc749f30a44c5da1320e25553ff`**; 13 files under `my-harness-0.1.9/`, all 12
+  inner hashes pass. [PR #8](https://github.com/AcostaDDev/my-harness/pull/8) (develop → main) was opened first; the
+  archive and checksum went to a draft release and were downloaded back identical byte for byte. The owner merged
+  PR #8 (the session's merge was refused by the tool permission policy) as
+  **`5cc1bc1727a9429c6c2b78fa115dad3508609e07`**: first parent `c005298` (0.1.8), second `34fc8bc`, tree
+  `1fbb2a1d…` equal to the qualified integration tree. Annotated tag **`v0.1.9`** (`a8e7bda…`) identifies that
+  merge; the owner pushed it and published the draft. [GitHub Release v0.1.9](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.9)
+  was published at 2026-10-29 09:18:16 UTC (latest, not draft/prerelease). Unauthenticated `curl` downloads from the
+  README URLs match the local archive and checksum byte for byte; the external checksum, all 12 inner hashes and the
+  bundle member/metadata verifier pass. `develop` was fast-forwarded to the release merge and pushed.
+- **Installation.** Beforehand: generation `gen-bb9bf974…` (0.1.8) current, no harness process, 7 jobs DONE, no
+  open process owner or checkout lock; the one historical `RUNNING` process row (pid/pgid 42523) has no live process
+  or group. Hashes of 63 data and 9 configuration files were recorded without copying contents. The verified public
+  package's `scripts/install --dist <extracted> --upgrade --writers-stopped --offline --python
+  /opt/homebrew/bin/python3.14` published generation **`gen-455d272577f142df8ba411dcce1c0b16`** (READY, 0.1.9,
+  isolated installed-wheel journey and offline `uv pip check` passed); earlier generations are kept, and data and
+  configuration were unchanged by the install. The new generation's `my-harness migrate --database <data>/harness.sqlite3
+  --snapshots "<My Harness>/pre-migration" --writers-stopped` migrated `0027_profile_proposals` →
+  `0028_usage_accounting` after a `premigration-1` snapshot whose manifest hash matches; both files pass
+  `integrity_check`, every legacy table's rows equal the snapshot's, the eight accounting tables are empty, and a
+  second run reports `current`. Only `harness.sqlite3` changed among data files; configuration is unchanged. SQLite
+  left empty `-wal` and 32 KiB `-shm` companions beside the snapshot. The service was **not started**; no backfill,
+  repricing, billing profile, configuration edit or project retry was performed (the failed OT006 preparation stays
+  `FAILED`).
+- **Closure.** P001 was closed and archived by hand into `docs/archive/phase-001/` (D266), with P002 opened without
+  tasks.
 
 ## P002 handoff
 
 P002 **Continuous Mode** targets **0.2.0** at its closure (D253) and starts after the 0.1.9 release and P001 closure.
-Its [roadmap entry](../ROADMAP.md#p002--continuous-mode) holds the objective and exit criteria; design and tasks are
+Its [roadmap entry](../../ROADMAP.md#p002--continuous-mode) holds the objective and exit criteria; design and tasks are
 pending and must be planned (like D234) before any code. Starting context:
 
-- Phase lifecycle, closure/archive and READY guarantees: [phase-lifecycle flow](../flows/phase-lifecycle.md),
-  [task-run flow](../flows/task-run.md), SPECIFICATION §§ on phases and D156/D233.
+- Phase lifecycle, closure/archive and READY guarantees: [phase-lifecycle flow](../../flows/phase-lifecycle.md),
+  [task-run flow](../../flows/task-run.md), SPECIFICATION §§ on phases and D156/D233.
 - A consumption limit can read the accounting ledger (D262 API, coverage and unpriced reasons) but must not treat
   missing or unpriced usage as zero, nor infer subscription allowances; any budget unit must be one of the existing
   compatible bases or plain token counts.

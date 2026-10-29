@@ -5,11 +5,11 @@ queries/API implemented (P001-T004, [D262](../DECISIONS.md#d262--bounded-account
 accounting page (T005a, D264) and billing/reference controls (T005b,
 [D265](../DECISIONS.md#d265--billing-controls-reference-listing-and-save-time-billing-review)) implemented as split by
 [D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).** [D254–D257](../DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
-the [T001 contract](../phase/P001-T001-accounting-contract.md), T002's pure calculator
+the [T001 contract](../archive/phase-001/P001-T001-accounting-contract.md), T002's pure calculator
 ([D258](../DECISIONS.md#d258--pinned-reference-cases-and-the-pure-valuation-boundary)) and
 [D259](../DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives) govern it.
-`terminal-2`/`metrics-1`, existing metrics endpoints and their UI are unchanged ([T003](../phase/P001-T003-capture-storage.md),
-[T004](../phase/P001-T004-aggregates-api.md) evidence).
+`terminal-2`/`metrics-1`, existing metrics endpoints and their UI are unchanged ([T003](../archive/phase-001/P001-T003-capture-storage.md),
+[T004](../archive/phase-001/P001-T004-aggregates-api.md) evidence).
 
 ```mermaid
 flowchart TD

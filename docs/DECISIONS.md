@@ -1003,7 +1003,7 @@ remaining quota or the user's final invoice. Missing model, usage or tariff cond
 never free usage or a silently chosen substitute. Historical metrics, histories and frozen catalogs retain their
 meaning and bytes; subsequent references or calculations must be separately identifiable.
 
-The [phase handoff](phase/P001-metrics-records.md) and [reference notes](phase/P001-metrics-records-references.md)
+The [phase handoff](archive/phase-001/P001-metrics-records.md) and [reference notes](archive/phase-001/P001-metrics-records-references.md)
 are planning artifacts. Their task breakdown, candidate record fields and calculation policy require technical
 decisions during P002-T001; they are not a new schema, API, billing configuration format or implemented feature.
 No real calls, network installation, global configuration change, commit or publication is authorized by this plan.
@@ -1500,7 +1500,7 @@ T001 completes design only; it neither closes P001 nor publishes or installs any
 
 Status: accepted design in P001-T001; implementation pending T003–T004.
 
-The [accounting contract](phase/P001-T001-accounting-contract.md#4-record-grain-identity-and-completeness-d254)
+The [accounting contract](archive/phase-001/P001-T001-accounting-contract.md#4-record-grain-identity-and-completeness-d254)
 adds a shared invocation ledger keyed by native source kind/ID: managed attempt, generic preparation executor step,
 or configuration-assistance operation. Assistance/preparation retain their own journals without fabricated managed
 attempts. Deterministic work has no model invocation; expected but result-less invocations stay visible in coverage.
@@ -1534,7 +1534,7 @@ there is no invoice/balance integration, billed-amount editor or universal credi
 
 Status: accepted design in P001-T001; implementation pending T002–T005.
 
-The [calculation contract](phase/P001-T001-accounting-contract.md#6-normalization-calculation-and-discrepancy-d256)
+The [calculation contract](archive/phase-001/P001-T001-accounting-contract.md#6-normalization-calculation-and-discrepancy-d256)
 defines `valuation-1`: disjoint uncached input, cache reads, writes by evidenced lifetime, output and separately
 evidenced tool charges. Reasoning remains inside output. Claude excludes cache from raw input; the established
 Codex CLI baseline includes reads, while nonzero-write semantics remain uncharacterized. Responses API write
@@ -1591,7 +1591,7 @@ activity counts. Exact Decimal lines and once-per-invocation rounding follow D25
 unknown reasons and separate estimate comparisons support later immutable persistence; no operational caller,
 database, API, configuration, frontend, version bump, distribution publication or installation is added here.
 
-Evidence and task delivery: [P001-T002](phase/P001-T002-reference-calculator.md).
+Evidence and task delivery: [P001-T002](archive/phase-001/P001-T002-reference-calculator.md).
 
 ## D259 — Native accounting capture, frozen revision binding and format-3 archives
 
@@ -1627,7 +1627,7 @@ bundle. CLI: `accounting-references`, `accounting-backfill`, `accounting-reprice
 Backup format 3 records the accounting inventory and recomputes reference, capture, binding, valuation (identity and
 exact line sum) and cohort digests in the same snapshot. Bundles of an older schema require `backup-upgrade`, which
 migrates a private copy into a new query-only format-3 bundle and leaves the original bytes unchanged.
-Evidence: [P001-T003](phase/P001-T003-capture-storage.md).
+Evidence: [P001-T003](archive/phase-001/P001-T003-capture-storage.md).
 
 ## D260 — Quiet development checks and economical agent workflow
 
@@ -1704,7 +1704,7 @@ separate. Groups and invocation pages are offset-paginated over a stable order; 
 API (additive, `accounting-aggregate-1`): `GET /api/managed/accounting/{summary,groups,tasks,invocations,cohorts}`,
 `/accounting/invocations/{id}` and `/accounting/invocations/{id}/valuations` (lines, reference identity, discrepancy
 and cohort memberships). Existing `/metrics/*` endpoints, `metrics-1` floats and frozen phase summaries are unchanged.
-Evidence: [P001-T004](phase/P001-T004-aggregates-api.md).
+Evidence: [P001-T004](archive/phase-001/P001-T004-aggregates-api.md).
 
 ## D263 — P001-T005 split, accounting page and billing/reference control contracts
 
@@ -1761,7 +1761,7 @@ The API's reference rows carry no effective period, so a valuation's period stat
 codes (D258): `reference_out_of_period` or a blocking `effective_period_unknown` reason, the retrospective warning, or
 "applies" when neither is present and references were used. The client-reported cost appears only in the invocation
 detail (from the allowlisted capture) and in each valuation's comparison, labelled as an estimate of unknown basis.
-Evidence: [P001-T005a](phase/P001-T005-metrics-ui.md#t005a--accounting-ui).
+Evidence: [P001-T005a](archive/phase-001/P001-T005-metrics-ui.md#t005a--accounting-ui).
 
 ## D265 — Billing controls, reference listing and save-time billing review
 
@@ -1793,4 +1793,27 @@ Status: accepted implementation detail in P001-T005b, within D250, D255, D259 an
   appears on the global accounting page, which is mounted on query-only archives (D264); the configuration page is
   not, and archives keep refusing both POSTs.
 
-Evidence: [P001-T005b](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls).
+Evidence: [P001-T005b](archive/phase-001/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls).
+
+## D266 — Manual phase closure and archive in this repository
+
+Status: accepted at the owner's explicit authorization of the P001 closure (2026-10-29).
+
+This repository follows the D088 layout but is developed by hand, so the harness's unified closure (D091) cannot run
+on it. P001 is closed by hand with the same result, adapted where D091 relies on the harness's SQLite:
+
+- `docs/archive/phase-001/` receives STATE and NEXT_STEPS as they stood at closure and every P001 work file from
+  `docs/phase/` (handoff, references, observation JSON, task evidence). Their text is kept; only relative link targets
+  are re-based to the new location so local links stay checkable. Work files of other owners (one-off evidence,
+  bounded fixes, earlier patch notes) stay in `docs/phase/`.
+- REVIEW is not produced (there is no harness review history for a hand-developed phase); a hand-written `SUMMARY.md`
+  lists the tasks, decisions, release, installation and evidence instead.
+- The same commit leaves STATE with the compacted accumulated baseline (the 24 KiB budget), NEXT_STEPS with P002's
+  objective and criteria but no tasks, and ROADMAP with P001 completed and linked. P002 becomes active without a plan;
+  its design and task plan need the owner's confirmation before any code (as D234 did for P001).
+- Closure happens only after the phase release is published and verified (D253/D235) and its delivery states are
+  recorded (D242); in P001 the operator installation also preceded the closure record. Archived files are not
+  rewritten afterwards; later facts go to current documents.
+
+Evidence: [P001 summary](archive/phase-001/SUMMARY.md),
+[T006 release, installation and closure](archive/phase-001/P001-T006-qualification.md#release-installation-and-closure).

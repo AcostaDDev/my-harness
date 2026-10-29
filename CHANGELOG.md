@@ -20,8 +20,8 @@ All notable changes to My Harness are recorded here. The format follows
   the existing compatibility and migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase
   closure and opening under a bounded authorization
   ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
-  [D253](docs/DECISIONS.md#d253--phase-release-targets-after-018), [roadmap](docs/ROADMAP.md)). The `0.1.9` candidate
-  below is qualified but not released; P002 is planned.
+  [D253](docs/DECISIONS.md#d253--phase-release-targets-after-018), [roadmap](docs/ROADMAP.md)). P001 was released as
+  `0.1.9`; P002 is planned.
 - A version is released through a pull request from `develop` to the protected `main`, merged as a merge commit
   (`--no-ff`), tagging that merge commit
   ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)) and attaching to a GitHub
@@ -34,9 +34,11 @@ All notable changes to My Harness are recorded here. The format follows
 
 ## [0.1.9] — 2026-10-29
 
-Release candidate for P001 **Metrics Records**, qualified offline by P001-T006
-([evidence](docs/phase/P001-T006-qualification.md)). **Not yet published:** the release pull request, tag, GitHub
-Release and archive need the owner's authorization.
+GitHub Release `v0.1.9` ([PR #8](https://github.com/AcostaDDev/my-harness/pull/8), tag on merge `5cc1bc1`), with
+the self-contained archive and checksum verified from the public download URLs.
+
+Phase release for P001 **Metrics Records**, qualified offline by P001-T006
+([evidence](docs/archive/phase-001/P001-T006-qualification.md)).
 
 **Upgrade.** Stop the service and every writer, install with `--upgrade --writers-stopped`, then run the new
 generation's `my-harness migrate` before starting: schema `0027_profile_proposals` → `0028_usage_accounting` adds

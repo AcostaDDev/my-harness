@@ -5,11 +5,11 @@ capture/storage/billing binding/explicit operations/format-3 archives (integrate
 T004 bounded read-only queries/API (integrated into `develop`) is complete; T005a's accounting page is complete as
 source and integrated into `develop` (D264); T005b controls are complete and integrated (D265), completing T005.
 Current target: **0.1.9 at P001 closure** (D253); the original 0.1.2 assignment was superseded by D239.
-Authority: [D232](../DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries) for accounting scope;
-[D233](../DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) for phase order;
-[D253](../DECISIONS.md#d253--phase-release-targets-after-018) for current closure releases (P002 remains 0.2.0).
-The task plan and statuses live in [NEXT_STEPS](../NEXT_STEPS.md), as recorded by
-[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001–T004 are complete as source; T005 is
+Authority: [D232](../../DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries) for accounting scope;
+[D233](../../DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) for phase order;
+[D253](../../DECISIONS.md#d253--phase-release-targets-after-018) for current closure releases (P002 remains 0.2.0).
+The task plan and statuses live in [NEXT_STEPS](NEXT_STEPS.md), as recorded by
+[D234](../../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001–T004 are complete as source; T005 is
 complete (T005a and T005b delivered) and T006 is complete as source qualification
 ([evidence](P001-T006-qualification.md)); the 0.1.9 release and closure remain.
 The accepted [T001 contract](P001-T001-accounting-contract.md) and D254–D257 resolve the candidate design questions
@@ -25,15 +25,15 @@ than an unconditional promise of invoice accuracy from incomplete CLI output.
 
 Read, in order:
 
-1. [AGENTS](../../AGENTS.md), [STATE](../STATE.md), [NEXT_STEPS](../NEXT_STEPS.md) and
-   [the P001 roadmap entry](../ROADMAP.md#p001--metrics-records).
-2. [SPECIFICATION](../SPECIFICATION.md), especially §1 (subscriptions; API access not assumed), F13 and §9;
-   [ARCHITECTURE](../ARCHITECTURE.md), especially persistence, provenance, configuration and API/UI conventions.
-3. [DECISIONS](../DECISIONS.md): D074 (metrics), D144 (projection), D150 (migration), D173/D174 (client
+1. [AGENTS](../../../AGENTS.md), [STATE](STATE.md), [NEXT_STEPS](NEXT_STEPS.md) and
+   [the P001 roadmap entry](../../ROADMAP.md#p001--metrics-records).
+2. [SPECIFICATION](../../SPECIFICATION.md), especially §1 (subscriptions; API access not assumed), F13 and §9;
+   [ARCHITECTURE](../../ARCHITECTURE.md), especially persistence, provenance, configuration and API/UI conventions.
+3. [DECISIONS](../../DECISIONS.md): D074 (metrics), D144 (projection), D150 (migration), D173/D174 (client
    compatibility), D216–D228 (configuration lifecycle), D231 (suggestions are not verified models), D232/D233.
-4. [DDBB-DIAGRAM](../DDBB-DIAGRAM.md), [task flow](../flows/task-run.md),
-   [configuration flow](../flows/configuration-setup.md), [migration flow](../flows/database-migration.md) and
-   [archive consultation](../flows/backup-consultation.md).
+4. [DDBB-DIAGRAM](../../DDBB-DIAGRAM.md), [task flow](../../flows/task-run.md),
+   [configuration flow](../../flows/configuration-setup.md), [migration flow](../../flows/database-migration.md) and
+   [archive consultation](../../flows/backup-consultation.md).
 5. [Reference notes](P001-metrics-records-references.md), the accepted T001 observation and
    [T002 implementation/evidence](P001-T002-reference-calculator.md), then the source files below.
    Source refresh creates a separate pinned version; a retrieval date is not a tariff's effective date.
@@ -182,19 +182,19 @@ DECISIONS sections; do not silently turn these candidate fields into a contract.
 ## Task plan entry points
 
 The full task sections, dependencies, acceptance criteria, validation and deliverables are maintained in
-[NEXT_STEPS](../NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
+[NEXT_STEPS](NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
 not another task-status record. **T006 is complete** ([evidence](P001-T006-qualification.md)); next are the
 authorized 0.1.9 release and closure (T005b [evidence](P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)), over the T004 API
 ([evidence](P001-T004-aggregates-api.md)), integrated into `develop`; split by
-[D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). These identifiers belong
+[D263](../../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). These identifiers belong
 to the current phase, not the pre-release H6.4 milestones.
 
-1. [P001-T001 — Accounting contract and evidence inventory](../NEXT_STEPS.md#p001-t001--accounting-contract-and-evidence-inventory).
-2. [P001-T002 — Versioned references and pure calculator](../NEXT_STEPS.md#p001-t002--versioned-references-and-pure-calculator).
-3. [P001-T003 — Capture, storage and historical compatibility](../NEXT_STEPS.md#p001-t003--capture-storage-and-historical-compatibility).
-4. [P001-T004 — Aggregates and API](../NEXT_STEPS.md#p001-t004--aggregates-and-api).
-5. [P001-T005 — Billing/reference controls and metrics UI](../NEXT_STEPS.md#p001-t005--billingreference-controls-and-metrics-ui).
-6. [P001-T006 — Qualification and phase handoff](../NEXT_STEPS.md#p001-t006--qualification-and-phase-handoff).
+1. [P001-T001 — Accounting contract and evidence inventory](NEXT_STEPS.md#p001-t001--accounting-contract-and-evidence-inventory).
+2. [P001-T002 — Versioned references and pure calculator](NEXT_STEPS.md#p001-t002--versioned-references-and-pure-calculator).
+3. [P001-T003 — Capture, storage and historical compatibility](NEXT_STEPS.md#p001-t003--capture-storage-and-historical-compatibility).
+4. [P001-T004 — Aggregates and API](NEXT_STEPS.md#p001-t004--aggregates-and-api).
+5. [P001-T005 — Billing/reference controls and metrics UI](NEXT_STEPS.md#p001-t005--billingreference-controls-and-metrics-ui).
+6. [P001-T006 — Qualification and phase handoff](NEXT_STEPS.md#p001-t006--qualification-and-phase-handoff).
 
 ## Verification matrix and completion evidence
 
@@ -226,8 +226,8 @@ npm --prefix frontend run build
 
 Migration checks need an appropriately prepared temporary database; do not create/migrate the user's instance just
 to run a check. See README for the actual type-regeneration and distribution commands rather than inventing new ones.
-The 40 Python failures first recorded in the [v0.1.1 notes](v0.1.1-model-selectors.md) came from an unfilled
-`.local/npm-cache` ([npm cache baseline](test-npm-cache-baseline.md)); with the README's development setup the full
+The 40 Python failures first recorded in the [v0.1.1 notes](../../phase/v0.1.1-model-selectors.md) came from an unfilled
+`.local/npm-cache` ([npm cache baseline](../../phase/test-npm-cache-baseline.md)); with the README's development setup the full
 suite passed (2048 passed, 2 skipped). Establish the current baseline and report failures honestly; do not treat
 them as an automatic waiver or claim the suite is clean without running it.
 

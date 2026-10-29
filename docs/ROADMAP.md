@@ -6,39 +6,20 @@ phases; phases are numbered from P001 in this repository.
 
 ## P001 — Metrics Records
 
-**Target release:** **0.1.9, published at P001 closure**
-([D253](DECISIONS.md#d253--phase-release-targets-after-018)). Earlier target history:
-[D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
-[D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-versions); `0.1.2` was released for OT001 and `0.1.3`
-for OT002.
-OT003 was released as 0.1.4 outside the roadmap. The owner subsequently confirmed **OT005 preparation tool-link
-hotfix → 0.1.5**, before **OT004 visual profile editor → 0.1.6**, then P001
-([D246](DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor) supersedes D243's target/order;
-D239/D242 still govern separate patch deliveries). OT005 was released as **0.1.5** through PR #4, with its archive
-and checksum verified after download. OT004 was released as **0.1.6** through PR #5 (tag `v0.1.6`), with its
-archive and checksum verified after download.
-OT006's repetitive-preparation/ownership-loss fix was released and installed as **0.1.7**. OT007's managed-run
-renewal/journal follow-up was released and installed as **0.1.8** through
-[PR #7](https://github.com/AcostaDDev/my-harness/pull/7); its draft/public downloads and installation were verified
-([evidence](phase/OT007-task-run-lease.md)). The one-off queue is empty; P001-T001 is complete as design/inventory,
-P001-T002 as an isolated calculator/reference library and P001-T003 as native capture/storage, integrated into
-`develop`; P001-T004 is complete and integrated into `develop`, P001-T005a (accounting UI) is complete as source (D264) and
-T005b (billing/reference controls, D265) is complete and integrated into `develop`, completing T005, split by [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). No production
-retry was made.
-See [OT005 release evidence](phase/OT005-preparation-tool-links.md); one-off deliveries are separate from Metrics work.
+**Status:** **completed** — released as **0.1.9** on 2026-10-29
+([PR #8](https://github.com/AcostaDDev/my-harness/pull/8), merge/tag `5cc1bc1`/`v0.1.9`,
+[GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.9)), installed on the operator machine and
+closed by hand ([D266](DECISIONS.md#d266--manual-phase-closure-and-archive-in-this-repository)). Archive and summary:
+[`archive/phase-001/`](archive/phase-001/SUMMARY.md). Target history: D233, D239, D246 and
+[D253](DECISIONS.md#d253--phase-release-targets-after-018); the one-off releases 0.1.2–0.1.8 were delivered outside
+the roadmap ([STATE](STATE.md#releases)).
 
 **Objective:** Record detailed consumption by provider and effective model, with reproducible cost and credit
 analysis, versioned reference data and explicit coverage/provenance. Start with the supported Claude Code and Codex
 clients; keep the accounting concepts extensible without adding another execution provider.
-**Status:** active phase; T001 design/inventory, T002 pure calculator/references and T003 native capture/storage,
-billing binding, explicit cohorts and format-3 archives complete and integrated into `develop`; remaining tasks in
-[NEXT_STEPS](NEXT_STEPS.md). T004's bounded read-only queries/API are complete as source
-([evidence](phase/P001-T004-aggregates-api.md), D262) the accounting UI (T005a, D264) and the controls (T005b, D265) are complete and integrated, and qualification (T006)
-is complete as source with synthetic evidence and the 0.1.9 candidate ([evidence](phase/P001-T006-qualification.md));
-the release and phase closure remain, each separately authorized.
-[T002 evidence](phase/P001-T002-reference-calculator.md), D258; [T003 evidence](phase/P001-T003-capture-storage.md), D259. [T001](phase/P001-T001-accounting-contract.md) and D254–D257
-settle the technical contract, source limits and synthetic acceptance matrix; data/flows remain labelled planned
-until their implementing tasks. D234 still owns the six-task plan.
+
+All five exit criteria are met with synthetic evidence only; no real CLI emission, account billing or invoice was
+validated ([qualification](archive/phase-001/P001-T006-qualification.md)).
 
 **Exit criteria:**
 
@@ -57,8 +38,8 @@ until their implementing tasks. D234 still owns the six-task plan.
 configuration, backup and immutability guarantees. No continuous-mode behavior is required for the calculation
 engine. The accepted T001 contract guides implementation; unsupported evidence cases remain explicit.
 
-**Start here:** [task plan](NEXT_STEPS.md), [phase handoff](phase/P001-metrics-records.md), then
-[pricing references and worked examples](phase/P001-metrics-records-references.md).
+**Record:** [summary](archive/phase-001/SUMMARY.md), [closing STATE](archive/phase-001/STATE.md) and
+[task plan](archive/phase-001/NEXT_STEPS.md).
 
 ## P002 — Continuous Mode
 
@@ -70,7 +51,8 @@ engine. The accepted T001 contract guides implementation; unsupported evidence c
 execution under one explicit, bounded authorization. Chain tasks, commits and the READY check while stopping at
 the first error, question or limit.
 
-**Status:** planned after P001; design and tasks pending.
+**Status:** active since the P001 closure (2026-10-29), without a plan: design and tasks pending, to be confirmed by
+the owner before any code ([NEXT_STEPS](NEXT_STEPS.md)).
 
 **Exit criteria:**
 

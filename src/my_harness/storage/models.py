@@ -1113,3 +1113,54 @@ class ValuationCohortMemberRow(Base):
     valuation_id: Mapped[str | None] = mapped_column(ForeignKey('usage_valuations.id'), nullable=True)
     reason: Mapped[str | None] = mapped_column(String(80), nullable=True)
     recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+GRAPH_THREAD_STATUSES = ('RUNNING', 'WAITING', 'COMPLETED', 'CANCELLED', 'REVOKED', 'QUARANTINED',
+                         'RECOVERY_REQUIRED', 'FAILED')
+
+
+class GraphThreadRow(Base):
+    """P002-T003 (D282, D283): one LangGraph continuation stamped with its graph identity, version and fingerprint.
+
+    Routing progress only; the domain journal stays the authority. `reason` is a code, never a localized text."""
+    __tablename__ = 'graph_threads'
+    __table_args__ = (CheckConstraint(f"status IN {GRAPH_THREAD_STATUSES}", name='ck_graph_thread_status'),
+                      Index('ix_graph_threads_status', 'status'))
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    graph_id: Mapped[str] = mapped_column(String(120))
+    graph_version: Mapped[str] = mapped_column(String(40))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(30))
+    segments: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    detail: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class GraphCheckpointRow(Base):
+    """An immutable serialized checkpoint (strict serializer); a second put of the same id must carry the same bytes."""
+    __tablename__ = 'graph_checkpoints'
+    thread_id: Mapped[str] = mapped_column(ForeignKey('graph_threads.id'), primary_key=True)
+    checkpoint_ns: Mapped[str] = mapped_column(String(200), primary_key=True)
+    checkpoint_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    parent_checkpoint_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    checkpoint_type: Mapped[str] = mapped_column(String(40))
+    checkpoint: Mapped[bytes] = mapped_column(LargeBinary)
+    metadata_type: Mapped[str] = mapped_column(String(40))
+    metadata_value: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class GraphCheckpointWriteRow(Base):
+    """A pending write of one task against a checkpoint; LangGraph's special channels replace their own row."""
+    __tablename__ = 'graph_checkpoint_writes'
+    thread_id: Mapped[str] = mapped_column(ForeignKey('graph_threads.id'), primary_key=True)
+    checkpoint_ns: Mapped[str] = mapped_column(String(200), primary_key=True)
+    checkpoint_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    task_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    idx: Mapped[int] = mapped_column(Integer, primary_key=True)
+    channel: Mapped[str] = mapped_column(String(200))
+    value_type: Mapped[str] = mapped_column(String(40))
+    value: Mapped[bytes] = mapped_column(LargeBinary)
+    task_path: Mapped[str] = mapped_column(String(400))

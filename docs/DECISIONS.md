@@ -2064,3 +2064,39 @@ Admission requires evidence of capabilities MC1–MC7 of the
 [minimum contract](phase/P002-T002-feasibility.md#5-minimum-client-capability-contract-d281) per client,
 version and role; a missing one blocks admission. Usage, reported model and cancellation telemetry are recorded where
 the client provides them and stay unknown otherwise (Codex reports no model and no usage after cancellation).
+
+## D282 — Harness checkpoint saver and continuation/journal consistency contract
+
+Status: accepted in P002-T003 (owner, 2026-10-29); implemented in T003. Resolves G02 within D280 (option B);
+evidence in the [T003 record](phase/P002-T003-runtime.md).
+
+Continuations persist through `HarnessCheckpointSaver`, a synchronous LangGraph 4.3.1 saver over three
+Alembic-managed tables of the harness database (`0029_graph_continuations`): `graph_threads` (stamp and status),
+`graph_checkpoints` and `graph_checkpoint_writes`. It uses the strict serializer, accepts only primitive state with
+string keys outside LangGraph's own special write channels, refuses a checkpoint for an unstamped thread and never
+rewrites a stored checkpoint; pruning, copying and per-run deletion are not supported. Writes are serialized per saver
+because LangGraph writes from its background executor.
+
+Consistency: the domain journal is the authority and the checkpoint is routing progress only; no atomicity between
+them is assumed. A node performs effects only through an `OperationPort` with a deterministic key (thread, step, node,
+task path, name, references): the intent is sealed before the effect, a replay of a completed operation reconciles,
+and a sealed intent without an outcome stops the thread `RECOVERY_REQUIRED` and is never reissued (INV-02, INV-05,
+INV-06). Continuing a `RUNNING` thread after a crash requires explicit confirmation that the previous writer stopped.
+T003 provides the port and a synthetic journal for tests; the production journal and reconciliation of uncertain
+operations are T006/T020.
+
+## D283 — Durable segments, graph-version stamping and quarantine
+
+Status: accepted in P002-T003 (owner, 2026-10-29); implemented in T003. Resolves G03; evidence in the
+[T003 record](phase/P002-T003-runtime.md).
+
+A durable segment runs from a start, resume or recovery until the graph waits, ends or reaches its definition's
+`segment_limit` (LangGraph `recursion_limit`, default 50); at the limit the runner opens a new segment from the last
+synchronous checkpoint, so graph recursion never caps the length of a valid run; the roadmap bounds are T016's.
+Each thread is stamped with `graph_id`, declared `graph_version` and a structural fingerprint (nodes, edges, branches
+with declared ends, joins, state channels). Before any node of an existing thread runs, all three are compared with
+the registered definition; a difference or an unknown graph sets `QUARANTINED` with both stamps and runs nothing.
+Releasing a quarantine is a later explicit owner action (T016/T020); there is no automatic continuation migration.
+Thread statuses: `RUNNING`, `WAITING`, `COMPLETED`, `CANCELLED`, `REVOKED`, `QUARANTINED`, `RECOVERY_REQUIRED`,
+`FAILED`. Cancellation and revocation are recorded first; a waiting thread stops without running a node and an active
+segment observes the stop at the next superstep boundary.

@@ -87,7 +87,7 @@ def replace_reference(bundle, old, document):
 
 def test_seed_pins_immutable_research_and_all_suggestions(bundle):
     root = Path(__file__).resolve().parents[2]
-    raw = (root / 'docs/phase/P001-T001-reference-observations.json').read_bytes()
+    raw = (root / 'docs/archive/phase-001/P001-T001-reference-observations.json').read_bytes()
     assert sha256(raw).hexdigest() == '2e7e88f759e206f40ceb641668d104fbe788fae37e75ecb117de6f71e790baf8'
     assert bundle.id == '41d20094709ebe26c0ff5787d4de00f573f27e2e2ffabd26c5279ca688fdd5bc'
     assert len(bundle.references) == 38

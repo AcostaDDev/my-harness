@@ -1313,3 +1313,51 @@ class KnowledgeIdentityRow(Base):
     item_id: Mapped[str] = mapped_column(String(36))
     legacy_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class DomainCommandRow(Base):
+    """P002-T005 (D286): outcome of one typed domain command, written in the mutation's transaction. Insert-only
+    (triggers of 0031); one accepted outcome per (knowledge project, principal scope, idempotency key)."""
+    __tablename__ = 'domain_commands'
+    __table_args__ = (
+        CheckConstraint("principal IN ('owner', 'harness', 'agent')", name='ck_domain_command_principal'),
+        CheckConstraint("channel IN ('api', 'graph', 'internal', 'broker')", name='ck_domain_command_channel'),
+        CheckConstraint(f'origin IS NULL OR origin IN {KNOWLEDGE_ORIGINS}', name='ck_domain_command_origin'),
+        CheckConstraint(
+            "outcome = 'ACCEPTED' AND refusal_code IS NULL AND result IS NOT NULL AND capability IS NOT NULL "
+            "AND knowledge_project_id IS NOT NULL AND idempotency_key IS NOT NULL AND request_sha256 IS NOT NULL "
+            "AND schema_sha256 IS NOT NULL "
+            "OR outcome = 'REFUSED' AND refusal_code IS NOT NULL AND result IS NULL AND draft_id IS NULL "
+            "AND revision_id IS NULL", name='ck_domain_command_outcome'),
+        ForeignKeyConstraint(['knowledge_project_id', 'draft_id'],
+                             ['knowledge_revisions.project_id', 'knowledge_revisions.id'],
+                             name='fk_domain_commands_draft'),
+        ForeignKeyConstraint(['knowledge_project_id', 'revision_id'],
+                             ['knowledge_revisions.project_id', 'knowledge_revisions.id'],
+                             name='fk_domain_commands_revision'),
+        Index('uq_domain_commands_key', 'knowledge_project_id', 'scope', 'idempotency_key', unique=True,
+              sqlite_where=text("outcome = 'ACCEPTED'")),
+        Index('ix_domain_commands_draft', 'draft_id', 'operation_id'))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    command_id: Mapped[str] = mapped_column(String(36), unique=True)
+    knowledge_project_id: Mapped[str | None] = mapped_column(ForeignKey('knowledge_projects.id'), nullable=True)
+    operation_id: Mapped[str] = mapped_column(String(80))
+    operation_version: Mapped[int] = mapped_column(Integer)
+    schema_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    catalogue_sha256: Mapped[str] = mapped_column(String(64))
+    principal: Mapped[str] = mapped_column(String(10))
+    channel: Mapped[str] = mapped_column(String(10))
+    caller: Mapped[dict] = mapped_column(JSON)
+    actor: Mapped[dict] = mapped_column(JSON)
+    origin: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    scope: Mapped[str] = mapped_column(String(200))
+    idempotency_key: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    outcome: Mapped[str] = mapped_column(String(10))
+    refusal_code: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    # SQL NULL, not the JSON text 'null', so the outcome check can tell refusals from accepted outcomes.
+    capability: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    result: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    draft_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    revision_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    recorded_at: Mapped[str] = mapped_column(String(40))

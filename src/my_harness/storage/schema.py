@@ -7,10 +7,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0030_structured_knowledge"
-# P002-T004 (D284): the knowledge protection triggers of 0030, by name and whitespace-normalized SQL. A database,
-# backup or restored copy whose triggers are missing or altered is refused.
-SCHEMA_TRIGGERS_SHA256 = "8e9bf4a4414b0326f429b30977ac0ba28250b05548e7ca725bd154909834d123"
+SCHEMA_REVISION = "0031_domain_commands"
+# P002-T004 (D284) and P002-T005 (D286): the protection triggers of 0030 (knowledge) and 0031 (domain command
+# outcomes), by name and whitespace-normalized SQL. A database, backup or restored copy whose triggers are missing
+# or altered is refused.
+SCHEMA_TRIGGERS_SHA256 = "5415725d9284db59c6e81179b1dd79498aaf89e0d0c23ab23b04fc2cb63d032f"
 
 
 def trigger_digest(rows) -> str:
@@ -47,7 +48,7 @@ def require_schema(engine: Engine) -> None:
                           "valuation_cohorts", "valuation_cohort_members", "graph_threads", "graph_checkpoints",
                           "graph_checkpoint_writes", "knowledge_projects", "knowledge_items",
                           "knowledge_item_versions", "knowledge_revisions", "knowledge_revision_members",
-                          "knowledge_revision_links", "knowledge_identity_map"):
+                          "knowledge_revision_links", "knowledge_identity_map", "domain_commands"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
             rows = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'")).all()
             if not triggers_intact(rows):

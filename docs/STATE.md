@@ -22,7 +22,10 @@ merged into develop and pushed: LangGraph 1.2.18 added under D280, schema `0029_
 segment runner exercised by synthetic graphs only; no product behavior uses it yet. **P002-T004 is completed** ([knowledge record](phase/P002-T004-knowledge.md);
 D284–D285 accepted) on `feat/p002-t004-structured-knowledge`, merged into develop and pushed: schema `0030_structured_knowledge` with
 seven knowledge tables protected by triggers, a pure core and a repository exercised by synthetic knowledge only.
-**Next: P002-T005**, not started. Historical starting
+**P002-T005 is completed** ([record](phase/P002-T005-domain-operations.md); Q1(a) and D286 accepted) on
+`feat/p002-t005-domain-operations`, merged into develop and pushed: schema `0031_domain_commands`, a typed command
+service with catalogue, capability policy and outcome records, owner API routes and a graph binding, exercised by
+synthetic data; agent calls and delegated adoption stay refused. **Next: P002-T006**, not started. Historical starting
 context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
@@ -71,7 +74,7 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
 - **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (released in 0.1.9; the
   operator database is migrated; unreleased develop adds P002-T003's `0029_graph_continuations` and P002-T004's
-  `0030_structured_knowledge`); idempotent job queue
+  `0030_structured_knowledge`; P002-T005's `0031_domain_commands`); idempotent job queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
   a verified snapshot (D150). Derived run projection written with each history (D144).
@@ -185,5 +188,6 @@ inherited environment) and the per-invocation MCP broker on Claude Code 2.1.312 
 real runs; D280 (dependency set and placement) and D281 (transport and minimum capability contract) are accepted.
 [NEXT_STEPS](NEXT_STEPS.md) holds plan v0.3. **T003 (completed, integrated)** added the LangGraph runtime foundation
 (D282–D283), the only dependency adopted (D280); **T004 (completed, integrated)** adds structured knowledge
-with immutable accepted revisions (D284) and canonical database instructions (D285); T005–T023 are planned. No
+with immutable accepted revisions (D284) and canonical database instructions (D285); **T005 (completed, integrated)** adds typed
+domain commands (D286); T006–T023 are planned. No
 OpenCode adapter exists, and installed behavior remains 0.1.9.

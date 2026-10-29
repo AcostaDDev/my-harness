@@ -2391,3 +2391,218 @@ class ProfileProposalAdoptedRead(BaseModel):
     configuration_state: Literal['PROFILE_PROPOSED']
     version: int
     proposal_sha256: str
+
+
+# P002-T005 (D286): typed knowledge operations. Bodies mirror the catalogue input schemas (a parity test checks the
+# field sets); the service validates them again against the catalogue. Text is never stripped.
+
+class _KnowledgeInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+
+KnowledgeId = Annotated[str, Field(min_length=1, max_length=64)]
+KnowledgeSha = Annotated[str, Field(pattern=SHA256)]
+KnowledgeKind = Literal['requirement', 'criterion', 'phase', 'task', 'decision', 'section']
+KnowledgeDocument = Literal['specification', 'architecture', 'data_model', 'flows', 'instructions']
+KnowledgeLinkKind = Literal['part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes']
+
+
+class KnowledgeHeadSummary(BaseModel):
+    number: int
+    revision_sha256: str
+
+
+class KnowledgeProjectRead(BaseModel):
+    id: str
+    root: str
+    head: KnowledgeHeadSummary | None
+
+
+class KnowledgeProjectsRead(BaseModel):
+    items: list[KnowledgeProjectRead]
+    total: int
+    offset: int
+    limit: int
+
+
+class KnowledgeRevisionSummary(BaseModel):
+    id: str
+    number: int
+    revision_sha256: str
+    knowledge_sha256: str
+    origin: Literal['owner_confirmed', 'owner_delegated', 'harness_deterministic']
+    accepted_at: str
+    counts: dict[str, int]
+
+
+class KnowledgeHeadRead(BaseModel):
+    knowledge_project_id: str | None
+    revision: KnowledgeRevisionSummary | None
+
+
+class KnowledgeRevisionRef(BaseModel):
+    id: str
+    number: int
+    revision_sha256: str
+
+
+class KnowledgeItemSummary(BaseModel):
+    item_id: str
+    kind: KnowledgeKind
+    document: KnowledgeDocument | None
+    code: str
+    version: int
+    content_sha256: str
+    title: str | None
+    status: str
+
+
+class KnowledgeItemsRead(BaseModel):
+    revision: KnowledgeRevisionRef
+    items: list[KnowledgeItemSummary]
+    total: int
+    offset: int
+    limit: int
+    delivery: dict[str, Any]
+
+
+class KnowledgeMember(BaseModel):
+    item_id: str
+    kind: KnowledgeKind
+    document: KnowledgeDocument | None
+    code: str
+    version: int
+    content_sha256: str
+    content: dict[str, Any]
+    provenance: Literal['known', 'inferred', 'unknown']
+    source: dict[str, str] | None
+    root_position: int | None
+
+
+class KnowledgeLinkRead(BaseModel):
+    kind: KnowledgeLinkKind
+    source_item_id: str
+    target_item_id: str
+    position: int | None
+    qualifier: Literal['full', 'partial'] | None
+
+
+class KnowledgeItemRead(BaseModel):
+    revision: KnowledgeRevisionRef
+    item: KnowledgeMember
+    links: list[KnowledgeLinkRead]
+    delivery: dict[str, Any]
+
+
+class KnowledgeDraftRead(BaseModel):
+    draft_id: str
+    status: Literal['DRAFT', 'ACCEPTED', 'DISCARDED']
+    base_revision_id: str | None
+    draft_sha256: str
+    opener: dict[str, str]
+    members: list[KnowledgeMember]
+    links: list[KnowledgeLinkRead]
+
+
+class KnowledgeDraftOpenCreate(_KnowledgeInput):
+    expected_revision_id: KnowledgeId | None = Field(description='The current accepted head; null before the first.')
+
+
+class _MutationRead(BaseModel):
+    command_id: str
+    replayed: bool = Field(description='True when this is the stored outcome of an earlier identical request.')
+
+
+class KnowledgeDraftOpenRead(_MutationRead):
+    knowledge_project_id: str
+    draft_id: str
+    base_revision_id: str | None
+    draft_sha256: str
+
+
+class KnowledgePut(_KnowledgeInput):
+    op: Literal['put']
+    kind: KnowledgeKind
+    code: Annotated[str, Field(min_length=1, max_length=120)]
+    document: KnowledgeDocument | None = None
+    content: dict[str, Any]
+    provenance: Literal['known', 'inferred', 'unknown']
+    source: dict[str, Any] | None = None
+    root_position: Annotated[int, Field(ge=0, le=2 ** 31)] | None = None
+
+
+class KnowledgeRemove(_KnowledgeInput):
+    op: Literal['remove']
+    item_id: KnowledgeId
+
+
+class KnowledgeLink(_KnowledgeInput):
+    op: Literal['link']
+    kind: KnowledgeLinkKind
+    source_item_id: KnowledgeId
+    target_item_id: KnowledgeId
+    position: Annotated[int, Field(ge=0, le=2 ** 31)] | None = None
+    qualifier: Literal['full', 'partial'] | None = None
+
+
+class KnowledgeUnlink(_KnowledgeInput):
+    op: Literal['unlink']
+    kind: KnowledgeLinkKind
+    source_item_id: KnowledgeId
+    target_item_id: KnowledgeId
+
+
+KnowledgeChange = Annotated[KnowledgePut | KnowledgeRemove | KnowledgeLink | KnowledgeUnlink,
+                            Field(discriminator='op')]
+
+
+class KnowledgeDraftChangesCreate(_KnowledgeInput):
+    expected_draft_sha256: KnowledgeSha
+    changes: Annotated[list[KnowledgeChange], Field(min_length=1, max_length=200)]
+
+
+class KnowledgeDraftChangesRead(_MutationRead):
+    draft_id: str
+    draft_sha256: str
+    item_ids: list[str]
+
+
+class KnowledgeDraftDiscardRead(_MutationRead):
+    draft_id: str
+    status: Literal['DISCARDED']
+
+
+class KnowledgeChangeClass(BaseModel):
+    group: str
+    code: str
+    change: Literal['added', 'changed', 'removed', 'reordered', 'linked', 'unlinked']
+    class_: Literal['owner_only', 'product', 'planning'] = Field(alias='class')
+    sensitive: bool
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+
+class KnowledgePreviewRead(BaseModel):
+    draft_id: str
+    base_revision_id: str | None
+    base_revision_sha256: str | None
+    draft_sha256: str
+    changes: dict[str, Any] = Field(description='The D284 change summary that adoption seals.')
+    classification: list[KnowledgeChangeClass]
+    reason_required: bool
+    preview_sha256: str
+
+
+class KnowledgeAdoptCreate(_KnowledgeInput):
+    expected_revision_id: KnowledgeId | None
+    preview_sha256: KnowledgeSha
+    reason: Annotated[str, Field(max_length=2000)] | None = None
+
+
+class KnowledgeAdoptRead(_MutationRead):
+    revision_id: str
+    number: int
+    revision_sha256: str
+    knowledge_sha256: str
+    origin: Literal['owner_confirmed', 'owner_delegated', 'harness_deterministic']
+    changes: dict[str, Any]

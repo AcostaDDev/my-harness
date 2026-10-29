@@ -2548,6 +2548,185 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/knowledge/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Projects
+         * @description Persisted knowledge projects, including those of restored archives and unregistered roots.
+         */
+        get: operations["knowledge_projects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Head */
+        get: operations["knowledge_head"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/revisions/{number}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Items */
+        get: operations["knowledge_items"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/revisions/{number}/items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Item */
+        get: operations["knowledge_item"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/drafts/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Draft */
+        get: operations["knowledge_draft"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/knowledge/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft Open */
+        post: operations["knowledge_draft_open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/knowledge/drafts/{draft_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft Apply */
+        post: operations["knowledge_draft_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/knowledge/drafts/{draft_id}/discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft Discard */
+        post: operations["knowledge_draft_discard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/knowledge/drafts/{draft_id}/adoption/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview
+         * @description Classified changes and the hash an adoption must confirm; nothing is written.
+         */
+        post: operations["knowledge_adoption_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/knowledge/drafts/{draft_id}/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adopt
+         * @description `owner_confirmed` adoption of the exact previewed draft; a reason is required for sensitive changes.
+         */
+        post: operations["knowledge_adopt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -5352,6 +5531,414 @@ export interface components {
             case_count: number;
             /** Original Available */
             original_available: boolean;
+        };
+        /** KnowledgeAdoptCreate */
+        KnowledgeAdoptCreate: {
+            /** Expected Revision Id */
+            expected_revision_id: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** KnowledgeAdoptRead */
+        KnowledgeAdoptRead: {
+            /** Command Id */
+            command_id: string;
+            /**
+             * Replayed
+             * @description True when this is the stored outcome of an earlier identical request.
+             */
+            replayed: boolean;
+            /** Revision Id */
+            revision_id: string;
+            /** Number */
+            number: number;
+            /** Revision Sha256 */
+            revision_sha256: string;
+            /** Knowledge Sha256 */
+            knowledge_sha256: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "owner_confirmed" | "owner_delegated" | "harness_deterministic";
+            /** Changes */
+            changes: {
+                [key: string]: unknown;
+            };
+        };
+        /** KnowledgeChangeClass */
+        KnowledgeChangeClass: {
+            /** Group */
+            group: string;
+            /** Code */
+            code: string;
+            /**
+             * Change
+             * @enum {string}
+             */
+            change: "added" | "changed" | "removed" | "reordered" | "linked" | "unlinked";
+            /**
+             * Class
+             * @enum {string}
+             */
+            class: "owner_only" | "product" | "planning";
+            /** Sensitive */
+            sensitive: boolean;
+        };
+        /** KnowledgeDraftChangesCreate */
+        KnowledgeDraftChangesCreate: {
+            /** Expected Draft Sha256 */
+            expected_draft_sha256: string;
+            /** Changes */
+            changes: (components["schemas"]["KnowledgePut"] | components["schemas"]["KnowledgeRemove"] | components["schemas"]["KnowledgeLink"] | components["schemas"]["KnowledgeUnlink"])[];
+        };
+        /** KnowledgeDraftChangesRead */
+        KnowledgeDraftChangesRead: {
+            /** Command Id */
+            command_id: string;
+            /**
+             * Replayed
+             * @description True when this is the stored outcome of an earlier identical request.
+             */
+            replayed: boolean;
+            /** Draft Id */
+            draft_id: string;
+            /** Draft Sha256 */
+            draft_sha256: string;
+            /** Item Ids */
+            item_ids: string[];
+        };
+        /** KnowledgeDraftDiscardRead */
+        KnowledgeDraftDiscardRead: {
+            /** Command Id */
+            command_id: string;
+            /**
+             * Replayed
+             * @description True when this is the stored outcome of an earlier identical request.
+             */
+            replayed: boolean;
+            /** Draft Id */
+            draft_id: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "DISCARDED";
+        };
+        /** KnowledgeDraftOpenCreate */
+        KnowledgeDraftOpenCreate: {
+            /**
+             * Expected Revision Id
+             * @description The current accepted head; null before the first.
+             */
+            expected_revision_id: string | null;
+        };
+        /** KnowledgeDraftOpenRead */
+        KnowledgeDraftOpenRead: {
+            /** Command Id */
+            command_id: string;
+            /**
+             * Replayed
+             * @description True when this is the stored outcome of an earlier identical request.
+             */
+            replayed: boolean;
+            /** Knowledge Project Id */
+            knowledge_project_id: string;
+            /** Draft Id */
+            draft_id: string;
+            /** Base Revision Id */
+            base_revision_id: string | null;
+            /** Draft Sha256 */
+            draft_sha256: string;
+        };
+        /** KnowledgeDraftRead */
+        KnowledgeDraftRead: {
+            /** Draft Id */
+            draft_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "DRAFT" | "ACCEPTED" | "DISCARDED";
+            /** Base Revision Id */
+            base_revision_id: string | null;
+            /** Draft Sha256 */
+            draft_sha256: string;
+            /** Opener */
+            opener: {
+                [key: string]: string;
+            };
+            /** Members */
+            members: components["schemas"]["KnowledgeMember"][];
+            /** Links */
+            links: components["schemas"]["KnowledgeLinkRead"][];
+        };
+        /** KnowledgeHeadRead */
+        KnowledgeHeadRead: {
+            /** Knowledge Project Id */
+            knowledge_project_id: string | null;
+            revision: components["schemas"]["KnowledgeRevisionSummary"] | null;
+        };
+        /** KnowledgeHeadSummary */
+        KnowledgeHeadSummary: {
+            /** Number */
+            number: number;
+            /** Revision Sha256 */
+            revision_sha256: string;
+        };
+        /** KnowledgeItemRead */
+        KnowledgeItemRead: {
+            revision: components["schemas"]["KnowledgeRevisionRef"];
+            item: components["schemas"]["KnowledgeMember"];
+            /** Links */
+            links: components["schemas"]["KnowledgeLinkRead"][];
+            /** Delivery */
+            delivery: {
+                [key: string]: unknown;
+            };
+        };
+        /** KnowledgeItemSummary */
+        KnowledgeItemSummary: {
+            /** Item Id */
+            item_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "requirement" | "criterion" | "phase" | "task" | "decision" | "section";
+            /** Document */
+            document: ("specification" | "architecture" | "data_model" | "flows" | "instructions") | null;
+            /** Code */
+            code: string;
+            /** Version */
+            version: number;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Title */
+            title: string | null;
+            /** Status */
+            status: string;
+        };
+        /** KnowledgeItemsRead */
+        KnowledgeItemsRead: {
+            revision: components["schemas"]["KnowledgeRevisionRef"];
+            /** Items */
+            items: components["schemas"]["KnowledgeItemSummary"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+            /** Delivery */
+            delivery: {
+                [key: string]: unknown;
+            };
+        };
+        /** KnowledgeLink */
+        KnowledgeLink: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "link";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes";
+            /** Source Item Id */
+            source_item_id: string;
+            /** Target Item Id */
+            target_item_id: string;
+            /** Position */
+            position?: number | null;
+            /** Qualifier */
+            qualifier?: ("full" | "partial") | null;
+        };
+        /** KnowledgeLinkRead */
+        KnowledgeLinkRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes";
+            /** Source Item Id */
+            source_item_id: string;
+            /** Target Item Id */
+            target_item_id: string;
+            /** Position */
+            position: number | null;
+            /** Qualifier */
+            qualifier: ("full" | "partial") | null;
+        };
+        /** KnowledgeMember */
+        KnowledgeMember: {
+            /** Item Id */
+            item_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "requirement" | "criterion" | "phase" | "task" | "decision" | "section";
+            /** Document */
+            document: ("specification" | "architecture" | "data_model" | "flows" | "instructions") | null;
+            /** Code */
+            code: string;
+            /** Version */
+            version: number;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "known" | "inferred" | "unknown";
+            /** Source */
+            source: {
+                [key: string]: string;
+            } | null;
+            /** Root Position */
+            root_position: number | null;
+        };
+        /** KnowledgePreviewRead */
+        KnowledgePreviewRead: {
+            /** Draft Id */
+            draft_id: string;
+            /** Base Revision Id */
+            base_revision_id: string | null;
+            /** Base Revision Sha256 */
+            base_revision_sha256: string | null;
+            /** Draft Sha256 */
+            draft_sha256: string;
+            /**
+             * Changes
+             * @description The D284 change summary that adoption seals.
+             */
+            changes: {
+                [key: string]: unknown;
+            };
+            /** Classification */
+            classification: components["schemas"]["KnowledgeChangeClass"][];
+            /** Reason Required */
+            reason_required: boolean;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** KnowledgeProjectRead */
+        KnowledgeProjectRead: {
+            /** Id */
+            id: string;
+            /** Root */
+            root: string;
+            head: components["schemas"]["KnowledgeHeadSummary"] | null;
+        };
+        /** KnowledgeProjectsRead */
+        KnowledgeProjectsRead: {
+            /** Items */
+            items: components["schemas"]["KnowledgeProjectRead"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+        };
+        /** KnowledgePut */
+        KnowledgePut: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "put";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "requirement" | "criterion" | "phase" | "task" | "decision" | "section";
+            /** Code */
+            code: string;
+            /** Document */
+            document?: ("specification" | "architecture" | "data_model" | "flows" | "instructions") | null;
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /**
+             * Provenance
+             * @enum {string}
+             */
+            provenance: "known" | "inferred" | "unknown";
+            /** Source */
+            source?: {
+                [key: string]: unknown;
+            } | null;
+            /** Root Position */
+            root_position?: number | null;
+        };
+        /** KnowledgeRemove */
+        KnowledgeRemove: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "remove";
+            /** Item Id */
+            item_id: string;
+        };
+        /** KnowledgeRevisionRef */
+        KnowledgeRevisionRef: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /** Revision Sha256 */
+            revision_sha256: string;
+        };
+        /** KnowledgeRevisionSummary */
+        KnowledgeRevisionSummary: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /** Revision Sha256 */
+            revision_sha256: string;
+            /** Knowledge Sha256 */
+            knowledge_sha256: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "owner_confirmed" | "owner_delegated" | "harness_deterministic";
+            /** Accepted At */
+            accepted_at: string;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+        };
+        /** KnowledgeUnlink */
+        KnowledgeUnlink: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "unlink";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes";
+            /** Source Item Id */
+            source_item_id: string;
+            /** Target Item Id */
+            target_item_id: string;
         };
         /**
          * LanguageContextRead
@@ -17932,6 +18519,650 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_projects: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeProjectsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_head: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeHeadRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_items: {
+        parameters: {
+            query?: {
+                kind?: ("requirement" | "criterion" | "phase" | "task" | "decision" | "section") | null;
+                document?: ("specification" | "architecture" | "data_model" | "flows" | "instructions") | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeItemsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_item: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                number: number;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeItemRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_draft: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeDraftRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_draft_open: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDraftOpenCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeDraftOpenRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_draft_apply: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeDraftChangesCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeDraftChangesRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_draft_discard: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeDraftDiscardRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_adoption_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgePreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    knowledge_adopt: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KnowledgeAdoptCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeAdoptRead"];
                 };
             };
             /** @description Forbidden */

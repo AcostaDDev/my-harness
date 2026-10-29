@@ -15,18 +15,18 @@ sequenceDiagram
     participant G as LangGraph + harness saver
     participant J as Operation port (journal)
     S->>R: start(graph, thread, identity-only state)
-    R->>T: Stamp graph id, version, fingerprint; RUNNING
+    R->>T: Stamp graph id, version, fingerprint, then RUNNING
     loop Durable segments
         R->>G: stream(durability=sync, recursion_limit=segment_limit)
         G->>J: Node seals intent under a deterministic key, then effect and outcome
-        Note over G,J: Replay of a completed key reconciles; a sealed key without outcome stops
+        Note over G,J: Replay of a completed key reconciles, a sealed key without outcome stops
         R->>T: After each superstep: still RUNNING?
         alt Segment limit reached
             R->>T: New segment from the last checkpoint
         end
     end
     alt Wait
-        R->>T: WAITING with the typed payload; nothing held
+        R->>T: WAITING with the typed payload, nothing held
     else End
         R->>T: COMPLETED
     else Uncertain operation
@@ -37,7 +37,7 @@ sequenceDiagram
     S->>R: resume(thread, value) or recover(thread, writer_stopped=true)
     R->>T: Compare stamp with the registered definition
     alt Different version or fingerprint, or unknown graph
-        R->>T: QUARANTINED with both stamps; no node runs
+        R->>T: QUARANTINED with both stamps, no node runs
     else Match
         R->>G: Command(resume) or continue from the last checkpoint
     end
@@ -51,5 +51,10 @@ sequenceDiagram
   thread runs no node and an active segment stops at its next superstep boundary. Terminal statuses do not change.
 - **Hygiene.** Importing the package removes inherited `LANGSMITH_*`/`LANGCHAIN_*` variables, and every graph call
   runs in a disabled LangSmith tracing context. A query-only restore refuses every runner write.
+- **Domain commands.** A node calls a typed domain command through `domain_command(config, operations, root,
+  operation, arguments)` ([domain operations](domain-operations.md), D286): the harness caller is bound from the thread
+  and the idempotency key is the node's deterministic `operation_key`, so a replayed node receives the stored outcome
+  instead of a second effect. The command is committed or absent in one transaction, so it never leaves a sealed
+  intent without outcome; nothing is atomic with the checkpoint. A harness caller cannot adopt knowledge.
 - **Later tasks.** The production journal and uncertain-operation reconciliation (T006/T020), quarantine release
   and autonomous bounds (T016), and real graphs (T014–T016) are not part of this flow yet.

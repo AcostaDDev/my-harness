@@ -577,9 +577,9 @@ def test_a30_upgrade_from_0027_snapshots_first_and_neither_backfills_nor_reprice
             return {name: db.execute(f'SELECT * FROM "{name}"').fetchall() for name in LEGACY_TABLES}
     before = legacy_rows()
     outcome = migrate_database(str(path), tmp_path / 'snapshots', writers_stopped=True)
-    # The upgrade reaches the current head; 0029 and 0030 only add empty continuation and knowledge tables (P002).
+    # The upgrade reaches the current head; 0029–0031 only add empty continuation, knowledge and command tables (P002).
     assert (outcome.action, outcome.previous, outcome.revision) == ('migrated', '0027_profile_proposals',
-                                                                   '0030_structured_knowledge')
+                                                                   '0031_domain_commands')
     assert outcome.snapshot is not None and outcome.snapshot.is_file()
     after = dump_rows(path)
     assert all(after[table] == [] for table in ACCOUNTING)  # migration never materializes or values history

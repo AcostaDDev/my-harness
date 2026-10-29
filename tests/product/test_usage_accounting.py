@@ -580,7 +580,7 @@ def test_a30_upgrade_from_0027_snapshots_first_and_neither_backfills_nor_reprice
     # The upgrade reaches the current head; 0029–0032 only add empty continuation, knowledge, command and operation
     # journal tables (P002).
     assert (outcome.action, outcome.previous, outcome.revision) == ('migrated', '0027_profile_proposals',
-                                                                   '0032_operation_journal')
+                                                                   '0033_frozen_context')
     assert outcome.snapshot is not None and outcome.snapshot.is_file()
     after = dump_rows(path)
     assert all(after[table] == [] for table in ACCOUNTING)  # migration never materializes or values history

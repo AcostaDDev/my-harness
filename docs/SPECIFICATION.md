@@ -114,6 +114,11 @@ checkout. Earlier harness formats are not observed or imported
     project is created or onboarded, is immutable and governs documentation and code. Changing a default affects only
     future projects; changing the interface language affects only new interactions.
 
+P002-T007 adds an explicit canonical invocation path: accepted instruction sections replace D094 checkout
+reads, the actual frozen profile is verified, and exact source/exposure evidence is persisted with invocation
+boundaries and receipts ([flow](flows/frozen-context.md), D288). Existing projects and historical snapshots keep
+their earlier path until explicit migration; no generated-file fallback is allowed in the canonical path.
+
 ## 6. Documentation contract of managed projects
 
 Mandatory structure for every project, this repository included
@@ -362,7 +367,9 @@ T006 [qualified the whole chain](archive/phase-001/P001-T006-qualification.md) w
   append-only operations; ordinary reads never price, backfill or fetch. Additive migration, retained evidence and
   verified offline query-only archive consultation must ship together with data/flow/API/type/en-es parity.
 
-## 14. P002 autonomous mode and project authority (accepted design; not implemented)
+<a id="14-p002-autonomous-mode-and-project-authority-accepted-design-not-implemented"></a>
+
+## 14. P002 autonomous mode and project authority (accepted design; foundations implemented through T007)
 
 [D268–D279](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), the
 [T001 contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md) and
@@ -397,7 +404,8 @@ rules change.
   journal and trace events exist (P002-T006, D287): one recoverable operation per graph key, linked to the existing
   invocation ledger and attempt, with ordered insert-only events, `trace-observation-1` counters (harness attempt,
   revision round and native turn kept apart; missing telemetry absent) and read-only, project-scoped trace queries;
-  no product graph launches agents yet and knowledge receipts and discovery events start with T007/T008.
+  no product graph launches agents yet. T007 adds frozen contexts, canonical instruction delivery and exact
+  knowledge receipts (D288); tool discovery remains T008.
 - **Observation.** A global inbox for both modes and a read-only task-instance graph; their taxonomy and visual design
   come later from the owner.
 - **Preserved.** Acceptance by exact content, READY binding, single writer, intent before effect, conservative recovery,

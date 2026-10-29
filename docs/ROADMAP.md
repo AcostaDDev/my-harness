@@ -65,7 +65,9 @@ uses it. **P002-T004** (structured knowledge and revision model, D284–D285) is
 exercised by synthetic knowledge only. **P002-T005** (typed domain operations and capability policy, D286) is
 completed and integrated into develop; owner API routes and synthetic graphs use it, agents do not. **P002-T006**
 (operations, invocations and correlated events, D287) is completed and integrated into develop; synthetic graphs
-and fake CLIs exercise it, and no product graph launches agents.
+and fake CLIs exercise it, and no product graph launches agents. **P002-T007** is completed and integrated into
+develop after technical re-review: frozen contexts, canonical instructions and knowledge delivery receipts
+([record](phase/P002-T007-frozen-context.md), D288). Its 0.2.0 delivery remains pending.
 
 **Exit criteria (adopted with D268):**
 

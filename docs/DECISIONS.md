@@ -2211,3 +2211,46 @@ Review corrections (same task, before integration; contract unchanged): the gene
 `sealed_effect`; every port path checks the project root; results are kept verbatim within 16 KiB; `refs`/`origin`
 are validated; offloaded event content is stored in a third table, `trace_artifacts` (76 tables); Codex turns are
 counted from native terminals. Details in the [T006 record](phase/P002-T006-operations-tracing.md#9-review-findings-and-corrections).
+
+## D288 — Frozen invocation context and exact exposure evidence
+
+Status: implemented in P002-T007 under the owner's authorization to resolve technical details;
+technical review passed and source is integrated into develop. Applies D270/D277/D285 and FL08 without another owner-policy gate.
+
+The explicit canonical path uses a verified accepted revision and mandatory active instruction sections, ordered
+by root/child position: `agents` first, then the selected client's target. Other relevant knowledge is selected by
+stable identity; profile and Git/code captures remain separately attributed, noncanonical evidence. Rendering/start
+check the captured profile against the actual frozen project context; launch also checks the instruction client target. Missing or
+oversize mandatory context fails; generated files never fill it. This path supersedes D094's checkout read. Existing
+projects/graphs and frozen catalogs/snapshots retain D094 until their explicit migration in T011–T016/T020.
+
+Migration `0033_frozen_context` adds three insert-only tables: prepared source bytes (`context_snapshots`), the
+boundary sealed with the fenced attempt/ledger/operation (`invocation_contexts`), and exact observed/returned
+exposures (`knowledge_deliveries`). Preparation and intention assert no delivery. Initial receipts appear only
+after the adapter observes the complete input write; known refusal before launch records failure without a delivery
+digest. A crash or uncertain partial write stays unknown, with no automatic inference retry.
+
+Shared-domain `knowledge.lookup`/`knowledge.search` add bounded exposure and revision-bound pagination without
+changing historical catalogue entries or owner HTTP schemas. Queries and tools commit their response and receipts
+before returning content. Stable request keys deduplicate within invocation and channel; replay rechecks caller
+and current capabilities and returns the stored response, including a recorded read failure. Changed requests
+conflict; a retry with a new key is a new delivery. No checkpoint or external transport transaction is claimed.
+
+Additive `knowledge-delivery-2` envelopes carry locators and exact UTF-8 exposure digests independently of source
+content hashes. Reconstruction bytes stay in scoped storage, never in trace payloads. Receipts mean availability,
+not comprehension. Native file reads without observation remain unknown. Persisted project-scoped readers and
+backup verification work without a checkout, including on a restored query-only database. No backfill, automatic
+project conversion, new dependency, broker/resolver, grants, export or UI is introduced.
+
+Limits, range units, failure/reentry semantics and synthetic evidence: [T007 record](phase/P002-T007-frozen-context.md)
+and [context flow](flows/frozen-context.md). Checked source → develop → 0.2.0 through protected main →
+distribution/publication → installation remains the delivery route. After successful technical re-review, the
+owner authorized commit, merge into `develop` and push of `develop`; release/publication/installation remain pending.
+
+T007 review corrections (same task): new `frozen-context-2` preparations deliver full instruction
+headings at accepted tree depth plus verbatim bodies; receipts hash those actual rendered sections. Body-only v1
+snapshots remain readable/backup-compatible without rewriting bytes, but cannot start a new canonical invocation.
+An explicit before-spawn or before-GO refusal boundary supplies positive no-delivery evidence; stopping a process
+or observing a partial write supplies none. Backup has no artifact references for a consistent before-spawn
+refusal and retains the real prepared prompt for a before-GO refusal, while ordinary launched-process artifact
+checks remain strict. Evidence: [T007 review corrections](phase/P002-T007-frozen-context.md#8-technical-review-corrections).

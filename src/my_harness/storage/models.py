@@ -1444,3 +1444,40 @@ class TraceArtifactRow(Base):
     size: Mapped[int] = mapped_column(Integer)
     media: Mapped[str] = mapped_column(String(80))
     content: Mapped[bytes] = mapped_column(LargeBinary)
+
+
+class ContextSnapshotRow(Base):
+    """Prepared context; not evidence of delivery. Immutable, including captured source bytes."""
+    __tablename__ = 'context_snapshots'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    revision_id: Mapped[str] = mapped_column(ForeignKey('knowledge_revisions.id'))
+    sha256: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class InvocationContextRow(Base):
+    """Frozen boundary sealed with the fenced attempt, ledger and invocation operation; still only intent."""
+    __tablename__ = 'invocation_contexts'
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('usage_invocations.id'), primary_key=True)
+    attempt_id: Mapped[str] = mapped_column(ForeignKey('managed_attempts.id'), unique=True)
+    operation_id: Mapped[str] = mapped_column(ForeignKey('workflow_operations.id'), unique=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey('context_snapshots.id'))
+    prompt_sha256: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class KnowledgeDeliveryRow(Base):
+    """One committed return/observation, with exact bytes and per-exposure envelopes; insert only."""
+    __tablename__ = 'knowledge_deliveries'
+    __table_args__ = (UniqueConstraint('invocation_id', 'key'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('invocation_contexts.invocation_id'))
+    key: Mapped[str] = mapped_column(String(200))
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    channel: Mapped[str] = mapped_column(String(30))
+    payload: Mapped[str] = mapped_column(Text)
+    sha256: Mapped[str] = mapped_column(String(64))
+    receipts: Mapped[list] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))

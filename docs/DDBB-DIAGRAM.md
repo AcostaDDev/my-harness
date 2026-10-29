@@ -1,13 +1,59 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0032_operation_journal`, 76 tables, defined in
+SQLite schema of the local service: Alembic head `0033_frozen_context`, 79 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
 Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uniqueness; "null" marks optional
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
-context appear only with the columns that relate them. Heavy artifacts (agent streams, captures, copies) live outside
-SQLite and are referenced by path and hash.
+context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
+SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## P002 frozen context and delivery evidence
+
+P002-T007, migration `0033_frozen_context`, [D288](DECISIONS.md#d288--frozen-invocation-context-and-exact-exposure-evidence),
+[flow](flows/frozen-context.md). Nine additional update/delete/replace guards make all three tables insert-only.
+No backfill. Every snapshot belongs to a verified accepted revision; a boundary is sealed inside the fenced
+attempt/ledger/operation transaction. A prepared snapshot or boundary does not claim delivery.
+
+```mermaid
+erDiagram
+    context_snapshots {
+        string id PK
+        string project_id FK "knowledge_projects.id"
+        string revision_id FK "knowledge_revisions.id"
+        string sha256 "UTF-8 payload digest"
+        text payload "bounded source bytes, identities, order, versions and provenance"
+        string created_at
+    }
+    invocation_contexts {
+        string invocation_id PK, FK "usage_invocations.id"
+        string attempt_id FK, UK "managed_attempts.id"
+        string operation_id FK, UK "workflow_operations.id"
+        string snapshot_id FK "context_snapshots.id"
+        string prompt_sha256 "rendered prompt digest"
+        string created_at
+    }
+    knowledge_deliveries {
+        string id PK
+        string invocation_id FK "invocation_contexts.invocation_id"
+        string key "unique within invocation"
+        string request_sha256
+        string channel "initial_context, query_result, tool_result"
+        text payload "exact response and per-source exposure bytes or explicit failure"
+        string sha256 "digest over payload and receipts together"
+        json receipts "knowledge-delivery-2 locators and exact exposure digests"
+        string created_at
+    }
+    context_snapshots ||--o{ invocation_contexts : snapshot_id
+    invocation_contexts ||--o{ knowledge_deliveries : invocation_id
+```
+
+Composite uniqueness: `knowledge_deliveries(invocation_id, key)`; channel-prefixed query keys and reserved initial
+keys define reentry. Receipt envelopes share the delivery transaction through `trace_events`; their locators
+`delivery_id/index` resolve the exact exposure, independently of the source's full content hash. Known prelaunch
+failure has no delivery digest. Missing/partial observation remains unknown. Prompt bytes remain in the existing
+attempt request, never in trace payloads. Backups and scoped read-only readers verify stored hashes and references.
 
 ## Previous-harness compatibility and simulations
 

@@ -181,13 +181,33 @@ def output_schema(role: str) -> dict:
     return {**schema, 'additionalProperties': True}
 
 
-def render_attempt(catalog, name, values, context, language=None):
+def render_attempt(catalog, name, values, context, language=None, *, canonical=None):
     """`language`: the job's frozen pair (D167); its directive (D169) is engine text, outside the template."""
     from my_harness.core.engine.language import DIRECTIVE, directive, frozen_pair
     template = catalog[name]
     pair = frozen_pair(language, context)
     instructions = None
-    if PROJECT_INSTRUCTIONS in VARIABLES[name]:
+    if canonical is not None:
+        from my_harness.core.engine import frozen_context
+        data = frozen_context.verify(freeze(canonical['data']), canonical['sha256'])
+        if data['format'] != frozen_context.FORMAT:
+            frozen_context.fail('legacy_context')
+        profile = next(e for e in data['entries'] if e['purpose'] == 'profile')
+        captured_profile = frozen_context.profile_capture(context)
+        if profile['data'] != captured_profile['data'] or profile['identity']['version'] != captured_profile['version']:
+            frozen_context.fail()
+        instructions = {'source': 'accepted_knowledge', 'revision_id': data['revision_id'],
+                        'sha256': digest(data['instructions']), 'size': len(data['instructions'].encode('utf-8'))}
+        if PROJECT_INSTRUCTIONS in values:
+            raise ContractError('Project instructions are supplied by the engine, never by the caller')
+        if PROJECT_INSTRUCTIONS in VARIABLES[name]:
+            if PROJECT_INSTRUCTIONS not in TOKEN.findall(template.template):
+                raise ContractError(tr('prompts.instructions_missing', name=name, id=template.id,
+                                       variable='{{' + PROJECT_INSTRUCTIONS + '}}'))
+            values = {**values, PROJECT_INSTRUCTIONS: data['instructions']}
+        if 'PROFILE_INSTRUCTIONS' in values:
+            values = {**values, 'PROFILE_INSTRUCTIONS': context.profile.executor_instructions}
+    elif PROJECT_INSTRUCTIONS in VARIABLES[name]:
         # P008-T007: the engine supplies AGENTS.md; the caller never replaces it. No valid file, no attempt.
         from my_harness.core.engine.documents import layout, project_instructions
         if PROJECT_INSTRUCTIONS in values:
@@ -199,6 +219,10 @@ def render_attempt(catalog, name, values, context, language=None):
         values = {**values, PROJECT_INSTRUCTIONS: content}
     parts = [{'version': asdict(template), 'variables': values}]
     text = render(template, values)
+    if canonical is not None:
+        if PROJECT_INSTRUCTIONS not in VARIABLES[name]:
+            text += '\n' + data['instructions']
+        text += frozen_context.prompt_tail(data)
     role = ROLES[name]
     if role in {'planner', 'reviewer'}:
         routing = {'POLICY_JSON': freeze({'models': context.policy.executor_models, 'efforts': context.policy.executor_efforts})}
@@ -215,11 +239,16 @@ def render_attempt(catalog, name, values, context, language=None):
         text += '\n' + rule
         sealed = {'directive': DIRECTIVE, 'ui_language': pair[0], 'work_language': pair[1], 'sha256': digest(rule)}
     text += '\nReturn exactly one JSON object, without Markdown fences. JSON Schema:\n' + freeze(schema)
+    if canonical is not None and len(text.encode('utf-8')) > frozen_context.MAX_PROMPT:
+        frozen_context.fail('over_limit')
     snapshot = {'parts': parts, 'output_schema': schema, 'schema_sha256': digest(freeze(schema)),
                 'document_references': [context.next_steps_file, context.state_file],
                 'rendered': text, 'rendered_sha256': digest(text)}
     if instructions is not None:
         snapshot['project_instructions'] = instructions  # P008-T007: path, hash and size of AGENTS.md
+    if canonical is not None:
+        snapshot['canonical_context'] = {'id': canonical['id'], 'sha256': canonical['sha256'],
+                                         'revision_id': data['revision_id'], 'client': data['client']}
     if sealed is not None:
         snapshot['language'] = sealed  # D169: absent for jobs without a frozen pair, as in earlier snapshots
     return text, freeze(snapshot)

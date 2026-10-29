@@ -6,7 +6,7 @@ refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
 develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
 **P002-T005 is completed (D286 accepted) and integrated into develop.** **P002-T006 is completed (D287 accepted) and
-integrated into develop.** T007–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+integrated into develop.** **P002-T007 is completed (D288, technical re-review passed) and integrated into develop.** T008–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
 data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -78,7 +78,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005 is **completed (integrated)**; every other task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; every later task is **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -88,8 +88,8 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary (**completed; integrated; D282–D283**) | T002 |
 | P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions (**completed; integrated; D284–D285**) | T001, T002 |
 | P002-T005 | Centralize typed domain commands, queries and capability enforcement (**completed; integrated; D286**) | T003, T004 |
-| P002-T006 | Establish operations, agent invocations, correlated events and recovery records | T003, T004, T005 |
-| P002-T007 | Assemble frozen context and record knowledge-access receipts | T004, T005, T006 |
+| P002-T006 | Establish operations, agent invocations, correlated events and recovery records (**completed; integrated; D287**) | T003, T004, T005 |
+| P002-T007 | Assemble frozen context and record knowledge-access receipts (**completed; integrated; D288**) | T004, T005, T006 |
 | P002-T008 | Expose scoped tools with on-demand discovery through qualified CLI adapters | T002, T005, T006, T007 |
 | P002-T009 | Add configurable judge profiles and duty-specific adjudication contracts | T007, T008 |
 | P002-T010 | Implement permission requests, standing grants and revocation | T005, T006, T008, T009 |
@@ -308,6 +308,16 @@ separately authorized.
 **Basis:** B03–B04, B10–B11, B13, B21.
 
 **Gates:** G07. **Threats:** TM01, TM14, TM15.
+
+**Status (2026-10-29):** completed on `feat/p002-t007-frozen-context` from `develop` `c0ffc85`;
+technical re-review passed after the three review corrections; source commit `d3c4345` is integrated into develop
+([T007 record §8](phase/P002-T007-frozen-context.md#8-technical-review-corrections)), D288. Implemented:
+`0033_frozen_context` (79 tables), deterministic canonical instruction/context rendering, fenced invocation
+boundaries, bounded shared-domain knowledge lookup/search, exact exposure receipts and read-only archive
+consultation. G07 was already resolved by D285. Existing graphs/projects keep their historical path; no automatic
+conversion, broker/resolver, permissions, exports, UI or product graphs are added. Delivery remains checked source
+→ develop → 0.2.0 through protected main → distribution/publication → installation, separately authorized.
+The owner authorized commit, merge into `develop` and push of `develop` after the successful re-review.
 ## P002-T008 — Scoped tool bridge and lazy discovery
 
 **Problem:** ordinary Python tools are not automatically available inside the supported CLIs, and full catalogues
@@ -633,4 +643,5 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
    authorization; part of 0.2.0.
 5. **P002-T006** is complete on `feat/p002-t006-operations-tracing`, merged into develop and pushed at the owner's
    authorization; part of 0.2.0.
-6. Then: **P002-T007** (frozen context and knowledge-access receipts) on a new topic branch from develop.
+6. **P002-T007** is complete on `feat/p002-t007-frozen-context`, from `c0ffc85`; technical review passed and source commit `d3c4345` is integrated into `develop`. The owner authorized commit/merge/push. [Evidence](phase/P002-T007-frozen-context.md).
+7. Next: **P002-T008**, not started. Release 0.2.0 through protected main, distribution/publication and installation remain separately pending for T007.

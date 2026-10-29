@@ -174,10 +174,36 @@ def _integrity(db, *, restored=False):
             if reference.get('sha256') not in artifacts:
                 raise BackupError(tr('backup.trace_artifact', sha256=reference.get('sha256')))
     from my_harness.storage.accounting_backup import AccountingMismatch, verify
+    from my_harness.storage.frozen_context import verify_archive
+    try:
+        verify_archive(db)
+    except (ValueError, KeyError, TypeError, IndexError) as exc:
+        raise BackupError(tr('backup.context')) from exc
     try:
         return verify(db)
     except (AccountingMismatch, KeyError, TypeError, ValueError) as exc:
         raise BackupError(tr('backup.accounting', error=exc)) from exc
+
+
+def _refusal_boundary(db, row, spec, capture):
+    """An artifact exemption needs positive no-launch evidence and no contradictory observed output."""
+    from my_harness.core.engine.usage_capture import refusal_boundary
+    boundary = refusal_boundary(spec, capture, row['identity'] is not None)
+    if boundary is None:
+        if spec.get('launch_permitted') is False or isinstance(capture, dict) and capture.get('launch_permitted') is False:
+            raise BackupError(tr('backup.prelaunch_evidence'))
+        return None
+    if (row['status'] != 'STOPPED' or capture.get('group_state') != 'dead' or 'artifacts' in capture or
+            boundary == 'before_spawn' and any(k in spec for k in ('artifacts', 'prompt_path', 'prompt_sha256'))):
+        raise BackupError(tr('backup.prelaunch_evidence'))
+    kinds = ('stream_bytes', 'agent_event', 'context_input_delivered')
+    if boundary == 'before_spawn':
+        kinds += ('process_spawned',)
+    for event in db.execute('SELECT kind,payload FROM managed_events WHERE run_id='
+                            '(SELECT run_id FROM managed_attempts WHERE id=?)', (row['attempt_id'],)):
+        if event['kind'] in kinds and json.loads(event['payload']).get('attempt_id') == row['attempt_id']:
+            raise BackupError(tr('backup.prelaunch_evidence'))
+    return boundary
 
 
 def _references(db):
@@ -195,11 +221,16 @@ def _references(db):
 
     for row in db.execute('SELECT * FROM managed_processes WHERE job_id IS NOT NULL ORDER BY attempt_id'):
         spec, capture = json.loads(row['spec']), json.loads(row['capture']) if row['capture'] else None
+        refusal = _refusal_boundary(db, row, spec, capture)
+        if refusal == 'before_spawn':
+            continue  # No prompt, stream path, hash or file was created or promised.
         directory = _historical_path(spec['artifacts'])
         prompt = _historical_path(spec['prompt_path'])
         if prompt != directory / 'prompt.txt':
             raise BackupError(tr('backup.prompt_reference'))
         add(prompt, f"process:{row['attempt_id']}:prompt", spec['prompt_sha256'])
+        if refusal == 'before_go':
+            continue  # The real prepared prompt remains required; target streams were never created.
         for stream in ('stdout', 'stderr'):
             chunks = []
             for event in db.execute("SELECT payload FROM managed_events WHERE kind='stream_bytes' AND run_id=(SELECT run_id FROM managed_attempts WHERE id=?) ORDER BY sequence", (row['attempt_id'],)):

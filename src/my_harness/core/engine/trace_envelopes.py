@@ -102,6 +102,48 @@ def knowledge_delivery(value) -> dict:
     return value
 
 
+def knowledge_receipt(value) -> dict:
+    """T007 additive format: exact persisted exposure locator, range and source hash kept separate.
+    The historical knowledge-delivery-1 schema and its receipts remain unchanged.
+    """
+    _closed(value, '$', ('format', 'invocation_id', 'channel', 'entity_type', 'stable_id', 'revision_id',
+                         'exposure', 'page', 'failure', 'delivery_id', 'index'),
+            ('digest', 'source_sha256', 'range', 'version', 'authority'))
+    if value['format'] != 'knowledge-delivery-2':
+        raise EnvelopeError('invalid_value', '$.format')
+    for field in ('invocation_id', 'stable_id', 'revision_id', 'delivery_id'):
+        _identifier(value[field], '$.' + field)
+    _choice(value['channel'], CHANNELS, '$.channel')
+    _choice(value['entity_type'], (*ENTITY_TYPES, 'revision', 'profile', 'code', 'result', 'draft'), '$.entity_type')
+    _choice(value['exposure'], EXPOSURES, '$.exposure')
+    _count(value['index'], '$.index')
+    page = value['page']
+    _closed(page, '$.page', ('truncated',), ('page', 'next_cursor', 'total', 'limit', 'max_bytes'))
+    _page({k: v for k, v in page.items() if k not in ('limit', 'max_bytes')}, '$.page')
+    for field in ('limit', 'max_bytes'):
+        if field in page:
+            _count(page[field], '$.page.' + field)
+    if value['failure'] is None:
+        _sha256(value.get('digest'), '$.digest')
+    elif not isinstance(value['failure'], str) or len(value['failure']) > 80 or 'digest' in value:
+        raise EnvelopeError('invalid_value', '$.failure')
+    if 'source_sha256' in value:
+        _sha256(value['source_sha256'], '$.source_sha256')
+    if 'range' in value:
+        r = value['range']
+        _closed(r, '$.range', ('unit', 'start', 'end', 'total'))
+        _choice(r['unit'], ('unicode_codepoint',), '$.range.unit')
+        for field in ('start', 'end', 'total'):
+            _count(r[field], '$.range.' + field)
+        if not r['start'] <= r['end'] <= r['total']:
+            raise EnvelopeError('invalid_value', '$.range')
+    if 'version' in value and (not isinstance(value['version'], (int, str)) or isinstance(value['version'], bool)):
+        raise EnvelopeError('invalid_value', '$.version')
+    if 'authority' in value:
+        _choice(value['authority'], ('canonical', 'capture', 'response'), '$.authority')
+    return value
+
+
 def tool_discovery(value) -> dict:
     """Validates a `tool-discovery-1` envelope (search results or one schema description)."""
     common = ('format', 'invocation_id', 'action', 'catalogue_sha256')

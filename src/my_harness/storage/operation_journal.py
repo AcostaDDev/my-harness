@@ -52,6 +52,7 @@ REF_KEY = re.compile(r'[a-z][a-z0-9_]{0,63}')
 IDENTIFIER = re.compile(r'[A-Za-z0-9][A-Za-z0-9._:/@-]{0,199}')
 MAX_PAGE = 200
 ENVELOPES = {'knowledge.delivered': trace_envelopes.knowledge_delivery,
+             'knowledge.receipt': trace_envelopes.knowledge_receipt,
              'tool.discovered': trace_envelopes.tool_discovery}
 
 

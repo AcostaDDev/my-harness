@@ -30,7 +30,16 @@ synthetic data; agent calls and delegated adoption stay refused. **P002-T006 is 
 `feat/p002-t006-operations-tracing`, with the review findings corrected, merged into develop and pushed: schema
 `0032_operation_journal` (76 tables), an operation journal behind `OperationPort`, fenced invocation operations
 linked to the existing ledger, insert-only trace events with stored artifacts and read-only trace routes, exercised
-by synthetic graphs and fake CLIs; no product graph launches agents. **Next: P002-T007**, not started. Historical starting context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
+by synthetic graphs and fake CLIs; no product graph launches agents.
+**P002-T007 is completed and integrated into develop** ([record](phase/P002-T007-frozen-context.md),
+D288), on `feat/p002-t007-frozen-context` from `c0ffc85`: schema `0033_frozen_context` (79 tables), explicit
+canonical context rendering and fenced invocation boundaries, bounded knowledge lookup/search and exact delivery
+evidence. Three technical-review findings are corrected (instruction headings, refusal backup and
+known pre-GO failure receipts; [corrections](phase/P002-T007-frozen-context.md#8-technical-review-corrections));
+re-review passed with no outstanding findings. Reviewed source commit `d3c4345` is integrated by the accompanying
+merge; the owner authorized commit, merge into `develop` and push of `develop`. Release 0.2.0,
+distribution/publication and installation remain pending.
+**Next: P002-T008**, not started. Historical starting context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
 are in [project history](archive/project-history/README.md). [D267](DECISIONS.md#d267--archive-completed-one-offs-separately-from-active-phase-work)
@@ -78,7 +87,7 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
 - **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (released in 0.1.9; the
   operator database is migrated; unreleased develop adds P002-T003's `0029_graph_continuations` and P002-T004's
-  `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`); idempotent job
+  `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`; T007's `0033_frozen_context`); idempotent job
   queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
@@ -186,8 +195,8 @@ judge, permanent revocable grants, correlated tracing, a global inbox and a task
 D156. The [discussion](phase/P002-autonomous-mode-discussion.md) and [design basis](phase/P002-design-basis.md) are
 preserved. **T001 (completed as design, integrated into develop)** formalized the supersession map, authority invariants,
 judge/permission/tool/autonomy/trace contracts, flows FL01–FL14 with guards and recovery, threats TM01–TM20, gates
-G01–G17 with owning tasks and requirement coverage; SPECIFICATION §14 and ARCHITECTURE §13 carry the design labelled
-not implemented. **T002 (completed, integrated)** characterized LangGraph 1.2.18 (lockable with 27
+G01–G17 with owning tasks and requirement coverage; SPECIFICATION §14 and ARCHITECTURE §13 distinguish the
+remaining design from implemented foundations. **T002 (completed, integrated)** characterized LangGraph 1.2.18 (lockable with 27
 additions and no pin change, offline install, re-executed nodes, silent graph-version drift, hosted tracing by
 inherited environment) and the per-invocation MCP broker on Claude Code 2.1.312 and Codex 0.165.0 with 14 bounded
 real runs; D280 (dependency set and placement) and D281 (transport and minimum capability contract) are accepted.
@@ -195,5 +204,5 @@ real runs; D280 (dependency set and placement) and D281 (transport and minimum c
 (D282–D283), the only dependency adopted (D280); **T004 (completed, integrated)** adds structured knowledge
 with immutable accepted revisions (D284) and canonical database instructions (D285); **T005 (completed, integrated)** adds typed
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
-correlated trace events (D287); T007–T023 are planned. No
-OpenCode adapter exists, and installed behavior remains 0.1.9.
+correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
+canonical prompt rendering and exact receipts (D288). T008–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.

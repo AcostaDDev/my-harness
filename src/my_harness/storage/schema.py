@@ -7,11 +7,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0032_operation_journal"
-# P002-T004 (D284), P002-T005 (D286) and P002-T006 (D287): the protection triggers of 0030 (knowledge), 0031
-# (domain command outcomes) and 0032 (trace events and artifacts), by name and whitespace-normalized SQL. A database, backup or
+SCHEMA_REVISION = "0033_frozen_context"
+# Protection triggers of 0030 (knowledge), 0031 (domain commands), 0032 (trace events/artifacts) and
+# 0033 (frozen context and receipts), by name and whitespace-normalized SQL. A database, backup or
 # restored copy whose triggers are missing or altered is refused.
-SCHEMA_TRIGGERS_SHA256 = "e41422961556b9596549ada60e7b3ee63889f6cfa603a00910231fa7e8f07a74"
+SCHEMA_TRIGGERS_SHA256 = "7c49e8bf0b53ad519e2a95f8de3bc0bf345aa6dd7ba7db65140cb6aa3d5606de"
 
 
 def trigger_digest(rows) -> str:
@@ -49,7 +49,8 @@ def require_schema(engine: Engine) -> None:
                           "graph_checkpoint_writes", "knowledge_projects", "knowledge_items",
                           "knowledge_item_versions", "knowledge_revisions", "knowledge_revision_members",
                           "knowledge_revision_links", "knowledge_identity_map", "domain_commands",
-                          "workflow_operations", "trace_events", "trace_artifacts"):
+                          "workflow_operations", "trace_events", "trace_artifacts", "context_snapshots",
+                          "invocation_contexts", "knowledge_deliveries"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
             rows = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'")).all()
             if not triggers_intact(rows):

@@ -38,6 +38,8 @@ KNOWLEDGE_TABLES = ('knowledge_projects', 'knowledge_items', 'knowledge_item_ver
                     'knowledge_revision_members', 'knowledge_revision_links', 'domain_commands')
 # Pinned digests: any change of an entry's schema, principals, roles or capabilities changes its digest (TM02).
 DIGESTS = {
+    'knowledge.lookup': '18c8e98fa6b9183ffded177aecb88fcd0a60044eb95dc1c0ca19122349b0ad72',
+    'knowledge.search': 'ccb4717d970cee6219a28a748da7ffc8ecd5b251337a44ad72c741d3538f020b',
     'knowledge.projects': '75b0e3fc4dfcb89e99ad93a2eae6e7d25b5db128cc7265408b0dea9316ff8479',
     'knowledge.head': '269624f8a42153135b20e360436a81999d52c28d8760489daa2b541a5181edb7',
     'knowledge.list': 'fb379035692863f6a7e8aea1ba504a1cd5069344a00a5be248e74e4545ca01c8',
@@ -305,6 +307,7 @@ def test_schema_validator_covers_the_subset_used():
 # Caller binding and project membership (E01–E03) -------------------------------------------------------------------
 
 MINIMAL = {
+    'knowledge.lookup': {'item_id': 'i'}, 'knowledge.search': {'query': 'x'},
     'knowledge.projects': {}, 'knowledge.head': {}, 'knowledge.list': {}, 'knowledge.get': {'item_id': 'i'},
     'knowledge.draft.get': {'draft_id': 'd'}, 'knowledge.draft.open': {'expected_revision_id': None},
     'knowledge.draft.apply': {'draft_id': 'd', 'expected_draft_sha256': 'a' * 64,
@@ -362,11 +365,12 @@ def test_agent_callers_fail_closed_in_the_product_composition(world):
     product = ManagedRuntime(engine).domain_operations()
     assert isinstance(product.resolver, UnavailableResolver)
     assert isinstance(product.permissions, UnavailablePermissions)
-    assert isinstance(product.authorizations, NoAuthorizations) and product.delivery is None
+    from my_harness.storage.frozen_context import ReceiptSink
+    assert isinstance(product.authorizations, NoAuthorizations) and isinstance(product.delivery, ReceiptSink)
     project = run(product, OWNER, 'knowledge.head', {}).result['knowledge_project_id']
     caller = agent(project, first['revision_id'])
     before = snapshot(url)['knowledge_revisions']
-    refused('receipts_unavailable', lambda: run(product, caller, 'knowledge.head', {}))
+    refused('caller_unavailable', lambda: run(product, caller, 'knowledge.head', {}))
     refused('caller_unavailable', lambda: run(product, caller, 'knowledge.draft.open',
                                               {'expected_revision_id': first['revision_id']}, 'a'))
     trusting = DomainOperations(engine, resolver=TrustingResolver())
@@ -379,7 +383,7 @@ def test_agent_callers_fail_closed_in_the_product_composition(world):
 
 
 def test_only_the_service_mutates_knowledge_in_product_code():
-    allowed = {'storage/knowledge.py', 'services/domain_operations.py'}
+    allowed = {'storage/knowledge.py', 'services/domain_operations.py', 'storage/frozen_context.py'}
     for path in SOURCE.rglob('*.py'):
         relative = path.relative_to(SOURCE).as_posix()
         names = {node.id for node in ast.walk(ast.parse(path.read_text())) if isinstance(node, ast.Name)}

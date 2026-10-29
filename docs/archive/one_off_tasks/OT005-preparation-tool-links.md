@@ -5,11 +5,11 @@ merge/tag `b0d035d` / `v0.1.5`. GitHub archive/checksum downloaded and verified;
 The owner's last real-workflow evidence is ACTIVE preparation; a completed receipt/activation is not claimed.
 **Priority/target:** hotfix 0.1.5, before OT004 (0.1.6), then unchanged Metrics Records (D246).
 **Release task contract:** [OT005 at the immutable v0.1.5 tag](https://github.com/AcostaDDev/my-harness/blob/v0.1.5/docs/ONE_OFF_TASKS.md#ot005--read-only-existing-tool-aliases-in-generic-preparation).
-Current queue: [ONE_OFF_TASKS](../ONE_OFF_TASKS.md).
-**Decisions:** [D246](../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
-[D247](../DECISIONS.md#d247--frozen-read-only-tool-link-evidence-in-generic-preparation),
-[D248](../DECISIONS.md#d248--external-directory-aliases-only-along-frozen-tool-resolution),
-[D249](../DECISIONS.md#d249--complete-generic-preparation-review-within-ot005).
+Current queue: [ONE_OFF_TASKS](../../ONE_OFF_TASKS.md).
+**Decisions:** [D246](../../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
+[D247](../../DECISIONS.md#d247--frozen-read-only-tool-link-evidence-in-generic-preparation),
+[D248](../../DECISIONS.md#d248--external-directory-aliases-only-along-frozen-tool-resolution),
+[D249](../../DECISIONS.md#d249--complete-generic-preparation-review-within-ot005).
 
 ## Resumption and delivery status
 

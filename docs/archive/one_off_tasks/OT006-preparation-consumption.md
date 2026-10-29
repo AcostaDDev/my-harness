@@ -2,7 +2,7 @@
 
 **Status:** delivered. Released as **0.1.7** ([PR #6](https://github.com/AcostaDDev/my-harness/pull/6), merge/tag
 `a3e9794` / `v0.1.7`) and installed locally
-([D251](../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)); see
+([D251](../../DECISIONS.md#d251--writer-tool-admission-bounded-repetitive-output-and-lease-renewal-evidence)); see
 [Resolution](#resolution-d251), [Delivery state](#delivery-state) and [Published 0.1.7](#published-017). The sections down to
 "Resume after context reset" are the original handoff (2026-10-27), kept as recorded. No retry, recovery confirmation,
 installation or new provider invocation was performed during diagnosis or the fix.

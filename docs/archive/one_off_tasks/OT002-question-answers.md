@@ -1,8 +1,8 @@
 # OT002 — Question-first reviewer answers, full-width layout and live activity (0.1.3)
 
 Work notes for one-off task OT002, released as `0.1.3`
-([D239](../DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)). Decision:
-[D240](../DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail).
+([D239](../../DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)). Decision:
+[D240](../../DECISIONS.md#d240--question-first-answers-and-the-live-activity-rail).
 
 ## Scope as implemented
 

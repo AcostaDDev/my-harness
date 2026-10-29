@@ -4,10 +4,10 @@
 merge/tag `0319b66` / `v0.1.6`. GitHub archive/checksum downloaded and verified; OT004 delivery complete.
 **Priority/target:** separate patch **0.1.6** after OT005/0.1.5, before OT006 and P001 Metrics Records (D246).
 **Release task contract:** [OT004 at the immutable v0.1.6 tag](https://github.com/AcostaDDev/my-harness/blob/v0.1.6/docs/ONE_OFF_TASKS.md#ot004--visual-profile-and-agent-configuration-editor).
-Current queue: [ONE_OFF_TASKS](../ONE_OFF_TASKS.md).
-**Decisions:** [D243](../DECISIONS.md#d243--visual-profile-editing-as-ot004-before-metrics-records),
-[D246](../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
-[D250](../DECISIONS.md#d250--guided-profile-and-agent-forms-over-the-existing-configuration-contract).
+Current queue: [ONE_OFF_TASKS](../../ONE_OFF_TASKS.md).
+**Decisions:** [D243](../../DECISIONS.md#d243--visual-profile-editing-as-ot004-before-metrics-records),
+[D246](../../DECISIONS.md#d246--ot005-preparation-tool-aliases-before-the-visual-editor),
+[D250](../../DECISIONS.md#d250--guided-profile-and-agent-forms-over-the-existing-configuration-contract).
 
 ## Ownership and delivery
 
@@ -49,7 +49,7 @@ always restricted read-only and Codex uses its checkout-limited sandbox.
   profile/commands/agents/policy sections, client issues for the editable sections only, save-impact preview; also
   mounted in project **Settings** (`pages/Settings.tsx`).
 - en/es catalogs (146 new `editor.*` messages; `profile.tool` removed, `configuration.advanced_hint` updated), styles.
-- Parity: D250, [configuration flow](../flows/configuration-setup.md), [agent flow](../flows/project-agents.md),
+- Parity: D250, [configuration flow](../../flows/configuration-setup.md), [agent flow](../../flows/project-agents.md),
   README en/es. No API contract, OpenAPI shape, generated type, schema, migration, TOML format or dependency change.
 
 ## Checks

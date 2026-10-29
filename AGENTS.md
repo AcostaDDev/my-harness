@@ -38,7 +38,8 @@ agents; its work language is English.
 - Never present as implemented what is only designed. Frozen histories, snapshots, catalogs and fingerprinted
   recipe sources are not rewritten.
 - When finishing: relevant checks, reviewed diff and current STATE/NEXT_STEPS/ONE_OFF_TASKS. Record durable
-  decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D230) and evidence in `docs/phase/`.
+  decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D230) and active evidence in `docs/phase/`.
+  Once a one-off reaches `main`, move its evidence to `docs/archive/one_off_tasks/` (D267); keep pending delivery visible.
   Remove one-off sections after recording evidence and completing or explicitly deferring their agreed delivery.
   Say what was tested and what was not.
 

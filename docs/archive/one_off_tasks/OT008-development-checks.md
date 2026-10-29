@@ -1,12 +1,12 @@
 # OT008 — Quiet development checks and agent workflow guidance
 
 Status: complete; source delivered through `chore/ot008-development-checks` (branched from `develop` at `2817cdc`).
-Owner: OT008, [D260](../DECISIONS.md#d260--quiet-development-checks-and-economical-agent-workflow).
+Owner: OT008, [D260](../../DECISIONS.md#d260--quiet-development-checks-and-economical-agent-workflow).
 Delivery route confirmed by the owner on 2026-10-28: topic → `develop`/`origin`, source-only, no patch release;
 commit, merge and push authorized by the owner after review. Git records the source and merge commit IDs; the local
 topic branch is removed after the merge. The OT008 queue section was removed with this delivery (D242).
 Route deviation: one-offs should have branched from the latest release instead
-([D261](../DECISIONS.md#d261--one-off-tasks-branch-from-the-latest-release-not-from-develop)); OT008 stays in
+([D261](../../DECISIONS.md#d261--one-off-tasks-branch-from-the-latest-release-not-from-develop)); OT008 stays in
 `develop` and reaches `main` with the P001 closure release.
 Development tooling only: it completes no Metrics Records task and leaves P001's plan and the 0.1.9 target unchanged.
 

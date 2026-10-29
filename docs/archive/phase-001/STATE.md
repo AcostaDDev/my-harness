@@ -11,7 +11,7 @@ normally empty priority queue for bounded fixes/improvements outside roadmap pha
 The one-off queue is **empty**. **OT008** (quiet development checks and agent workflow guidance, D260) was delivered
 source-only through `chore/ot008-development-checks` → `develop`/`origin`, with no release; it reaches `main`
 with the P001 closure (D261: later one-offs branch from the latest release, not `develop`). Develop with
-`scripts/check` and `scripts/check-docs` ([evidence](../../phase/OT008-development-checks.md)). **P001-T003**
+`scripts/check` and `scripts/check-docs` ([evidence](../one_off_tasks/OT008-development-checks.md)). **P001-T003**
 (capture, storage and historical compatibility) is complete and delivered through `feat/p001-t003-capture-storage`
 → `develop`/`origin`. **P001-T004** (aggregates and API) is complete and delivered through `feat/p001-t004-aggregates-api`
 → `develop`/`origin` ([T004 evidence](P001-T004-aggregates-api.md), D262). **P001-T005** is split by [D263](../../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) into **T005a** (accounting UI) and **T005b** (billing/reference
@@ -40,7 +40,7 @@ release merge/tag **`c005298` / `v0.1.8`**. The
 [GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.8) archive and checksum match local
 assets byte for byte from both draft and public downloads; all inner hashes pass. Final full pytest:
 **2185 passed, 2 skipped, 29 subtests**; 230 frontend tests, 10 unittest cases, typecheck/build, temporary schema,
-distribution and installed-wheel checks passed. [Evidence](../../phase/OT007-task-run-lease.md).
+distribution and installed-wheel checks passed. [Evidence](../one_off_tasks/OT007-task-run-lease.md).
 
 **Current operator installation:** 0.1.8 installed offline from the verified public package into the default paths,
 generation **`gen-bb9bf97436d64ba5b20196784c1e229a`**, READY; earlier generations retained. Service and writers were
@@ -57,7 +57,7 @@ journaled once per chunk. Interrupted attempts keep a partial capture, and the c
 [GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.7) archive and checksum were verified
 byte for byte from the public URLs. Full pytest: **2166 passed, 2 skipped, 29 subtests**; 230 frontend tests,
 10 unittest cases, typecheck, temporary schema, distribution build/check and installed-wheel checks passed.
-[Evidence](../../phase/OT006-preparation-consumption.md).
+[Evidence](../one_off_tasks/OT006-preparation-consumption.md).
 
 **OT006 installation history:** at the owner's request, 0.1.7 was installed offline from the public package into the
 default paths (generation `gen-8570ad96…`, READY; earlier generations kept). Nothing was running beforehand. The
@@ -78,7 +78,7 @@ OT005 was integrated on develop at `b50070d`, released through
 [GitHub Release](https://github.com/AcostaDDev/my-harness/releases/tag/v0.1.5) includes the self-contained archive and
 checksum, downloaded and verified byte for byte. Full final pytest: **2140 passed, 2 skipped, 29 subtests**;
 **213 frontend tests**, 10 unittest cases, typecheck/build, temporary schema and final installed-wheel checks passed.
-[The evidence](../../phase/OT005-preparation-tool-links.md) records D247–D249 and the owner's ACTIVE-preparation report;
+[The evidence](../one_off_tasks/OT005-preparation-tool-links.md) records D247–D249 and the owner's ACTIVE-preparation report;
 completed real commands/receipt/activation are not claimed. OT005 was removed from the queue only after delivery.
 
 OT003's intake diagnostics, corrected adoption guards and joint document review (D241/D244/D245) were released
@@ -87,7 +87,7 @@ through [PR #3](https://github.com/AcostaDDev/my-harness/pull/3), merge `9985b0a
 and checksum, downloaded and verified byte for byte. Full offline pytest: 2095 passed, 2 skipped, 29 subtests passed;
 203 frontend tests, unittest/typecheck/build, temporary schema and installed-wheel checks passed. Earlier authorized
 local installation used the uncommitted implementation with 0.1.3 metadata; publishing this release did not restart
-or replace the operator's running service. See [the evidence](../../phase/OT003-intake-profile-diagnostics.md).
+or replace the operator's running service. See [the evidence](../one_off_tasks/OT003-intake-profile-diagnostics.md).
 
 ## Accumulated baseline
 
@@ -200,7 +200,7 @@ are unchanged. At the owner's request the release also uses the full window widt
 task, run, chat and planning pages. Interface only: no API, schema or stored data change. Verified with offline suites,
 synthetic component/request tests and synthetic Chrome QA against an in-browser API mock. Published as the GitHub
 Release `v0.1.3` (tag on the release merge `64c21d0`) with a self-contained package built and checked locally; see
-the [work notes](../../phase/OT002-question-answers.md).
+the [work notes](../one_off_tasks/OT002-question-answers.md).
 
 ## Patch 0.1.2 — live agent configuration (OT001)
 
@@ -212,7 +212,7 @@ Task admission now binds the receipt selected for the frozen project revision, f
 agent-only revisions. Additive API (state `APPLY_PENDING`, `live_activation`, preview `apply`/`restart_fields`/
 `waiting`, save `removed_fields`, structured 409 corrections); no schema or format change. Verified with offline
 suites and synthetic en/es Chrome QA. Published as the GitHub Release `v0.1.2` (tag on the release merge `c606116`)
-with a self-contained package built and checked locally; see the [work notes](../../phase/OT001-live-agent-configuration.md).
+with a self-contained package built and checked locally; see the [work notes](../one_off_tasks/OT001-live-agent-configuration.md).
 
 ## Patch 0.1.1 — model selectors
 
@@ -223,7 +223,7 @@ executor's models with checkboxes (preset models in `catalog` mode, otherwise su
 No configuration format, API contract or schema changes; only the shared version string moves to `0.1.1`. Covered by
 the frontend suites; no visual QA was run for these controls. Published as the GitHub Release `v0.1.1` (tag on
 `e252fdc`) with a self-contained package built and checked locally
-([work notes](../../phase/v0.1.1-model-selectors.md)).
+([work notes](../project-history/v0.1.1-model-selectors.md)).
 
 ## Active phase — P001 Metrics Records (target: 0.1.9 at phase closure; candidate qualified)
 
@@ -295,7 +295,7 @@ restart promoted saved revision 3. The operator then restored the explicit clien
 paths/PATH in revision 4 and confirmed its activation; a further requested restart
 promoted revision 4 with both clients at 3600 seconds. No new provider invocation was started.
 Focused synthetic checks and limitations are recorded in
-[the fix artifact](../../phase/failed-intake-activation.md).
+[the fix artifact](../one_off_tasks/failed-intake-activation.md).
 
 ## Patch 0.1.4 — onboarding profile adoption and joint document review (OT003)
 
@@ -316,7 +316,7 @@ in the task artifact. Frozen histories/catalogs remain unchanged.
 Released through PR #3 as 0.1.4, with full offline regression, package verification and matching GitHub downloads.
 OT003 was removed from ONE_OFF_TASKS only after publication/verification (D242). Subsequent preparation diagnosis
 and the owner's D246 priority decision now put OT005 before OT004.
-See [OT003](../../phase/OT003-intake-profile-diagnostics.md) for results and limits. That delivery completed no Metrics task.
+See [OT003](../one_off_tasks/OT003-intake-profile-diagnostics.md) for results and limits. That delivery completed no Metrics task.
 
 ## Patch 0.1.5 — read-only preparation tool aliases and complete review (OT005)
 
@@ -329,7 +329,7 @@ D249 makes generic scope/effects, executor details and exact nested commands vis
 or blank steps, retaining recipe review and the existing confirmation/activation gates.
 
 Released as **0.1.5** through PR #4 and tag `v0.1.5` on `b0d035d`, with qualified final artifacts and matching GitHub
-downloads. [Evidence and limits](../../phase/OT005-preparation-tool-links.md) include the synthetic matrix, full checks,
+downloads. [Evidence and limits](../one_off_tasks/OT005-preparation-tool-links.md) include the synthetic matrix, full checks,
 local upgrades and the owner's progress into ACTIVE preparation. Publication did not restart/reinstall the service or
 invoke a real provider/project command. OT004 followed as 0.1.6; Metrics Records remains unimplemented.
 
@@ -342,6 +342,6 @@ commands/JUnit/prefixes/paths/formatter/instructions, installed executables, com
 limits, and the project's agent copies, as the stage allows (`check_candidate`). Tool lists only for a Claude
 executor; unsupported ones stay until explicitly removed. Client checks focus the field to correct; save reviews say
 whether a new preparation is required and which derived copies only change their global reference. Frontend only:
-no API, schema, format or dependency change. [Evidence](../../phase/OT004-visual-profile-editor.md) records 230 frontend
+no API, schema, format or dependency change. [Evidence](../one_off_tasks/OT004-visual-profile-editor.md) records 230 frontend
 tests, build, full regression, distribution checks and synthetic Chrome QA. Released as **0.1.6** (PR #5, tag
 `v0.1.6` on `0319b66`) with verified GitHub downloads.

@@ -1479,7 +1479,7 @@ lanes). No schema, dependency, configuration, API contract or frozen adapter/ver
 
 The owner explicitly authorized commit, integration/push, release PR/draft and verified archive/checksum, merge,
 publication/public verification, offline installation with the service stopped, and closure. This does not authorize
-real providers, a project retry or service start. Evidence: [OT007](phase/OT007-task-run-lease.md).
+real providers, a project retry or service start. Evidence: [OT007](archive/one_off_tasks/OT007-task-run-lease.md).
 
 ## D253 — Phase release targets after 0.1.8
 
@@ -1652,7 +1652,7 @@ and to read files by range or after `grep`. CLAUDE.md stays a thin import. At th
 managed-project isolation is unchanged: adapters still disable client hooks and project configuration, and managed
 projects keep the engine's deterministic, journaled formatter/validation/JUnit steps. The new scripts are not in
 `BUNDLE_SCRIPTS` or the wheel/sdist, so delivery is source-only into `develop` with no patch release (D239 applies
-to product changes). Evidence: [OT008](phase/OT008-development-checks.md).
+to product changes). Evidence: [OT008](archive/one_off_tasks/OT008-development-checks.md).
 
 ## D261 — One-off tasks branch from the latest release, not from `develop`
 
@@ -1817,3 +1817,29 @@ on it. P001 is closed by hand with the same result, adapted where D091 relies on
 
 Evidence: [P001 summary](archive/phase-001/SUMMARY.md),
 [T006 release, installation and closure](archive/phase-001/P001-T006-qualification.md#release-installation-and-closure).
+
+## D267 — Archive completed one-offs separately from active phase work
+
+Status: accepted at the owner's request on 2026-10-29; repository documentation/workflow only. Refines D237/D242
+and the placement of non-phase records retained by D266. No managed-project schema, flow or runtime is changed.
+
+Keep active work evidence in `docs/phase/`. Once a one-off's change reaches `main`, move its completed record to
+`docs/archive/one_off_tasks/`, update the archive index and current references, and preserve its historical
+text/results. Main integration is the archival gate; it does not imply publication or installation. Any remaining
+agreed delivery stays visible in ONE_OFF_TASKS with the archive link until completed or explicitly deferred under
+D242. A source-only change still waiting to reach main is not archived merely because its topic work finished.
+One-off branch/release routing remains D261; this policy performs no Git merge, publication or installation.
+
+The initial cleanup relocates OT001–OT008, their queue/OT002 handoffs and the pre-numbering activation fix to that
+archive, and the earlier model-selector/npm-baseline notes to `docs/archive/project-history/`. The 13 records are
+already present in the recorded `origin/main` release at `5cc1bc1`; local `main` is not advanced and no fetch occurs.
+Only relative Markdown navigation destinations change during relocation; no statuses, results, dates, release
+claims or source evidence are rewritten, and no new OT identifier is assigned retroactively.
+
+**Explicit, bounded D266 exception.** The owner separately authorized only the 17 navigation-target updates needed
+in `docs/archive/phase-001/STATE.md`, `NEXT_STEPS.md` and `P001-metrics-records.md` so their references follow the moved
+records. Their historical prose/results and all other P001 artifacts stay unchanged. This is not permission to
+rewrite archived facts, frozen histories, fingerprints, catalogues, recipe sources or published release contents.
+
+Evidence: [P002 planning maintenance](phase/P002-portable-tools-and-archive-maintenance.md) and the
+[archive index](archive/README.md).

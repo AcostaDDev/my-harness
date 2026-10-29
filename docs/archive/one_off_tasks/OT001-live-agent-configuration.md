@@ -1,8 +1,8 @@
 # OT001 — Live application of agent configuration
 
-One-off task ([D237](../DECISIONS.md#d237--one-off-development-queue-before-phase-work)). Design recorded in
-[D238](../DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary) before the runtime change; release
-numbering in [D239](../DECISIONS.md#d239--one-off-tasks-released-as-patch-versions).
+One-off task ([D237](../../DECISIONS.md#d237--one-off-development-queue-before-phase-work)). Design recorded in
+[D238](../../DECISIONS.md#d238--live-configuration-switch-at-an-idle-boundary) before the runtime change; release
+numbering in [D239](../../DECISIONS.md#d239--one-off-tasks-released-as-patch-versions).
 
 ## Problem
 
@@ -108,7 +108,7 @@ pending. Replays of activate/promote are idempotent by key.
 Run:
 
 - `pytest -q` (full suite, parallel): 2072 passed, 2 skipped, 0 failed (`.local/npm-cache` filled, see the
-  [npm cache baseline](test-npm-cache-baseline.md)). `test_documentation_parity.py` rerun after the last doc edits.
+  [npm cache baseline](../project-history/test-npm-cache-baseline.md)). `test_documentation_parity.py` rerun after the last doc edits.
 - New `tests/product/test_configuration_live.py` (9 cases): idle timeout change in the same process/session with
   every other field preserved, explicit removal named in the save preview, missing client refused with its role
   and setting, waiting work deferring the switch and a second activation refused meanwhile, candidate withdrawn when

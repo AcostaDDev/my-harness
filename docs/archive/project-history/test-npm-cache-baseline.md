@@ -1,7 +1,7 @@
 # Test baseline — npm cache and branches
 
 Branch `chore/test-npm-cache-baseline` from `develop`
-([D235](../DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
+([D235](../../DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
 
 ## Diagnosis of the 40 Python failures
 

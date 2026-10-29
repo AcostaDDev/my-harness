@@ -22,13 +22,13 @@ Decisions: [D232](../../DECISIONS.md#d232--metrics-records-phase-and-accounting-
 [D234](../../DECISIONS.md#d234--p001-task-plan-in-next_steps).
 
 The completed intake/configuration fix is documented in
-[failed-intake-activation](../../phase/failed-intake-activation.md) and committed as
+[failed-intake-activation](../one_off_tasks/failed-intake-activation.md) and committed as
 `ef77229`. It does not complete or reorder any Metrics Records task.
 
 The [one-off queue](../../ONE_OFF_TASKS.md) is **empty**. OT007 was released and installed as **0.1.8** through
 [PR #7](https://github.com/AcostaDDev/my-harness/pull/7), merge/tag **`c005298` / `v0.1.8`**
 ([D252](../../DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
-[evidence](../../phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
+[evidence](../one_off_tasks/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
 **Next: 0.1.9 release and P001 closure.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
 complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
@@ -68,7 +68,7 @@ same authorization; the release PR/tag/publication and closure are later, separa
   and limitations. Complete each task's acceptance and relevant checks before the next; update STATE/NEXT_STEPS.
 - [AGENTS](../../../AGENTS.md) and [README](../../../README.md#development) list existing offline commands. Establish the current
   baseline: with `.local/npm-cache` filled as in the README the full Python suite passed (2048 passed, 2 skipped;
-  [npm cache baseline](../../phase/test-npm-cache-baseline.md)). Report current failures; do not assume they are waived
+  [npm cache baseline](../project-history/test-npm-cache-baseline.md)). Report current failures; do not assume they are waived
   or caused by P001. Each task uses its own topic branch from `develop`
   ([D235](../../DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)).
 

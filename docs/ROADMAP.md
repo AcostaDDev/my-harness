@@ -51,8 +51,15 @@ engine. The accepted T001 contract guides implementation; unsupported evidence c
 execution under one explicit, bounded authorization. Chain tasks, commits and the READY check while stopping at
 the first error, question or limit.
 
-**Status:** active since the P001 closure (2026-10-29), without a plan: design and tasks pending, to be confirmed by
-the owner before any code ([NEXT_STEPS](NEXT_STEPS.md)).
+**Status:** active since the P001 closure (2026-10-29); **draft task plan v0.2 with 23 proposed tasks**, pending owner
+review/adoption before code ([NEXT_STEPS](NEXT_STEPS.md)). No task has started.
+
+**Design expansion under review:** the owner requests full-roadmap autonomy with LangGraph orchestration,
+database-owned structured knowledge, scoped on-demand tool discovery, judge duties, request-to-result/access
+tracing, generated documents with explicit UI import, a shared global inbox and task-instance graph. See the
+[design basis](phase/P002-design-basis.md) and [discussion](phase/P002-autonomous-mode-discussion.md).
+The original reservation's objective and following criteria are retained as accepted context; the expanded proposed
+criteria are in NEXT_STEPS and formal contract supersession belongs to P002-T001. None of this expansion is implemented.
 
 **Exit criteria:**
 
@@ -78,3 +85,5 @@ the owner before any code ([NEXT_STEPS](NEXT_STEPS.md)).
 - Operating-system isolation of the agents is not provided
   ([D064](DECISIONS.md#d064--cooperative-containment-without-operating-system-isolation)).
 - Gemini CLI is not a provider; its `GEMINI.md` wrapper only imports the common instructions.
+- OpenCode is a requested future CLI integration. P002's proposed portable discovery/domain-tool contract prepares
+  the extension point; no OpenCode adapter, authentication/billing compatibility or admission qualification exists yet.

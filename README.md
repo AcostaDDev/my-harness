@@ -423,6 +423,9 @@ Work happens on topic branches from `develop`; `main` only carries releases (see
 Read [state](docs/STATE.md), then [one-off tasks](docs/ONE_OFF_TASKS.md), before the phase's
 [next steps](docs/NEXT_STEPS.md). The normally empty one-off queue holds bounded fixes/improvements;
 complete and remove those entries with durable evidence before resuming phase work.
+One-off evidence moves to the [one-off archive](docs/archive/one_off_tasks/README.md) once the change reaches `main`;
+pending publication/installation stays visible in the queue. The [archive index](docs/archive/README.md) separates
+closed phases, completed one-offs and earlier project history from current `docs/phase/` work.
 
 `scripts/dev` checks the tool versions, migrates a development database (`.local/harness.sqlite3`) after backing it
 up, and starts the API on `:8013` and Vite on `http://127.0.0.1:5173`; it accepts `--database` and `--config`.

@@ -16,8 +16,10 @@ evolving baseline (**v0.3, 23 tasks**,
 **P002-T001 is completed as design** ([contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md),
 [threat model](phase/P002-T001-threat-model.md), D268–D279) on `docs/p002-t001-contracts`, committed and merged
 into develop at the owner's authorization. **P002-T002 is completed** ([feasibility](phase/P002-T002-feasibility.md);
-D280–D281 accepted) on `docs/p002-t002-feasibility`, merged into develop and pushed with it. **Next: P002-T003**, not
-started. No product change is implemented. Historical starting
+D280–D281 accepted) on `docs/p002-t002-feasibility`, merged into develop and pushed with it. **P002-T003 is
+completed** ([runtime record](phase/P002-T003-runtime.md); D282–D283 accepted) on `feat/p002-t003-langgraph-runtime`,
+merged into develop and pushed: LangGraph 1.2.18 added under D280, schema `0029_graph_continuations`, a harness saver and
+segment runner exercised by synthetic graphs only; no product behavior uses it yet. **Next: P002-T004**, not started. Historical starting
 context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
@@ -65,7 +67,7 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   reviewer or deterministic from `NEXT_STEPS`, the execute → format → validate → review loop with a correction limit,
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
 - **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (released in 0.1.9; the
-  operator database is migrated); idempotent job queue
+  operator database is migrated; unreleased develop adds P002-T003's `0029_graph_continuations`); idempotent job queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
   a verified snapshot (D150). Derived run projection written with each history (D144).

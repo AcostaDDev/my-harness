@@ -13,6 +13,17 @@ Python dependencies and child-project recipe dependencies are installed
 separately with their upstream license files. Development and build tools
 retain their own terms and are not covered by this runtime notice inventory.
 
+The Python runtime includes LangGraph 1.2.18 and its locked set (D280):
+`langgraph`, `langgraph-checkpoint`, `langgraph-prebuilt`, `langgraph-sdk`,
+`langchain-core`, `langchain-protocol`, `langsmith`, `pyyaml`, `urllib3`,
+`charset-normalizer`, `truststore` and `sniffio` (MIT or MIT/Apache-2.0);
+`requests`, `requests-toolbelt`, `tenacity` and `distro` (Apache-2.0);
+`ormsgpack` (Apache-2.0 OR MIT); `httpx2`, `httpcore2`, `jsonpatch`,
+`jsonpointer`, `zstandard`, `xxhash`, `uuid-utils` and `websockets` (BSD);
+and `orjson` 3.13.0, whose wheel contains an MPL-2.0 component (MPL-2.0 AND
+(Apache-2.0 OR MIT)). Their license files are installed with each wheel; the
+exact versions and hashes are in `uv.lock` and `pylock.toml`.
+
 Frontend lock SHA-256: `f7ce4d6eb4e9d97adb644782d83c82e4c99b8263012f749d1154c8e9866aec0f`.
 
 | Package | Version | License | Upstream notice |

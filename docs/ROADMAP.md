@@ -58,8 +58,10 @@ delivered knowledge are traced; a global inbox and a task-instance graph serve b
 **Status:** active since the P001 closure (2026-10-29). The owner adopted plan v0.2 and the
 [design basis](phase/P002-design-basis.md) as the evolving baseline; **P002-T001 completed the contracts, flows,
 threat model and coverage as accepted design (D268–D279)**, refining the plan to **v0.3** with 23 tasks
-([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)). T001 is integrated into develop; no
-product behavior is implemented and no dependency is adopted. Next: P002-T002 feasibility.
+([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)). T001 and T002 (feasibility, D280–D281)
+are integrated into develop. **P002-T003** (LangGraph runtime and continuation foundation, D282–D283) is completed and
+integrated into develop; it is exercised by synthetic graphs only and no product behavior
+uses it.
 
 **Exit criteria (adopted with D268):**
 

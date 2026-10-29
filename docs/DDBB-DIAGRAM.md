@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0028_usage_accounting`, 62 tables, defined in
+SQLite schema of the local service: Alembic head `0029_graph_continuations`, 65 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -989,7 +989,7 @@ query-only mark and execution disabled, without interpreting original paths as w
 <a id="planned-p001-accounting-records-not-implemented"></a>
 Alembic `0028_usage_accounting` (P001-T003, [D254–D257](DECISIONS.md#d254--native-invocation-accounting-and-immutable-evidence),
 [D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)) adds eight tables;
-current head `0028_usage_accounting`, 62 tables. The migration only creates them: it never backfills or reprices,
+62 tables at that revision (0.1.9). The migration only creates them: it never backfills or reprices,
 and its downgrade refuses while any accounting row exists. Existing metrics, histories and configuration bytes are
 unchanged. T004's bounded read-only queries/API (`storage/accounting_views.py`, D262) read these rows without a schema
 change ([flow](flows/metrics-accounting.md)).
@@ -1169,3 +1169,61 @@ an explicit reason.
   backfill/repricing values are only reachable through an explicit cohort membership.
 - Retention removes authorized stream bytes only; these rows never depend on them. Backup format 3 recomputes all
   digests and the exact line sums in the same snapshot; an older-schema bundle needs the explicit upgraded copy.
+
+## P002 graph continuations
+
+LangGraph continuation storage owned by the harness saver
+([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract),
+[D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine); migration
+`0029_graph_continuations`). Routing progress only: the domain records stay the authority and no table here copies
+tasks, grants or policy. No product graph writes these tables yet; P002-T003 exercises them with synthetic graphs.
+
+```mermaid
+erDiagram
+    graph_threads {
+        string id PK
+        string graph_id
+        string graph_version
+        string fingerprint
+        string status
+        int segments
+        string reason "null; code"
+        json detail "null"
+        string created_at
+        string updated_at
+    }
+    graph_checkpoints {
+        string thread_id PK, FK "→ graph_threads.id"
+        string checkpoint_ns PK
+        string checkpoint_id PK
+        string parent_checkpoint_id "null"
+        string checkpoint_type
+        bytes checkpoint
+        string metadata_type
+        bytes metadata_value
+        string created_at
+    }
+    graph_checkpoint_writes {
+        string thread_id PK, FK "→ graph_threads.id"
+        string checkpoint_ns PK
+        string checkpoint_id PK
+        string task_id PK
+        int idx PK
+        string channel
+        string value_type
+        bytes value
+        string task_path
+    }
+    graph_threads ||--o{ graph_checkpoints : "thread_id"
+    graph_threads ||--o{ graph_checkpoint_writes : "thread_id"
+```
+
+Index: `ix_graph_threads_status` (status). Check: `status` in `RUNNING`, `WAITING`, `COMPLETED`, `CANCELLED`,
+`REVOKED`, `QUARANTINED`, `RECOVERY_REQUIRED`, `FAILED`.
+
+- A thread row is stamped by the runner before any checkpoint (foreign key); status changes are compare-and-set.
+- Checkpoints are immutable strict-serializer bytes; a second put of the same id must carry identical bytes. Writes
+  of one task are kept once per index; LangGraph's special channels (error, interrupt, resume, scheduled) replace
+  their own row.
+- Downgrade below 0029 is refused while any row exists. Backups copy the tables with the database; a query-only
+  restore refuses every runner write.

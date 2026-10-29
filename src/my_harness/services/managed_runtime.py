@@ -481,6 +481,11 @@ class ManagedRuntime:
         if self.repository is None:
             raise RuntimeError(tr('runtime.not_started'))
 
+    def graph_runner(self, registry):
+        """P002-T003 (D280): graph orchestration is owned here; LangGraph is imported on first use, never at start."""
+        from my_harness.orchestration import GraphRunner
+        return GraphRunner(self.engine, registry)
+
     def project(self, project_id: str) -> ManagedProject:
         self.ready()
         try:

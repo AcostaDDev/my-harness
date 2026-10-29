@@ -10,7 +10,8 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 |---|---|
 | Core | Python 3.14.4, standard library, package `my-harness` 0.1.1 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
-| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0028_usage_accounting`) |
+| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0029_graph_continuations`) |
+| Orchestration | LangGraph 1.2.18 (`langgraph-checkpoint` 4.3.1), confined to `orchestration/` ([D280](DECISIONS.md#d280--langgraph-1218-dependency-set-placement-and-runtime-hygiene)) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
 | Client types | `openapi-typescript` 7.13.0 from the exported OpenAPI |
 | Tooling | uv 0.12.19 and `uv.lock`; Node 24.15.0, npm 11.12.1 and `frontend/package-lock.json` |
@@ -29,6 +30,7 @@ Browser (React, own routes over the History API)
 Local service (FastAPI + supervisor in a single Uvicorn process)
    ├── api/          /api/managed routes, session and guard
    ├── services/     supervisor, managed runtime, local TOML, registry, creation and preparation
+   ├── orchestration/ LangGraph runtime and continuations (P002-T003; synthetic graphs only)
    ├── core/engine/  engine: context, contracts, workflow, phases, documents, chat, definition, metrics
    ├── storage/      SQLite: operational authority, queue, journal, views
    └── adapters/     agent CLIs, commands, Git, processes and exports
@@ -71,7 +73,8 @@ queue; closing the browser does not cancel work.
 | `cli.py`, `launcher.py` | `my-harness` (`init-db`, `serve`, `migrate`, `check-config`, backup/upgrade, retention, `metrics-backfill`, accounting operations, `diagnose-cli`); `--ui-language` per invocation |
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
-| `migrations/versions/0001…0027` | Alembic schema |
+| `orchestration/`, `storage/graph_continuations.py` | P002-T003 graph runtime: harness checkpoint saver, versioned graph registry, segment runner with quarantine and cancellation, operation port; the only LangGraph importer, used through `ManagedRuntime.graph_runner` ([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract), [D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine)) |
+| `migrations/versions/0001…0029` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
 Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
@@ -384,8 +387,10 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 ## 13. P002 target architecture (accepted design; not implemented)
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
-[D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Nothing below exists in the code;
-sections 1–12 describe 0.1.9. No dependency is added before T002's recorded decision with exact versions.
+[D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
+the P002-T003 runtime foundation; of the design below only the graph runtime and continuation storage exist
+(T003, D280/D282/D283, exercised with synthetic graphs only). Typed commands, the tool broker, the production
+operation journal, knowledge revisions, exports, the inbox and the graph view are not implemented.
 
 ```mermaid
 flowchart TD
@@ -404,11 +409,13 @@ flowchart TD
 ```
 
 - **Responsibilities.** The graph routes and waits with references only; the domain model is the authority; services
-  validate and perform effects; the supervisor remains the only launcher with one writer per checkout. Where the
-  LangGraph integration lives relative to the standard-library-only core is accepted in D280 (not implemented): one
-  supervisor-owned orchestration package is the only importer; the core never imports it.
+  validate and perform effects; the supervisor remains the only launcher with one writer per checkout. Placement
+  (D280) is implemented: `orchestration/` is the only LangGraph importer, loaded lazily by the supervisor runtime;
+  the core never imports it (import-boundary test). No product graph is registered yet.
 - **Operations and recovery.** Recoverable operations link project tasks to invocations and sealed effect intents; a
-  replayed node reconciles the same operation. The continuation/journal consistency contract is G02.
+  replayed node reconciles the same operation. The continuation/journal consistency contract (G02) is D282: the
+  checkpoint is routing progress only and nodes act through an operation port with deterministic keys; the
+  production journal behind that port is T006. Segments, version stamping and quarantine (G03) are D283.
 - **Tools.** A harness-owned versioned catalogue behind a small discovery surface over a transport characterized per
   client (G04). Deterministic nodes call services directly. Agents never receive database access.
 - **Exports.** An outbox-driven exporter renders accepted revisions to owned targets with generation manifests and

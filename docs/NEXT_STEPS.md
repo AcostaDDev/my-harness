@@ -3,8 +3,9 @@
 **Status:** active phase; **task plan v0.3, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
 refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
 **P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
-accepted) and integrated into develop.** T003–T023 are planned and not started;
-no product behavior is implemented. Adoption authorizes planning, not implementation or operation. Read
+accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
+develop.** T004–T023 are planned and not started; the T003
+runtime is exercised by synthetic graphs only and no product behavior uses it. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -75,15 +76,14 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; every
-other task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; every other task is **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
 |---|---|---|
 | P002-T001 | Adopt scope, authority contracts, threat model and flow gates (**completed; integrated**) | Owner adoption of v0.2 |
 | P002-T002 | Characterize graph/tool-discovery/provider integration and pin dependencies (**completed; D280–D281 accepted**) | T001 |
-| P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary | T002 |
+| P002-T003 | Establish the versioned LangGraph runtime and durable continuation boundary (**completed; integrated; D282–D283**) | T002 |
 | P002-T004 | Introduce structured knowledge, identities and immutable accepted revisions | T001, T002 |
 | P002-T005 | Centralize typed domain commands, queries and capability enforcement | T003, T004 |
 | P002-T006 | Establish operations, agent invocations, correlated events and recovery records | T003, T004, T005 |
@@ -183,6 +183,22 @@ an agreed interface, first with synthetic operations. **Dependencies:** T002.
 **Basis:** B02, B12–B13, B18.
 
 **Gates:** G02, G03. **Threats:** TM12, TM20.
+
+**Status (2026-10-29):** completed on `feat/p002-t003-langgraph-runtime` from develop `591ba78`; record:
+[T003 runtime](phase/P002-T003-runtime.md). The owner accepted the contract refinement, one networked lock of the
+D280 set (exact 27-package delta, no pin change),
+[D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract) (G02: harness saver
+over `0029_graph_continuations`, journal authority, operation port) and
+[D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine) (G03: per-segment limits, stamp and
+quarantine), and the route topic → develop → 0.2.0. Bound to later tasks: production journal and uncertain-operation
+reconciliation (T006/T020), quarantine release and run bounds (T016), real graphs (T014–T016).
+Closure checks: `scripts/check` (unittest, alembic check, full pytest: one failure outside T003, fixed below);
+`scripts/check-docs`; offline distribution build and check. Committed, merged into develop and pushed at the owner's
+authorization.
+**Additional fix (owner request):** `tests/product/test_valuation.py::test_seed_pins_immutable_research_and_all_suggestions`
+read `docs/phase/P001-T001-reference-observations.json`, which `112a31a` had moved to `docs/archive/phase-001/`, so it
+failed on develop; the test now reads the archived path (one line). Checked with `scripts/check
+tests/product/test_valuation.py` (98 passed); the full suite was not rerun for this line.
 ## P002-T004 — Structured knowledge and revision model
 
 **Problem:** active requirements/plans/decisions depend on document parsing and mutable current content.
@@ -575,5 +591,6 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 ## Next action
 
 1. T001 and T002 are integrated into `develop` and pushed to origin at the owner's authorization.
-2. Next: **P002-T003** (LangGraph runtime and continuation foundation) on a new topic branch from develop, adding the
-   dependency only under an accepted D280. Not started.
+2. **P002-T003** is complete on `feat/p002-t003-langgraph-runtime`, merged into develop and pushed at the owner's
+   authorization; part of 0.2.0.
+3. Then: **P002-T004** (structured knowledge and revision model) on a new topic branch from develop. Not started.

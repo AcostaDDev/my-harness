@@ -24,7 +24,8 @@ from test_managed import repository  # noqa: F401  (fixture)
 
 SOURCE = Path(i18n.__file__).parents[1]
 ENGLISH = Path(__file__).parents[1] / 'fixtures/service_texts/english.json'
-LAYERS = ('core/', 'adapters/', 'storage/', 'services/', 'recipes/django_2.py', 'recipes/typescript_web_2.py')
+LAYERS = ('core/', 'adapters/', 'storage/', 'services/', 'orchestration/', 'recipes/django_2.py',
+          'recipes/typescript_web_2.py')
 # Calls whose text argument is a stop/acceptance reason or a recorded diagnostic (name -> argument index).
 SINKS = {'stopped': 2, 'stop_history': 2, '_invalidated': 0, 'stop': 1, '_invalidate': 5, '_invalidate_batches': 3}
 LISTS = {'reasons', 'blockers', 'warnings', 'stale_reasons', 'stale', 'notes'}

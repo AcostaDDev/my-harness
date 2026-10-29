@@ -355,8 +355,8 @@ preserves database/snapshot for inspection; no automatic restore. `serve` never 
 ```
 
 `--artifact-root` (repeatable) authorizes state and configuration roots. Format 3 includes versioned TOML,
-working copies, operation intents, referenced evidence and verified P001 accounting records. A bundle created before
-schema `0028_usage_accounting` is not migrated in place: `backup-upgrade /path/old-backup /path/upgraded-backup`
+working copies, operation intents, referenced evidence and verified P001 accounting records. A bundle created with an
+earlier schema revision is not migrated in place: `backup-upgrade /path/old-backup /path/upgraded-backup`
 writes a new verified format-3 bundle from a copy and leaves the original unchanged. A restore creates a new,
 query-only database with the same schema revision. To browse it, start `serve --database
 /path/restored/state.sqlite3` from the installed venv and open the local UI. The archive home accepts a run id;

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createElement as el } from 'react';
 import { hookHost } from './helpers/render-hooks.mjs';
-import { accountingQuery, activeFilters, ageDays, bucketState, captureFacts, counted, decimal, groupFilter, money, nextDay,
+import { accountingQuery, activeFilters, ageDays, bucketState, captureFacts, counted, decimal, groupFilter, invocationLabel, money, nextDay,
   periodState, rateParts, reasonKey, REASONS } from '../src/accounting.ts';
 import { translate } from '../src/i18n.ts';
 import en from '../src/i18n/en.json' with { type: 'json' };
@@ -77,6 +77,12 @@ test('a group narrows the view only through filters the API accepts', () => {
   assert.equal(groupFilter('root', group('/r')), undefined);
 });
 
+test('invocations are labelled by their source id, not by the kind every row shares', () => {
+  assert.equal(invocationLabel('managed_attempt:a57db841-da00-4000-8000-000000000001'), 'a57db841');
+  assert.equal(invocationLabel('configuration_assistance:op-2'), 'op-2');
+  assert.equal(invocationLabel('legacy-id'), 'legacy-i');
+});
+
 test('reference period, age, reasons, capture facts and rates', () => {
   assert.equal(periodState({ reasons: ['reference_out_of_period'], warnings: [] }, 1), 'out_of_period');
   assert.equal(periodState({ reasons: ['effective_period_unknown'], warnings: [] }, 1), 'unknown');
@@ -122,7 +128,7 @@ const totals = {
     bucket('subscription_equivalent', { amount: '1.250000000000', known_subtotal: '1.250000000000' }),
     bucket('token_credit', { unit: 'chatgpt_work_codex_credit', scheme: 'chatgpt_work_codex_credit', amount: '12.500000000000', known_subtotal: '12.500000000000' })],
 };
-const invocation = { id: 'inv-00000001', source_kind: 'managed_attempt', source_id: 'attempt-1', run_id: 'run-1', attempt_id: 'attempt-1',
+const invocation = { id: 'managed_attempt:0f1e2d3c-0001', source_kind: 'managed_attempt', source_id: 'attempt-1', run_id: 'run-1', attempt_id: 'attempt-1',
   preparation_id: null, preparation_step_id: null, operation_id: null, request_id: null, root: '/synthetic/root', project_id: null,
   phase_code: 'P001', task_id: 'T1', purpose: 'task', work: 'task_first_pass', role: 'executor', agent: 'claude', provider: 'claude',
   requested_model: 'requested-model', requested_effort: 'low', effective_model: null, effective_model_kind: 'mixed', launch: 'observed',
@@ -170,7 +176,7 @@ function environment(language, archive) {
       items: [{ key: 'claude', key_kind: 'value', root: null, phase_code: null, ...totals }, { key: null, key_kind: 'unknown', root: null, phase_code: null, ...totals }] };
     else if (url.pathname.endsWith('/accounting/invocations')) data = { ...base, ...page([invocation], 20) };
     else if (url.pathname.endsWith('/valuations')) data = page([valuation]);
-    else if (url.pathname.endsWith('/accounting/invocations/inv-00000001')) data = { ...invocation, selection: base.selection, versions: {}, binding: { basis: 'api_usd' },
+    else if (url.pathname.endsWith('/accounting/invocations/managed_attempt%3A0f1e2d3c-0001')) data = { ...invocation, selection: base.selection, versions: {}, binding: { basis: 'api_usd' },
       binding_sha256: 'd'.repeat(64), captures: 1, capture_document: { digest: 'x', evidence: null, evidence_digest: null,
         document: { client: { cli_version: 'synthetic-cli' }, activity: { tools: { Read: 2 }, turns: 4 }, timing: { duration_ms: 1400 } } },
       components: [{ key: 'terminal', grain: 'terminal', parent_key: null, inclusion: 'inclusive', reported_model: null, model_source: null, semantics: 'claude-cli-1',
@@ -236,10 +242,10 @@ for (const [language, archive] of [['en', false], ['es', true]]) {
       assert.ok(env.requests.some(path => path === '/api/managed/accounting/summary?provider=claude&cohort=cohort-1'));
 
       // The detail shows requested versus effective model, tools, lines, references and the comparison.
-      env.button(language === 'en' ? 'Details of invocation inv-0000' : 'Detalle de la invocación inv-0000').props.onClick();
+      env.button(language === 'en' ? 'Details of invocation 0f1e2d3c' : 'Detalle de la invocación 0f1e2d3c').props.onClick();
       html = plain(await env.render(tree));
-      assert.ok(env.requests.includes('/api/managed/accounting/invocations/inv-00000001?cohort=cohort-1'));
-      assert.ok(env.requests.includes('/api/managed/accounting/invocations/inv-00000001/valuations?offset=0&limit=5'));
+      assert.ok(env.requests.includes('/api/managed/accounting/invocations/managed_attempt%3A0f1e2d3c-0001?cohort=cohort-1'));
+      assert.ok(env.requests.includes('/api/managed/accounting/invocations/managed_attempt%3A0f1e2d3c-0001/valuations?offset=0&limit=5'));
       assert.match(html, /synthetic-cli/); assert.match(html, /Read<\/span> × 2/);
       if (language === 'en') {
         assert.match(html, /\$10\.00 per 1,000,000 token/);

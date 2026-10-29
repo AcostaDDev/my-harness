@@ -15,12 +15,13 @@ All notable changes to My Harness are recorded here. The format follows
   is upgraded only by `my-harness migrate`, which takes a verified snapshot first.
 - At the owner's direction each completed one-off task is released as the next patch version and may carry the
   additive API/UI changes it needs ([D239](docs/DECISIONS.md#d239--one-off-tasks-released-as-patch-versions)).
-- By explicit roadmap assignment, P001 **Metrics Records** targets the patch release after the one-off queue (it
-  was `0.1.2` before D239) as a specific exception to the patch
-  scope above; it may include additive metrics data/API/configuration changes with the existing compatibility and
-  migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase closure and opening under a
-  bounded authorization ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
-  [roadmap](docs/ROADMAP.md)). Both are planned, not released.
+- By explicit roadmap assignment, P001 **Metrics Records** targets `0.1.9` (it was `0.1.2` before D239 and D253) as a
+  specific exception to the patch scope above; it may include additive metrics data/API/configuration changes with
+  the existing compatibility and migration guarantees. P002 **Continuous Mode** targets `0.2.0` for automatic phase
+  closure and opening under a bounded authorization
+  ([D233](docs/DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020),
+  [D253](docs/DECISIONS.md#d253--phase-release-targets-after-018), [roadmap](docs/ROADMAP.md)). The `0.1.9` candidate
+  below is qualified but not released; P002 is planned.
 - A version is released through a pull request from `develop` to the protected `main`, merged as a merge commit
   (`--no-ff`), tagging that merge commit
   ([D235](docs/DECISIONS.md#d235--release-branch-integration-branch-and-topic-branches)) and attaching to a GitHub
@@ -30,6 +31,46 @@ All notable changes to My Harness are recorded here. The format follows
   attached individually. Nothing is published to PyPI, and built artifacts are never committed to the repository.
 
 ## [Unreleased]
+
+## [0.1.9] — 2026-10-29
+
+Release candidate for P001 **Metrics Records**, qualified offline by P001-T006
+([evidence](docs/phase/P001-T006-qualification.md)). **Not yet published:** the release pull request, tag, GitHub
+Release and archive need the owner's authorization.
+
+**Upgrade.** Stop the service and every writer, install with `--upgrade --writers-stopped`, then run the new
+generation's `my-harness migrate` before starting: schema `0027_profile_proposals` → `0028_usage_accounting` adds
+eight empty accounting tables (62 product tables) after a verified snapshot, leaves existing rows unchanged and does
+not backfill or price anything. `serve` never migrates. Its downgrade is refused once accounting rows exist. No new
+dependency, recipe or `cli-14` adapter-version change. Existing configuration files (v1–v9 global, v1 project) keep
+their bytes, hashes and meaning; billing needs an explicit, previewed conversion. New backups use format 3; a bundle
+created before `0028` stays readable only through `backup-upgrade`, which writes a new verified copy.
+
+### Added
+
+- Native usage accounting (D254–D259): one invocation record per managed attempt, executor preparation step and
+  configuration assistance, with an allowlisted `usage-capture-1` document (provider/client version, requested and
+  reported model/effort, token categories, durations, tools, outcome and provenance). Missing evidence stays unknown,
+  never zero; terminal and constituent usage are never added; a requested model is never the effective one.
+- Versioned, content-addressed model-identity and tariff references (`metrics-reference-1`) with a packaged pinned
+  bundle, and a pure decimal calculator for Claude API USD, OpenAI API USD, ChatGPT Work/Codex credits, Enterprise
+  USD with supplied terms and explicit subscription-equivalent counterfactuals. Unsupported cases carry a reason.
+- Optional billing profiles in `local-config-10` and per-role selections in `project-config-2`, frozen at admission;
+  billing-only edits keep the technical preparation receipt. Save-time review refuses unavailable references and
+  missing or provider-mismatched selections.
+- Explicit CLI operations `accounting-references`, `accounting-backfill`, `accounting-reprice` (preview, then the
+  exact digest and an idempotency key) and `backup-upgrade`; reference listing/import from the configuration page.
+- Read-only accounting API (`/api/managed/accounting/*`: summary, 13 group dimensions, tasks, invocations with detail
+  and valuations, cohorts) and the global and per-project **Accounting** page (en/es), also on query-only archives.
+  Amounts appear only within one unit, scheme and basis, with coverage, known subtotals and unpriced reasons.
+
+### Unchanged
+
+- `metrics-1`, the existing `/api/managed/metrics/*` contracts, the Statistics panels, run histories, frozen phase
+  summaries, recipe fingerprints and retention behavior (it removes stream bytes only; accounting facts remain).
+- No provider billing integration, invoice reconciliation, quota or allowance inference: valuations are local
+  calculations from pinned references, not confirmed bills. Seed tariffs have unknown historical validity, so
+  contemporaneous valuations stay incomplete with a known subtotal.
 
 ## [0.1.8] — 2026-10-27
 

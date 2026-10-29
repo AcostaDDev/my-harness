@@ -19,9 +19,14 @@ controls); the split was recorded through `docs/p001-t005-split` → `develop`/`
 **P001-T005a** (read-only accounting page, D264) is complete and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin` ([T005a evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)).
 **P001-T005b** (billing-profile/reference controls, D265) is complete and delivered through
 `feat/p001-t005b-billing-controls` → `develop`/`origin` ([T005b evidence](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)), so **P001-T005 is complete**.
-**Next phase task: P001-T006** (qualification and phase handoff).
-P001-T001 design, P001-T002's calculator/references and P001-T003's native accounting records are complete
-([T003 evidence](phase/P001-T003-capture-storage.md), D259); the UI and phase qualification remain pending.
+**P001-T006** (qualification and phase handoff) is complete as source qualification on
+`chore/p001-t006-qualification` ([T006 evidence](phase/P001-T006-qualification.md)): every exit criterion maps to
+implementation and synthetic checks, an integrated capture → valuation → API/UI → retention → backup → query-only
+restore journey passes, one UI labelling defect was fixed, and the shared version metadata is the **0.1.9
+candidate** (offline distribution built and checked). It was delivered through that topic → `develop`/`origin`.
+**Next: the 0.1.9 release and P001 closure**, each separately authorized (release PR to `main`, tag,
+GitHub Release/archive verification, then closure); after that, P002 planning. No real provider or billing validation
+exists.
 OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
 0.1.2/0.1.3/0.1.4/0.1.5/0.1.6/0.1.7/**0.1.8** (D239). P001 targets **0.1.9 at phase closure**; P002 targets
 **0.2.0 at its closure** (D253).
@@ -219,7 +224,7 @@ the frontend suites; no visual QA was run for these controls. Published as the G
 `e252fdc`) with a self-contained package built and checked locally
 ([work notes](phase/v0.1.1-model-selectors.md)).
 
-## Active phase — P001 Metrics Records (target: 0.1.9 at phase closure)
+## Active phase — P001 Metrics Records (target: 0.1.9 at phase closure; candidate qualified)
 
 Documentation initialized on 2026-10-27 at the user's request
 ([D232](DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries)); reordered as P001 with target `0.1.2`
@@ -229,8 +234,8 @@ one-off releases by [D239](DECISIONS.md#d239--one-off-tasks-released-as-patch-ve
 The [handoff](phase/P001-metrics-records.md) records the implemented `metrics-1` baseline, missing billing inputs,
 scope and verification matrix. [Reference notes](phase/P001-metrics-records-references.md) contain
 official pricing sources, dated starter data and synthetic calculation examples. Detailed provider/model metrics,
-independent USD/credit valuation now has an isolated pure library and pinned references; capture/storage/API/UI
-integration and versioned database records remain planned.
+independent USD/credit valuation, capture/storage, API/UI and versioned database records are implemented (T002–T005)
+and qualified together by T006 with synthetic evidence.
 [NEXT_STEPS](NEXT_STEPS.md) contains the six task sections with dependencies, scope, acceptance,
 validation and deliverables ([D234](DECISIONS.md#d234--p001-task-plan-in-next_steps)).
 **P001-T001 is complete as design/inventory only**; [its contract](phase/P001-T001-accounting-contract.md) and
@@ -259,7 +264,8 @@ source delivered through its topic → `develop`/`origin` merge. **P001-T005b is
 list/preview/import routes (`/api/managed/configuration/references*`, idempotent preview digest), save-time billing
 refusals and unknown-default effects, explicit v10/v2 conversion and guided billing controls, and a read-only reference
 list on the global accounting page (also on archives); OpenAPI/types regenerated ([T005b evidence](phase/P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)); source delivered through its topic →
-`develop`/`origin` merge. **Next: P001-T006** qualification. T001 source delivery is
+`develop`/`origin` merge. **P001-T006 is complete as source qualification** (see the routing note above and its
+[evidence](phase/P001-T006-qualification.md)); next are the authorized 0.1.9 release and P001 closure. T001 source delivery is
 `docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge; T002 uses
 `feat/p001-t002-reference-calculator` → `develop`/`origin`;
 release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.
@@ -270,7 +276,7 @@ are not T001 evidence. Exact checks/delivery are recorded in the task contract.
 
 After Metrics Records, automate closing/archiving a completed phase and opening/planning its successor under one
 explicit bounded authorization, retaining stop conditions, READY and recovery guarantees. Design and tasks remain
-pending; this is not implemented
+pending; this is not implemented. Starting context: [T006 handoff](phase/P001-T006-qualification.md#p002-handoff)
 ([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020),
 [D233](DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020)).
 

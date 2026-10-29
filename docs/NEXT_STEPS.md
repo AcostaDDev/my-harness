@@ -3,10 +3,12 @@
 **Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; T004 aggregates/API
 complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; T005a accounting UI complete as
 source and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin`; T005b controls complete and delivered
-through `feat/p001-t005b-billing-controls` → `develop`/`origin` (D265), completing T005; T006 pending. T005 is split
+through `feat/p001-t005b-billing-controls` → `develop`/`origin` (D265), completing T005; T006 complete as source
+qualification on `chore/p001-t006-qualification` ([evidence](phase/P001-T006-qualification.md)), with the 0.1.9
+candidate metadata, delivered through that topic → `develop`/`origin`. T005 is split
 into T005a (accounting UI) and T005b (billing/reference controls) by
 [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).
-**Next phase task: P001-T006 — Qualification and phase handoff.**
+**Next: the separately authorized 0.1.9 release and P001 closure**, then P002 planning. Every P001 task is complete as source.
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty. The queue is **empty**: OT008 (development checks, D260) was
@@ -28,7 +30,7 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T006.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+**Next: 0.1.9 release and P001 closure.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
 complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
 
 The sections below retain each task's contract and distinguish completed work from pending integration. T001 settled
@@ -44,8 +46,9 @@ T003 used `feat/p001-t003-capture-storage` → `develop`/`origin` with the same 
 the same explicit owner authorization ([evidence](phase/P001-T004-aggregates-api.md)). The T005 split and its
 contracts (D263) were recorded through `docs/p001-t005-split` → `develop`/`origin` before any T005 code. T005a used
 `feat/p001-t005a-accounting-ui` → `develop`/`origin` with the same explicit owner authorization
-([evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)). T005b will use `feat/p001-t005b-billing-controls` →
-`develop`/`origin`; its commit, merge and push still need the owner's explicit authorization.
+([evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)). T005b used `feat/p001-t005b-billing-controls` →
+`develop`/`origin` with the same authorization. T006 used `chore/p001-t006-qualification` → `develop`/`origin` with the
+same authorization; the release PR/tag/publication and closure are later, separately authorized actions.
 
 ## Shared constraints
 
@@ -282,7 +285,10 @@ en/es, light/dark, desktop/mobile and keyboard, and their absence on a query-onl
 
 ## P001-T006 — Qualification and phase handoff
 
-**Status:** pending.
+**Status:** complete as source qualification ([evidence](phase/P001-T006-qualification.md)): criterion/evidence
+matrix, integrated synthetic journey (`tests/product/test_p001_qualification.py`), installed-wheel accounting reads,
+served-archive browser QA, invocation-label fix, 0.1.9 candidate metadata and changelog/upgrade notes, P002 handoff.
+Release, publication, P001 closure and installation were not performed.
 **Depends on:** completed T001–T005 and their evidence.
 **Objective:** qualify P001 against its exit criteria and prepare the documented release result and P002 handoff.
 **Allowed paths:** current docs, focused qualification tests/scripts and, when preparing the release candidate,
@@ -311,4 +317,5 @@ and current phase/P002 handoff documentation. Publication remains a separately a
 
 After P001, [Continuous Mode](ROADMAP.md#p002--continuous-mode) will automate phase closure/archive and opening/planning
 of the next phase under an explicit bounded authorization, with stop conditions and existing READY/recovery
-guarantees. Its design and task plan remain pending.
+guarantees. Its design and task plan remain pending; start from the
+[T006 handoff](phase/P001-T006-qualification.md#p002-handoff).

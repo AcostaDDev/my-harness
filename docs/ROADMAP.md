@@ -33,7 +33,9 @@ clients; keep the accounting concepts extensible without adding another executio
 **Status:** active phase; T001 design/inventory, T002 pure calculator/references and T003 native capture/storage,
 billing binding, explicit cohorts and format-3 archives complete and integrated into `develop`; remaining tasks in
 [NEXT_STEPS](NEXT_STEPS.md). T004's bounded read-only queries/API are complete as source
-([evidence](phase/P001-T004-aggregates-api.md), D262) the accounting UI (T005a, D264) and the controls (T005b, D265) are complete and integrated, and qualification (T006) remains.
+([evidence](phase/P001-T004-aggregates-api.md), D262) the accounting UI (T005a, D264) and the controls (T005b, D265) are complete and integrated, and qualification (T006)
+is complete as source with synthetic evidence and the 0.1.9 candidate ([evidence](phase/P001-T006-qualification.md));
+the release and phase closure remain, each separately authorized.
 [T002 evidence](phase/P001-T002-reference-calculator.md), D258; [T003 evidence](phase/P001-T003-capture-storage.md), D259. [T001](phase/P001-T001-accounting-contract.md) and D254–D257
 settle the technical contract, source limits and synthetic acceptance matrix; data/flows remain labelled planned
 until their implementing tasks. D234 still owns the six-task plan.

@@ -10,7 +10,8 @@ Authority: [D232](../DECISIONS.md#d232--metrics-records-phase-and-accounting-bou
 [D253](../DECISIONS.md#d253--phase-release-targets-after-018) for current closure releases (P002 remains 0.2.0).
 The task plan and statuses live in [NEXT_STEPS](../NEXT_STEPS.md), as recorded by
 [D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001–T004 are complete as source; T005 is
-complete (T005a and T005b delivered) and T006 is pending.
+complete (T005a and T005b delivered) and T006 is complete as source qualification
+([evidence](P001-T006-qualification.md)); the 0.1.9 release and closure remain.
 The accepted [T001 contract](P001-T001-accounting-contract.md) and D254–D257 resolve the candidate design questions
 below. This handoff retains scope/baseline/history; its earlier candidate language is not a competing design.
 This handoff is intended to let an agent start without the conversation that motivated it.
@@ -182,7 +183,8 @@ DECISIONS sections; do not silently turn these candidate fields into a contract.
 
 The full task sections, dependencies, acceptance criteria, validation and deliverables are maintained in
 [NEXT_STEPS](../NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
-not another task-status record. **Next: T006** (T005b [evidence](P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)), over the T004 API
+not another task-status record. **T006 is complete** ([evidence](P001-T006-qualification.md)); next are the
+authorized 0.1.9 release and closure (T005b [evidence](P001-T005-metrics-ui.md#t005b--billing-profile-and-reference-controls)), over the T004 API
 ([evidence](P001-T004-aggregates-api.md)), integrated into `develop`; split by
 [D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). These identifiers belong
 to the current phase, not the pre-release H6.4 milestones.

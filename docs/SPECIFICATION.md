@@ -338,6 +338,8 @@ controls and reference API ([D263](DECISIONS.md#d263--p001-t005-split-accounting
 guided profiles/defaults/selections, save-time refusal of unavailable bundles and of missing or provider-mismatched
 explicit selections (naming affected projects), reported unknown inherited defaults, and a bounded reference list with
 an idempotent previewed import that activates nothing.
+T006 [qualified the whole chain](phase/P001-T006-qualification.md) with synthetic evidence only and prepared the
+0.1.9 candidate; real CLI emission and account billing remain unvalidated.
 P001 targets **0.1.9 at phase closure**; P002 targets **0.2.0** (D253).
 
 - Account for native managed attempts, preparation executor steps and configuration-assistance calls, with

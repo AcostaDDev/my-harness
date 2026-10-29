@@ -13,7 +13,7 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 ## Estado
 
 Versión previa a 1.0: la primera versión local está completa en el alcance declarado, el
-paquete declara `0.1.8`, octavo parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
+paquete declara `0.1.9`, noveno parche de la primera versión pública `0.1.0`, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
 herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
 protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos.
@@ -70,15 +70,15 @@ scripts/install --allow-network
 
 ### 2b. Instalar desde un paquete publicado
 
-Descarga `my-harness-0.1.8-distribution.tar.gz` y su `.sha256` de la
+Descarga `my-harness-0.1.9-distribution.tar.gz` y su `.sha256` de la
 [página Releases](https://github.com/AcostaDDev/my-harness/releases) (o con `curl` como abajo) en la misma carpeta y ejecuta:
 
 ```sh
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.8/my-harness-0.1.8-distribution.tar.gz
-curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.8/my-harness-0.1.8-distribution.tar.gz.sha256
-shasum -a 256 -c my-harness-0.1.8-distribution.tar.gz.sha256
-tar -xzf my-harness-0.1.8-distribution.tar.gz
-cd my-harness-0.1.8
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.9/my-harness-0.1.9-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.9/my-harness-0.1.9-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.9-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.9-distribution.tar.gz
+cd my-harness-0.1.9
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -147,6 +147,16 @@ convertidos necesitan documentación comprometida, plan y preparación nuevos an
 la fuente externa (la promoción de una importación sigue requiriendo reinicio). Esta conversión de configuración es distinta de incorporar un repositorio con código.
 Los [ejemplos manuales](examples/local_config.minimal.example.toml) siguen siendo opcionales.
 
+**Contabilidad de uso (opcional):** cada invocación de agente se registra con su evidencia de uso aunque no pueda
+valorarse. Para valorarla, convierte explícitamente la configuración global a `local-config-10`, define perfiles de
+facturación con nombre (proveedor, plataforma/producto, esquema, unidad, base, paquete de referencias fijado y las
+condiciones que declaras) y valores por defecto por rol; cada proyecto puede elegir otro perfil por rol tras pasar a
+`project-config-2`. Un perfil se aplica al trabajo admitido tras activarlo, nunca al encolado o pasado, y un cambio
+solo de facturación conserva la preparación técnica. **Contabilidad** muestra cobertura, importes por base compatible
+y el motivo de cada invocación sin valorar. Son valoraciones locales con precios públicos fijados, no facturas,
+saldos ni cuotas, y los precios semilla tienen validez histórica desconocida. El trabajo anterior solo se valora con
+los comandos explícitos `accounting-backfill`/`accounting-reprice` ([Operation](README.md#operation)).
+
 Con el supervisor habilitado, cada intento encolado usa tu cuenta/cuota del proveedor. El login de clientes se hace
 fuera del harness. El arranque crea solo una DB ausente y nunca migra silenciosamente. Actualizar conserva
 las generaciones/datos con `--upgrade --writers-stopped`; la migración de esquema sigue siendo separada.
@@ -177,6 +187,7 @@ tarea congela ambos idiomas al encolarse; cambiar después la interfaz solo afec
 | Perfiles declarados e incorporación de repositorios existentes | Sí | Dos Django sintéticos incorporados con originales intactos; clon documental COMMITTED con perfil v8, seis validaciones/13 casos JUnit y formateador nativo (dos archivos sin cambios) |
 | Chat, backup y restauración | Sí | Dos respuestas reales, comando determinista sin modelo y propuesta confirmada QUEUED sin ejecutar; consulta API/UI Chrome de runs, diff, JUnit y métricas restaurados |
 | Vistas de runs, métricas y vista previa de exportación con historiales grandes | Sí | Vistas/métricas reales restauradas comprobadas; historiales grandes y vista previa de exportación solo sintéticos |
+| Contabilidad de uso: captura, valoración con referencias fijadas, agregados, página Contabilidad, backup y consulta restaurada | Sí (calificación P001, streams sintéticos y referencias empaquetadas) | No validada: sin captura real, facturación de cuenta ni comparación con facturas |
 
 Evidencia del adaptador actual: octubre de 2026, macOS ARM64, revisor Claude Code **2.1.310** y ejecutor Codex
 **0.164.0**, wheels instalados y proyectos sintéticos desechables. Las cuatro combinaciones y la receta Django

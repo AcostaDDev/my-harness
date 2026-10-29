@@ -160,6 +160,11 @@ export function ageDays(observed: string | null | undefined, now: Date): number 
   return Math.max(0, Math.floor((now.getTime() - time) / 86_400_000));
 }
 
+/** Short label of an invocation: its `<source_kind>:<id>` source id (D259), not the kind every row shares. */
+export function invocationLabel(id: string): string {
+  return id.slice(id.indexOf(":") + 1).slice(0, 8);
+}
+
 /** Explained codes of the calculator, capture and selection; any other code is shown as is. */
 export const REASONS = new Set(["usage_missing", "terminal_missing", "partial_capture", "capture_unavailable", "model_unreported",
   "model_partition_unknown", "model_partition_conflict", "delegation_boundary_unknown", "billing_profile_unknown",

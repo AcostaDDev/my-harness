@@ -74,7 +74,7 @@ queue; closing the browser does not cancel work.
 | `migrations/versions/0001…0027` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
-Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
+Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
 provider), `markdown.ts` and `mermaid-view.ts` (isolated rendering), `managed-api.ts` (idempotent submissions),
 `api.generated.ts` (generated, never edited). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`,
 `check_distribution.py`, `smoke_cli.py`. `examples/`: the `local_config.example.toml` template, the minimal
@@ -202,9 +202,9 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   `work_language_immutable` in changes and unregistrations; `POST …/projects/{p}/work-language/preview` and
   `…/work-language` (hash and reason) for projects without a value. Without it, every new admission answers 409
   `work_language_required`. Projects, registrations, jobs and attempts expose the value or frozen pair.
-- UI routes: `/`, `/stats`, `/preferences`, `/projects/new`, `/projects/:p` with `setup`,
+- UI routes: `/`, `/stats`, `/accounting`, `/preferences`, `/projects/new`, `/projects/:p` with `setup`,
   `onboarding[/:c/*draft]`, `chat[/:c]`, `docs[/*path]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
-  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` redirects to the canonical project route
+  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `accounting`, `settings`; `/runs/:id` redirects to the canonical project route
   in ordinary mode and opens a standalone evidence view in marked query-only copies. The archive home accepts a
   run id; operational routes and pending submissions are not mounted, and recorded active states do not trigger
   execution polling. Routes of the retired
@@ -341,13 +341,14 @@ SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm
 are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
 version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.
 
-## 12. P001 accounting architecture (capture/storage and queries/API implemented; UI pending)
+## 12. P001 accounting architecture (capture/storage, queries/API and accounting page implemented; controls pending)
 
 [T001 contract](phase/P001-T001-accounting-contract.md), D254–D257; T002 pure boundary (D258); T003 native capture,
 storage and operations ([D259](DECISIONS.md#d259--native-accounting-capture-frozen-revision-binding-and-format-3-archives)).
 `terminal-2`/`metrics-1`, their floats and existing endpoints are unchanged. T004 added bounded read-only queries/API
-([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005 adds controls/UI,
-planned in [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) (not implemented).
+([D262](DECISIONS.md#d262--bounded-accounting-aggregates-and-the-read-only-accounting-api)); T005a added the read-only
+accounting page (`pages/Accounting.tsx`, `accounting.ts`, D264); T005b controls are planned in
+[D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) (not implemented).
 
 - **Pure core.** `core/engine/metric_references.py` / `valuation.py` (T002) validate pinned canonical references and
   calculate exact Decimal lines. `core/engine/usage_capture.py` builds the allowlisted `usage-capture-1` document from

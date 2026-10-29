@@ -14,9 +14,10 @@ with the P001 closure (D261: later one-offs branch from the latest release, not 
 `scripts/check` and `scripts/check-docs` ([evidence](phase/OT008-development-checks.md)). **P001-T003**
 (capture, storage and historical compatibility) is complete and delivered through `feat/p001-t003-capture-storage`
 → `develop`/`origin`. **P001-T004** (aggregates and API) is complete and delivered through `feat/p001-t004-aggregates-api`
-→ `develop`/`origin` ([T004 evidence](phase/P001-T004-aggregates-api.md), D262). **P001-T005** is split by [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) into **T005a** (accounting UI, next) and **T005b** (billing/reference
+→ `develop`/`origin` ([T004 evidence](phase/P001-T004-aggregates-api.md), D262). **P001-T005** is split by [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts) into **T005a** (accounting UI) and **T005b** (billing/reference
 controls); the split was recorded through `docs/p001-t005-split` → `develop`/`origin` before any T005 code.
-**Next phase task: P001-T005a.**
+**P001-T005a** (read-only accounting page, D264) is complete and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin` ([T005a evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)).
+**Next phase task: P001-T005b.**
 P001-T001 design, P001-T002's calculator/references and P001-T003's native accounting records are complete
 ([T003 evidence](phase/P001-T003-capture-storage.md), D259); the UI and phase qualification remain pending.
 OT001/OT002/OT003/OT005/OT004/OT006/OT007 were released separately as
@@ -250,7 +251,9 @@ groups,tasks,invocations,cohorts}` plus invocation detail/valuations read the le
 effective/requested model and work-class dimensions and task indicators with explicit denominators; reads never
 price, write or decode histories. OpenAPI/types are regenerated; `/metrics/*` is unchanged
 ([T004 evidence](phase/P001-T004-aggregates-api.md)); source delivered through its topic → `develop`/`origin` merge.
-**Next: P001-T005a** (T005 split into T005a/T005b, D263); two implementation/qualification tasks remain. T001 source delivery is
+**P001-T005a is complete as source** (D264): `/accounting` and `/projects/:p/accounting` read only the D262 API, keep
+bases apart, show exact amounts or partial known subtotals, and work on query-only archives without polling ([T005a evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui));
+source delivered through its topic → `develop`/`origin` merge. **Next: P001-T005b** (D263), then T006 qualification. T001 source delivery is
 `docs/p001-t001-accounting-contract` → `develop`/`origin` through its topic merge; T002 uses
 `feat/p001-t002-reference-calculator` → `develop`/`origin`;
 release/package/publication remains at phase closure for **0.1.9** (D253), and no installation is part of T001.

@@ -61,6 +61,7 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
     ["nav.docs", { name: "docs", project }, route.name === "docs"],
     ["nav.chat", { name: "chat", project }, route.name === "chat"],
     ["nav.stats", { name: "project-stats", project }, route.name === "project-stats"],
+    ["nav.accounting", { name: "project-accounting", project }, route.name === "project-accounting"],
     ["nav.settings", { name: "settings", project }, route.name === "settings"],
   ];
   return <div className="nav-group">
@@ -111,6 +112,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
           <li><Link to={{ name: "home" }} current={route.name === "home"}>{archive ? t("archive.title") : t("nav.projects")}</Link></li>
           {mode && !archive && !configuring && <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>}
           <li><Link to={{ name: "stats" }} current={route.name === "stats"}>{t("nav.stats")}</Link></li>
+          <li><Link to={{ name: "accounting" }} current={route.name === "accounting"}>{t("nav.accounting")}</Link></li>
           {mode && !archive && <li><Link to={{ name: "preferences" }} current={route.name === "preferences"}>{t("nav.preferences")}</Link></li>}
           {mode?.configuration_mode && !archive && <li><Link to={{ name: configuring ? "initial-setup" : "configuration" }} current={route.name === "configuration" || route.name === "initial-setup"}>{t("configuration.title")}</Link></li>}
         </ul>

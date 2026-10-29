@@ -28,6 +28,8 @@ const valid = [
   ['/stats', { name: 'stats' }],
   ['/preferences', { name: 'preferences' }],
   ['/projects/mi-web/stats', { name: 'project-stats', project: 'mi-web' }],
+  ['/accounting', { name: 'accounting' }],
+  ['/projects/mi-web/accounting', { name: 'project-accounting', project: 'mi-web' }],
   ['/runs/abc', { name: 'run-short', run: 'abc' }],
   ['/projects/mi-web/docs', { name: 'docs', project: 'mi-web' }],
   ['/projects/mi-web/docs/README.md', { name: 'docs', project: 'mi-web', path: 'README.md' }],
@@ -60,7 +62,7 @@ test('codes with spaces, dots or unicode are encoded and decoded exactly', () =>
 test('unknown, malformed or ambiguous paths are not found instead of guessed', () => {
   for (const path of ['/projects', '/projects/a/unknown', '/projects/a/phases/P1/tasks', '/projects/a/phases/P1/x/T',
     '/projects/a/phases/P1/tasks/T/runs', '/projects/a/chat/c/extra', '/legacy/x', '/runs', '/simulations',
-    '/stats/x', '/projects/a/stats/P001',
+    '/stats/x', '/projects/a/stats/P001', '/accounting/x', '/projects/a/accounting/P001',
     '/projects/%E0%A4%A', '/projects/a%2Fb', '/projects/a/phases/P1%2F..%2F..']) {
     assert.equal(parse(path).name, 'not-found', path);
   }
@@ -122,6 +124,14 @@ test('statistics: global page and project page with their own trail (H6.2 E6)', 
   const items = trail(parse('/projects/mi-web/stats'));
   assert.deepEqual(items.map(item => item.label), ['Proyectos', 'mi-web', 'Estadísticas']);
   assert.equal(projectOf(parse('/projects/mi-web/stats')), 'mi-web');
+});
+
+test('accounting: global page and project page with their own trail (P001-T005a)', () => {
+  assert.deepEqual(trail(parse('/accounting')).map(item => item.label), ['Proyectos', 'Contabilidad']);
+  assert.equal(projectOf(parse('/accounting')), undefined);
+  const items = trailIn(parse('/projects/mi-web/accounting'), translator('en'));
+  assert.deepEqual(items.map(item => [item.label, href(item.to)]), [['Projects', '/'], ['mi-web', '/projects/mi-web'], ['Accounting', '/projects/mi-web/accounting']]);
+  assert.equal(projectOf(parse('/projects/mi-web/accounting')), 'mi-web');
 });
 
 

@@ -5,6 +5,7 @@ import type { Translate } from "./i18n.ts";
 export type Route =
   | { name: "home" }
   | { name: "stats" }
+  | { name: "accounting" }
   | { name: "preferences" }
   | { name: "initial-setup" }
   | { name: "configuration" }
@@ -17,6 +18,7 @@ export type Route =
   | { name: "chat"; project: string; conversation?: string }
   | { name: "settings"; project: string }
   | { name: "project-stats"; project: string }
+  | { name: "project-accounting"; project: string }
   | { name: "docs"; project: string; path?: string }
   | { name: "onboarding"; project: string; conversation?: string; path?: string }
   | { name: "setup"; project: string; path?: string }
@@ -42,6 +44,7 @@ export function parse(pathname: string): Route {
   const n = parts.length;
   if (n === 0) return { name: "home" };
   if (a === "stats" && n === 1) return { name: "stats" };
+  if (a === "accounting" && n === 1) return { name: "accounting" };
   if (a === "preferences" && n === 1) return { name: "preferences" };
   if (a === "setup" && n === 1) return { name: "initial-setup" };
   if (a === "settings" && b === "configuration" && n === 2) return { name: "configuration" };
@@ -52,6 +55,7 @@ export function parse(pathname: string): Route {
   if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
   if (c === "stats" && n === 3) return { name: "project-stats", project };
+  if (c === "accounting" && n === 3) return { name: "project-accounting", project };
   // Documentation (H6.2 E3): the rest of the URL is the document path in the checkout, segment by segment.
   if (c === "docs") {
     const rest = (parts as string[]).slice(3);
@@ -84,6 +88,7 @@ export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
     case "stats": return "/stats";
+    case "accounting": return "/accounting";
     case "preferences": return "/preferences";
     case "initial-setup": return "/setup";
     case "configuration": return "/settings/configuration";
@@ -96,6 +101,7 @@ export function href(route: Route): string {
     case "chat": return `/projects/${e(route.project)}/chat${route.conversation ? `/${e(route.conversation)}` : ""}`;
     case "settings": return `/projects/${e(route.project)}/settings`;
     case "project-stats": return `/projects/${e(route.project)}/stats`;
+    case "project-accounting": return `/projects/${e(route.project)}/accounting`;
     case "docs": return `/projects/${e(route.project)}/docs${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "onboarding": return `/projects/${e(route.project)}/${route.name}${route.conversation ? `/${e(route.conversation)}` : ""}${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "setup": return `/projects/${e(route.project)}/setup${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
@@ -119,6 +125,7 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 export function trail(route: Route, t: Translate): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: t("nav.projects"), to: { name: "home" } }];
   if (route.name === "stats") items.push({ label: t("nav.stats"), to: route });
+  if (route.name === "accounting") items.push({ label: t("nav.accounting"), to: route });
   if (route.name === "preferences") items.push({ label: t("nav.preferences"), to: route });
   if (route.name === "initial-setup" || route.name === "configuration") items.push({ label: t("configuration.title"), to: route });
   if (route.name === "project-new") items.push({ label: t("nav.new_project"), to: route });
@@ -129,6 +136,7 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
   items.push({ label: project, to: { name: "project", project } });
   if (route.name === "settings") items.push({ label: t("nav.settings"), to: route });
   if (route.name === "project-stats") items.push({ label: t("nav.stats"), to: route });
+  if (route.name === "project-accounting") items.push({ label: t("nav.accounting"), to: route });
   if (route.name === "docs") {
     items.push({ label: t("nav.docs"), to: { name: "docs", project } });
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });

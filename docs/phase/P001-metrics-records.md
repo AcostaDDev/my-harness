@@ -2,14 +2,15 @@
 
 Status: active phase; initialized on 2026-10-27. T001 design, T002 pure calculator/references and T003 native
 capture/storage/billing binding/explicit operations/format-3 archives (integrated into `develop`) are complete;
-T004 bounded read-only queries/API (integrated into `develop`) is complete; controls/UI (T005) remain pending.
+T004 bounded read-only queries/API (integrated into `develop`) is complete; T005a's accounting page is complete as
+source and integrated into `develop` (D264); T005b controls remain pending.
 Current target: **0.1.9 at P001 closure** (D253); the original 0.1.2 assignment was superseded by D239.
 Authority: [D232](../DECISIONS.md#d232--metrics-records-phase-and-accounting-boundaries) for accounting scope;
 [D233](../DECISIONS.md#d233--metrics-records-first-in-012-continuous-mode-second-in-020) for phase order;
 [D253](../DECISIONS.md#d253--phase-release-targets-after-018) for current closure releases (P002 remains 0.2.0).
 The task plan and statuses live in [NEXT_STEPS](../NEXT_STEPS.md), as recorded by
-[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001–T004 are complete as source, with
-two tasks pending, starting at T005.
+[D234](../DECISIONS.md#d234--p001-task-plan-in-next_steps); T001–T004 are complete as source; T005 is in
+progress (T005a complete as source, T005b pending) and T006 is pending.
 The accepted [T001 contract](P001-T001-accounting-contract.md) and D254–D257 resolve the candidate design questions
 below. This handoff retains scope/baseline/history; its earlier candidate language is not a competing design.
 This handoff is intended to let an agent start without the conversation that motivated it.
@@ -181,7 +182,7 @@ DECISIONS sections; do not silently turn these candidate fields into a contract.
 
 The full task sections, dependencies, acceptance criteria, validation and deliverables are maintained in
 [NEXT_STEPS](../NEXT_STEPS.md). Complete one task and its checks before the next; this handoff is supporting context,
-not another task-status record. **Next: T005a** (accounting UI), then T005b (billing/reference controls), over the T004 API
+not another task-status record. **Next: T005b** (billing/reference controls) after T005a ([evidence](P001-T005-metrics-ui.md)), over the T004 API
 ([evidence](P001-T004-aggregates-api.md)), integrated into `develop`; split by
 [D263](../DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). These identifiers belong
 to the current phase, not the pre-release H6.4 milestones.

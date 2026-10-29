@@ -1,10 +1,11 @@
 # P001 — Metrics Records (target: 0.1.9 at phase closure)
 
 **Status:** active phase; T001 design, T002 calculator/references and T003 capture/storage complete; T004 aggregates/API
-complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; two tasks pending. T005 is split
+complete and delivered through `feat/p001-t004-aggregates-api` → `develop`/`origin`; T005a accounting UI complete as
+source and delivered through `feat/p001-t005a-accounting-ui` → `develop`/`origin`; T005b and T006 pending. T005 is split
 into T005a (accounting UI) and T005b (billing/reference controls) by
 [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts).
-**Next phase task: P001-T005a — Accounting UI.**
+**Next phase task: P001-T005b — Billing-profile and reference controls.**
 
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first. Pending one-off work takes precedence;
 resume this unchanged phase plan when that queue is empty. The queue is **empty**: OT008 (development checks, D260) was
@@ -26,7 +27,7 @@ The [one-off queue](ONE_OFF_TASKS.md) is **empty**. OT007 was released and insta
 ([D252](DECISIONS.md#d252--managed-run-lease-renewal-chunk-journals-and-interrupted-process-evidence),
 [evidence](phase/OT007-task-run-lease.md)). Its draft/public archive and checksum downloads were verified byte for
 byte; the offline operator installation is READY with the service stopped and data/configuration unchanged.
-**Next: P001-T005a.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
+**Next: P001-T005b.** Earlier one-off releases remain documented in STATE and their evidence; those releases did not
 complete a Metrics Records task. T001 is complete as accepted design/inventory (D254–D257).
 
 The sections below retain each task's contract and distinguish completed work from pending integration. T001 settled
@@ -40,9 +41,10 @@ its [evidence](phase/P001-T002-reference-calculator.md) separates source integra
 T003 used `feat/p001-t003-capture-storage` → `develop`/`origin` with the same explicit owner authorization
 ([evidence](phase/P001-T003-capture-storage.md)). T004 used `feat/p001-t004-aggregates-api` → `develop`/`origin` with
 the same explicit owner authorization ([evidence](phase/P001-T004-aggregates-api.md)). The T005 split and its
-contracts (D263) were recorded through `docs/p001-t005-split` → `develop`/`origin` before any T005 code. T005a will use
-`feat/p001-t005a-accounting-ui` and T005b `feat/p001-t005b-billing-controls`, each → `develop`/`origin`; commit, merge
-and push of each still need the owner's explicit authorization.
+contracts (D263) were recorded through `docs/p001-t005-split` → `develop`/`origin` before any T005 code. T005a used
+`feat/p001-t005a-accounting-ui` → `develop`/`origin` with the same explicit owner authorization
+([evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)). T005b will use `feat/p001-t005b-billing-controls` →
+`develop`/`origin`; its commit, merge and push still need the owner's explicit authorization.
 
 ## Shared constraints
 
@@ -197,7 +199,7 @@ compatibility and no full-history reads; check generated types using the existin
 
 ## P001-T005 — Billing/reference controls and metrics UI
 
-**Status:** pending; split into two sequential deliveries by
+**Status:** in progress (T005a complete as source, T005b pending); split into two sequential deliveries by
 [D263](DECISIONS.md#d263--p001-t005-split-accounting-page-and-billingreference-control-contracts). T005 is complete
 when T005a and T005b are both delivered; their combined criteria below are the task contract.
 **Depends on:** completed T004 and T001's configuration/reference workflow.
@@ -221,8 +223,8 @@ when T005a and T005b are both delivered; their combined criteria below are the t
 
 ### P001-T005a — Accounting UI
 
-**Status:** pending; next task. **Delivery route:** `feat/p001-t005a-accounting-ui` from `develop` →
-`develop`/`origin` (commit/merge/push only with explicit owner authorization). No release or version bump.
+**Status:** complete as source (D264, [evidence](phase/P001-T005-metrics-ui.md#t005a--accounting-ui)) and delivered
+through `feat/p001-t005a-accounting-ui` → `develop`/`origin` with explicit owner authorization. No release or version bump. The criteria below are retained as the task contract.
 **Depends on:** completed T004 (D262) and D263.
 **Objective:** a read-only accounting page over `/api/managed/accounting/*`, without API, schema or backend change.
 **Allowed paths:** `frontend/src/**`, `frontend/tests/**`, en/es catalogs and current documentation.

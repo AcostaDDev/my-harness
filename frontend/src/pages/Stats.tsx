@@ -59,6 +59,7 @@ export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?
   return <>
     <PageHeader title={t("nav.stats")}>
       <p>{project ? t("stats.lede.project") : t("stats.lede.all")} {t("stats.lede.tokens")}</p>
+      <p>{rich("stats.accounting", { link: <Link to={project ? { name: "project-accounting", project } : { name: "accounting" }}>{t("nav.accounting")}</Link> })}</p>
     </PageHeader>
     <Stale error={s ? summary.error : undefined} />
     {summary.missing ? <Empty title={t("project.missing", { project: project ?? "" })} />

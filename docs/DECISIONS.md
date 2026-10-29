@@ -1741,3 +1741,24 @@ record evidence in `docs/phase/P001-T005-metrics-ui.md`, and T005 completes when
 - **Formats.** Billing controls appear only after an explicit conversion to `local-config-10`/`project-config-2`
   shown in the save preview; loading never converts. Billing-only saves keep the technical receipt (D259); frozen
   jobs keep their binding. Guided forms follow D250 (controls replace only their own keys; TOML remains complete).
+
+## D264 — Accounting page routes, exact amounts and derived reference period
+
+Status: accepted implementation detail in P001-T005a, within D262 and D263; no API change.
+
+The page lives at `/accounting` (sidebar) and `/projects/:p/accounting` (project navigation), and Statistics links to
+the matching scope. Like Statistics, only the global page is mounted on a query-only archive and while configuration
+is not ready; project routes stay blocked there. Live reads refresh every 15 s; the invocation detail and its
+valuations are read once; an archive never polls. Filters, cohort selection and pagination are client state, not URL.
+
+Amounts are formatted from the API's exact decimal strings by regrouping their digits in the visual language, never
+through a binary float: trailing zeros after the last significant decimal are dropped (two decimals at least for an
+ISO currency) and the exact string stays in the tooltip. A bucket shows `amount` only when the API gives it; otherwise
+its `known_subtotal` with a "partial" mark. Units without an ISO code are named (`chatgpt_work_codex_credit` →
+credits); unknown units and codes are shown as is.
+
+The API's reference rows carry no effective period, so a valuation's period state is derived from the calculator's
+codes (D258): `reference_out_of_period` or a blocking `effective_period_unknown` reason, the retrospective warning, or
+"applies" when neither is present and references were used. The client-reported cost appears only in the invocation
+detail (from the allowlisted capture) and in each valuation's comparison, labelled as an estimate of unknown basis.
+Evidence: [P001-T005a](phase/P001-T005-metrics-ui.md#t005a--accounting-ui).

@@ -1,0 +1,57 @@
+{
+  "format": "tool-context-measurement-1",
+  "product_catalogue": {
+    "describe_responses_bytes": 2044,
+    "descriptors_bytes": 401,
+    "entries": 12,
+    "exchanges_loading_all_selected_then_one_invoke": 4,
+    "full_catalogue_bytes": 10077,
+    "initial_surface_bytes": 1331,
+    "loaded_schema_count": 2,
+    "logical_exchanges": 3,
+    "method": "canonical-json-utf8-bytes",
+    "selected_schemas_bytes": 1878,
+    "setup_exchanges": 2
+  },
+  "synthetic": [
+    {
+      "describe_responses_bytes": 6916,
+      "descriptors_bytes": 1811,
+      "entries": 40,
+      "exchanges_loading_all_selected_then_one_invoke": 7,
+      "full_catalogue_bytes": 52001,
+      "initial_surface_bytes": 1331,
+      "loaded_schema_count": 5,
+      "logical_exchanges": 3,
+      "method": "canonical-json-utf8-bytes",
+      "selected_schemas_bytes": 6501,
+      "setup_exchanges": 2
+    },
+    {
+      "describe_responses_bytes": 6916,
+      "descriptors_bytes": 1811,
+      "entries": 200,
+      "exchanges_loading_all_selected_then_one_invoke": 7,
+      "full_catalogue_bytes": 260001,
+      "initial_surface_bytes": 1331,
+      "loaded_schema_count": 5,
+      "logical_exchanges": 3,
+      "method": "canonical-json-utf8-bytes",
+      "selected_schemas_bytes": 6501,
+      "setup_exchanges": 2
+    },
+    {
+      "describe_responses_bytes": 6916,
+      "descriptors_bytes": 1811,
+      "entries": 1000,
+      "exchanges_loading_all_selected_then_one_invoke": 7,
+      "full_catalogue_bytes": 1300001,
+      "initial_surface_bytes": 1331,
+      "loaded_schema_count": 5,
+      "logical_exchanges": 3,
+      "method": "canonical-json-utf8-bytes",
+      "selected_schemas_bytes": 6501,
+      "setup_exchanges": 2
+    }
+  ]
+}

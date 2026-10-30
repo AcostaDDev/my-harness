@@ -2254,3 +2254,42 @@ An explicit before-spawn or before-GO refusal boundary supplies positive no-deli
 or observing a partial write supplies none. Backup has no artifact references for a consistent before-spawn
 refusal and retains the real prepared prompt for a before-GO refusal, while ordinary launched-process artifact
 checks remain strict. Evidence: [T007 review corrections](phase/P002-T007-frozen-context.md#8-technical-review-corrections).
+
+## D289 — Invocation-scoped broker binding, transactional exposure and independent relay control
+
+Status: implemented locally in P002-T008 under the owner's explicit authorization to resolve reversible technical
+details; three technical-review findings corrected locally, new review and integration pending. Completes the T008 implementation part of G04 within D275/D281;
+does not extend the historical native qualification matrix. [Evidence](phase/P002-T008-scoped-tools.md).
+
+Trusted assembly freezes `scoped-tools-1` exact catalogue refs, broker surface digest and client/version/role/evidence selection in the
+existing native attempt request, alongside the canonical context marker. The caller resolver reconstructs and
+reverifies invocation, attempt, operation, project, revision, role, policy, owner token, lease and checkout lock on
+every command/replay. Model arguments never choose authority. No new table, migration or HTTP route is needed.
+
+The per-invocation stdio MCP executable is a relay over a private invocation Unix socket to the supervisor's broker.
+It runs with the supervisor interpreter's isolated `-I -m` launch: checkout, inherited Python import variables and
+user-site paths cannot supply the module. The installed harness environment remains trusted, without OS isolation.
+It receives no database connection; calls use the shared `DomainOperations.execute` and its transactions. Search
+returns bounded scoped descriptors, description returns exact schemas on demand; no unscoped catalogue fallback.
+Claude strict configuration and exact allowlist, Codex a single harness server with enabled_tools and server-local
+approval, and the independent guard retain all historical file/network/session/memory/result restrictions.
+Admission requires MC1–MC7 for an exact client/version/role/evidence cell; simulated evidence stays labelled.
+
+Existing trace envelopes and tool-result storage persist descriptor/schema bytes and knowledge responses before
+returning. Logical and broker calls/results are separate correlated events under the native invocation; commands
+retain their own ID. Replayed commands recheck current capability targets, not only caller identity. Command effects
+and outcomes commit first; their stable response receipt commits before transport return, with safe reentry between
+those boundaries. No atomic transport acknowledgement or proof of comprehension is claimed.
+
+The bridge registers PID/parent/process group, then confirms initialization protocol and exact surface digest in
+a persisted readiness round trip; existing process specs and trace retain both boundaries and observed stop state.
+A scoped invocation cannot complete without that availability evidence, even if the CLI returns a valid answer;
+missing/failed startup is a persisted failure after an observed CLI launch, not proof of no inference. No logical
+tool call is required. Cleanup of cancellation/prelaunch refusals does not assert readiness. EOF, parent loss or
+supervisor disconnect terminates the relay even during a call, independently of CLI exit
+status/group. Recovery refuses potentially live recorded bridge identities and never signals persisted PIDs.
+Expected peer disconnects are classified only at socket I/O boundaries; service/persistence failures still surface
+during cancellation. A settled transaction with a lost response proves no client delivery. An interrupted
+deterministic transaction reconciles its domain outcome; uncertain inference is never reissued.
+The production permission provider remains absent/denying (T010); positive/revocation checks are synthetic.
+No judge/grant lifecycle, product graph, automatic migration, new dependency or OpenCode adapter is introduced.

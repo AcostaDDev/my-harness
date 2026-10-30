@@ -62,7 +62,8 @@ flowchart TD
   bytes are stored with the event in `trace_artifacts` (at most 1 MiB per event, otherwise the event is refused) and
   read back, verified, by digest; references inside an offloaded JSON payload are checked like those of the event,
   at write and by backups. `knowledge-delivery-1` and `tool-discovery-1` envelopes remain validated and reconstructible from stored bytes.
-  T007 emits additive v2 knowledge receipts; tool discovery emission remains T008.
+  T007 emits additive v2 knowledge receipts; T008 emits discovery/schema envelopes and separate broker/logical
+  call/results through the [scoped bridge](tool-bridge.md), plus registered/disconnected/stopped process evidence.
 - **Generic port.** `JournalPort` seals and completes `sealed_effect` operations only; an `agent_invocation` or
   `domain_command` settles from its fenced native outcome or by evidence-based reconciliation. Every replay,
   reconciliation and completion checks the operation's project root; another root is refused before reading.

@@ -67,7 +67,10 @@ completed and integrated into develop; owner API routes and synthetic graphs use
 (operations, invocations and correlated events, D287) is completed and integrated into develop; synthetic graphs
 and fake CLIs exercise it, and no product graph launches agents. **P002-T007** is completed and integrated into
 develop after technical re-review: frozen contexts, canonical instructions and knowledge delivery receipts
-([record](phase/P002-T007-frozen-context.md), D288). Its 0.2.0 delivery remains pending.
+([record](phase/P002-T007-frozen-context.md), D288). Its 0.2.0 delivery remains pending. **P002-T008 has local source corrected after three review findings, pending new technical review/integration**:
+scoped tools, lazy discovery, persisted caller verification and independent stdio relay control (D289;
+[record](phase/P002-T008-scoped-tools.md)). Synthetic checks do not extend native client qualification; product
+permissions remain absent/denying until T010.
 
 **Exit criteria (adopted with D268):**
 

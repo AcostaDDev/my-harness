@@ -39,7 +39,11 @@ known pre-GO failure receipts; [corrections](phase/P002-T007-frozen-context.md#8
 re-review passed with no outstanding findings. Reviewed source commit `d3c4345` is integrated by the accompanying
 merge; the owner authorized commit, merge into `develop` and push of `develop`. Release 0.2.0,
 distribution/publication and installation remain pending.
-**Next: P002-T008**, not started. Historical starting context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
+**P002-T008 has local source corrected after three technical-review findings**, pending new review/integration on
+`feat/p002-t008-scoped-tools` from `3ad54b5` ([record](phase/P002-T008-scoped-tools.md), D289): scoped MCP stdio
+relay, persisted caller verification, lazy discovery and controlled bridge lifecycle; permissions remain denied
+without T010. Isolated relay imports, persisted availability and deterministic EOF/cancellation recovery are corrected
+([review corrections](phase/P002-T008-scoped-tools.md#7-technical-review-corrections)). **Next: re-review/deliver T008 source**, then T009. Historical starting context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
 are in [project history](archive/project-history/README.md). [D267](DECISIONS.md#d267--archive-completed-one-offs-separately-from-active-phase-work)
@@ -205,4 +209,5 @@ real runs; D280 (dependency set and placement) and D281 (transport and minimum c
 with immutable accepted revisions (D284) and canonical database instructions (D285); **T005 (completed, integrated)** adds typed
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
-canonical prompt rendering and exact receipts (D288). T008–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.
+canonical prompt rendering and exact receipts (D288). **T008 source is corrected locally, pending new review/integration** (D289):
+scoped tools and caller binding exercised with synthetic clients/permissions. T009–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.

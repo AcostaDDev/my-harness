@@ -16,6 +16,7 @@ import sqlite3
 import subprocess
 import tarfile
 import tempfile
+from threading import Thread, Event
 import time
 import tomllib
 import zipfile
@@ -33,6 +34,68 @@ RETIRED = ('api/legacy.py', 'api/events.py', 'services/observation.py', 'storage
            'core/project_normalization.py', 'core/migration.py', 'core/engine/import_conversation.py',
            'core/engine/templates/import-project.md', 'storage/import_drafts.py', 'storage/migration.py',
            'services/migration.py')
+
+
+def check_installed_bridge(python, work, env):
+    """Exercise the installed bridge from a hostile synthetic checkout and inherited Python environment."""
+    with tempfile.TemporaryDirectory(prefix='mh-wheel-bridge-', dir='/tmp') as temporary:
+        checkout = work / 'bridge-shadow-checkout'
+        (checkout / 'my_harness').mkdir(parents=True)
+        sentinel = work / 'untrusted-bridge-code-executed'
+        attack = f'from pathlib import Path\nPath({str(sentinel)!r}).write_text("untrusted code executed")\n'
+        for path in (checkout / 'my_harness/__init__.py', checkout / 'my_harness.py', checkout / 'json.py',
+                     checkout / 'sitecustomize.py', checkout / 'usercustomize.py'):
+            path.write_text(attack)
+        endpoint = str(Path(temporary) / 's')
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server.bind(endpoint)
+        server.listen(1)
+        done = Event()
+        calls, failures = [], []
+        def supervisor():
+            try:
+                conn, _ = server.accept()
+                with conn, conn.makefile('rb') as reader:
+                    hello = json.loads(reader.readline())
+                    assert set(hello) == {'pid', 'parent', 'pgid'}
+                    conn.sendall(b'{"ready":true}\n')
+                    ready = json.loads(reader.readline())['ready']
+                    assert ready['protocol'] == '2025-06-18' and len(ready['surface_sha256']) == 64
+                    conn.sendall(b'{"ready":true}\n')
+                    for index in range(3):
+                        request = json.loads(reader.readline())
+                        calls.append(request['name'])
+                        conn.sendall(json.dumps({'ok': True, 'result': {'synthetic': index}}).encode() + b'\n')
+                    assert done.wait(5)
+            except BaseException as error:
+                failures.append(error)
+        worker = Thread(target=supervisor, daemon=True)
+        worker.start()
+        process = subprocess.Popen([str(python), '-I', '-m', 'my_harness.adapters.tool_bridge_stdio'], cwd=checkout,
+            env=env | {'MY_HARNESS_BRIDGE': endpoint, 'PYTHONPATH': str(checkout), 'PYTHONHOME': str(checkout),
+                       'PYTHONSTARTUP': str(checkout / 'sitecustomize.py')},
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, text=True)
+        def rpc(method, params):
+            process.stdin.write(json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}) + '\n')
+            process.stdin.flush()
+            return json.loads(process.stdout.readline())['result']
+        try:
+            assert rpc('initialize', {'protocolVersion': '2025-06-18'})['serverInfo']['version'] == 'scoped-tools-1'
+            names = [t['name'] for t in rpc('tools/list', {})['tools']]
+            assert names == ['search_tools', 'describe_tool', 'invoke_tool']
+            for index, name in enumerate(names):
+                result = rpc('tools/call', {'name': name, 'arguments': {'synthetic': index}})
+                assert json.loads(result['content'][0]['text']) == {'ok': True, 'result': {'synthetic': index}}
+            assert calls == names and not failures
+        finally:
+            done.set()
+            process.stdin.close()
+            process.wait(timeout=5)
+            worker.join(timeout=5)
+            server.close()
+        assert process.returncode == 0 and not failures
+        assert not sentinel.exists(), 'The installed bridge executed synthetic checkout/environment code'
 
 
 def check_checkout_artifacts(distribution, project):
@@ -118,6 +181,7 @@ def main():
         # the session key and the service's temporary Git indexes live (ARCHITECTURE §9).
         (work / 'tmp').mkdir(mode=0o700)
         env = {'PATH': str(venv / 'bin'), 'LANG': 'en_US.UTF-8', 'PYTHONNOUSERSITE': '1', 'TMPDIR': str(work / 'tmp')}
+        check_installed_bridge(python, work, env)
 
         def run(*argv, ok=True, extra=None):
             result = subprocess.run([str(cli), *map(str, argv)], cwd=work, env=env | (extra or {}),

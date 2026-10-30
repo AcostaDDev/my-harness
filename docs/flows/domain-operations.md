@@ -3,8 +3,9 @@
 P002-T005 shared pipeline for knowledge commands and queries
 ([D286](../DECISIONS.md#d286--typed-domain-operation-service-capability-policy-and-command-outcome-record);
 [T005 record](../phase/P002-T005-domain-operations.md)). Callers today: the owner API under `/api/managed` and
-synthetic graphs through [`domain_command`](graph-continuation.md). No UI, product graph or agent uses it yet: agent
-calls and delegated adoption are refused until their infrastructure exists (T006–T010, T016). Table in
+synthetic graphs through [`domain_command`](graph-continuation.md). T008 adds the explicit invocation-bound
+[tool bridge](tool-bridge.md), exercised by fake clients and synthetic permissions; no product graph launches agents.
+Product permissions and delegated adoption still deny by default (T010/T016). Table in
 [DDBB-DIAGRAM](../DDBB-DIAGRAM.md#p002-domain-command-outcomes).
 
 ```mermaid
@@ -20,6 +21,7 @@ sequenceDiagram
     end
     S->>DB: Re-verify agent caller, resolve project, every id must belong to it
     alt Same scope and key already accepted
+        S->>P: Recheck current authority against the stored capability targets
         DB-->>S: Stored outcome
         S-->>C: replayed = true (nothing executed)
     else New request

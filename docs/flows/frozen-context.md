@@ -75,7 +75,8 @@ sequenceDiagram
   including definition templates without a historical instruction slot. Without it the historical rendering
   and snapshots stay unchanged. Body-only `frozen-context-1` snapshots/receipts remain readable and backed up
   verbatim; new canonical invocations require a newly prepared v2 snapshot. No existing project is converted;
-  T013 owns generated exports, T008 the broker
-  and caller binding, T010 permission storage, T014–T016 product graph migration, T018 views and T020 conversion.
+  T008 adds the explicit [broker and persisted caller binding](tool-bridge.md), including descriptor/schema and
+  logical-result receipts on `tool_result`. T013 owns generated exports, T010 permission storage,
+  T014–T016 product graph migration, T018 views and T020 conversion.
 
 Tables: [data diagram](../DDBB-DIAGRAM.md#p002-frozen-context-and-delivery-evidence).

@@ -272,6 +272,10 @@ class DomainOperations:
                 if previous is not None:
                     if previous.request_sha256 != request_sha256:
                         raise DomainRefusal('idempotency_conflict')
+                    # T008: replay is still an authorized call. A frozen grant may have been revoked since
+                    # the first outcome; re-evaluate the original targets without running the handler again.
+                    call.authorize([target for dimension, target in previous.capability['requirements']
+                                    if dimension == 'product'])
                     return Outcome(entry.id, previous.result, previous.command_id, True)
             try:
                 result = self.handlers[entry.id](call)
@@ -313,6 +317,9 @@ class DomainOperations:
             with Session(self.engine) as session, session.begin():
                 if session.execute(text('PRAGMA query_only')).scalar():
                     return
+                # Broker refusals can race native stream updates too; lock before project/event reads,
+                # just as the accepted command transaction does (no WAL read-snapshot upgrade).
+                session.execute(text('DELETE FROM domain_commands WHERE 0'))
                 project = caller.knowledge_project_id or (
                     KnowledgeSession(session).project_id(caller.root) if caller.root else None)
                 if project is not None and session.get(KnowledgeProjectRow, project) is None:

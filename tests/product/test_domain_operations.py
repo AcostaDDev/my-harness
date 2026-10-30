@@ -363,7 +363,8 @@ def test_agent_callers_fail_closed_in_the_product_composition(world):
     url, engine, _ops = world
     ids, first = seed(DomainOperations(engine))
     product = ManagedRuntime(engine).domain_operations()
-    assert isinstance(product.resolver, UnavailableResolver)
+    from my_harness.services.tool_bridge import InvocationResolver
+    assert isinstance(product.resolver, InvocationResolver)
     assert isinstance(product.permissions, UnavailablePermissions)
     from my_harness.storage.frozen_context import ReceiptSink
     assert isinstance(product.authorizations, NoAuthorizations) and isinstance(product.delivery, ReceiptSink)

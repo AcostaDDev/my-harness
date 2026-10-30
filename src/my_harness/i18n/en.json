@@ -1398,5 +1398,17 @@
   "domain.delivery_over_limit": "The knowledge result exceeds the delivery bound; use bounded lookup or search.",
   "context.observation_unrecorded": "Context delivery observation did not finish; the invocation must not be retried automatically.",
   "context.client_mismatch": "The frozen instruction target does not match the invocation client.",
-  "backup.prelaunch_evidence": "Prelaunch refusal contradicts its process or artifact evidence."
+  "backup.prelaunch_evidence": "Prelaunch refusal contradicts its process or artifact evidence.",
+  "bridge.capabilities": "Scoped tools require qualified client capabilities: {missing}.",
+  "bridge.policy": "A valid frozen invocation tool policy and canonical context are required.",
+  "bridge.binding": "Scoped tools require an explicitly bound trusted bridge factory.",
+  "bridge.admission": "The scoped tool bridge could not admit this invocation.",
+  "bridge.process_alive": "The invocation bridge may still be alive; recovery must prove it stopped.",
+  "bridge.registration": "Invalid invocation bridge registration.",
+  "bridge.settlement": "An in-flight bridge call has an uncertain settlement.",
+  "bridge.transport": "Invocation bridge transport failed: {error}.",
+  "bridge.provenance": "Client qualification provenance does not match the frozen policy.",
+  "bridge.method": "Method not found.",
+  "bridge.parameters": "Invalid request or parameters.",
+  "bridge.unavailable": "The invocation bridge did not confirm protocol and tool availability."
 }

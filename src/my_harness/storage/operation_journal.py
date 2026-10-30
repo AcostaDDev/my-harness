@@ -282,10 +282,17 @@ def command_sink(session, command: DomainCommandRow) -> None:
                'principal': command.principal, 'channel': command.channel, 'outcome': command.outcome,
                'refusal_code': command.refusal_code, 'draft_id': command.draft_id, 'revision_id': command.revision_id}
     if command.outcome != 'ACCEPTED' or not graph:
+        # T008: agent commands retain their domain identity while linking to the parent native invocation.
+        # Refused forged callers do not get to attach an event to an unrelated project's operation.
+        invocation = session.scalar(select(Operation).where(Operation.invocation_id == caller.get('invocation_id'),
+            Operation.root == root)) if command.principal == 'agent' and caller.get('invocation_id') else None
         record_event(session, kind=f'domain.command_{command.outcome.lower()}',
                      dedupe_key=f'command:{command.command_id}', payload={**payload, 'operation_key': key},
                      source='supplied', root=root,
-                     thread_id=thread_id if graph and session.get(GraphThreadRow, thread_id) else None,
+                     thread_id=invocation.thread_id if invocation else (
+                         thread_id if graph and session.get(GraphThreadRow, thread_id) else None),
+                     operation_id=invocation.id if invocation else None,
+                     invocation_id=invocation.invocation_id if invocation else None,
                      command_id=command.command_id, at=command.recorded_at)
         return
     if root is None:

@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import sys
 import tomllib
 
 from my_harness.i18n import tr
@@ -146,12 +147,27 @@ def profile(provider, observed, access):
                              'transitive_executable_dependencies', 'authentication', 'inference']}
 
 
-def guard_contract(provider, argv, root, access):
+def guard_contract(provider, argv, root, access, *, bridge=None):
     """Validate the actual transport before GO, independently of help and the argv builder."""
     def option(name):
         return argv[argv.index(name) + 1]
 
     try:
+        if bridge is not None:
+            # The independently checked expectation is itself closed: it cannot bless an arbitrary command,
+            # module, server environment or endpoint by merely matching the builder's output.
+            if (set(bridge) != {'command', 'args', 'env'} or bridge['command'] != sys.executable
+                    or bridge['args'] != ['-I', '-m', 'my_harness.adapters.tool_bridge_stdio']
+                    or set(bridge['env']) != {'MY_HARNESS_BRIDGE'}):
+                return False
+            endpoint = Path(bridge['env']['MY_HARNESS_BRIDGE'])
+            if not endpoint.is_absolute() or endpoint.resolve() != endpoint:
+                return False
+            node, parent = endpoint.lstat(), endpoint.parent.lstat()
+            if (not stat.S_ISSOCK(node.st_mode) or stat.S_IMODE(node.st_mode) != 0o600
+                    or not stat.S_ISDIR(parent.st_mode) or stat.S_IMODE(parent.st_mode) != 0o700
+                    or node.st_uid != os.getuid() or parent.st_uid != os.getuid()):
+                return False
         if any(flag in argv for flag in ('--resume', '--continue', '--dangerously-skip-permissions',
                                          '--dangerously-bypass-approvals-and-sandbox', '--yolo')):
             return False
@@ -160,6 +176,13 @@ def guard_contract(provider, argv, root, access):
                     '--json'} <= set(argv):
                 return False
             config = tomllib.loads('\n'.join(argv[i + 1] for i, arg in enumerate(argv) if arg == '-c'))
+            expected_servers = {}
+            if bridge is not None:
+                from my_harness.core.engine.tool_bridge import NAMES
+                expected_servers = {'harness': {**bridge, 'enabled_tools': list(NAMES),
+                                               'default_tools_approval_mode': 'approve'}}
+            if config.get('mcp_servers', {}) != expected_servers:
+                return False
             if (option('--sandbox') != ('workspace-write' if access == 'write' else 'read-only')
                     or option('--cd') != str(root) or option('--color') != 'never'
                     or config.get('approval_policy') != 'never' or config.get('model_provider') != 'openai'
@@ -179,11 +202,17 @@ def guard_contract(provider, argv, root, access):
                 or option('--output-format') != 'stream-json' or option('--permission-mode') != 'dontAsk'
                 or option('--permission-prompts') != 'none' or option('--setting-sources') != ''
                 or json.loads(option('--settings')) != {'disableAllHooks': True, 'autoMemoryEnabled': False}
-                or json.loads(option('--mcp-config')) != {'mcpServers': {}}):
+                or json.loads(option('--mcp-config')) != {'mcpServers': {'harness': bridge} if bridge else {}}):
+            return False
+        from my_harness.core.engine.tool_bridge import NAMES
+        broker_tools = [f'mcp__harness__{name}' for name in NAMES] if bridge else []
+        actual_allowed = option('--allowedTools').split(',') if option('--allowedTools') else []
+        if [t for t in actual_allowed if t.startswith('mcp__')] != broker_tools:
             return False
         if access == 'read':
-            return ('--restricted' in argv and option('--tools') == option('--allowedTools') == 'Read,Glob,Grep'
+            return ('--restricted' in argv and option('--tools') == 'Read,Glob,Grep'
+                    and actual_allowed == ['Read', 'Glob', 'Grep', *broker_tools]
                     and json.loads(option('--json-schema')).get('type') == 'object')
         return '--restricted' not in argv and '--json-schema' not in argv
-    except (IndexError, ValueError, TypeError, AttributeError):
+    except (IndexError, ValueError, TypeError, AttributeError, KeyError, OSError):
         return False

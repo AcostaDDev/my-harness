@@ -369,7 +369,7 @@ T006 [qualified the whole chain](archive/phase-001/P001-T006-qualification.md) w
 
 <a id="14-p002-autonomous-mode-and-project-authority-accepted-design-not-implemented"></a>
 
-## 14. P002 autonomous mode and project authority (accepted design; foundations implemented through T007)
+## 14. P002 autonomous mode and project authority (accepted design; foundations implemented through T008)
 
 [D268–D279](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), the
 [T001 contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md) and
@@ -387,7 +387,8 @@ rules change.
   Delegated approvals carry their origin and are never shown as owner approvals. The typed command service exists for
   knowledge (P002-T005, D286): owner API routes and synthetic graphs share one pipeline with catalogue digests, caller
   binding, per-operation capabilities within every permission ceiling, idempotent outcome records and owner-only
-  adoption of previewed drafts; agent calls and delegated adoption stay refused until T006–T010/T016.
+  adoption of previewed drafts; T008 supplies persisted agent caller verification and a scoped broker, with positive calls exercised only with
+  synthetic permissions; production permissions and delegated adoption remain denied until T010/T016.
 - **Knowledge and documents.** Definition and reverse-engineering onboarding produce database knowledge. Markdown is a
   generated view replaced at defined boundaries without drift detection; IDE edits matter only through an explicit,
   previewed UI import, which never fabricates execution, approval or usage history. The knowledge model is D284:
@@ -405,7 +406,13 @@ rules change.
   invocation ledger and attempt, with ordered insert-only events, `trace-observation-1` counters (harness attempt,
   revision round and native turn kept apart; missing telemetry absent) and read-only, project-scoped trace queries;
   no product graph launches agents yet. T007 adds frozen contexts, canonical instruction delivery and exact
-  knowledge receipts (D288); tool discovery remains T008.
+  knowledge receipts (D288). T008 adds scoped search/describe/invoke over a per-invocation stdio
+  relay, exact client/version/role capability admission, strict launch guards and independent bridge termination
+  (D289; [flow](flows/tool-bridge.md)), integrated into develop. Every logical call uses the shared domain service;
+  no product graph, new permission lifecycle or native qualification is added.
+  Its relay launch excludes checkout/environment import shadowing; scoped completion requires registered protocol/
+  surface availability, with logical calls optional. Missing availability fails without retrying inference; expected
+  disconnects preserve supervisor cancellation while genuine persistence errors remain failures.
 - **Observation.** A global inbox for both modes and a read-only task-instance graph; their taxonomy and visual design
   come later from the owner.
 - **Preserved.** Acceptance by exact content, READY binding, single writer, intent before effect, conservative recovery,

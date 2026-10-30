@@ -183,7 +183,7 @@ def skips_git_check(context, request):
     return parts[0].get("version", {}).get("name") in {"define-project", "define-project-profile"}
 
 
-def argv_for(config, context, request):
+def argv_for(config, context, request, *, bridge=None):
     if not eligible(config.provider, config.cli_version):
         raise CompatibilityError('minimum_version', provider=config.provider,
                                  observed=config.cli_version or 'unknown', minimum=MINIMUM[config.provider])
@@ -231,6 +231,7 @@ def argv_for(config, context, request):
                    "-c", "projects={" + json.dumps(str(context.root), ensure_ascii=False)
                    + '={trust_level="untrusted"}}') \
             if access == "write" else ("read-only",)
+        from my_harness.adapters.tool_bridge_transport import codex_config
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
             "--model", model, "--sandbox", *sandbox, "--color", "never",
@@ -245,6 +246,7 @@ def argv_for(config, context, request):
             # project-doc budget stops the pin from also loading AGENTS.override.md/AGENTS.md from the live
             # checkout (it skips them only for untrusted projects, i.e. the writer).
             "-c", "project_doc_max_bytes=0",
+            *(("-c", codex_config(bridge)) if bridge is not None else ()),
             *(("--skip-git-repo-check",) if skips_git_check(context, request) else ()),
             "--cd", str(context.root), "-")
     if access == "read":
@@ -254,11 +256,15 @@ def argv_for(config, context, request):
     else:
         tools, allowed = inventory(config, extra_tools)
         tail = ()
+    if bridge is not None:
+        from my_harness.core.engine.tool_bridge import NAMES
+        allowed = (*allowed, *(f'mcp__harness__{name}' for name in NAMES))
     return config.executable + (
         "--print", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
         "--no-session-persistence", "--session-id", request.id, "--model", model, "--effort", effort,
         "--permission-mode", "dontAsk", "--permission-prompts", "none", "--tools", ",".join(tools),
-        "--allowedTools", ",".join(allowed), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
+        "--allowedTools", ",".join(allowed), "--strict-mcp-config", "--mcp-config",
+        freeze({'mcpServers': {'harness': bridge}}) if bridge is not None else '{"mcpServers":{}}',
         "--setting-sources", "", "--settings", '{"disableAllHooks":true,"autoMemoryEnabled":false}',
         "--disable-slash-commands", "--no-chrome") + tail
 
@@ -288,6 +294,13 @@ class CLIProcessAdapter:
         self.availability = None
         self.active = {}
         self.lock = Lock()
+        self.bridge_factory = None
+
+    def bind_tool_bridges(self, factory):
+        """Trusted composition, before invocation. Does not activate tools for historical requests."""
+        if self.active or self.bridge_factory is not None:
+            raise ValueError(tr('bridge.binding'))
+        self.bridge_factory = factory
 
     def frozen_versions(self):
         # The agent → provider assignment is part of the frozen identity.
@@ -393,6 +406,27 @@ class CLIProcessAdapter:
             'launch_permitted': False, 'launch_boundary': 'before_spawn', **details})
 
     def invoke(self, context, request):
+        marker = json.loads(request.prompt_snapshot_json or '{}').get('scoped_tools')
+        bridge = None
+        if marker is not None:
+            if self.bridge_factory is None or self.journal is None:
+                if self.journal is not None:
+                    self._refuse_before_spawn(request, self.agents[ROLES[request.role]], diagnostic_code='bridge_binding')
+                raise JournalError(tr('bridge.binding'))
+            config = self.agents[ROLES[request.role]]
+            try:
+                bridge = self.bridge_factory.open(request, config, self.artifact_root / request.id)
+                bridge.journal_update = lambda kind, payload: self.journal.process_update(request.id, kind, payload)
+            except Exception as error:
+                self._refuse_before_spawn(request, config, diagnostic_code='bridge_admission')
+                raise JournalError(tr('bridge.admission')) from error
+        try:
+            return self._invoke(context, request, bridge=bridge)
+        finally:
+            if bridge is not None:
+                bridge.close(require_available=False)  # cleanup also covers known prelaunch refusals
+
+    def _invoke(self, context, request, *, bridge=None):
         if self.journal is None:
             raise JournalError("CLI execution requires a managed process journal")
         agent = ROLES.get(request.role)
@@ -410,8 +444,12 @@ class CLIProcessAdapter:
         if not observed['available']:
             self._refuse_before_spawn(request, config, observed=observed)
             raise JournalError('; '.join(d['correction'] for d in observed['diagnostics']))
-        argv = argv_for(config, context, request)
-        if not guard_contract(config.provider, argv, context.root, access_for(request.role)):
+        bridge_config = bridge.config if bridge is not None else None
+        argv = (argv_for(config, context, request, bridge=bridge_config) if bridge is not None
+                else argv_for(config, context, request))
+        guarded = (guard_contract(config.provider, argv, context.root, access_for(request.role), bridge=bridge_config)
+                   if bridge is not None else guard_contract(config.provider, argv, context.root, access_for(request.role)))
+        if not guarded:
             self._refuse_before_spawn(request, config, observed=observed, diagnostic_code='guard_contract')
             raise JournalError(tr('cli_diagnostics.guard_contract'))
         if self.artifact_root.is_relative_to(context.root) or self.artifact_root.resolve() != self.artifact_root:
@@ -463,6 +501,12 @@ class CLIProcessAdapter:
                 "output_guard": OutputGuard.POLICY if config.provider == "claude" else None,
                 "requested": {"model": request.selection.model, "effort": request.selection.effort,
                               "fresh_session": True}}
+        if bridge is not None:
+            from my_harness.core.engine.tool_bridge import FORMAT, TOOLS
+            marker = json.loads(request.prompt_snapshot_json)['scoped_tools']
+            spec['tool_bridge_contract'] = {'format': FORMAT, 'surface_sha256': digest(freeze(TOOLS)),
+                'policy_sha256': digest(freeze(marker)), 'client': marker['client'], 'version': marker['version'],
+                'role': marker['role'], 'evidence': marker['evidence'], 'provenance': marker['provenance']}
         self.journal.process_intent(request.id, spec)
         started = time.monotonic()
         started_at = datetime.now(timezone.utc).isoformat()
@@ -541,6 +585,8 @@ class CLIProcessAdapter:
                     if status_override is None and (cancelled.is_set() or preparation_cancelled or time.monotonic() >= deadline):
                         status_override = "cancelled" if cancelled.is_set() or preparation_cancelled else "timeout"
                         stop_group(process)
+                        if bridge is not None:
+                            bridge.close(require_available=False)
                         # Bounded drain after cancellation, even if escaped child holds a pipe.
                         drain_deadline = time.monotonic() + 0.3
                     for key, _ in selector.select(0.02):
@@ -571,6 +617,8 @@ class CLIProcessAdapter:
                                 stop_group(process)
                                 drain_deadline = time.monotonic() + 0.3
                         flush()
+                    if bridge is not None and (process.poll() is not None or bridge.error is not None):
+                        bridge.close(require_available=False)
                     if drain_deadline is not None and time.monotonic() >= drain_deadline:
                         # Remaining readable bytes have been drained by the iteration above.
                         break
@@ -587,6 +635,11 @@ class CLIProcessAdapter:
                 payload = freeze(data)
             if write_error and status == "complete":
                 status, payload = "failed", None
+            bridge_unavailable = bridge is not None and not bridge.available.is_set()
+            if bridge_unavailable and status == 'complete':
+                # The CLI ran: this is not a before-GO refusal or evidence of no inference. Keep native
+                # telemetry, withhold its otherwise valid answer, persist the failure, and never retry it.
+                status, payload = 'failed', None
             group_state = liveness(value, group=True)
             if group_state != "dead":
                 # A terminal leader is not proof that its children stopped.
@@ -599,6 +652,11 @@ class CLIProcessAdapter:
                         "artifacts": {name: {"path": str(directory / f"{name}.bin"), "size": sizes[name],
                                              "sha256": hashes[name].hexdigest()} for name in sizes},
                         "exit_code": process.returncode, "group_state": group_state}
+            if bridge is not None:
+                metadata['tool_bridge'] = {'identity': bridge.process, 'available': bridge.available.is_set(),
+                    'response_lost': bridge.response_lost}
+                if bridge_unavailable:
+                    metadata['diagnostic_code'] = 'bridge_unavailable'
             self.journal.process_update(request.id, "process_finished", metadata)
             if group_state != "dead":
                 raise JournalError(tr('agents.process_group_may_still'))

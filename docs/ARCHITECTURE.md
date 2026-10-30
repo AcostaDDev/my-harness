@@ -77,6 +77,7 @@ queue; closing the browser does not cancel work.
 | `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used by tests only ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
 | `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`, `storage/operation_journal.py`, `api/traces.py` | P002-T006 operation journal behind `OperationPort` with fenced invocation operations and evidence-based recovery, ordered insert-only trace events, `trace-observation-1` counters, bounded sanitized payloads, T007/T008 envelopes and read-only trace routes ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract)) |
 | `core/engine/frozen_context.py`, `storage/frozen_context.py` | P002-T007: bounded accepted context, actual frozen profile and explicit Git/code captures, D285 prompt rendering, fenced invocation boundaries and exact query/tool/input receipts, with scoped archive readers ([D288](DECISIONS.md#d288--frozen-invocation-context-and-exact-exposure-evidence)) |
+| `core/engine/tool_bridge.py`, `services/tool_bridge.py`, `adapters/tool_bridge_transport.py`, `adapters/tool_bridge_stdio.py` | T008 (integrated into develop): three-tool MCP surface, frozen scope/capability cells, persisted caller resolver, supervisor broker and independently controlled stdio relay; no product graph or production permission provider ([D289](DECISIONS.md#d289--invocation-scoped-broker-binding-transactional-exposure-and-independent-relay-control)) |
 | `migrations/versions/0001…0033` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
@@ -399,7 +400,7 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 
 <a id="13-p002-target-architecture-accepted-design-not-implemented"></a>
 
-## 13. P002 target architecture (accepted design; foundations implemented through T007)
+## 13. P002 target architecture (accepted design; foundations implemented through T008)
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
@@ -411,8 +412,10 @@ the operation journal with correlated trace events (T006, D287), used by synthet
 `agent_started` callers that supply an operation. T007 adds `core/engine/frozen_context.py`, `storage/frozen_context.py` and schema
 `0033_frozen_context`: explicit canonical prompt rendering, frozen invocation boundaries and exact knowledge
 receipts, also readable without checkout from an archive. `ManagedRuntime.frozen_contexts()` prepares/renders
-contexts; `agent_started` seals them and the adapter observes completed input delivery. The tool broker and its
-caller resolver, permissions, exports, inbox and graph view remain pending, and no product graph launches agents yet.
+contexts; `agent_started` seals them and the adapter observes completed input delivery. T008 adds
+`core/engine/tool_bridge.py`, `services/tool_bridge.py`, `adapters/tool_bridge_transport.py` and the packaged
+`adapters/tool_bridge_stdio.py` executable: persisted invocation callers, an explicit broker factory and a private
+per-invocation relay. Permissions, exports, inbox and graph view remain pending; no product graph launches agents.
 
 ```mermaid
 flowchart TD
@@ -445,6 +448,11 @@ flowchart TD
   client (G04). Deterministic nodes call services directly. Agents never receive database access. Implemented (D286):
   `core/engine/domain_catalogue.py` (entries, digests, schema subset validator), `core/engine/domain_policy.py`
   (classification, capability evaluator), `services/domain_operations.py` (`execute`, callers, fail-closed providers),
-  `api/knowledge.py` and `orchestration/domain.py`; the broker transport is T008 ([flow](flows/domain-operations.md)).
+  `api/knowledge.py` and `orchestration/domain.py`; T008 adds the [scoped bridge](flows/tool-bridge.md), with explicit `policy` request assembly,
+  `ManagedRuntime.tool_bridges()` and `CLIProcessAdapter.bind_tool_bridges()`. Its permission provider still denies
+  by default; tests alone inject synthetic permissions. Existing launches without the marker keep their policy.
+  The schema remains 0033/79 tables; no HTTP or dependency change.
+  Technical review corrections isolate the relay with Python `-I`, require persisted protocol/surface availability
+  before accepting completion, and keep expected peer disconnects separate from service/persistence failures.
 - **Exports.** An outbox-driven exporter renders accepted revisions to owned targets with generation manifests and
   recoverable per-target outcomes.

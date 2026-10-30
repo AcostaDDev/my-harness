@@ -6,7 +6,9 @@ refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
 develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
 **P002-T005 is completed (D286 accepted) and integrated into develop.** **P002-T006 is completed (D287 accepted) and
-integrated into develop.** **P002-T007 is completed (D288, technical re-review passed) and integrated into develop.** T008–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+integrated into develop.** **P002-T007 is completed (D288, technical re-review passed) and integrated into develop.** **P002-T008 is completed and integrated into develop** after the three review corrections
+([record](phase/P002-T008-scoped-tools.md), D289); the owner authorized commit, merge and push of develop.
+T009–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
 data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -78,7 +80,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; every later task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008 is **completed (integrated)**; every later task is **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -339,6 +341,16 @@ shared domain services with auditable identities. **Dependencies:** T002, T005, 
 **Basis:** B05, B07–B11, B21–B23.
 
 **Gates:** G04. **Threats:** TM01–TM04, TM11, TM16.
+
+**Status (2026-10-30):** completed on `feat/p002-t008-scoped-tools` from `develop` `3ad54b5`;
+source commit `625253e` is integrated by the accompanying merge at the owner's explicit authorization, which also
+covers pushing `develop` ([delivery record](phase/P002-T008-scoped-tools.md#8-authorized-source-delivery), D289).
+The three technical-review findings are corrected; no separate technical re-review is asserted. G04 implementation
+is available with synthetic stdio/adapter evidence; native qualification is not extended. Schema remains
+`0033_frozen_context` (79 tables), no HTTP/dependency change; production permissions remain denied until T010.
+Source delivery to develop is authorized; release 0.2.0 through protected main → distribution/publication →
+installation remain pending. **Next: P002-T009**, not started.
+
 ## P002-T009 — Judge configuration and duty contracts
 
 **Problem:** one human-proxy prompt would mix distinct authority and failure semantics.

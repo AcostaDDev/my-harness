@@ -583,6 +583,11 @@ class SQLiteManagedRepository:
                     raise Conflict(tr('context.operation_required'))
                 from my_harness.storage.frozen_context import seal
                 seal(session, prompt_snapshot['canonical_context']['id'], sealed_operation, request)
+            if 'scoped_tools' in prompt_snapshot:
+                if 'canonical_context' not in prompt_snapshot:
+                    raise Conflict(tr('bridge.policy'))
+                from my_harness.core.engine.tool_bridge import selection
+                selection(asdict(request))  # validate before committing the frozen attempt/policy
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
                           "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING",
@@ -922,6 +927,24 @@ class SQLiteManagedRepository:
                         raise Conflict(tr('context.operation_required'))
                     from my_harness.storage.frozen_context import observe
                     observe(session, attempt_id, payload['rendered_sha256'])
+                elif kind == 'bridge.registered':
+                    if row.status != 'RUNNING' or row.spec.get('tool_bridge') is not None:
+                        raise Conflict(tr('bridge.binding'))
+                    row.spec = {**row.spec, 'tool_bridge': {'identity': payload, 'state': 'alive'}}
+                elif kind == 'bridge.stopped':
+                    saved = row.spec.get('tool_bridge')
+                    if saved is None or saved['identity'] != payload['identity']:
+                        raise Conflict(tr('bridge.binding'))
+                    row.spec = {**row.spec, 'tool_bridge': {**saved, 'state': payload['state']}}
+                elif kind == 'bridge.ready':
+                    from my_harness.core.engine.tool_bridge import SURFACE_SHA256, PROTOCOLS
+                    saved = row.spec.get('tool_bridge')
+                    if (row.status != 'RUNNING' or saved is None or saved.get('ready') is not None
+                            or saved['identity'] != payload['identity']
+                            or payload['surface_sha256'] != SURFACE_SHA256 or payload['protocol'] not in PROTOCOLS):
+                        raise Conflict(tr('bridge.binding'))
+                    row.spec = {**row.spec, 'tool_bridge': {**saved, 'ready': {
+                        'protocol': payload['protocol'], 'surface_sha256': payload['surface_sha256']}}}
                 self._event(session, run, kind, {"job_id": job.id, "attempt_id": attempt_id, **payload})
 
     def processes(self, job_id):
@@ -980,6 +1003,9 @@ class SQLiteManagedRepository:
             elif liveness(command['identity'], group=True) != 'dead':
                 raise Conflict(tr('managed.previous_command_group_alive'))
         for row in session.scalars(select(Process).where(Process.job_id == job.id)):
+            bridge = row.spec.get('tool_bridge')
+            if bridge and liveness(bridge['identity']) != 'dead':
+                raise Conflict(tr('bridge.process_alive'))
             if row.identity is None:
                 # Gate cannot execute without a durable identity. Owner must first stop.
                 if not recovering or (not job.owner_closed and liveness(job.process_owner) != "dead"):

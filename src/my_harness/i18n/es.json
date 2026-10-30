@@ -1398,5 +1398,17 @@
   "domain.delivery_over_limit": "El resultado supera el límite de entrega; usa consulta o búsqueda acotada.",
   "context.observation_unrecorded": "La observación de entrega del contexto no terminó; la invocación no debe reintentarse automáticamente.",
   "context.client_mismatch": "El destino de las instrucciones congeladas no coincide con el cliente de la invocación.",
-  "backup.prelaunch_evidence": "El rechazo previo al lanzamiento contradice la evidencia del proceso o de sus artefactos."
+  "backup.prelaunch_evidence": "El rechazo previo al lanzamiento contradice la evidencia del proceso o de sus artefactos.",
+  "bridge.capabilities": "Las herramientas requieren capacidades del cliente cualificadas: {missing}.",
+  "bridge.policy": "Se requieren una política de herramientas congelada válida y un contexto canónico.",
+  "bridge.binding": "Las herramientas requieren un puente de confianza vinculado explícitamente.",
+  "bridge.admission": "El puente de herramientas no pudo admitir esta invocación.",
+  "bridge.process_alive": "El puente de la invocación puede seguir vivo; la recuperación debe comprobar que terminó.",
+  "bridge.registration": "Registro de puente de invocación no válido.",
+  "bridge.settlement": "Una llamada en curso del puente tiene una resolución incierta.",
+  "bridge.transport": "Falló el transporte del puente de invocación: {error}.",
+  "bridge.provenance": "La procedencia de la cualificación del cliente no coincide con la política congelada.",
+  "bridge.method": "Método no encontrado.",
+  "bridge.parameters": "Petición o parámetros no válidos.",
+  "bridge.unavailable": "El puente de la invocación no confirmó la disponibilidad del protocolo y las herramientas."
 }

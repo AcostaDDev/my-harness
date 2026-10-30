@@ -39,7 +39,14 @@ known pre-GO failure receipts; [corrections](phase/P002-T007-frozen-context.md#8
 re-review passed with no outstanding findings. Reviewed source commit `d3c4345` is integrated by the accompanying
 merge; the owner authorized commit, merge into `develop` and push of `develop`. Release 0.2.0,
 distribution/publication and installation remain pending.
-**Next: P002-T008**, not started. Historical starting context: [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
+**P002-T008 is completed and integrated into develop** on `feat/p002-t008-scoped-tools` from `3ad54b5`
+([record](phase/P002-T008-scoped-tools.md), D289): scoped MCP relay, persisted caller verification, lazy discovery
+and controlled lifecycle. Three review findings are corrected: isolated imports, persisted availability and
+EOF/cancellation recovery. Source commit `625253e` is integrated by the accompanying merge; the owner authorized
+commit, merge and push of `develop`, without asserting a separate technical re-review. Native qualification is
+unchanged and production permissions remain denied until T010. Release 0.2.0, publication and installation remain
+pending. **Next: P002-T009**, not started. Historical starting context:
+[P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
 are in [project history](archive/project-history/README.md). [D267](DECISIONS.md#d267--archive-completed-one-offs-separately-from-active-phase-work)
@@ -205,4 +212,5 @@ real runs; D280 (dependency set and placement) and D281 (transport and minimum c
 with immutable accepted revisions (D284) and canonical database instructions (D285); **T005 (completed, integrated)** adds typed
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
-canonical prompt rendering and exact receipts (D288). T008–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.
+canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
+scoped tools and caller binding exercised with synthetic clients/permissions. T009–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.

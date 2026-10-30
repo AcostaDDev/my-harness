@@ -132,3 +132,12 @@ the tab; retries are explicit. Backup format 2 (format 3 since schema 0028) inve
 copies, intents and referenced evidence under explicitly authorized roots. Restore reads its own verified bundle without original paths or
 clients; mutations, assistance, preparation and activation remain disabled. Format 1 without new configuration
 remains readable. Consultation does not certify that historical writers stopped.
+
+
+T009 ([D290](../DECISIONS.md#d290--judge-duty-contracts-g16-and-optional-profile-formats)) adds explicit
+`local-config-11` / `project-config-3`: optional `agents.judge` provider/model/effort and a fixed read-only CLI
+configuration. The guided checkbox opts into the new format in the reviewed save diff; removing it never selects
+another role as fallback. Project-owned copies select independently, with the same stage/edit/activation gates.
+Existing reviewer/executor billing metadata remains supported. Saving or compatibility probing never invokes a
+model or qualifies judge capability; exact native judge-role qualification remains absent and blocks invocation.
+Legacy formats/hashes are unchanged and manual projects may continue without a judge. [Judge lifecycle](judge.md).

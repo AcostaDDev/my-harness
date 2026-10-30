@@ -174,7 +174,7 @@ export function commandsIssues(commands: unknown, prefix: string, profile?: unkn
 }
 
 /** Tool lists are explicit Claude Code permissions for the executor only; never a file/network sandbox switch. */
-export const toolsSupported = (provider: unknown, roles: string[]) => provider === "claude" && !roles.includes("reviewer");
+export const toolsSupported = (provider: unknown, roles: string[]) => provider === "claude" && !roles.some(role => role === "reviewer" || role === "judge");
 export const hasTools = (agent: unknown) => isObject(agent) && TOOL_KEYS.some(key => texts(agent[key]).length > 0);
 
 export function agentIssues(agent: unknown, prefix: string, roles: string[], efforts: Record<string, string[]>): Issues {
@@ -196,6 +196,10 @@ export function agentIssues(agent: unknown, prefix: string, roles: string[], eff
   if (hasTools(agent) && !toolsSupported(agent.provider, roles)) issues[`${prefix}.tools`] = "editor.tools_unsupported";
   else for (const key of TOOL_KEYS) if (texts(agent[key]).some(tool => !tool.trim() || tool.startsWith("-")))
     issues[`${prefix}.${key}`] = "editor.tool_invalid";
+  if (roles.includes("judge")) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:@\[\]-]{0,127}$/.test(String(agent.model ?? ""))) issues[`${prefix}.model`] = "configuration.required";
+    if (!(efforts[String(agent.provider)] ?? []).includes(String(agent.effort))) issues[`${prefix}.effort`] = "configuration.effort_invalid";
+  }
   return issues;
 }
 

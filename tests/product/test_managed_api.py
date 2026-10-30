@@ -223,7 +223,7 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
             "versions": VERSIONS,
             "tag_kind": "lightweight", "documents": None, "bootstrap_enabled": False,
             # D076: declared by the server composition, not registered from the UI.
-            "source": "operator", "registry_version": None, "agents": {
+            "source": "operator", "registry_version": None, "agents": {"judge": None,
                 # Injected synthetic ports: no local-config-2 CLI composition, so providers stay undeclared.
                 "planning_mode": task.policy.planning_mode,
                 "reviewer": {"provider": None, "model": task.policy.reviewer_model,

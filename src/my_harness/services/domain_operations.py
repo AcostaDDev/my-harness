@@ -114,6 +114,12 @@ class PermissionProvider(Protocol):
 
 
 class AuthorizationProvider(Protocol):
+    def judge_policy(self, session: Session, project_id: str, duty: str, subject: str) -> Mapping | None:
+        """T009 frozen delegation evidence/bounds for a trusted subject; absent means no judge inference.
+
+        Product tiers, normalization and autonomy values belong to T010/T016. Positive providers are synthetic.
+        """
+
     def state(self, session: Session, caller: Caller) -> policy.PermissionState | None:
         """The parent autonomous authorization's tiers for a delegated adoption (T016)."""
 
@@ -134,6 +140,9 @@ class UnavailablePermissions:
 
 
 class NoAuthorizations:
+    def judge_policy(self, session, project_id, duty, subject):
+        return None
+
     def state(self, session, caller):
         return None
 
@@ -187,7 +196,7 @@ class DomainOperations:
     def __init__(self, engine, *, resolver: CallerResolver | None = None,
                  permissions: PermissionProvider | None = None,
                  authorizations: AuthorizationProvider | None = None, delivery: DeliverySink | None = None,
-                 audit_sinks: tuple[Callable, ...] = (), catalogue=CATALOGUE):
+                 audit_sinks: tuple[Callable, ...] = (), catalogue=CATALOGUE, judge_qualifications=None):
         self.engine = engine
         self.resolver = resolver or UnavailableResolver()
         self.permissions = permissions or UnavailablePermissions()
@@ -195,7 +204,11 @@ class DomainOperations:
         self.delivery = delivery
         self.audit_sinks = audit_sinks
         self.catalogue = catalogue
+        from my_harness.services.judge import JudgeService
+        self.judges = JudgeService(self, qualifications=judge_qualifications)
         self.handlers = {
+            'judge.decision.link': self.judges.link,
+            **{f'judge.{d}.submit': self.judges.submit for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
             'knowledge.projects': self._projects, 'knowledge.head': self._head, 'knowledge.list': self._list,
             'knowledge.get': self._get, 'knowledge.draft.get': self._draft_get,
             'knowledge.draft.open': self._draft_open, 'knowledge.draft.apply': self._draft_apply,

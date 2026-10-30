@@ -1,3 +1,4 @@
+import { JudgeFields } from "../JudgeFields";
 import { useEffect, useState } from "react";
 import { confirmOnce, managed, readConfirmation } from "../managed-api";
 import type { S } from "../managed-api";
@@ -260,6 +261,7 @@ function ProjectFields({ form, editing, issues, onChange }: {
           </>}
         </AgentFields>
       </div>)}
+      <JudgeFields scope="project-profile" form={form} onChange={onChange} issues={issues} readOnly={!editing.agents} />
       <h3>{t("editor.policy")}</h3>
       <p className="hint">{t("editor.policy_hint")}</p>
       <Fields items={[

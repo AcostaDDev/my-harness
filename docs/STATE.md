@@ -45,7 +45,14 @@ and controlled lifecycle. Three review findings are corrected: isolated imports,
 EOF/cancellation recovery. Source commit `625253e` is integrated by the accompanying merge; the owner authorized
 commit, merge and push of `develop`, without asserting a separate technical re-review. Native qualification is
 unchanged and production permissions remain denied until T010. Release 0.2.0, publication and installation remain
-pending. **Next: P002-T009**, not started. Historical starting context:
+pending. **P002-T009 is source-complete and verified locally** on `feat/p002-t009-judge`
+from `9ac1449` ([record](phase/P002-T009-judge.md), D290). Technical review identified malformed native output misrouted as an operational stop;
+the correction is implemented and technical re-review passed (T009 record §7). The owner accepted G16's four prompts and E01–E21;
+optional judge configuration/UI, duty contracts, immutable requests/rulings and accounted scoped invocations are
+exercised synthetically. Native judge qualification is absent and productive delegation/permissions remain denied.
+The owner authorized the source commit, merge into `develop` and push of `develop`; those steps are pending.
+Release/publication/installation remain pending and unauthorized. **Next: authorized source delivery of T009**;
+T010 remains planned and unstarted. Historical starting context:
 [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
@@ -213,4 +220,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is source-complete and verified locally (D290); T010–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.

@@ -2278,5 +2278,8 @@
   "editor.validations_required": "Add at least one validation command.",
   "editor.value": "Value",
   "editor.variable": "Variable name",
-  "editor.version": "Use a version such as 2.1.304."
+  "editor.version": "Use a version such as 2.1.304.",
+  "settings.judge": "Judge",
+  "judge.configure": "Configure an optional judge (new configuration format)",
+  "judge.configuration_hint": "The owner chooses provider, model and effort for all four judge duties. Saving does not invoke it. Each invocation requires exact judge qualification; there is no fallback."
 }

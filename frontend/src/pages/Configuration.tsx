@@ -15,6 +15,8 @@ import { GlobalBilling, ReferenceList } from "../BillingFields";
 import { COMMAND_NAME, ENTRY_NAME, domId, emptyCommands, emptyProfile, isObject, nameIssue, texts, without } from "../profile-form.ts";
 import type { Issues, Obj } from "../profile-form.ts";
 
+import { JudgeFields } from "../JudgeFields";
+
 const ROOT = "/configuration";
 const idFor = (path: string) => domId("configuration", path);
 // Never a valid model: MODEL_FORM requires a leading letter or digit.
@@ -126,6 +128,7 @@ export function ConfigurationFields({ draft, onChange, issues }: {
         <AgentExtras prefix={prefix} role={role} value={field(draft.form, prefix)} issues={issues} onChange={next => update(prefix, next)} />
       </fieldset>;
     })}
+    <JudgeFields scope="configuration" form={draft.form} issues={issues} onChange={form => onChange({ ...draft, form })} />
     <p className="hint">{t("configuration.executor_hint")}</p>
     <fieldset><legend>{t("configuration.storage")}</legend>
       <p className="hint">{t("configuration.storage_hint")}</p>

@@ -1410,5 +1410,13 @@
   "bridge.provenance": "La procedencia de la cualificación del cliente no coincide con la política congelada.",
   "bridge.method": "Método no encontrado.",
   "bridge.parameters": "Petición o parámetros no válidos.",
-  "bridge.unavailable": "El puente de la invocación no confirmó la disponibilidad del protocolo y las herramientas."
+  "bridge.unavailable": "El puente de la invocación no confirmó la disponibilidad del protocolo y las herramientas.",
+  "judge.invalid": "Contrato o propuesta del juez no válidos",
+  "judge.profile_required": "Se requiere un perfil de juez configurado explícitamente y cualificado con exactitud",
+  "judge.read_only": "El juez tiene herramientas fijas de solo lectura",
+  "judge.configuration_format": "El juez opcional requiere local-config-11 o project-config-3",
+  "judge.delegation_changed": "La delegación al juez no está disponible o ha cambiado",
+  "judge.no_progress": "Consulta la solicitud de juez existente; no se permite otra inferencia",
+  "judge.not_found": "No se encuentra la solicitud del juez",
+  "judge.service_required": "La invocación del juez requiere el servicio compartido y el contexto acotado congelado"
 }

@@ -21,7 +21,7 @@ def test_migration_wal_and_round_trip(migrated_database):
         with engine.connect() as connection:
             assert connection.scalar(text("PRAGMA journal_mode")) == "wal"
             assert connection.scalar(text("PRAGMA foreign_keys")) == 1
-            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0033_frozen_context"
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0034_judge_contracts"
         command.check(config)
         command.downgrade(config, "base")
         assert "simulations" not in inspect(engine).get_table_names()

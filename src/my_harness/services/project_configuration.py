@@ -120,14 +120,16 @@ class ProjectConfiguration:
                 agents[role]['executable'] = list(agents[role]['executable'])
             for key in ('tools', 'allowed_tools', 'grantable_tools'):
                 if key in agents[role]:
-                    if role == 'reviewer' or declarations[role].provider != 'claude':
+                    if role in ('reviewer', 'judge') or declarations[role].provider != 'claude':
                         agents[role].pop(key)
                     else:
                         agents[role][key] = list(agents[role][key])
         agents['reviewer'].update(model=project.context.policy.reviewer_model, effort=project.context.policy.reviewer_effort)
+        if 'judge' in agents:
+            agents['judge'].update(model=project.versions['judge_model'], effort=project.versions['judge_effort'])
         local = candidate.get('preparation_plan', {}).get('local_paths', [])
         base = local[0].removesuffix('/**') if local else '.harness-preparation'
-        return {'format': 'project-config-1', 'project': {'id': project_id, 'root': str(project.context.root)},
+        return {'format': 'project-config-3' if 'judge' in agents else 'project-config-1', 'project': {'id': project_id, 'root': str(project.context.root)},
                 'global': {key: state['active'][key] for key in ('revision', 'sha256')},
                 'profile_name': candidate['name'], 'profile': copy.deepcopy(candidate['profile']),
                 'commands': {'executables': {tool['name']: '' for tool in candidate['tools']},

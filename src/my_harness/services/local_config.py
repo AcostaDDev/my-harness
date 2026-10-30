@@ -197,27 +197,31 @@ def _cli(where, provider, value, required=CLI_KEYS, optional=(), *, automatic=Fa
         raise LocalConfigError(f'{where}: {exc}') from None
 
 
-def _agents(data, *, automatic=False):
+def _agents(data, *, automatic=False, allow_judge=False):
     """`local-config-2`: the user fixes provider, model and effort of the reviewer."""
-    data = _fields(data, 'agents', ('reviewer', 'executor'))
+    data = _fields(data, 'agents', ('reviewer', 'executor'), ('judge',) if allow_judge else ())
     agents, reviewer = {}, None
-    for agent in ('reviewer', 'executor'):
+    for agent in ('reviewer', 'executor', *(('judge',) if 'judge' in data else ())):
         where = f'agents.{agent}'
         value = data[agent]
         provider = _text(value.get('provider') if isinstance(value, dict) else None, f'{where}.provider')
         if provider not in EFFORTS:
             raise LocalConfigError(tr('config.providers', where=where, allowed=sorted(EFFORTS)))
-        if agent == 'reviewer':
+        if agent in ('reviewer', 'judge'):
             value = _fields(value, where, ('provider', 'model', 'effort',
                             *(('timeout_seconds', 'environment') if automatic else CLI_KEYS)),
                             ('executable', 'cli_version') if automatic else ())
-            reviewer = (_text(value['model'], f'{where}.model'), _text(value['effort'], f'{where}.effort'))
-            if reviewer[1] not in EFFORTS[provider]:
+            choice = (_text(value['model'], f'{where}.model'), _text(value['effort'], f'{where}.effort'))
+            if agent == 'judge' and not MODEL_FORM.fullmatch(choice[0]):
+                raise LocalConfigError(tr('config.models', where=where))
+            if agent == 'reviewer':
+                reviewer = choice
+            if choice[1] not in EFFORTS[provider]:
                 raise LocalConfigError(tr('config.efforts', where=where, provider=provider, allowed=list(EFFORTS[provider])))
             optional = ()
         else:
             optional = TOOL_KEYS if provider == 'claude' else ()
-        own = ('provider', 'model', 'effort') if agent == 'reviewer' else ('provider',)
+        own = ('provider', 'model', 'effort') if agent in ('reviewer', 'judge') else ('provider',)
         agents[agent] = _cli(where, provider, {k: v for k, v in value.items() if k not in own}, optional=optional,
                              automatic=automatic)
     return agents, reviewer
@@ -627,6 +631,8 @@ class LocalComposer:
                     **({'project_recipe': recipe_module(recipe, self._recipe_format).VERSION,
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
                        if recipe else {})}
+        if 'judge' in agents:
+            versions.update(judge_model=self.judge_selection['model'], judge_effort=self.judge_selection['effort'])
         if self.format in AUTOMATIC_FORMATS:
             choice = item.get('agent_selection')
             declarations = ({role: self.presets[preset['preset_id']][1] for role, preset in choice.items()}
@@ -684,6 +690,8 @@ class LocalComposer:
                     'commands': 'intake-none-1', 'local_config': self.format,
                     'local_config_sha256': hashlib.sha256(freeze(frozen).encode()).hexdigest(),
                     'document_layout': DOCUMENT_LAYOUT, **cli.frozen_versions()}
+        if 'judge' in agents:
+            versions.update(judge_model=self.judge_selection['model'], judge_effort=self.judge_selection['effort'])
         if registry is not None:
             versions.update(project_registry=str(registry[0]), project_registry_id=identifier,
                             project_registry_sha256=registry[1])
@@ -710,7 +718,10 @@ class LocalComposer:
         shadow.profiles = {data['profile_name']: _profile(data['profile_name'], data['profile'], allow_formatter=True)}
         shadow.compositions = {'owned': (data['profile_name'], data['commands'])}
         shadow._recipes_by_composition = {}
-        shadow.agents, shadow.reviewer = _agents(data['agents'], automatic=True)
+        from my_harness.services.configuration import JUDGE_PROJECT
+        shadow.agents, shadow.reviewer = _agents(data['agents'], automatic=True,
+                                                 allow_judge=data['format'] == JUDGE_PROJECT)
+        shadow.judge_selection = data['agents'].get('judge')
         original = self._live[intake.context.root][5]
         item = {key: value for key, value in original[0].items() if key not in ('profile', 'commands')}
         item.update(composition='owned', policy=data['policy'])
@@ -850,7 +861,7 @@ class LocalComposer:
                                  for name, (profile, table) in sorted(self.compositions.items())]}
 
 
-def _build(data, source, *, allow_empty_compositions=False, editor=False):
+def _build(data, source, *, allow_empty_compositions=False, editor=False, allow_judge=False):
     if not isinstance(data, dict) or data.get('format') not in ((*FORMATS, EDITOR_VERSION) if editor else FORMATS):
         raise LocalConfigError(tr('config.format', allowed=list(FORMATS)))
     fmt = data['format']
@@ -875,7 +886,7 @@ def _build(data, source, *, allow_empty_compositions=False, editor=False):
                   'executor': _cli('providers.claude', 'claude', providers['claude'], optional=TOOL_KEYS)}
         reviewer = None
     else:
-        agents, reviewer = _agents(data['agents'], automatic=fmt in AUTOMATIC_FORMATS)
+        agents, reviewer = _agents(data['agents'], automatic=fmt in AUTOMATIC_FORMATS, allow_judge=allow_judge)
     presets = _presets(data.get('agent_presets', {}), automatic=fmt in AUTOMATIC_FORMATS)
     compositions, registration = {}, ((), False)
     recipes = {}
@@ -950,6 +961,7 @@ def _build(data, source, *, allow_empty_compositions=False, editor=False):
 
     composer = LocalComposer(fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
                              compositions, registration, profiles, presets, recipes)
+    composer.judge_selection = data.get('agents', {}).get('judge')
     composer._recipes_by_composition = {name: value['recipe'] for name, value in data.get('compositions', {}).items()
                                        if value.get('recipe')}
     composer.recipe_profiles = recipe_profiles

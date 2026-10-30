@@ -175,8 +175,10 @@ def _integrity(db, *, restored=False):
                 raise BackupError(tr('backup.trace_artifact', sha256=reference.get('sha256')))
     from my_harness.storage.accounting_backup import AccountingMismatch, verify
     from my_harness.storage.frozen_context import verify_archive
+    from my_harness.storage.judge import verify_archive as verify_judge_archive
     try:
         verify_archive(db)
+        verify_judge_archive(db)
     except (ValueError, KeyError, TypeError, IndexError) as exc:
         raise BackupError(tr('backup.context')) from exc
     try:

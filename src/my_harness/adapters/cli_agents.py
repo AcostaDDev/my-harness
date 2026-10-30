@@ -46,11 +46,11 @@ GRANTS = {"codex": (), "claude": ("tools",)}
 AGENTS = ("reviewer", "executor")
 ROLES = {"executor": "executor", "planner": "reviewer", "reviewer": "reviewer", "phase": "reviewer",
          "chat": "reviewer", "bootstrap": "reviewer", "definition": "reviewer", "planning": "reviewer",
-         "configuration": "reviewer"}
+         "configuration": "reviewer", "judge": "judge"}
 READ_TOOLS = ("Read", "Glob", "Grep")
 # D251: Claude file-writing tools. A writer without one enabled and allowed can only imitate tool calls in text.
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
-SHAPES = {
+SHAPES = {"judge": {"duty": "frozen duty", "outcome": "typed outcome", "rationale": "reason", "evidence_ids": []},
     "configuration": {"text": "complete candidate TOML", "rationale": "reasoned explanation", "questions": []},
     "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
         "alternatives": ["architecture alternative and tradeoffs"], "pending_decisions": ["user decision needed"]},
@@ -283,10 +283,12 @@ class CLIProcessAdapter:
             if len(configs) != len(agents) or set(configs) != {"codex", "claude"}:
                 raise ValueError(tr('agents.both_providers_explicitly_configured'))
             agents = {"reviewer": configs["codex"], "executor": configs["claude"]}
-        if set(agents) != set(AGENTS) or not all(isinstance(item, CLIConfig) for item in agents.values()):
+        if not set(AGENTS) <= set(agents) <= {*AGENTS, 'judge'} or not all(isinstance(item, CLIConfig) for item in agents.values()):
             raise ValueError(tr('agents.reviewer_executor_agents_explicitly'))
         if agents["reviewer"].tools or agents["reviewer"].allowed_tools or agents["reviewer"].grantable_tools:
             raise ValueError(tr('agents.read_reviewer_has_fixed'))
+        if 'judge' in agents and any((agents['judge'].tools, agents['judge'].allowed_tools, agents['judge'].grantable_tools)):
+            raise ValueError(tr('judge.read_only'))
         self.agents = dict(agents)
         self.artifact_root = Path(artifact_root).absolute()
         self.journal = None
@@ -408,6 +410,17 @@ class CLIProcessAdapter:
     def invoke(self, context, request):
         marker = json.loads(request.prompt_snapshot_json or '{}').get('scoped_tools')
         bridge = None
+        if request.role == 'judge':
+            snapshot = json.loads(request.prompt_snapshot_json or '{}')
+            if marker is None or self.bridge_factory is None or 'judge' not in snapshot or 'judge' not in self.agents:
+                raise JournalError(tr('judge.profile_required'))
+            from my_harness.core.engine.judge import admit_profile
+            profile = snapshot['judge']['profile']
+            versions = {'judge_' + k: profile.get(k) for k in ('provider', 'model', 'effort')}
+            versions['judge_cli'] = profile.get('cli_version')
+            admit_profile(self.agents, versions, efforts=EFFORTS, qualifications=self.bridge_factory.qualifications)
+            if request.selection.model != profile['model'] or request.selection.effort != profile['effort']:
+                raise JournalError(tr('judge.invalid'))
         if marker is not None:
             if self.bridge_factory is None or self.journal is None:
                 if self.journal is not None:
@@ -460,7 +473,7 @@ class CLIProcessAdapter:
         from uuid import UUID
         UUID(request.id)
         directory.mkdir(mode=0o700)
-        prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(SHAPES[request.role])
+        prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(reader_schema(request) if request.role == 'judge' else SHAPES[request.role])
         if config.provider == "codex" and request.role == "executor":
             prompt += ("\n\nRequested executor filesystem access:\n"
                        "The CLI is invoked with workspace-write and the following canonical checkout "
@@ -652,6 +665,12 @@ class CLIProcessAdapter:
                         "artifacts": {name: {"path": str(directory / f"{name}.bin"), "size": sizes[name],
                                              "sha256": hashes[name].hexdigest()} for name in sizes},
                         "exit_code": process.returncode, "group_state": group_state}
+            if request.role == 'judge':
+                # `invalid` also covers protocol faults and can mask provider failure. Only a payload
+                # parse/shape failure after a clean terminal is evidence for the judge's owner route.
+                metadata['malformed_output'] = (status == 'invalid' and not parser.invalid and not parser.failed
+                    and len(parser.terminals) == 1 and process.returncode == 0 and status_override is None
+                    and not write_error and not bridge_unavailable and group_state == 'dead')
             if bridge is not None:
                 metadata['tool_bridge'] = {'identity': bridge.process, 'available': bridge.available.is_set(),
                     'response_lost': bridge.response_lost}

@@ -23,7 +23,7 @@ export function projectIssues(form: Form, editing: ReturnType<typeof projectEdit
     // The referenced global revision's profiles are checked by the server preview (D263).
     ...selectionIssues(form, undefined),
   };
-  if (editing.agents) for (const role of ["reviewer", "executor"]) {
+  if (editing.agents) for (const role of ["reviewer", "executor", ...(form.agents?.judge ? ["judge"] : [])]) {
     Object.assign(issues, agentIssues(form.agents?.[role], `agents.${role}`, [role], efforts));
     if (role === "reviewer" && !(efforts[form.agents?.reviewer?.provider] ?? []).includes(form.agents?.reviewer?.effort))
       issues["agents.reviewer.effort"] = "configuration.effort_invalid";

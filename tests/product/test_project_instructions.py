@@ -22,7 +22,7 @@ from test_managed_api import git
 from test_documents import v2, v2checkout  # noqa: F401  (fixtures)
 from test_phases import phase_review
 
-ROLES = ('plan-task', 'execute-task', 'review-task', 'revise-task', 'close-phase', 'chat-turn', 'plan-phase')
+ROLES = ('judge-permission', 'judge-planning-choice', 'judge-spec-gap', 'judge-blocked-check', 'plan-task', 'execute-task', 'review-task', 'revise-task', 'close-phase', 'chat-turn', 'plan-phase')
 
 
 def values(name):

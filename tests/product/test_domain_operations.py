@@ -264,12 +264,12 @@ def agents(world):
 # Catalogue (E04, E05) ----------------------------------------------------------------------------------------------
 
 def test_catalogue_entries_are_pinned_closed_and_free_of_caller_fields():
-    assert {entry.id: entry.schema_sha256 for entry in CATALOGUE} == DIGESTS
+    assert {entry.id: entry.schema_sha256 for entry in CATALOGUE if entry.version == 1 and entry.id.startswith('knowledge.')} == DIGESTS
     for entry in CATALOGUE:
         assert lint(entry.input) == [] and lint(entry.output) == []
-        assert entry.kind in ('query', 'propose', 'adopt') and entry.version == 1
+        assert entry.kind in ('query', 'propose', 'adopt') and entry.version in (1, 2)
         assert ('agent' in entry.principals) == bool(entry.roles)
-        assert entry.id.startswith('knowledge.')  # no SQL, file, code or effect entry exists
+        assert entry.id.startswith(('knowledge.', 'judge.'))  # no SQL, file, code or effect entry exists
     assert 'agent' not in CATALOGUE.current('knowledge.adopt').principals
     assert 'agent' not in CATALOGUE.current('knowledge.adoption.preview').principals
     assert lint({'type': 'object', 'properties': {'project_id': {'type': 'string'}}, 'additionalProperties': False})
@@ -306,7 +306,8 @@ def test_schema_validator_covers_the_subset_used():
 
 # Caller binding and project membership (E01–E03) -------------------------------------------------------------------
 
-MINIMAL = {
+MINIMAL = {**{f'judge.{d}.submit': {'candidate': {}} for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
+    'judge.decision.link': {'ruling_id': 'r', 'decision_id': 'd', 'revision': 1},
     'knowledge.lookup': {'item_id': 'i'}, 'knowledge.search': {'query': 'x'},
     'knowledge.projects': {}, 'knowledge.head': {}, 'knowledge.list': {}, 'knowledge.get': {'item_id': 'i'},
     'knowledge.draft.get': {'draft_id': 'd'}, 'knowledge.draft.open': {'expected_revision_id': None},

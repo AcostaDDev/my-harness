@@ -2293,3 +2293,45 @@ during cancellation. A settled transaction with a lost response proves no client
 deterministic transaction reconciles its domain outcome; uncertain inference is never reissued.
 The production permission provider remains absent/denying (T010); positive/revocation checks are synthetic.
 No judge/grant lifecycle, product graph, automatic migration, new dependency or OpenCode adapter is introduced.
+
+
+## D290 — Judge duty contracts, G16 and optional profile formats
+
+Status: G16's four prompts and synthetic E01–E21 minimum accepted explicitly by the owner on 2026-10-30;
+implementation details authorized within T009's local scope; source-complete, verified locally and technical
+re-review passed. The owner authorized the source commit, merge into `develop` and push of `develop`; delivery pending.
+Source verification/delivery evidence:
+[T009 record](phase/P002-T009-judge.md). No native qualification, productive delegation or later-task authority added.
+
+`local-config-11` and `project-config-3` explicitly opt into an optional `agents.judge` provider/model/effort and
+read-only CLI declaration. They retain the existing reviewer/executor billing metadata. No load-time conversion;
+formats 1–10 and project formats 1–2 keep their rules/hashes. Project-owned copies select independently, the global
+copy supplies new intake defaults, and no other role is used as fallback. Saving/compatibility checks are distinct
+from exact judge-role qualification: the native matrix still contains reviewer cells only.
+
+The accepted common preamble plus the four duty texts are packaged as version-1 prompts. New requests freeze
+selection, template digest/version, accepted context revision, exact scoped catalogue refs and delegation evidence.
+New lookup/search v2 entries add judge without changing the v1 schemas/digests. Each duty exposes only those two
+queries and its own candidate submission command; an owner-only command may link an actual decision afterwards.
+The service validates supplied/admissible choices, evidence identities, canonical requirement/criterion references,
+intent bindings, typed proposals, exact permission targets, duration ceilings and compound-authority classification.
+Free-text proposals still need the separate guarded adoption path; semantic truth is not proved by a schema.
+
+Migration `0034_judge_contracts` adds immutable requests, invocation bindings, terminal rulings and explicit decision
+links (83 tables). Fenced native start seals the binding with the existing attempt/context/operation/usage intent;
+fenced settlement records the candidate/failure with existing accounting captures. No scheduler or second ledger.
+Tool submissions are candidates until the native result settles and must agree with it. Invalid/malformed output,
+refusal, abstention and missing evidence preserve native evidence and return an owner continuation. Operational
+errors stop without retry. Equivalent subjects/evidence (including the canonical context digest) reuse the prior request; new evidence needs an explicit
+reconsideration and a caller-supplied delegation bound, with no production default. Pending/uncertain inference
+blocks another attempt; abstentions also consume the saved bound. Recovery observes the shared operation journal
+and never launches it again. Exact qualification is rechecked in the native start transaction before its accounting
+intent can commit. The job's frozen language pair is supplied at assembly and checked again at start.
+
+`DomainOperations.authorizations` may supply the future `judge_policy` contract; the product provider has no such
+policy and refuses inference. Synthetic tests supply labelled delegation/permission fixtures and exact simulated
+judge cells. T010 owns normalized productive capability classification, effective grants and revocation; T014–T016
+own workflow consumers, delegated adoption and autonomy bounds; T017 owns global owner inbox delivery. T009 returns
+continuations for them and does not implement their effects. Following successful technical re-review, the owner
+authorized the source commit, merge into `develop` and push of `develop`. Release, publication, installation,
+service start and real agent/provider execution remain unauthorized.

@@ -90,7 +90,8 @@ class ConfigurationAssistance:
         return state, parse(text, scope)
 
     def adapter(self, data):
-        agents, _ = _agents(data['agents'], automatic=True)
+        agents, _ = _agents(data['agents'], automatic=True,
+                            allow_judge=data['format'] in ('local-config-11', 'project-config-3'))
         resolved = {}
         for role, config in agents.items():
             from my_harness.adapters.cli_diagnostics import discover

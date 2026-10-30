@@ -167,7 +167,7 @@ def billing_review(session, changes):
             continue
         data = parse(change['text'], 'global')
         candidates[digest(change['text'].encode())] = data
-        if data['format'] == BILLING_GLOBAL:
+        if data['format'] in (BILLING_GLOBAL, 'local-config-11'):
             for name, profile in sorted(data.get('billing', {}).get('profiles', {}).items()):
                 if not accounting.available(session, profile['references']):
                     refusals.append({'setting': f'billing.profiles.{name}.references', 'code': 'reference_unavailable'})
@@ -177,13 +177,13 @@ def billing_review(session, changes):
             continue
         data = parse(change['text'], scope)
         global_data = candidates.get(data['global']['sha256']) or document(session, 'global', data['global'])
-        selected = data.get('billing', {}) if data['format'] == BILLING_PROJECT else {}
+        selected = data.get('billing', {}) if data['format'] in (BILLING_PROJECT, 'project-config-3') else {}
         for role in ('reviewer', 'executor'):
             chosen = choose(data, global_data, role) if global_data is not None else None
             if selected.get(role):
                 if chosen is None or chosen[1] is None:
                     profiles = ((global_data or {}).get('billing', {}).get('profiles', {})
-                                if (global_data or {}).get('format') == BILLING_GLOBAL else {})
+                                if (global_data or {}).get('format') in (BILLING_GLOBAL, 'local-config-11') else {})
                     refusals.append({'project': scope[8:], 'role': role, 'setting': f'billing.{role}',
                                      'code': ('billing_provider_mismatch' if selected[role] in profiles
                                               else 'billing_profile_missing')})

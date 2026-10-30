@@ -32,8 +32,8 @@ def document(session, scope, reference):
 def choose(project, data, agent):
     """(name, profile or None, explicit) for one role, or None without billing metadata. Pure: also used by save
     previews (D263) so a refusal there matches what a frozen binding would resolve."""
-    selected = (project or {}).get('billing', {}) if (project or {}).get('format') == BILLING_PROJECT else {}
-    billing = data.get('billing', {}) if data.get('format') == BILLING_GLOBAL else {}
+    selected = (project or {}).get('billing', {}) if (project or {}).get('format') in (BILLING_PROJECT, 'project-config-3') else {}
+    billing = data.get('billing', {}) if data.get('format') in (BILLING_GLOBAL, 'local-config-11') else {}
     if not selected and not billing:
         return None
     name = selected.get(agent) or billing.get('defaults', {}).get(agent)

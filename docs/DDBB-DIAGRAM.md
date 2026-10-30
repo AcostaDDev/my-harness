@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0034_judge_contracts`, 83 tables, defined in
+SQLite schema of the local service: Alembic head `0035_permissions`, 85 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -8,6 +8,31 @@ Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uni
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
 context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
 SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## Permission authority and frozen boundaries
+
+P002-T010 / [D291](DECISIONS.md#d291--permission-ancestry-manual-standing-grants-and-exact-targets),
+[record](phase/P002-T010-permissions.md), [flow](flows/permissions.md). Migration `0035_permissions` adds two
+insert-only tables without backfill; the run-scoped legacy `permission_requests` table and fingerprints stay intact.
+
+```mermaid
+erDiagram
+    knowledge_projects ||--o{ permission_records : project_id
+    permission_records ||--o| permission_boundaries : snapshot_id
+    usage_invocations ||--o| permission_boundaries : invocation_id
+    managed_attempts ||--o| permission_boundaries : attempt_id
+    workflow_operations ||--o{ permission_boundaries : operation_id
+```
+
+`permission_records`: ID, project FK, gap-free project sequence, project-unique record key, kind, immutable JSON
+payload, kind/payload SHA256 and timestamp. Kinds: authorization, request, grant, deny, escalate, end, snapshot,
+consumed. Payload references preserve project-local ancestry, request/evidence/targets, origin, actor, purpose,
+role, duration, policy and ruling provenance. Revocation/supersession append end evidence; they never rewrite grants.
+`permission_boundaries`: invocation PK/FK, unique snapshot FK and attempt FK, operation FK, timestamp; sealed with
+the existing fenced attempt/usage/context/operation transaction. Operation consumption and boundary roll back
+with the native intent. Six triggers prohibit update/delete/replacement, including alternate unique-key collisions.
+Backups verify hashes, sequence, project-local references and native boundary/marker identities; archive reads
+never normalize against a checkout or mutate expiry. No historical ledger row becomes a standing grant.
 
 ## Judge requests and rulings
 

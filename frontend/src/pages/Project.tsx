@@ -1,3 +1,4 @@
+import { StandingPermissions } from '../StandingPermissions';
 import { useState } from "react";
 import { useI18n } from "../Language";
 import type { S } from "../managed-api";
@@ -46,6 +47,7 @@ export function ProjectPage() {
       </Empty>}
     </section>
 
+    <StandingPermissions />
     <section className="panel" aria-labelledby="recent-runs">
       <h2 id="recent-runs">{t("project.recent")}</h2>
       {runs.data ? <RunTable runs={runs.data.items} project={project} /> : <Loading />}

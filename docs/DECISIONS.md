@@ -1949,7 +1949,8 @@ authentication and timeout failures stop without retry
 
 ## D274 — Permission dimensions, standing grants and revocation
 
-Status: accepted design in P002-T001 (owner direction); implementation pending T010. Extends SPECIFICATION §5 rule 6.
+Status: accepted design in P002-T001 (owner direction); implemented and technically re-reviewed locally in T010
+(D291), with integration pending. Extends SPECIFICATION §5 rule 6.
 
 The five dimensions stay separate. An autonomous authorization declares active, delegable and owner-only tiers; manual
 mode has no delegable tier. Grants are per-operation, time-limited or **permanent** (no time expiry, revocable), bound
@@ -1960,6 +1961,8 @@ frozen permission snapshot. Revocation is immediate for new commands and admissi
 stopped through process control and its effects settled, without claiming that cooperative containment prevents every
 in-flight action (D064). Equivalent requests without new evidence do not reach the judge again. Cascade on
 authorization end, use in manual mode and target normalization are G10.
+G10 was subsequently resolved by the owner in D291; local source/verification and successful technical re-review
+are recorded under T010, with integration and operational delivery still pending.
 
 ## D275 — Client-neutral tool discovery and invocation contract
 
@@ -2336,3 +2339,21 @@ own workflow consumers, delegated adoption and autonomy bounds; T017 owns global
 continuations for them and does not implement their effects. Following successful technical re-review, the owner
 authorized the source commit, merge into `develop` and push of `develop`. Release, publication, installation,
 service start and real agent/provider execution remain unauthorized.
+
+## D291 — Permission ancestry, manual standing grants and exact targets
+
+Status: accepted explicitly by the owner on 2026-10-30 for P002-T010; G10 resolved as design.
+Local implementation/verification and successful independent technical re-review are recorded in the
+[T010 record](phase/P002-T010-permissions.md). The owner authorized the source commit; integration and later
+delivery remain pending.
+
+The owner accepted §3 recommendations A/B/C, not their alternatives. All dependent authorizations and grants cease
+to be effective when their parent ends or is revoked, recursively, including permanent grants. Independent
+owner-confirmed permission authorizations retain their own validity. Histories and completed effects are preserved.
+Manual mode supports explicit visible revocable permanent grants reused only at new frozen boundaries; grants
+never replace action/content confirmations or introduce delegation. Targets are versioned, typed and exact across
+files/tools/network/product/acceptance, with the representation/rejection rules and examples in the accepted record.
+Service-derived equivalence survives rewording/broadening; those changes alone are not new evidence. Current
+authority, ancestry, expiry and revocation are checked transactionally at commands and admission. Native side
+effects remain cooperatively contained and uncertain effects require existing stop/reconciliation. No later-task
+autonomy bounds, native judge qualification, network installation or operational delivery is authorized.

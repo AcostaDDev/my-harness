@@ -393,7 +393,7 @@ def test_restored_database_never_reads_original_paths(setup, monkeypatch):
 
 def test_additive_migration_and_metadata(setup, migrated_database):
     repo, _, _ = setup
-    assert len(inspect(repo.managed.engine).get_table_names()) == 84  # 83 product tables + alembic_version
+    assert len(inspect(repo.managed.engine).get_table_names()) == 86  # 85 product tables + alembic_version
     command.downgrade(migrated_database[1], '0025_project_work_languages')
     with pytest.raises(RuntimeError):
         require_schema(repo.managed.engine)

@@ -1418,5 +1418,6 @@
   "judge.delegation_changed": "La delegación al juez no está disponible o ha cambiado",
   "judge.no_progress": "Consulta la solicitud de juez existente; no se permite otra inferencia",
   "judge.not_found": "No se encuentra la solicitud del juez",
-  "judge.service_required": "La invocación del juez requiere el servicio compartido y el contexto acotado congelado"
+  "judge.service_required": "La invocación del juez requiere el servicio compartido y el contexto acotado congelado",
+  "domain.permission_invalid": "La solicitud, autoridad o confirmación del permiso no es válida o ya no está vigente."
 }

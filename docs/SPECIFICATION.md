@@ -369,7 +369,7 @@ T006 [qualified the whole chain](archive/phase-001/P001-T006-qualification.md) w
 
 <a id="14-p002-autonomous-mode-and-project-authority-accepted-design-not-implemented"></a>
 
-## 14. P002 autonomous mode and project authority (accepted design; foundations implemented and integrated through T009)
+## 14. P002 autonomous mode and project authority (accepted design; foundations integrated through T009; T010 implemented locally)
 
 [D268–D279](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), the
 [T001 contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md) and
@@ -388,7 +388,7 @@ rules change.
   knowledge (P002-T005, D286): owner API routes and synthetic graphs share one pipeline with catalogue digests, caller
   binding, per-operation capabilities within every permission ceiling, idempotent outcome records and owner-only
   adoption of previewed drafts; T008 supplies persisted agent caller verification and a scoped broker, with positive calls exercised only with
-  synthetic permissions; production permissions and delegated adoption remain denied until T010/T016.
+  synthetic permissions; T010 adds persisted boundaries locally, while delegated adoption remains denied until T016.
 - **Knowledge and documents.** Definition and reverse-engineering onboarding produce database knowledge. Markdown is a
   generated view replaced at defined boundaries without drift detection; IDE edits matter only through an explicit,
   previewed UI import, which never fabricates execution, approval or usage history. The knowledge model is D284:
@@ -402,7 +402,7 @@ rules change.
   judge profiles through explicit configuration formats, four accepted prompts (G16/D290), typed candidate validation,
   immutable request/ruling evidence and shared accounting/context/tool/journal boundaries. It returns explicit later
   consumer continuations; it never creates grants, adopts knowledge or overrides acceptance/READY. Native judge
-  qualification is absent; product delegation/permission providers remain unavailable/denying until their owning tasks.
+  qualification is absent; productive delegation stays unavailable, and T010 permission authority requires a sealed boundary.
   [Evidence](phase/P002-T009-judge.md); [flow](flows/judge.md).
 - **Tools and traces.** A client-neutral discovery/description/invocation contract, independent of native tool search,
   prepares future clients such as OpenCode without implementing them. Requests, operations, invocations, observed
@@ -422,3 +422,8 @@ rules change.
   come later from the owner.
 - **Preserved.** Acceptance by exact content, READY binding, single writer, intent before effect, conservative recovery,
   no hidden fallback or retry, unknown is not zero, frozen histories and cooperative containment without isolation.
+
+P002-T010 adds the [permission lifecycle](flows/permissions.md) locally under D291 (G10 accepted): persisted exact
+authority, new-boundary snapshots, current revocation/expiry/ancestry checks and guarded owner controls. Legacy
+run permissions retain their semantics; new productive task/phase/autonomy consumers and native judge qualification
+remain pending. [Implementation/evidence](phase/P002-T010-permissions.md); no operational delivery is claimed.

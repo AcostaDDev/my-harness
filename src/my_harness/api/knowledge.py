@@ -16,7 +16,7 @@ from my_harness.api.schemas import (
     KnowledgeAdoptCreate, KnowledgeAdoptRead, KnowledgeDocument, KnowledgeDraftChangesCreate,
     KnowledgeDraftChangesRead, KnowledgeDraftDiscardRead, KnowledgeDraftOpenCreate, KnowledgeDraftOpenRead,
     KnowledgeDraftRead, KnowledgeHeadRead, KnowledgeItemRead, KnowledgeItemsRead, KnowledgeKind, KnowledgePreviewRead,
-    KnowledgeProjectsRead,
+    KnowledgeProjectsRead, JudgeRequestRead, JudgeRequestsRead,
 )
 from my_harness.api.security import local_request, problem
 from my_harness.core.engine.domain_catalogue import CATALOGUE
@@ -109,5 +109,21 @@ def knowledge_router(runtime: ManagedRuntime) -> APIRouter:
         arguments = {'draft_id': draft_id, **body.model_dump(exclude_unset=True)}
         arguments.setdefault('reason', None)
         return run(registered(project_id), 'knowledge.adopt', arguments, idempotency_key)
+
+    @router.get('/knowledge/projects/{knowledge_project_id}/judge/requests',
+                response_model=JudgeRequestsRead, operation_id='judge_requests')
+    def judge_requests(knowledge_project_id: str, offset: Offset = 0, limit: Limit = 50):
+        try:
+            return runtime.judges().list(knowledge_project_id, offset=offset, limit=limit)
+        except LookupError:
+            raise problem(404, 'judge_not_found', message('judge.not_found', language(runtime.engine))) from None
+
+    @router.get('/knowledge/projects/{knowledge_project_id}/judge/requests/{request_id}',
+                response_model=JudgeRequestRead, operation_id='judge_request')
+    def judge_request(knowledge_project_id: str, request_id: str):
+        try:
+            return runtime.judges().read(knowledge_project_id, request_id)
+        except LookupError:
+            raise problem(404, 'judge_not_found', message('judge.not_found', language(runtime.engine))) from None
 
     return router

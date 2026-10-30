@@ -2278,5 +2278,8 @@
   "editor.validations_required": "Añade al menos un comando de validación.",
   "editor.value": "Valor",
   "editor.variable": "Nombre de variable",
-  "editor.version": "Usa una versión como 2.1.304."
+  "editor.version": "Usa una versión como 2.1.304.",
+  "settings.judge": "Juez",
+  "judge.configure": "Configurar un juez opcional (nuevo formato de configuración)",
+  "judge.configuration_hint": "El propietario elige proveedor, modelo y esfuerzo para los cuatro deberes del juez. Guardar no lo invoca. Cada invocación exige cualificación exacta como juez; no hay alternativa automática."
 }

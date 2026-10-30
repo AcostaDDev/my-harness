@@ -1481,3 +1481,49 @@ class KnowledgeDeliveryRow(Base):
     sha256: Mapped[str] = mapped_column(String(64))
     receipts: Mapped[list] = mapped_column(JSON)
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class JudgeRequestRow(Base):
+    """Immutable request, equivalence/evidence and trusted delegation/profile/context capture."""
+    __tablename__ = 'judge_requests'
+    __table_args__ = (UniqueConstraint('project_id', 'equivalence_sha256', 'evidence_sha256'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey('context_snapshots.id'))
+    subject: Mapped[str] = mapped_column(String(100))
+    duty: Mapped[str] = mapped_column(String(30))
+    equivalence_sha256: Mapped[str] = mapped_column(String(64))
+    evidence_sha256: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class JudgeInvocationRow(Base):
+    """Sealed in the fenced native attempt/accounting/context/operation transaction."""
+    __tablename__ = 'judge_invocations'
+    request_id: Mapped[str] = mapped_column(ForeignKey('judge_requests.id'), primary_key=True)
+    attempt_id: Mapped[str] = mapped_column(ForeignKey('managed_attempts.id'), unique=True)
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('usage_invocations.id'), unique=True)
+    operation_id: Mapped[str] = mapped_column(ForeignKey('workflow_operations.id'), unique=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class JudgeRulingRow(Base):
+    """Terminal candidate/failure and continuation, never a grant or knowledge adoption."""
+    __tablename__ = 'judge_rulings'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    request_id: Mapped[str] = mapped_column(ForeignKey('judge_requests.id'), unique=True)
+    status: Mapped[str] = mapped_column(String(30))
+    payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class JudgeDecisionLinkRow(Base):
+    """Explicit later link to a real canonical product decision; no implicit adoption."""
+    __tablename__ = 'judge_decision_links'
+    __table_args__ = (UniqueConstraint('ruling_id', 'decision_id', 'revision_id'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    ruling_id: Mapped[str] = mapped_column(ForeignKey('judge_rulings.id'))
+    decision_id: Mapped[str] = mapped_column(ForeignKey('knowledge_items.id'))
+    revision_id: Mapped[str] = mapped_column(ForeignKey('knowledge_revisions.id'))
+    created_at: Mapped[str] = mapped_column(String(40))

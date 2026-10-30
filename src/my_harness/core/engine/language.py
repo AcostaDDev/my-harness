@@ -16,6 +16,7 @@ NAMES = {'en': 'English', 'es': 'Spanish'}
 # Field map of T001 §4 by role: V = visual language (to the user), W = work language (documents and code).
 # Everything else in the schema is T: literal values, never translated.
 FIELDS = {
+    'judge': (('rationale',), ('proposal.text',)),
     'planner': (('executor_selection.reason',),
                 ('title', 'objective', 'executor_prompt', 'acceptance_criteria[]')),
     'executor': (('result',),
@@ -30,6 +31,7 @@ FIELDS = {
     'planning': (('answer', 'questions[].text', 'plan.reason', 'pending[]'), ('plan.content',)),
 }
 TECHNICAL = {
+    'judge': 'duty, outcome, evidence_ids, option_id, intent_id, requirement_ids, duration and alternative',
     'planner': 'task_id, phase_id, allowed_paths/forbidden_paths globs, validation_commands[] and the model/effort '
                'selection',
     'executor': 'paths, public identifiers, tool names and original outputs',

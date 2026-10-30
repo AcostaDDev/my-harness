@@ -97,7 +97,7 @@ export function errors(draft: Draft): Record<string, MessageKey> {
     result["agents.reviewer.effort"] = "configuration.effort_invalid";
   const roots = field(draft.form, "registration.roots");
   if (Array.isArray(roots) && roots.some(root => typeof root !== "string" || !root.startsWith("/"))) result["registration.roots"] = "configuration.absolute";
-  for (const role of ["reviewer", "executor"])
+  for (const role of ["reviewer", "executor", ...(field(draft.form, "agents.judge") ? ["judge"] : [])])
     for (const [key, issue] of Object.entries(agentIssues(field(draft.form, `agents.${role}`), `agents.${role}`, [role], efforts))) result[key] ??= issue;
   return { ...result, ...catalogIssues(draft.form), ...globalIssues(draft.form) };
 }

@@ -26,9 +26,11 @@ models are reached through the official Codex and Claude Code CLIs with your own
 - **Guided configuration.** Installation/start scripts, global setup, own project profiles, confirmed preparation,
   editing and configuration backup are implemented. Installed synthetic evidence is separate from the historical
   provider evidence below.
-- **Next.** v0.2.0 is designed, not implemented: optional autonomy over a whole authorized roadmap with
-  database-owned project knowledge, generated documentation and a configurable judge; see the
-  [roadmap](docs/ROADMAP.md).
+- **Next.** v0.2.0 is in development: optional autonomy over a whole authorized roadmap with database-owned
+  project knowledge, generated documentation and a configurable judge. Foundations through T009 are integrated;
+  judge profiles/contracts have synthetic evidence and passed technical re-review. Productive
+  delegation and native judge qualification remain unavailable; see the [roadmap](docs/ROADMAP.md) and
+  [T009 record](docs/phase/P002-T009-judge.md).
 
 Licensed under the [MIT license](LICENSE); see [NOTICE.md](NOTICE.md) and the
 [third-party notices](NOTICE-THIRD-PARTY.md).

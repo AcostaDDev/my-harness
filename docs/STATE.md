@@ -45,7 +45,14 @@ and controlled lifecycle. Three review findings are corrected: isolated imports,
 EOF/cancellation recovery. Source commit `625253e` is integrated by the accompanying merge; the owner authorized
 commit, merge and push of `develop`, without asserting a separate technical re-review. Native qualification is
 unchanged and production permissions remain denied until T010. Release 0.2.0, publication and installation remain
-pending. **Next: P002-T009**, not started. Historical starting context:
+pending. **P002-T009 is completed and integrated into develop** on `feat/p002-t009-judge`
+from `9ac1449` ([record](phase/P002-T009-judge.md), D290). Technical review identified malformed native output misrouted as an operational stop;
+the correction is implemented and technical re-review passed (T009 record §7). The owner accepted G16's four prompts and E01–E21;
+optional judge configuration/UI, duty contracts, immutable requests/rulings and accounted scoped invocations are
+exercised synthetically. Native judge qualification is absent and productive delegation/permissions remain denied.
+Source commit `350073c` is integrated by the accompanying merge; the owner authorized commit, merge and push of
+`develop` after successful technical re-review. Release/publication/installation remain pending and unauthorized.
+**Next: P002-T010**, planned and unstarted. Historical starting context:
 [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
@@ -94,7 +101,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
 - **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (released in 0.1.9; the
   operator database is migrated; unreleased develop adds P002-T003's `0029_graph_continuations` and P002-T004's
-  `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`; T007's `0033_frozen_context`); idempotent job
+  `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`;
+  T007's `0033_frozen_context`; T009's `0034_judge_contracts`); idempotent job
   queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
@@ -213,4 +221,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.

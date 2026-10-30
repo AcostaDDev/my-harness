@@ -58,7 +58,7 @@ def setup(world, repository, context, tmp_path, client='codex', mode='normal', r
                                           {'INPUT_JSON': '{}'}, context)
     request = AgentRequest(str(uuid4()), role, Selection('synthetic-model', 'medium', 'test'), prompt,
                            None, context_snapshot(context), prompt_snapshot_json=snap)
-    refs = refs or [e.ref for e in CATALOGUE.scoped('agent', role, frozenset(e.ref for e in CATALOGUE))]
+    refs = refs or [e.ref for e in CATALOGUE.scoped('agent', role, frozenset(CATALOGUE.current(e.id).ref for e in CATALOGUE))]
     request = core.policy(request, refs, cell)
     thread(repository.engine)
     job = repository.submit(context, 'P001-T001', 'P001', PLAN, {**VERSIONS, **adapter.frozen_versions()},
@@ -296,8 +296,8 @@ def test_receipt_failure_returns_no_unrecorded_content_and_replay_has_no_duplica
     finally:
         event.remove(repository.engine, 'before_cursor_execute', fail)
     assert not ContextRepository(repository.engine).deliveries(world['project'], broker.caller.invocation_id)
-    a = broker.call('describe_tool', {'id': 'knowledge.lookup', 'version': 1, 'key': 'schema'})
-    b = broker.call('describe_tool', {'id': 'knowledge.lookup', 'version': 1, 'key': 'schema'})
+    a = broker.call('describe_tool', {'id': 'knowledge.lookup', 'version': CATALOGUE.current('knowledge.lookup').version, 'key': 'schema'})
+    b = broker.call('describe_tool', {'id': 'knowledge.lookup', 'version': CATALOGUE.current('knowledge.lookup').version, 'key': 'schema'})
     assert a == b
     assert len(ContextRepository(repository.engine).deliveries(world['project'], broker.caller.invocation_id)) == 1
 

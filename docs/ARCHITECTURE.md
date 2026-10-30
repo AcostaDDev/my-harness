@@ -306,6 +306,11 @@ inherit that value: they receive their own `HOME`/`TMPDIR` inside the child.
 
 ## 11. Versioned configuration and profile lifecycle
 
+T009's optional judge explicitly opts into `local-config-11` / `project-config-3`, preserving earlier formats and
+reviewer/executor billing metadata. Project-owned copies choose provider/model/effort independently; the global copy
+supplies intake defaults. The existing save/activation gates apply. Compatibility probes and configuration never
+invoke or qualify a judge; exact native judge-role qualification is absent. [D290](DECISIONS.md#d290--judge-duty-contracts-g16-and-optional-profile-formats).
+
 `services/configuration_setup.py` chooses authority before composing clients. `configuration.py` and
 `storage/configuration.py` validate immutable TOML and journal CAS save/activation; `configuration_files.py`
 publishes private files with atomic replacement. `configuration_editing.py` derives private project copies and
@@ -400,7 +405,7 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 
 <a id="13-p002-target-architecture-accepted-design-not-implemented"></a>
 
-## 13. P002 target architecture (accepted design; foundations implemented through T008)
+## 13. P002 target architecture (accepted design; foundations implemented and integrated through T009)
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
@@ -415,7 +420,13 @@ receipts, also readable without checkout from an archive. `ManagedRuntime.frozen
 contexts; `agent_started` seals them and the adapter observes completed input delivery. T008 adds
 `core/engine/tool_bridge.py`, `services/tool_bridge.py`, `adapters/tool_bridge_transport.py` and the packaged
 `adapters/tool_bridge_stdio.py` executable: persisted invocation callers, an explicit broker factory and a private
-per-invocation relay. Permissions, exports, inbox and graph view remain pending; no product graph launches agents.
+per-invocation relay. T009 adds `core/engine/judge.py`, four versioned duty templates and `services/judge.py`: optional project profile
+selection in explicit new formats, closed duty schemas, frozen admission and immutable requests/bindings/rulings/decision
+links in schema `0034_judge_contracts` (83 tables). Native start/checkpoint share the existing fenced context,
+operation and accounting transactions. Domain commands validate scoped candidate submission and explicit owner links;
+read-only request/list routes also serve archives. The productive authorization provider has no judge policy and the
+native qualification matrix has no judge cell. [Judge flow](flows/judge.md), [record](phase/P002-T009-judge.md), D290.
+Permissions, exports, inbox and graph view remain pending; no product graph launches agents.
 
 ```mermaid
 flowchart TD
@@ -451,7 +462,7 @@ flowchart TD
   `api/knowledge.py` and `orchestration/domain.py`; T008 adds the [scoped bridge](flows/tool-bridge.md), with explicit `policy` request assembly,
   `ManagedRuntime.tool_bridges()` and `CLIProcessAdapter.bind_tool_bridges()`. Its permission provider still denies
   by default; tests alone inject synthetic permissions. Existing launches without the marker keep their policy.
-  The schema remains 0033/79 tables; no HTTP or dependency change.
+  T008 itself kept schema 0033/79 tables, with no HTTP or dependency change; T009 adds the schema/API above.
   Technical review corrections isolate the relay with Python `-I`, require persisted protocol/surface availability
   before accepting completion, and keep expected peer disconnects separate from service/persistence failures.
 - **Exports.** An outbox-driven exporter renders accepted revisions to owned targets with generation manifests and

@@ -299,6 +299,7 @@ export function ToolCapabilities({ scope, prefix, issues, readOnly, value, onCha
     tools: "editor.tools", allowed_tools: "editor.allowed_tools", grantable_tools: "editor.grantable_tools" };
   return <fieldset id={id} tabIndex={-1} className="tool-capabilities">
     <legend>{t("editor.tools_for")}</legend>
+    {roles.includes("judge") && <p className="hint">{t("judge.configuration_hint")}</p>}
     {roles.includes("reviewer") && <p className="hint">{t("editor.reviewer_fixed")}</p>}
     {value.provider === "codex" && <p className="hint">{t("editor.codex_fixed")}</p>}
     {supported ? <>

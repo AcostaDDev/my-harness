@@ -4,6 +4,7 @@ These documents never install ports or discover clients. A draft may be incomple
 only a fully checked document may become VALIDATED. Runtime wiring belongs to T005/T009.
 `local-config-10` / `project-config-2` (P001-T003, D255/D259) add only billing metadata: an explicit format
 choice, never a load-time conversion. Billing is not executable configuration and never selects authentication.
+`local-config-11` / `project-config-3` (T009, D290) explicitly add optional owner-selected judge declarations.
 """
 import copy
 import hashlib
@@ -17,8 +18,10 @@ GLOBAL = 'local-config-9'
 PROJECT = 'project-config-1'
 BILLING_GLOBAL = 'local-config-10'
 BILLING_PROJECT = 'project-config-2'
-GLOBALS = (GLOBAL, BILLING_GLOBAL)
-PROJECTS = (PROJECT, BILLING_PROJECT)
+JUDGE_GLOBAL = 'local-config-11'
+JUDGE_PROJECT = 'project-config-3'
+GLOBALS = (GLOBAL, BILLING_GLOBAL, JUDGE_GLOBAL)
+PROJECTS = (PROJECT, BILLING_PROJECT, JUDGE_PROJECT)
 BASES = ('api_usd', 'enterprise_usd', 'token_credit', 'subscription_equivalent')
 PROFILE_NAME = re.compile(r'[a-z0-9][a-z0-9_-]{0,63}\Z')
 MAX_BYTES = legacy.MAX_BYTES
@@ -35,7 +38,8 @@ PROFILE = {**fields(*legacy.PROFILE_KEYS, 'sensitive_allowlist', 'formatter_argv
 COMMANDS = {**fields('executables', 'environment', 'authorize_profile_commands', 'max_timeout_seconds',
                     'max_output_bytes'), 'authorized': [COMMAND]}
 CLI = fields(*legacy.CLI_KEYS, *legacy.TOOL_KEYS, 'provider')
-AGENTS = {'reviewer': {**CLI, **fields('model', 'effort')}, 'executor': CLI}
+AGENTS = {'reviewer': {**CLI, **fields('model', 'effort')}, 'executor': CLI,
+          'judge': {**CLI, **fields('model', 'effort')}}
 POLICY = fields('planning_mode', 'executor_mode', 'executor_models', 'executor_efforts', 'max_revision_cycles')
 BILLING_PROFILE = {**fields('provider', 'platform', 'product', 'scheme', 'unit', 'basis', 'references'),
                    'conditions': {'*': fields('value', 'source')}}
@@ -115,16 +119,19 @@ def parse(text, scope, *, validated=True):
                    optional if validated else (*required[1:], *optional))
     if data['format'] not in formats:
         raise ValueError(tr('configuration.explicit_import'))
-    if 'billing' in data and data['format'] != billing:
+    if 'billing' in data and data['format'] not in (billing, JUDGE_GLOBAL, JUDGE_PROJECT):
         raise ValueError(tr('configuration.billing_format'))
+    allow_judge = data['format'] in (JUDGE_GLOBAL, JUDGE_PROJECT)
+    if not allow_judge and 'judge' in data.get('agents', {}):
+        raise ValueError(tr('judge.configuration_format'))
     if not validated:
         return data
     if scope == 'global':
         candidate = runtime(data)
         candidate['format'] = legacy.VERSION
         # Reuse all v8 field/command checks without constructing a fake project or changing its hashes.
-        legacy._build(candidate, None, allow_empty_compositions=True)
-        agents, _ = legacy._agents(data['agents'], automatic=True)
+        legacy._build(candidate, None, allow_empty_compositions=True, allow_judge=allow_judge)
+        agents, _ = legacy._agents(data['agents'], automatic=True, allow_judge=allow_judge)
         billing_profiles(data.get('billing'), {role: agent.provider for role, agent in agents.items()})
     else:
         project = legacy._fields(data['project'], 'project', ('id', 'root'))
@@ -136,7 +143,7 @@ def parse(text, scope, *, validated=True):
                 or not re.fullmatch(r'[a-f0-9]{64}', ref['sha256'])):
             raise ValueError(tr('configuration.global_reference'))
         profile = legacy._profile(legacy._text(data['profile_name'], 'profile_name'), data['profile'], allow_formatter=True)
-        agents, reviewer = legacy._agents(data['agents'], automatic=True)
+        agents, reviewer = legacy._agents(data['agents'], automatic=True, allow_judge=allow_judge)
         legacy._policy(data['policy'], 'policy', reviewer, agents['executor'].provider)
         if 'billing' in data:
             # Selections name global profiles; existence/provider are checked when the binding is resolved.
@@ -165,7 +172,7 @@ def runtime(data):
     """The executable part of an editor document: billing metadata removed, v10 composed exactly as v9."""
     candidate = copy.deepcopy(data)
     candidate.pop('billing', None)
-    if candidate.get('format') == BILLING_GLOBAL:
+    if candidate.get('format') in (BILLING_GLOBAL, JUDGE_GLOBAL):
         candidate['format'] = GLOBAL
     candidate.setdefault('compositions', {})
     return candidate

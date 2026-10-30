@@ -78,6 +78,7 @@ class ProjectAgentsRead(BaseModel):
     reviewer: ReviewerAgentRead
     planner: SelectionRead
     executor: ExecutorAgentRead
+    judge: ReviewerAgentRead | None = None
 
 
 class WorkLanguageRead(BaseModel):
@@ -2674,3 +2675,22 @@ class TraceArtifactRead(BaseModel):
     size: int
     media: str
     content: str = Field(description='Masked content an event offloaded; verified against sha256 and size.')
+
+
+class JudgeRequestRead(BaseModel):
+    decision_links: list[dict[str, str]]
+    id: str
+    duty: Literal['permission', 'planning_choice', 'spec_gap', 'blocked_check']
+    payload: dict[str, Any]
+    snapshot_id: str
+    ruling: dict[str, Any] | None
+    replayed: bool
+    invocation_id: str | None
+    continuation: str
+
+
+class JudgeRequestsRead(BaseModel):
+    items: list[JudgeRequestRead]
+    offset: int
+    limit: int
+    total: int

@@ -33,6 +33,10 @@ export function SettingsPage() {
             ...(p.agents.planner.model !== p.agents.reviewer.model || p.agents.planner.effort !== p.agents.reviewer.effort
               ? [[t("settings.planner"), rich("settings.planner_value", { model: <code>{p.agents.planner.model}</code>, effort: p.agents.planner.effort })] as [string, ReactNode]] : []),
           ]} /></div>
+          {p.agents.judge && <div><h3>{t("settings.judge")}</h3><Fields items={[
+            [t("settings.provider"), p.agents.judge.provider ?? t("common.undeclared")],
+            [t("settings.model"), p.agents.judge.model], [t("settings.effort"), p.agents.judge.effort],
+          ]} /></div>}
           <div><h3>{t("settings.executor")}</h3><Fields items={[
             [t("settings.provider"), p.agents.executor.provider ?? t("common.undeclared")], [t("settings.selection"), t(SELECTION[p.agents.executor.selection_mode])],
             [t("settings.models"), p.agents.executor.models.map(m => <code key={m} className="chip">{m}</code>)], [t("settings.efforts"), p.agents.executor.efforts.join(", ")],

@@ -6,7 +6,7 @@ schema digest. A call presents (id, version, digest); a mismatch is refused with
 No entry reads or writes files, runs code or accepts SQL. The schema subset is validated here, not by a dependency,
 so a digest never changes with a library version.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import hashlib
 import re
 from typing import Mapping
@@ -265,3 +265,17 @@ CATALOGUE = Catalogue((
           _result('revision_id', 'number', 'revision_sha256', 'knowledge_sha256', 'origin', 'changes'),
           product='adopt', summary='Adopt a previewed draft as the next accepted revision.'),
 ))
+
+
+# Additive entries: historical knowledge schemas/digests are untouched (D290).
+CATALOGUE = Catalogue((*CATALOGUE, *(replace(CATALOGUE.current(n), version=2, roles=(*_AGENTS, 'judge'))
+    for n in ('knowledge.lookup', 'knowledge.search')), *(
+    Entry(f'judge.{duty}.submit', 1, 'propose', ('agent',), ('judge',),
+          _object({'candidate': {'type': 'object', 'additionalProperties': True}}, ('candidate',)),
+          _result('request_id', 'ruling_id', 'status', 'continuation'),
+          summary=f'Submit a {duty} candidate for deterministic validation; never grants or adopts.')
+    for duty in ('permission', 'planning_choice', 'spec_gap', 'blocked_check'))))
+
+CATALOGUE = Catalogue((*CATALOGUE, Entry('judge.decision.link', 1, 'propose', ('owner',), (),
+    _object({'ruling_id': ID, 'decision_id': ID, 'revision': NUMBER}, ('ruling_id', 'decision_id', 'revision')),
+    _result('link_id'), summary='Link a ruling to a real canonical decision; never creates or adopts knowledge.')))

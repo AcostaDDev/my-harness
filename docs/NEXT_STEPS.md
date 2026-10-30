@@ -8,7 +8,11 @@ develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into d
 **P002-T005 is completed (D286 accepted) and integrated into develop.** **P002-T006 is completed (D287 accepted) and
 integrated into develop.** **P002-T007 is completed (D288, technical re-review passed) and integrated into develop.** **P002-T008 is completed and integrated into develop** after the three review corrections
 ([record](phase/P002-T008-scoped-tools.md), D289); the owner authorized commit, merge and push of develop.
-T009–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+**P002-T009 is completed and integrated into develop** ([record](phase/P002-T009-judge.md),
+G16 accepted, D290). Technical review identified malformed native output misrouted as an operational stop;
+the correction passed technical re-review (T009 record §7). Source commit `350073c` is integrated by the accompanying
+authorized merge; the owner also authorized pushing `develop`. Release/publication/installation remain pending.
+T010–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
 data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -80,7 +84,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008 is **completed (integrated)**; every later task is **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008 and T009 are **completed (integrated)**; T010–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -93,7 +97,7 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T006 | Establish operations, agent invocations, correlated events and recovery records (**completed; integrated; D287**) | T003, T004, T005 |
 | P002-T007 | Assemble frozen context and record knowledge-access receipts (**completed; integrated; D288**) | T004, T005, T006 |
 | P002-T008 | Expose scoped tools with on-demand discovery through qualified CLI adapters | T002, T005, T006, T007 |
-| P002-T009 | Add configurable judge profiles and duty-specific adjudication contracts | T007, T008 |
+| P002-T009 | Add configurable judge profiles and duty-specific adjudication contracts (**completed; integrated; D290**) | T007, T008 |
 | P002-T010 | Implement permission requests, standing grants and revocation | T005, T006, T008, T009 |
 | P002-T011 | Move definition, reverse-engineering onboarding and managed adoption to DB knowledge | T004, T005, T007, T008 |
 | P002-T012 | Provide authoritative project knowledge/decision editing in the UI | T004, T005, T006 |
@@ -349,7 +353,7 @@ The three technical-review findings are corrected; no separate technical re-revi
 is available with synthetic stdio/adapter evidence; native qualification is not extended. Schema remains
 `0033_frozen_context` (79 tables), no HTTP/dependency change; production permissions remain denied until T010.
 Source delivery to develop is authorized; release 0.2.0 through protected main → distribution/publication →
-installation remain pending. **Next: P002-T009**, not started.
+installation remain pending. T009 follows below with its current local delivery status.
 
 ## P002-T009 — Judge configuration and duty contracts
 
@@ -368,7 +372,20 @@ installation remain pending. **Next: P002-T009**, not started.
 **Evidence:** synthetic grant/deny/escalate and choice/gap cases with adversarial and incomplete inputs; accounting
 participates from the first new inference path. **Basis:** B04–B07, B10, B18, B21, B23.
 
-**Gates:** G16. **Threats:** TM01, TM05, TM08.
+**Gates:** G16, accepted by the owner on 2026-10-30 ([record §2](phase/P002-T009-judge.md#2-g16--accepted-minimum), D290).
+**Threats:** TM01, TM05, TM08.
+
+**Status (2026-10-30):** completed and integrated into develop on `feat/p002-t009-judge` from clean develop `9ac1449`;
+local closure checks passed; the native malformed-output review finding is corrected and locally verified
+([record §6](phase/P002-T009-judge.md#6-technical-review-correction--malformed-native-judge-output)); technical re-review passed (§7). Optional judge configuration/UI, four accepted prompts and closed duty contracts,
+scoped tools, accounted native invocation bindings, immutable requests/rulings, decision links and archive reads.
+Schema `0034_judge_contracts` (83 tables); API/client and data/flow/i18n parity. All positive evidence is synthetic;
+exact native judge qualification is absent and productive delegation/permissions deny by default. No grant/adoption,
+workflow integration, autonomy or global inbox is implemented. Source commit `350073c` is integrated by the
+accompanying merge; the owner authorized commit, merge into `develop` and push of `develop` after successful
+technical re-review. Release/publication/installation remain pending and unauthorized. **Next: P002-T010**, not started.
+[Detailed evidence](phase/P002-T009-judge.md).
+
 ## P002-T010 — Permission lifecycle and standing grants
 
 **Problem:** autonomous approval needs bounded delegated authority, permanent validity and enforceable revocation.
@@ -656,4 +673,7 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 5. **P002-T006** is complete on `feat/p002-t006-operations-tracing`, merged into develop and pushed at the owner's
    authorization; part of 0.2.0.
 6. **P002-T007** is complete on `feat/p002-t007-frozen-context`, from `c0ffc85`; technical review passed and source commit `d3c4345` is integrated into `develop`. The owner authorized commit/merge/push. [Evidence](phase/P002-T007-frozen-context.md).
-7. Next: **P002-T008**, not started. Release 0.2.0 through protected main, distribution/publication and installation remain separately pending for T007.
+7. **P002-T008** is complete and integrated as `625253e` / merge `9ac1449`; its release/publication/installation remain pending.
+8. **P002-T009** is completed and integrated from `feat/p002-t009-judge` as source `350073c`; technical re-review passed.
+   G16 accepted; the owner authorized commit, merge into `develop` and push of `develop`. **Next: P002-T010**, not started. Release
+   0.2.0 through protected main, distribution/publication and installation remain separately pending.

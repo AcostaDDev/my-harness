@@ -51,7 +51,9 @@ class ManagedProject:
 def agents_view(project: ManagedProject) -> dict:
     """D052: provider, model and effort of each agent; provider None outside a CLI composition (cli-5+)."""
     policy, versions = project.context.policy, project.versions
-    return {'planning_mode': policy.planning_mode,
+    return {**({'judge': {'provider': versions['judge_provider'], 'model': versions['judge_model'],
+                         'effort': versions['judge_effort']}} if versions.get('judge_model') else {}),
+            'planning_mode': policy.planning_mode,
             'reviewer': {'provider': versions.get('reviewer_provider'), 'model': policy.reviewer_model,
                          'effort': policy.reviewer_effort},
             'planner': {'model': policy.planner_model, 'effort': policy.planner_effort},
@@ -342,10 +344,11 @@ class ManagedRuntime:
         def refusal(exc, **where):
             code = getattr(exc, 'code', None) or getattr(exc.__context__, 'code', None) or 'configuration_invalid'
             return {'project': None, 'role': None, **where, 'code': code, 'diagnostic': str(exc)[:500]}
-        candidate = runtime(parse(setup.repository.document('global', reference['revision']), 'global'))
+        data = parse(setup.repository.document('global', reference['revision']), 'global')
+        candidate = runtime(data)
         try:
             config = legacy._build(candidate, setup.directory / 'global.toml', allow_empty_compositions=True,
-                                   editor=True)[0]
+                                   editor=True, allow_judge=data['format'] == 'local-config-11')[0]
             _validate(config, self.database, self.migrations_dir)
             config = config.registrar.resolve_config(config)
         except (ValueError, OSError) as exc:
@@ -510,6 +513,10 @@ class ManagedRuntime:
             self._domain_operations = DomainOperations(self.engine, resolver=InvocationResolver(),
                                                        delivery=ReceiptSink(), audit_sinks=(command_sink,))
         return self._domain_operations
+
+    def judges(self):
+        """T009 explicit consumer interface; productive delegation remains unavailable until T016."""
+        return self.domain_operations().judges
 
     def tool_bridges(self):
         """T008 explicit per-adapter binding; no product graph uses it yet. T010 permissions deny by default."""

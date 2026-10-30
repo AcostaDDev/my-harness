@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0033_frozen_context`, 79 tables, defined in
+SQLite schema of the local service: Alembic head `0034_judge_contracts`, 83 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -8,6 +8,36 @@ Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uni
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
 context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
 SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## Judge requests and rulings
+
+P002-T009, migration `0034_judge_contracts`, [D290](DECISIONS.md#d290--judge-duty-contracts-g16-and-optional-profile-formats),
+adds four insert-only tables without backfill. [Flow](flows/judge.md), [task record](phase/P002-T009-judge.md).
+
+```mermaid
+erDiagram
+    knowledge_projects ||--o{ judge_requests : project_id
+    context_snapshots ||--o{ judge_requests : snapshot_id
+    judge_requests ||--o| judge_invocations : request_id
+    managed_attempts ||--o| judge_invocations : attempt_id
+    usage_invocations ||--o| judge_invocations : invocation_id
+    workflow_operations ||--o| judge_invocations : operation_id
+    judge_requests ||--o| judge_rulings : request_id
+    judge_rulings ||--o{ judge_decision_links : ruling_id
+    knowledge_items ||--o{ judge_decision_links : decision_id
+    knowledge_revisions ||--o{ judge_decision_links : revision_id
+```
+
+`judge_requests`: ID, project/context snapshot, trusted equivalence subject, duty, equivalence/evidence digests,
+frozen inputs/evidence/delegation/profile/prompt version and template digest, timestamp. Unique project/equivalence/
+evidence. `judge_invocations`: one request, native attempt, ledger invocation and journal operation; sealed in the
+same fenced transaction, each identity unique. `judge_rulings`: one terminal outcome per request, candidate/failure,
+raw native evidence reference/digest, delegation provenance and continuation. `judge_decision_links`: explicit,
+idempotent owner command linking a ruling to an actual decision in an accepted project revision, unique per triple.
+Update, delete and replacement triggers protect all four tables. The shared ledger remains the only consumption
+source. A VALIDATED ruling is a proposal for a later consumer, never a grant, adoption, acceptance or READY.
+Backup verification checks request digests, invocation references, validated candidates and decision membership;
+archive reads need no checkout and perform no writes.
 
 ## P002 frozen context and delivery evidence
 

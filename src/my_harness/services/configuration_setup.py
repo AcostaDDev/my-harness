@@ -103,7 +103,8 @@ class ConfigurationSetup:
                 self.loaded = state['active']
                 candidate = runtime(data)
                 return legacy._build(candidate, self.directory / 'global.toml',
-                                     allow_empty_compositions=True, editor=True)[0]
+                                     allow_empty_compositions=True, editor=True,
+                                     allow_judge=data['format'] == 'local-config-11')[0]
             if state['status'] == 'RECOVERY_REQUIRED' or state['version'] and not importing:
                 return ManagedConfig()
             if explicit is not None:
@@ -268,6 +269,6 @@ class ConfigurationSetup:
     def check_clients(self, **candidate):
         text = self.candidate(**candidate)
         data = parse(text, 'global')
-        agents, _ = legacy._agents(data['agents'], automatic=True)
+        agents, _ = legacy._agents(data['agents'], automatic=True, allow_judge=data['format'] == 'local-config-11')
         return {role: preflight_config(cli, access='write' if role == 'executor' else 'read')
                 for role, cli in agents.items()}

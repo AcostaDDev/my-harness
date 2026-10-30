@@ -95,25 +95,33 @@ elif mode not in ('no-bridge', 'startup-failure'):
         result = call('invoke_tool', {'id': entry['id'], 'version': entry['version'],
             'schema_sha256': entry['schema_sha256'], 'arguments': {'item_id': os.environ['ITEM_ID']}, 'key': 'read'})
         Path(os.environ['BRIDGE_RESULT']).write_text(json.dumps(result))
+if os.environ.get('JUDGE_PROTOCOL_FAULT'):
+    print('{}', flush=True)  # Invalid envelope, distinct from malformed final JSON.
 if mode == 'cancel':
     time.sleep(30)
-elif mode in ('auth', 'quota'):
+elif mode in ('auth', 'quota') or os.environ.get('JUDGE_FAILURE'):
+    failure = os.environ.get('JUDGE_FAILURE', mode)
     if client == 'codex':
-        print(json.dumps({'type': 'turn.failed', 'error': {'message': 'synthetic ' + mode}}), flush=True)
+        print(json.dumps({'type': 'turn.failed', 'error': {'message': 'synthetic ' + failure}}), flush=True)
     else:
         print(json.dumps({'type': 'result', 'subtype': 'error_during_execution', 'is_error': True,
-                          'result': 'synthetic ' + mode}), flush=True)
+                          'result': 'synthetic ' + failure}), flush=True)
 else:
     writer = (args[args.index('--sandbox') + 1] == 'workspace-write' if client == 'codex'
               else '--json-schema' not in args)
     payload = {'result': 'Synthetic executor result.'} if writer else {
         'task_id': 'P001-T001', 'verdict': 'ACCEPT', 'findings': [], 'blocking_questions': [], 'scope_grants': []}
+    if os.environ.get('JUDGE_PAYLOAD'):
+        payload = json.loads(os.environ['JUDGE_PAYLOAD'])
+    raw_payload = os.environ.get('JUDGE_RAW_OUTPUT', json.dumps(payload))
     if client == 'codex':
-        print(json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps(payload)}}))
+        print(json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': raw_payload}}))
         print(json.dumps({'type': 'turn.completed'}), flush=True)  # no usage/model telemetry fabricated
     else:
-        print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False,
-                          'structured_output': payload, 'result': json.dumps(payload), 'usage': None}), flush=True)
+        result = {'type': 'result', 'subtype': 'success', 'is_error': False, 'result': raw_payload, 'usage': None}
+        if 'JUDGE_RAW_OUTPUT' not in os.environ:
+            result['structured_output'] = payload
+        print(json.dumps(result), flush=True)
 if bridge is not None and mode != 'orphan':
     bridge.stdin.close()
     bridge.wait(timeout=3)

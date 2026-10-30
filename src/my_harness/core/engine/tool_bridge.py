@@ -73,6 +73,9 @@ def policy(request, refs, cell, *, catalogue=CATALOGUE):
     allowed = {e.ref for e in catalogue.scoped('agent', role, frozenset(refs))}
     if len(refs) > 1000 or not refs or set(refs) != allowed:
         raise ValueError(tr('bridge.policy'))
+    if role == 'judge':
+        from my_harness.core.engine.judge import marker_check
+        marker_check(snapshot, role, frozenset(refs))
     snapshot['scoped_tools'] = {'format': FORMAT, 'client': cell.client, 'version': cell.version,
                                 'role': role, 'evidence': cell.evidence, 'provenance': cell.provenance,
                                 'surface_sha256': SURFACE_SHA256,
@@ -95,6 +98,9 @@ def selection(request, *, catalogue=CATALOGUE):
     refs = frozenset(tuple(r) for r in refs)
     if refs != frozenset(e.ref for e in catalogue.scoped('agent', role, refs)):
         raise ValueError(tr('bridge.policy'))
+    if role == 'judge':
+        from my_harness.core.engine.judge import marker_check
+        marker_check(snapshot, role, refs)
     return marker, refs
 
 

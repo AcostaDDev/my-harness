@@ -496,7 +496,7 @@ class SQLiteManagedRepository:
             job.heartbeat_at = self._now()
             job.lease_until = (datetime.fromisoformat(job.heartbeat_at) + timedelta(seconds=lease_seconds)).isoformat(timespec="microseconds")
 
-    def _history(self, session, run, history):
+    def _history(self, session, run, history, *, judge=None):
         previous = load_history(run.history_json)
         if history.id != run.id or history.context_json != run.context_json:
             raise Conflict("Frozen run identity/context changed")
@@ -533,15 +533,19 @@ class SQLiteManagedRepository:
                 # P002-T006 (D287): the invocation's operation settles with the fenced result, if a graph sealed one.
                 operation_journal.settle_attempt(session, row, revision_round=executor_round(roles, number),
                                                  at=row.finished_at)
+                if attempt.request.role == 'judge':
+                    if judge is None:
+                        raise Conflict(tr('judge.service_required'))
+                    judge.settle(session, row)
         run.history_json = dump_history(history)
         run.revisions = history.revisions
         run_projection.advance(session, run.id, previous, history, run.history_json)  # same transaction (D142)
         return completed
 
-    def checkpoint(self, claim: JobRecord, history: RunHistory, stage: str) -> None:
+    def checkpoint(self, claim: JobRecord, history: RunHistory, stage: str, *, judge=None) -> None:
         with self._write() as session:
             job, run = self._owned(session, claim)
-            completed = self._history(session, run, history)
+            completed = self._history(session, run, history, judge=judge)
             run.stage = stage
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "preparation": "PREPARING",
                           "validation": "VALIDATING", "reviewer": "REVIEWING"}.get(stage, "ACTIVE")
@@ -549,7 +553,7 @@ class SQLiteManagedRepository:
                                                     "completed_attempts": completed})
 
     def agent_started(self, claim: JobRecord, history: RunHistory, request: AgentRequest,
-                      operation: 'operation_journal.InvocationOperation | None' = None) -> AgentRequest:
+                      operation: 'operation_journal.InvocationOperation | None' = None, *, judge=None) -> AgentRequest:
         """`operation`: a graph node's invocation operation, sealed here with the attempt and the ledger intent."""
         self._require_mode(claim)
         with self._write() as session:
@@ -588,10 +592,14 @@ class SQLiteManagedRepository:
                     raise Conflict(tr('bridge.policy'))
                 from my_harness.core.engine.tool_bridge import selection
                 selection(asdict(request))  # validate before committing the frozen attempt/policy
+            if request.role == 'judge':
+                if judge is None or operation is None or 'judge' not in prompt_snapshot or 'scoped_tools' not in prompt_snapshot:
+                    raise Conflict(tr('judge.service_required'))
+                judge.seal(session, sealed_operation, request, json.loads(run.versions_json))
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
                           "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING",
-                          "definition": "ANSWERING", "planning": "ANSWERING"}[request.role]
+                          "definition": "ANSWERING", "planning": "ANSWERING", "judge": "ANSWERING"}[request.role]
             self._event(session, run, "attempt_started", {"job_id": job.id, "attempt_id": request.id,
                                                         "number": len(attempts) + 1, "role": request.role})
             return request

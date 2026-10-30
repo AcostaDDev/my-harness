@@ -27,8 +27,8 @@ export type Bundle = S["ReferenceBundleRead"];
 
 /** Explicit conversion: only `format` changes; nothing else is added or dropped. Loading never converts. */
 export const converted = (form: Obj, format: string): Obj => ({ ...form, format });
-export const billingGlobal = (form: Obj) => form.format === BILLING_GLOBAL;
-export const billingProject = (form: Obj) => form.format === BILLING_PROJECT;
+export const billingGlobal = (form: Obj) => [BILLING_GLOBAL, "local-config-11"].includes(String(form.format));
+export const billingProject = (form: Obj) => [BILLING_PROJECT, "project-config-3"].includes(String(form.format));
 
 export function profilesOf(form: unknown): Obj {
   const billing = isObject(form) && isObject(form.billing) ? form.billing : {};

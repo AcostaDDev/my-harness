@@ -2727,6 +2727,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/judge/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Judge Requests */
+        get: operations["judge_requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/knowledge/projects/{knowledge_project_id}/judge/requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Judge Request */
+        get: operations["judge_request"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/knowledge/projects/{knowledge_project_id}/traces/{thread_id}": {
         parameters: {
             query?: never;
@@ -5606,6 +5640,47 @@ export interface components {
             /** Original Available */
             original_available: boolean;
         };
+        /** JudgeRequestRead */
+        JudgeRequestRead: {
+            /** Decision Links */
+            decision_links: {
+                [key: string]: string;
+            }[];
+            /** Id */
+            id: string;
+            /**
+             * Duty
+             * @enum {string}
+             */
+            duty: "permission" | "planning_choice" | "spec_gap" | "blocked_check";
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Ruling */
+            ruling: {
+                [key: string]: unknown;
+            } | null;
+            /** Replayed */
+            replayed: boolean;
+            /** Invocation Id */
+            invocation_id: string | null;
+            /** Continuation */
+            continuation: string;
+        };
+        /** JudgeRequestsRead */
+        JudgeRequestsRead: {
+            /** Items */
+            items: components["schemas"]["JudgeRequestRead"][];
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+            /** Total */
+            total: number;
+        };
         /** KnowledgeAdoptCreate */
         KnowledgeAdoptCreate: {
             /** Expected Revision Id */
@@ -8021,6 +8096,7 @@ export interface components {
             reviewer: components["schemas"]["ReviewerAgentRead"];
             planner: components["schemas"]["SelectionRead"];
             executor: components["schemas"]["ExecutorAgentRead"];
+            judge?: components["schemas"]["ReviewerAgentRead"] | null;
         };
         /** ProjectConfigurationRead */
         ProjectConfigurationRead: {
@@ -19371,6 +19447,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KnowledgeAdoptRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    judge_requests: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgeRequestsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    judge_request: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                knowledge_project_id: string;
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgeRequestRead"];
                 };
             };
             /** @description Forbidden */

@@ -70,7 +70,10 @@ develop after technical re-review: frozen contexts, canonical instructions and k
 ([record](phase/P002-T007-frozen-context.md), D288). Its 0.2.0 delivery remains pending. **P002-T008 is completed and integrated into develop** after the three review corrections, at the owner's authorization:
 scoped tools, lazy discovery, persisted caller verification and independent stdio relay control (D289;
 [record](phase/P002-T008-scoped-tools.md)). Synthetic checks do not extend native client qualification; product
-permissions remain absent/denying until T010.
+permissions remain absent/denying until T010. T009 is completed and integrated into develop after technical re-review
+([record](phase/P002-T009-judge.md), D290): optional judge profiles and four duty contracts, exercised synthetically.
+G16 is accepted; source `350073c` is integrated by the accompanying authorized merge and push of develop is authorized.
+Native judge qualification and release/publication/installation remain pending.
 
 **Exit criteria (adopted with D268):**
 

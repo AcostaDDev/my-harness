@@ -369,7 +369,7 @@ T006 [qualified the whole chain](archive/phase-001/P001-T006-qualification.md) w
 
 <a id="14-p002-autonomous-mode-and-project-authority-accepted-design-not-implemented"></a>
 
-## 14. P002 autonomous mode and project authority (accepted design; foundations implemented through T008)
+## 14. P002 autonomous mode and project authority (accepted design; foundations implemented and integrated through T009)
 
 [D268–D279](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), the
 [T001 contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md) and
@@ -398,7 +398,12 @@ rules change.
   core of that model exist (P002-T004); no product path uses them yet, and D094 still governs instructions.
 - **Roles and permissions.** Reviewer, executor and judge are configured by provider, model and effort; the judge has
   duty-specific contracts and cannot grant owner-only capabilities. The five permission dimensions gain per-operation,
-  time-limited and permanent revocable grants, enforced outside the model.
+  time-limited and permanent revocable grants, enforced outside the model. T009 implements optional owner-selected
+  judge profiles through explicit configuration formats, four accepted prompts (G16/D290), typed candidate validation,
+  immutable request/ruling evidence and shared accounting/context/tool/journal boundaries. It returns explicit later
+  consumer continuations; it never creates grants, adopts knowledge or overrides acceptance/READY. Native judge
+  qualification is absent; product delegation/permission providers remain unavailable/denying until their owning tasks.
+  [Evidence](phase/P002-T009-judge.md); [flow](flows/judge.md).
 - **Tools and traces.** A client-neutral discovery/description/invocation contract, independent of native tool search,
   prepares future clients such as OpenCode without implementing them. Requests, operations, invocations, observed
   turns, tool calls and delivered knowledge are correlated with exact revisions and explicit coverage. The operation

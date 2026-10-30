@@ -108,7 +108,7 @@ def test_every_role_receives_the_typed_directive_before_the_engine_schema(contex
     text = directive(role, ui, work)
     assert sentence(ui, work) in text and 'prevails over any other language instruction' in text
     assert ('"**Objective:**"' if work == 'en' else '"**Objetivo:**"') in text
-    names = {'planner': 'plan-task', 'executor': 'execute-task', 'reviewer': 'review-task', 'phase': 'close-phase',
+    names = {'judge': 'judge-spec-gap', 'planner': 'plan-task', 'executor': 'execute-task', 'reviewer': 'review-task', 'phase': 'close-phase',
              'chat': 'chat-turn', 'definition': 'define-project', 'planning': 'plan-phase'}
     values = {name: '{}' for name in VARIABLES[names[role]] if name != PROJECT_INSTRUCTIONS}
     rendered, snapshot = render_attempt(builtin_catalog(), names[role], values, context, pair(ui, work))
@@ -121,7 +121,8 @@ def test_every_role_receives_the_typed_directive_before_the_engine_schema(contex
 
 def test_the_field_map_names_real_schema_fields_for_every_role():
     for role, (visual_fields, work_fields) in FIELDS.items():
-        properties = output_schema(role)['properties']
+        schema = output_schema(role)
+        properties = {name for s in schema.get('oneOf', [schema]) for name in s['properties']}
         for field in visual_fields + work_fields:
             root = re.match(r'[a-z_]+', field)[0]
             assert root in properties or field.startswith(('the files', 'prose instructions')), (role, field)

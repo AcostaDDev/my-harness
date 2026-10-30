@@ -250,6 +250,7 @@ class ManagedRuntime:
         self.prompts = PromptRepository(self.engine)
         from my_harness.storage.permissions import PermissionRepository
         self.permissions = PermissionRepository(self.repository)
+        self.repository.permission_lifecycle = self.permission_lifecycle()
         from my_harness.storage.phases import PhaseRepository
         self.phases = PhaseRepository(self.repository)
         from my_harness.storage.chat import ChatRepository
@@ -502,7 +503,7 @@ class ManagedRuntime:
 
     def domain_operations(self):
         """P002-T005 (D286): the shared typed-command service. T008 verifies persisted invocation callers;
-        permission state and delegated adoption stay fail-closed until T010/T016; T007 supplies receipts. Reads need only the engine,
+        T010 supplies persisted permission boundaries; delegated adoption stays fail-closed until T016; T007 supplies receipts. Reads need only the engine,
         so they also serve restored query-only copies. P002-T006 (D287): accepted outcomes and recorded refusals write
         their trace event, and graph commands their operation, through the audit sink in the same transaction."""
         if self._domain_operations is None:
@@ -510,21 +511,30 @@ class ManagedRuntime:
             from my_harness.storage.operation_journal import command_sink
             from my_harness.storage.frozen_context import ReceiptSink
             from my_harness.services.tool_bridge import InvocationResolver
-            self._domain_operations = DomainOperations(self.engine, resolver=InvocationResolver(),
+            self._domain_operations = DomainOperations(self.engine, resolver=InvocationResolver(), permissions=self.permission_lifecycle(),
                                                        delivery=ReceiptSink(), audit_sinks=(command_sink,))
         return self._domain_operations
+
+    def permission_lifecycle(self):
+        from my_harness.services.permission_lifecycle import PermissionLifecycle
+        from my_harness.storage.models import KnowledgeProjectRow
+        def authority(session, project_id):
+            row = session.get(KnowledgeProjectRow, project_id)
+            project = next((p for p in self.projects.values() if row and str(p.context.root) == row.root), None)
+            return project.permission_authority if project else None
+        return PermissionLifecycle(self.engine, authority=authority)
 
     def judges(self):
         """T009 explicit consumer interface; productive delegation remains unavailable until T016."""
         return self.domain_operations().judges
 
     def tool_bridges(self):
-        """T008 explicit per-adapter binding; no product graph uses it yet. T010 permissions deny by default."""
+        """T008 explicit per-adapter binding; no product graph uses it yet. T010 boundaries are required for agent authority."""
         from my_harness.services.tool_bridge import BridgeFactory, InvocationResolver
         from my_harness.services.domain_operations import DomainOperations
         from my_harness.storage.frozen_context import ReceiptSink
         from my_harness.storage.operation_journal import command_sink
-        return BridgeFactory(DomainOperations(self.engine, resolver=InvocationResolver(),
+        return BridgeFactory(DomainOperations(self.engine, resolver=InvocationResolver(), permissions=self.permission_lifecycle(),
             delivery=ReceiptSink('tool_result'), audit_sinks=(command_sink,)))
 
     def project(self, project_id: str) -> ManagedProject:

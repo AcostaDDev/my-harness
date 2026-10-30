@@ -587,6 +587,13 @@ class SQLiteManagedRepository:
                     raise Conflict(tr('context.operation_required'))
                 from my_harness.storage.frozen_context import seal
                 seal(session, prompt_snapshot['canonical_context']['id'], sealed_operation, request)
+            if 'permissions' in prompt_snapshot:
+                if operation is None or 'canonical_context' not in prompt_snapshot or not hasattr(self, 'permission_lifecycle'):
+                    raise Conflict(tr('domain.permission_invalid'))
+                from my_harness.storage.models import KnowledgeProjectRow
+                project_id = session.scalar(select(KnowledgeProjectRow.id).where(KnowledgeProjectRow.root == run.root))
+                self.permission_lifecycle.seal(session, project_id, prompt_snapshot['permissions'], sealed_operation,
+                    request, json.loads(json.loads(run.versions_json).get('permission_authority', '{}')))
             if 'scoped_tools' in prompt_snapshot:
                 if 'canonical_context' not in prompt_snapshot:
                     raise Conflict(tr('bridge.policy'))
@@ -607,6 +614,8 @@ class SQLiteManagedRepository:
     def effect(self, claim: JobRecord, kind: str, payload: dict) -> None:
         with self._write() as session:
             job, run = self._owned(session, claim)
+            if kind == 'command_started' and hasattr(self, 'permission_lifecycle'):
+                payload = {**payload, 'permission_attempt_id': self.permission_lifecycle.stage_attempt(session, run.id, command=True)}
             self._event(session, run, kind, {**payload, "job_id": job.id})
 
     def finish(self, claim: JobRecord, history: RunHistory, outcome: dict | None = None) -> None:
@@ -970,6 +979,9 @@ class SQLiteManagedRepository:
                 raise Conflict("Live command owner required")
             row = next((r for r in for_job(session, job) if r['command_id'] == command_id), None)
             if kind == 'intent':
+                if hasattr(self, 'permission_lifecycle') and self.permission_lifecycle.cancelled(
+                        session, run.id, command_id=command_id, job_id=job.id):
+                    raise Conflict(tr('domain.permission_invalid'))
                 started = session.scalars(select(Event).where(Event.run_id == run.id,
                     Event.kind == 'command_started')).all()
                 if row or not any(e.payload.get('command_id') == command_id

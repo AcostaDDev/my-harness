@@ -405,7 +405,7 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 
 <a id="13-p002-target-architecture-accepted-design-not-implemented"></a>
 
-## 13. P002 target architecture (accepted design; foundations implemented and integrated through T009)
+## 13. P002 target architecture (accepted design; foundations implemented and integrated through T010)
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
@@ -426,7 +426,7 @@ links in schema `0034_judge_contracts` (83 tables). Native start/checkpoint shar
 operation and accounting transactions. Domain commands validate scoped candidate submission and explicit owner links;
 read-only request/list routes also serve archives. The productive authorization provider has no judge policy and the
 native qualification matrix has no judge cell. [Judge flow](flows/judge.md), [record](phase/P002-T009-judge.md), D290.
-Permissions, exports, inbox and graph view remain pending; no product graph launches agents.
+T010 adds integrated permission authority (below); exports, inbox and graph view remain pending; no product graph launches agents.
 
 ```mermaid
 flowchart TD
@@ -460,10 +460,15 @@ flowchart TD
   `core/engine/domain_catalogue.py` (entries, digests, schema subset validator), `core/engine/domain_policy.py`
   (classification, capability evaluator), `services/domain_operations.py` (`execute`, callers, fail-closed providers),
   `api/knowledge.py` and `orchestration/domain.py`; T008 adds the [scoped bridge](flows/tool-bridge.md), with explicit `policy` request assembly,
-  `ManagedRuntime.tool_bridges()` and `CLIProcessAdapter.bind_tool_bridges()`. Its permission provider still denies
-  by default; tests alone inject synthetic permissions. Existing launches without the marker keep their policy.
+  `ManagedRuntime.tool_bridges()` and `CLIProcessAdapter.bind_tool_bridges()`. Its permission provider now uses T010 persisted boundaries; missing boundaries/current authority still deny. Existing launches without the marker keep their policy.
   T008 itself kept schema 0033/79 tables, with no HTTP or dependency change; T009 adds the schema/API above.
   Technical review corrections isolate the relay with Python `-I`, require persisted protocol/surface availability
   before accepting completion, and keep expected peer disconnects separate from service/persistence failures.
 - **Exports.** An outbox-driven exporter renders accepted revisions to owned targets with generation manifests and
   recoverable per-target outcomes.
+
+P002-T010 adds `core/engine/permission_targets.py`, `services/permission_lifecycle.py` and immutable permission
+records/boundaries in `0035_permissions` (85 tables), composed as the provider in both domain service and bridge.
+Owner controls use additive catalogue commands and API routes; native intent sealing and journal cancellation reuse
+existing context/usage/operation/process controls. [Flow](flows/permissions.md), [record](phase/P002-T010-permissions.md),
+D291. These are explicit interfaces for later workflows, with no new autonomy scheduler or native qualification.

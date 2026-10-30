@@ -279,3 +279,24 @@ CATALOGUE = Catalogue((*CATALOGUE, *(replace(CATALOGUE.current(n), version=2, ro
 CATALOGUE = Catalogue((*CATALOGUE, Entry('judge.decision.link', 1, 'propose', ('owner',), (),
     _object({'ruling_id': ID, 'decision_id': ID, 'revision': NUMBER}, ('ruling_id', 'decision_id', 'revision')),
     _result('link_id'), summary='Link a ruling to a real canonical decision; never creates or adopts knowledge.')))
+
+
+# D291: additive permission controls; historical entry digests stay unchanged.
+_PERMISSION_RESPONSE = {'type': 'object', 'additionalProperties': True}
+CATALOGUE = Catalogue((*CATALOGUE,
+    Entry('permissions.inspect', 1, 'query', ('owner',), (), _object({}),
+          _result('revision', 'items'), summary='Inspect persisted permission authority and provenance.'),
+    Entry('permissions.request', 1, 'propose', ('owner', 'harness', 'agent'), _AGENTS,
+          _object({'request': _PERMISSION_RESPONSE}, ('request',)),
+          _result('request_id', 'replayed', 'state'), summary='Record an exact permission request; never grants authority.'),
+    Entry('permissions.preview', 1, 'query', ('owner',), (),
+          _object({'action': {'enum': ['grant', 'deny', 'escalate', 'revoke', 'end']},
+                   'response': _PERMISSION_RESPONSE, 'expected_revision': OFFSET},
+                  ('action', 'response', 'expected_revision')),
+          _result('revision', 'preview_sha256', 'action', 'response'), summary='Preview an exact owner permission response.'),
+    Entry('permissions.respond', 1, 'propose', ('owner',), (),
+          _object({'action': {'enum': ['grant', 'deny', 'escalate', 'revoke', 'end']},
+                   'response': _PERMISSION_RESPONSE, 'expected_revision': OFFSET, 'preview_sha256': SHA,
+                   'confirmed': {'const': True}}, ('action', 'response', 'expected_revision', 'preview_sha256', 'confirmed')),
+          _result('record_id', 'state'), summary='Confirm a fresh permission response or revoke authority.'),
+))

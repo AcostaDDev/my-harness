@@ -26,6 +26,23 @@ class _Journal:
         self.heartbeat_failed = heartbeat_failed
         self.renewal = renewal if renewal is not None else {'failures': 0, 'last_error': None, 'lost': False}
 
+    def cancel_requested(self):
+        # Read persisted revocation/expiry; the adapter owns live handles, signalling and reconciliation.
+        from sqlalchemy.orm import Session
+        lifecycle = getattr(self.repository, 'permission_lifecycle', None)
+        if lifecycle is None:
+            return False
+        with Session(self.repository.engine) as session:
+            return lifecycle.cancelled(session, self.claim.run_id)
+
+    def command_cancel_requested(self, command_id):
+        from sqlalchemy.orm import Session
+        lifecycle = getattr(self.repository, 'permission_lifecycle', None)
+        if lifecycle is None:
+            return False
+        with Session(self.repository.engine) as session:
+            return lifecycle.cancelled(session, self.claim.run_id, command_id=command_id, job_id=self.claim.id)
+
     def _renewal_error(self):
         return tr('supervisor.heartbeat_failed_stop_before', failures=self.renewal['failures'],
                   error=self.renewal['last_error'] or 'OwnershipLost')

@@ -7,11 +7,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0034_judge_contracts"
+SCHEMA_REVISION = "0035_permissions"
 # Protection triggers of 0030 (knowledge), 0031 (domain commands), 0032 (trace events/artifacts) and
-# 0033 (frozen context/receipts) and 0034 (judge evidence), by name and whitespace-normalized SQL. A database, backup or
+# 0033 (frozen context/receipts), 0034 (judge evidence) and 0035 (permissions), by name and whitespace-normalized SQL. A database, backup or
 # restored copy whose triggers are missing or altered is refused.
-SCHEMA_TRIGGERS_SHA256 = "bae701245931cee4de272f3fe512506012aeba5cb1b7544e82fb26c79117080d"
+SCHEMA_TRIGGERS_SHA256 = "1fd06ff90be9ee2ce3269c9847b0cded50e7855de91570d7961569c3d50d10e4"
 
 
 def trigger_digest(rows) -> str:
@@ -51,7 +51,7 @@ def require_schema(engine: Engine) -> None:
                           "knowledge_revision_links", "knowledge_identity_map", "domain_commands",
                           "workflow_operations", "trace_events", "trace_artifacts", "context_snapshots",
                           "invocation_contexts", "knowledge_deliveries", "judge_requests", "judge_invocations",
-                          "judge_rulings", "judge_decision_links"):
+                          "judge_rulings", "judge_decision_links", "permission_records", "permission_boundaries"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
             rows = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'")).all()
             if not triggers_intact(rows):

@@ -74,6 +74,11 @@ permissions remain absent/denying until T010. T009 is completed and integrated i
 ([record](phase/P002-T009-judge.md), D290): optional judge profiles and four duty contracts, exercised synthetically.
 G16 is accepted; source `350073c` is integrated by the accompanying authorized merge and push of develop is authorized.
 Native judge qualification and release/publication/installation remain pending.
+T010 is completed and integrated into develop ([record](phase/P002-T010-permissions.md), D291/G10 accepted):
+persisted permission lifecycle, frozen effective boundaries, guarded owner controls and revocation through existing
+process control. The three blocking findings are corrected and independent technical re-review passed; the owner
+authorized source `d52fbb5`, the accompanying merge and push of `develop`. Release/publication/installation remain
+pending; no native qualification or later workflow is added.
 
 **Exit criteria (adopted with D268):**
 

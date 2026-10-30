@@ -1418,5 +1418,6 @@
   "judge.delegation_changed": "Judge delegation is unavailable or changed",
   "judge.no_progress": "Observe the existing judge request; another inference is not allowed",
   "judge.not_found": "Judge request not found",
-  "judge.service_required": "Judge invocation requires the shared judge service and frozen scoped context"
+  "judge.service_required": "Judge invocation requires the shared judge service and frozen scoped context",
+  "domain.permission_invalid": "The permission request, authority or confirmation is invalid or no longer current."
 }

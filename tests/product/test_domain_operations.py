@@ -269,7 +269,7 @@ def test_catalogue_entries_are_pinned_closed_and_free_of_caller_fields():
         assert lint(entry.input) == [] and lint(entry.output) == []
         assert entry.kind in ('query', 'propose', 'adopt') and entry.version in (1, 2)
         assert ('agent' in entry.principals) == bool(entry.roles)
-        assert entry.id.startswith(('knowledge.', 'judge.'))  # no SQL, file, code or effect entry exists
+        assert entry.id.startswith(('knowledge.', 'judge.', 'permissions.'))  # no SQL, file, code or effect entry exists
     assert 'agent' not in CATALOGUE.current('knowledge.adopt').principals
     assert 'agent' not in CATALOGUE.current('knowledge.adoption.preview').principals
     assert lint({'type': 'object', 'properties': {'project_id': {'type': 'string'}}, 'additionalProperties': False})
@@ -306,7 +306,10 @@ def test_schema_validator_covers_the_subset_used():
 
 # Caller binding and project membership (E01–E03) -------------------------------------------------------------------
 
-MINIMAL = {**{f'judge.{d}.submit': {'candidate': {}} for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
+MINIMAL = {'permissions.inspect': {}, 'permissions.request': {'request': {}},
+    'permissions.preview': {'action': 'grant', 'response': {}, 'expected_revision': 0},
+    'permissions.respond': {'action': 'grant', 'response': {}, 'expected_revision': 0, 'preview_sha256': 'a'*64, 'confirmed': True},
+    **{f'judge.{d}.submit': {'candidate': {}} for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
     'judge.decision.link': {'ruling_id': 'r', 'decision_id': 'd', 'revision': 1},
     'knowledge.lookup': {'item_id': 'i'}, 'knowledge.search': {'query': 'x'},
     'knowledge.projects': {}, 'knowledge.head': {}, 'knowledge.list': {}, 'knowledge.get': {'item_id': 'i'},
@@ -366,7 +369,8 @@ def test_agent_callers_fail_closed_in_the_product_composition(world):
     product = ManagedRuntime(engine).domain_operations()
     from my_harness.services.tool_bridge import InvocationResolver
     assert isinstance(product.resolver, InvocationResolver)
-    assert isinstance(product.permissions, UnavailablePermissions)
+    from my_harness.services.permission_lifecycle import PermissionLifecycle
+    assert isinstance(product.permissions, PermissionLifecycle)
     from my_harness.storage.frozen_context import ReceiptSink
     assert isinstance(product.authorizations, NoAuthorizations) and isinstance(product.delivery, ReceiptSink)
     project = run(product, OWNER, 'knowledge.head', {}).result['knowledge_project_id']

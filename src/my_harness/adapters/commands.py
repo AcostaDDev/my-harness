@@ -120,7 +120,13 @@ class ManagedCommandRunner:
         self.journal = journal
 
     def cancel_requested(self):
-        return False
+        return self.journal is not None and hasattr(self.journal, 'cancel_requested') and self.journal.cancel_requested()
+
+    def _command_cancel_requested(self, command_id):
+        # Preparation subclasses retain their argumentless hook and separate authority/journal.
+        if self.journal is not None and hasattr(self.journal, 'command_cancel_requested'):
+            return self.journal.command_cancel_requested(command_id)
+        return self.cancel_requested()
 
     def run(self, context, command):
         raise JournalError('Native commands require managed command identity and journal')
@@ -128,6 +134,8 @@ class ManagedCommandRunner:
     def run_managed(self, context, command, command_id):
         if self.journal is None:
             raise JournalError('Native commands require a bound managed journal')
+        if self._command_cancel_requested(command_id):
+            raise JournalError(tr('domain.permission_invalid'))
         config = self.config
         if not config.repository_trusted or str(context.root) != config.checkout:
             raise ValueError('Checkout trust has not been granted for this root')
@@ -187,7 +195,7 @@ class ManagedCommandRunner:
                 while selector.get_map() or process.poll() is None:
                     now = time.monotonic()
                     if error is None:
-                        if self.cancel_requested():
+                        if self._command_cancel_requested(command_id):
                             error = 'Command cancelled'
                         elif now >= deadline:
                             error, timed_out = 'Command timed out', True

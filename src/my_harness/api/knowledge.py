@@ -17,6 +17,8 @@ from my_harness.api.schemas import (
     KnowledgeDraftChangesRead, KnowledgeDraftDiscardRead, KnowledgeDraftOpenCreate, KnowledgeDraftOpenRead,
     KnowledgeDraftRead, KnowledgeHeadRead, KnowledgeItemRead, KnowledgeItemsRead, KnowledgeKind, KnowledgePreviewRead,
     KnowledgeProjectsRead, JudgeRequestRead, JudgeRequestsRead,
+    StandingPermissionsRead, StandingPermissionRequestCreate, StandingPermissionRequestRead,
+    StandingPermissionPreviewCreate, StandingPermissionPreviewRead, StandingPermissionResponseCreate, StandingPermissionResponseRead,
 )
 from my_harness.api.security import local_request, problem
 from my_harness.core.engine.domain_catalogue import CATALOGUE
@@ -45,6 +47,31 @@ def knowledge_router(runtime: ManagedRuntime) -> APIRouter:
         except (LookupError, RuntimeError):
             raise problem(404, 'project_unregistered',
                           message('domain.project_unregistered', language(runtime.engine))) from None
+
+    @router.get('/knowledge/projects/{knowledge_project_id}/permissions', response_model=StandingPermissionsRead,
+                operation_id='standing_permissions')
+    def standing_permissions(knowledge_project_id: str):
+        return run(owner_reader(knowledge_project_id), 'permissions.inspect', {})
+
+    @router.get('/projects/{project_id}/permissions', response_model=StandingPermissionsRead,
+                operation_id='project_standing_permissions')
+    def project_permissions(project_id: str):
+        return run(registered(project_id), 'permissions.inspect', {})
+
+    @router.post('/projects/{project_id}/permissions/requests', response_model=StandingPermissionRequestRead,
+                 operation_id='standing_permission_request')
+    def permission_request(project_id: str, body: StandingPermissionRequestCreate, idempotency_key: IdempotencyKey):
+        return run(registered(project_id), 'permissions.request', body.model_dump(), idempotency_key)
+
+    @router.post('/projects/{project_id}/permissions/preview', response_model=StandingPermissionPreviewRead,
+                 operation_id='standing_permission_preview')
+    def permission_preview(project_id: str, body: StandingPermissionPreviewCreate):
+        return run(registered(project_id), 'permissions.preview', body.model_dump())
+
+    @router.post('/projects/{project_id}/permissions/responses', response_model=StandingPermissionResponseRead,
+                 operation_id='standing_permission_response')
+    def permission_response(project_id: str, body: StandingPermissionResponseCreate, idempotency_key: IdempotencyKey):
+        return run(registered(project_id), 'permissions.respond', body.model_dump(), idempotency_key)
 
     @router.get('/knowledge/projects', response_model=KnowledgeProjectsRead, operation_id='knowledge_projects')
     def projects(offset: Offset = 0, limit: Limit = 50):

@@ -206,7 +206,10 @@ class DomainOperations:
         self.catalogue = catalogue
         from my_harness.services.judge import JudgeService
         self.judges = JudgeService(self, qualifications=judge_qualifications)
+        from my_harness.services.permission_lifecycle import PermissionLifecycle
+        self.permission_lifecycle = permissions if isinstance(permissions, PermissionLifecycle) else PermissionLifecycle(engine)
         self.handlers = {
+            **{name: self.permission_lifecycle.handler for name in ('permissions.inspect', 'permissions.request', 'permissions.preview', 'permissions.respond')},
             'judge.decision.link': self.judges.link,
             **{f'judge.{d}.submit': self.judges.submit for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
             'knowledge.projects': self._projects, 'knowledge.head': self._head, 'knowledge.list': self._list,

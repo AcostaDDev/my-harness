@@ -1527,3 +1527,26 @@ class JudgeDecisionLinkRow(Base):
     decision_id: Mapped[str] = mapped_column(ForeignKey('knowledge_items.id'))
     revision_id: Mapped[str] = mapped_column(ForeignKey('knowledge_revisions.id'))
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class PermissionRecordRow(Base):
+    """T010 append-only authority records; no promotion of legacy permission_requests."""
+    __tablename__ = 'permission_records'
+    __table_args__ = (UniqueConstraint('project_id', 'sequence'), UniqueConstraint('project_id', 'record_key'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    sequence: Mapped[int] = mapped_column(Integer)
+    record_key: Mapped[str] = mapped_column(String(240))
+    kind: Mapped[str] = mapped_column(String(30))
+    payload: Mapped[dict] = mapped_column(JSON)
+    sha256: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class PermissionBoundaryRow(Base):
+    __tablename__ = 'permission_boundaries'
+    invocation_id: Mapped[str] = mapped_column(ForeignKey('usage_invocations.id'), primary_key=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey('permission_records.id'), unique=True)
+    attempt_id: Mapped[str] = mapped_column(ForeignKey('managed_attempts.id'), unique=True)
+    operation_id: Mapped[str] = mapped_column(ForeignKey('workflow_operations.id'))
+    created_at: Mapped[str] = mapped_column(String(40))

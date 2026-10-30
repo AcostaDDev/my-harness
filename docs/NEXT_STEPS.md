@@ -12,7 +12,9 @@ integrated into develop.** **P002-T007 is completed (D288, technical re-review p
 G16 accepted, D290). Technical review identified malformed native output misrouted as an operational stop;
 the correction passed technical re-review (T009 record §7). Source commit `350073c` is integrated by the accompanying
 authorized merge; the owner also authorized pushing `develop`. Release/publication/installation remain pending.
-T010–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
+T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
+G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
+T011–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
 data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -84,7 +86,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008 and T009 are **completed (integrated)**; T010–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -98,7 +100,7 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T007 | Assemble frozen context and record knowledge-access receipts (**completed; integrated; D288**) | T004, T005, T006 |
 | P002-T008 | Expose scoped tools with on-demand discovery through qualified CLI adapters | T002, T005, T006, T007 |
 | P002-T009 | Add configurable judge profiles and duty-specific adjudication contracts (**completed; integrated; D290**) | T007, T008 |
-| P002-T010 | Implement permission requests, standing grants and revocation | T005, T006, T008, T009 |
+| P002-T010 | Implement permission requests, standing grants and revocation (**completed; integrated; D291**) | T005, T006, T008, T009 |
 | P002-T011 | Move definition, reverse-engineering onboarding and managed adoption to DB knowledge | T004, T005, T007, T008 |
 | P002-T012 | Provide authoritative project knowledge/decision editing in the UI | T004, T005, T006 |
 | P002-T013 | Deliver generated exports, explicit document import and portable format | T004, T005, T006, T011, T012 |
@@ -383,7 +385,7 @@ Schema `0034_judge_contracts` (83 tables); API/client and data/flow/i18n parity.
 exact native judge qualification is absent and productive delegation/permissions deny by default. No grant/adoption,
 workflow integration, autonomy or global inbox is implemented. Source commit `350073c` is integrated by the
 accompanying merge; the owner authorized commit, merge into `develop` and push of `develop` after successful
-technical re-review. Release/publication/installation remain pending and unauthorized. **Next: P002-T010**, not started.
+technical re-review. Release/publication/installation remain pending and unauthorized. T010 is now complete and integrated after technical re-review.
 [Detailed evidence](phase/P002-T009-judge.md).
 
 ## P002-T010 — Permission lifecycle and standing grants
@@ -405,6 +407,18 @@ effective snapshots. **Dependencies:** T005, T006, T008, T009.
 **Basis:** B06–B07, B12–B13, B18, B23.
 
 **Gates:** G10. **Threats:** TM01, TM04, TM06, TM07.
+
+**Status (2026-10-30):** G10 recommendations A/B/C accepted explicitly by the owner (D291); local implementation
+on `feat/p002-t010-permissions` from clean develop `c7f35cb`, completed and integrated as source `d52fbb5`.
+[Contract, implementation and evidence](phase/P002-T010-permissions.md). Schema `0035_permissions` (85 tables),
+persisted lifecycle/provider, snapshots, guarded owner controls and existing process cancellation. Legacy authority
+and native judge qualification are unchanged; synthetic positive evidence only. No later-task workflow/autonomy
+consumer is introduced. The three technical-review blockers are corrected with regressions (record §6);
+independent re-review passed with no outstanding relevant findings (record §7). The owner authorized the
+source commit, accompanying merge into `develop` and push of `develop` (record §8). Release/publication/installation remain pending.
+Route: verified source → develop → 0.2.0 through protected main → distribution/publication → installation.
+Next implementation task: T011, not started.
+
 ## P002-T011 — Database-owned creation and reverse-engineering intake
 
 **Problem:** definition/onboarding currently create documentary drafts and adoption around Markdown authority.
@@ -675,5 +689,9 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 6. **P002-T007** is complete on `feat/p002-t007-frozen-context`, from `c0ffc85`; technical review passed and source commit `d3c4345` is integrated into `develop`. The owner authorized commit/merge/push. [Evidence](phase/P002-T007-frozen-context.md).
 7. **P002-T008** is complete and integrated as `625253e` / merge `9ac1449`; its release/publication/installation remain pending.
 8. **P002-T009** is completed and integrated from `feat/p002-t009-judge` as source `350073c`; technical re-review passed.
-   G16 accepted; the owner authorized commit, merge into `develop` and push of `develop`. **Next: P002-T010**, not started. Release
+   G16 accepted; the owner authorized commit, merge into `develop` and push of `develop`. Release
    0.2.0 through protected main, distribution/publication and installation remain separately pending.
+9. **P002-T010** is completed and integrated as source `d52fbb5` after independent technical re-review; G10 accepted (D291).
+   The owner authorized source commit, merge and push of `develop`.
+   [Evidence](phase/P002-T010-permissions.md#8-source-integration-and-delivery-record).
+   Next implementation task: **P002-T011**, not started; release/publication/installation remain pending.

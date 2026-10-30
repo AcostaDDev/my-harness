@@ -408,6 +408,9 @@ class CLIProcessAdapter:
             'launch_permitted': False, 'launch_boundary': 'before_spawn', **details})
 
     def invoke(self, context, request):
+        if self.journal is not None and hasattr(self.journal, 'cancel_requested') and self.journal.cancel_requested():
+            self._refuse_before_spawn(request, self.agents[ROLES[request.role]], diagnostic_code='permission_revoked')
+            raise JournalError(tr('domain.permission_invalid'))
         marker = json.loads(request.prompt_snapshot_json or '{}').get('scoped_tools')
         bridge = None
         if request.role == 'judge':
@@ -594,7 +597,7 @@ class CLIProcessAdapter:
                     os.set_blocking(pipe.fileno(), False)
                     selector.register(pipe, selectors.EVENT_READ, name)
                 while selector.get_map() or process.poll() is None:
-                    preparation_cancelled = self.preparation_journal is not None and self.preparation_journal.cancel_requested()
+                    preparation_cancelled = (self.preparation_journal is not None and self.preparation_journal.cancel_requested()) or (self.journal is not None and hasattr(self.journal, 'cancel_requested') and self.journal.cancel_requested())
                     if status_override is None and (cancelled.is_set() or preparation_cancelled or time.monotonic() >= deadline):
                         status_override = "cancelled" if cancelled.is_set() or preparation_cancelled else "timeout"
                         stop_group(process)

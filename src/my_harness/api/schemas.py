@@ -2694,3 +2694,43 @@ class JudgeRequestsRead(BaseModel):
     offset: int
     limit: int
     total: int
+
+
+class StandingPermissionsRead(BaseModel):
+    revision: int
+    items: list[dict[str, Any]]
+
+
+class StandingPermissionRequestCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    request: dict[str, Any]
+
+
+class StandingPermissionRequestRead(BaseModel):
+    request_id: str
+    replayed: bool
+    state: str
+
+
+class StandingPermissionPreviewCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    action: Literal['grant', 'deny', 'escalate', 'revoke', 'end']
+    response: dict[str, Any]
+    expected_revision: int = Field(ge=0)
+
+
+class StandingPermissionPreviewRead(BaseModel):
+    action: Literal['grant', 'deny', 'escalate', 'revoke', 'end']
+    response: dict[str, Any]
+    preview_sha256: str
+    revision: int
+
+
+class StandingPermissionResponseCreate(StandingPermissionPreviewCreate):
+    preview_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+    confirmed: Literal[True]
+
+
+class StandingPermissionResponseRead(BaseModel):
+    record_id: str
+    state: str

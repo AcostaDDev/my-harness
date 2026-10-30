@@ -52,7 +52,16 @@ optional judge configuration/UI, duty contracts, immutable requests/rulings and 
 exercised synthetically. Native judge qualification is absent and productive delegation/permissions remain denied.
 Source commit `350073c` is integrated by the accompanying merge; the owner authorized commit, merge and push of
 `develop` after successful technical re-review. Release/publication/installation remain pending and unauthorized.
-**Next: P002-T010**, planned and unstarted. Historical starting context:
+**P002-T010 is completed and integrated into develop**, source `d52fbb5` on `feat/p002-t010-permissions` from clean `c7f35cb`.
+[G10 A/B/C](phase/P002-T010-permissions.md) accepted explicitly by the owner (D291); local verification and diff inspection are complete. Schema `0035_permissions` (85 tables), persisted permission authority/provider and frozen boundaries,
+owner controls and existing process cancellation integration; synthetic evidence only, no native judge qualification.
+Technical review found three blockers (owner-only tools, inherited delegable tiers and post-executor revocation);
+the corrections passed independent technical re-review with no outstanding relevant findings
+([record §7](phase/P002-T010-permissions.md#7-independent-technical-re-review-and-authorized-source-commit)).
+The owner authorized its source commit, the accompanying merge into `develop` and push of `develop`
+([delivery](phase/P002-T010-permissions.md#8-source-integration-and-delivery-record)). Release 0.2.0,
+publication and installation remain pending. **Next: P002-T011**, not started.
+Historical starting context:
 [P002 handoff](archive/phase-001/P001-T006-qualification.md#p002-handoff).
 Develop with `scripts/check` and `scripts/check-docs` (D260) on topic branches from `develop` (D235).
 Completed one-off records are in the [one-off archive](archive/one_off_tasks/README.md); earlier non-phase notes
@@ -221,4 +230,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011–T023 remain planned. No OpenCode adapter exists, and installed behavior remains 0.1.9.

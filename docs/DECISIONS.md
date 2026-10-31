@@ -2411,3 +2411,19 @@ Frozen context associations come only from persisted snapshot → invocation →
 READY association is provided by the current operational model; the view explicitly reports that absence and never
 labels legacy READY as validation of a new revision. Product decisions and separately queried operational rulings
 remain distinct. No table, migration, dependency, automatic conversion, drift watcher or delegated adoption is added.
+
+## D294 — Versioned knowledge documents, explicit ownership and project transfer
+
+Status: accepted by the owner on 2026-10-31 for P002-T013; resolves G09. Source `2c54fa9` is completed and integrated into develop by the accompanying authorized merge after successful independent technical re-review, including all four corrections. Push of develop is authorized. Release/publication/installation remain pending and unauthorized. [Accepted package A, §§3–6](phase/P002-T013-document-roundtrip.md).
+
+`harness-documents-1` uses Markdown text fields and a JSON companion, rendered by
+`harness-knowledge-markdown-1` from verified accepted knowledge. `harness-ownership-1` names exact whole-file
+targets and optional D285 wrappers, acquired only by explicit owner adoption. AGENTS/wrapper budgets remain
+60/15 lines; excess blocks export without dropping rules. D271 replacement policy remains unchanged.
+
+Explicit UI import seals selected inputs, identity choices, loss resolutions and canonical preview before
+owner-confirmed adoption. Updates resolve scoped identities without similarity; omissions retain knowledge.
+`harness-project-1` transfers project knowledge with fresh local identities and explicit reference/version mapping,
+not historical execution or authority. Losses are located and resolved explicitly; raw input is preserved.
+Export intents and per-target outcomes support deterministic recovery without repeating inference.
+T014/T015 consume the boundaries; T016 readiness/delegation and T020 installed conversion remain separate.

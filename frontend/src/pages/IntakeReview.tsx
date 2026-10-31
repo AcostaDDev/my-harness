@@ -4,6 +4,7 @@ import { createOnce, managed } from "../managed-api";
 import type { S } from "../managed-api";
 import { Alert, Evidence, Hash, message } from "../ui";
 import { MarkdownView } from "./Docs";
+import { KnowledgeDocuments } from "./KnowledgeDocuments";
 import { ProfileProposal } from "./ProjectProfile";
 import { QuestionAnswers } from "./Answers";
 import { useWorkspace } from "../workspace";
@@ -21,6 +22,8 @@ export function IntakeReview({ conversation: c, base }: { conversation: S["Plann
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [adopted, setAdopted] = useState(false);
+  const [knowledgeHead, setKnowledgeHead] = useState<string | null>(null);
+  useEffect(() => { if (c.created || adopted) void managed<S["KnowledgeHeadRead"]>(`/projects/${project}/knowledge`).then(h => setKnowledgeHead(h.revision?.id ?? null)).catch(e => setError(message(e))); }, [project, c.created, adopted]);
   useEffect(() => setPreview(undefined), [c.version]);
   const latest = c.turns.at(-1);
   const result = latest?.result?.result as { answer?: string; knowledge_sha256?: string } | undefined;
@@ -63,6 +66,7 @@ export function IntakeReview({ conversation: c, base }: { conversation: S["Plann
     </section>}
     {c.proposals.filter(p => p.kind === "profile" && (p.status === "PROPOSED" || p.status === "ACCEPTED")).map(p =>
       <ProfileProposal key={p.id} conversation={c} proposal={p} base={base} />)}
+    {knowledgeHead && <KnowledgeDocuments project={project} head={knowledgeHead} />}
     {(adopted || c.created) && <p className="state state-ok">{t("intake.adopted")}</p>}
   </main>;
 }

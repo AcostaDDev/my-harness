@@ -438,3 +438,17 @@ P002-T010 adds the [permission lifecycle](flows/permissions.md), integrated into
 authority, new-boundary snapshots, current revocation/expiry/ancestry checks and guarded owner controls. Legacy
 run permissions retain their semantics; new productive task/phase/autonomy consumers and native judge qualification
 remain pending. [Implementation/evidence](phase/P002-T010-permissions.md); no operational delivery is claimed.
+
+P002-T013 implements D294's owner document boundaries: deterministic accepted-knowledge Markdown/JSON export,
+explicit whole-file target adoption, selected UI import with canonical consent and project-scoped portable
+knowledge transfer. D271 replacement and D285 instruction budgets are enforced; lost responses/partial exports
+recover from persisted inputs and per-target/commit receipts. No history or execution authority is imported.
+Structured intake can deliver its documents without creating an operational phase or satisfying profile,
+preparation, activation or READY. Legacy document/task/closure writers refuse new owned projects until their
+owning T014/T015 integration. [Flow](flows/knowledge-documents.md); [task evidence](phase/P002-T013-document-roundtrip.md).
+
+For T013, a current delivery must match both the accepted revision and the exact currently adopted ownership/
+manifest/renderer; historical completion does not deliver newly selected targets. Partial imports leave omitted
+entities and their outgoing relationships unchanged. New roots/children append deterministically while retaining
+existing entries; the preview displays the resulting order. A valid portable download remains available even
+when Markdown generation refuses wrappers or size budgets, and downloading never adopts checkout ownership.

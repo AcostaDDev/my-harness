@@ -1425,5 +1425,16 @@
   "intake.database_owned": "Revisa el borrador de la base de datos; la escritura documental no está disponible.",
   "intake.profile_knowledge_required": "Prepara el conocimiento estructurado exacto propuesto con este perfil antes de confirmarlo.",
   "intake.export_pending": "Las confirmaciones del conocimiento y del perfil no exportan ni hacen commit de documentos; esa continuación depende de T013.",
-  "domain.intake_profile_required": "Antes de adoptar el conocimiento, pide al revisor una propuesta de perfil válida y prepara ese turno. La conversación sigue abierta. Confirma el perfil por separado, antes o después de adoptar el conocimiento."
+  "domain.intake_profile_required": "Antes de adoptar el conocimiento, pide al revisor una propuesta de perfil válida y prepara ese turno. La conversación sigue abierta. Confirma el perfil por separado, antes o después de adoptar el conocimiento.",
+  "documents.refused": "Intercambio documental rechazado: {detail}",
+  "documents.writer_required": "Se requiere un escritor Git configurado.",
+  "documents.heading.specification": "Especificación",
+  "documents.heading.architecture": "Arquitectura",
+  "documents.heading.data_model": "Modelo de datos",
+  "documents.heading.flows": "Flujos",
+  "documents.heading.requirement": "Especificación",
+  "documents.heading.phase": "Hoja de ruta",
+  "documents.heading.task": "Tareas",
+  "documents.heading.decision": "Decisiones",
+  "documents.heading.state": "Estado del conocimiento"
 }

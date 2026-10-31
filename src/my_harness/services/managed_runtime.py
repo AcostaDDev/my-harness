@@ -540,7 +540,16 @@ class ManagedRuntime:
     def project(self, project_id: str) -> ManagedProject:
         self.ready()
         try:
-            return self.projects[project_id]
+            project = self.projects[project_id]
+            from sqlalchemy.orm import Session
+            from my_harness.storage.knowledge_exchange import owned_at_root
+            with Session(self.engine) as session:
+                owned = owned_at_root(session, str(project.context.root))
+            if owned and isinstance(project.context, ProjectContext):
+                paths = tuple(t['path'] for t in owned.payload['manifest']['targets'])
+                profile = replace(project.context.profile, protected_paths=tuple(dict.fromkeys((*project.context.profile.protected_paths, *paths))))
+                project = replace(project, context=replace(project.context, profile=profile))
+            return project
         except KeyError:
             raise LookupError(tr('runtime.unregistered')) from None
 

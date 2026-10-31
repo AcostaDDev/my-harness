@@ -149,3 +149,14 @@ another role as fallback. Project-owned copies select independently, with the sa
 Existing reviewer/executor billing metadata remains supported. Saving or compatibility probing never invokes a
 model or qualifies judge capability; exact native judge-role qualification remains absent and blocks invocation.
 Legacy formats/hashes are unchanged and manual projects may continue without a judge. [Judge lifecycle](judge.md).
+
+P002-T013 adds the [structured knowledge document delivery](knowledge-documents.md) receipt to the
+intake/profile preparation handoff. It binds the accepted revision/hash, original inventory and final generated
+commit. A profile can be confirmed before or after that delivery; private configuration, actual preparation,
+activation and READY remain separate gates. This creates no operational phase or readiness assertion.
+
+A completed knowledge delivery counts for this handoff only while its referenced intent matches the current
+accepted revision/hash and adopted ownership/manifest/renderer. Adding a wrapper invalidates delivery without
+changing the knowledge revision; profile continuation, configuration state and preparation cannot reuse the old
+receipt. Onboarding retains its original inventory through the intent's sealed conversation/source binding,
+including across subsequent generated commits. Historical receipts remain separately consultable.

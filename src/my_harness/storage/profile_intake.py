@@ -20,7 +20,7 @@ def documentary_profile(managed, context, conversation_id, writer, versions):
         proposal = session.scalar(select(Proposal).where(Proposal.conversation_id == conversation_id,
             Proposal.kind == 'profile', Proposal.status == 'ACCEPTED'))
         if conversation and (conversation.source or {}).get('authority') == 'structured-intake-1':
-            raise Conflict(tr('intake.export_pending'))
+            raise Conflict(tr('intake.database_owned'))
         if not conversation or not proposal:
             raise Conflict(tr('profile_proposal.required'))
         shown = PlanningRepository(managed).profile_preview(context, conversation_id, proposal.id,
@@ -99,7 +99,14 @@ def structured_preview(engine, session, context, conversation, proposal_id, prop
             or (bound and knowledge_digest(live_sources) != bound['sources_sha256'])):
         blockers.append(tr('profile_proposal.stale'))
     if conversation.kind == 'onboarding':
-        if read_inventory(context, _executable(writer)) != conversation.source['inventory']:
+        from my_harness.storage.knowledge_exchange import completed_at_root
+        from my_harness.adapters.local_git import LocalGit
+        delivered = completed_at_root(session, conversation.root)
+        intake = delivered['intent'].get('intake_binding') if delivered else None
+        known_export = (delivered and intake and intake.get('conversation_id') == conversation.id
+                        and intake.get('source') == conversation.source
+                        and LocalGit(context.root).text('rev-parse', 'HEAD') == delivered['result']['commit'])
+        if not known_export and read_inventory(context, _executable(writer)) != conversation.source['inventory']:
             blockers.append(tr('profile_proposal.stale'))
     questions, _ = current_questions(session, conversation)
     if any(q['blocking'] and not q.get('deferred') for q in questions):
@@ -107,6 +114,13 @@ def structured_preview(engine, session, context, conversation, proposal_id, prop
     shown = {'conversation_id': conversation.id, 'proposal_id': proposal.id,
              'expected_version': conversation.version, 'proposal_sha256': proposal.proposal_sha256,
              'profile': payload, 'blockers': blockers, 'ready': not blockers,
-             'knowledge_binding': knowledge_binding, 'continuation': 'export_commit_pending_T013',
+             'knowledge_binding': knowledge_binding, 'continuation': _continuation(session, conversation.root),
              'configuration_state': 'PROFILE_PROPOSED' if proposal.status == 'ACCEPTED' else 'PROFILE_REQUIRED'}
     return {**shown, 'preview_sha256': digest(shown)}
+
+
+def _continuation(session, root):
+    from my_harness.storage.knowledge_exchange import completed_at_root, owned_at_root
+    if completed_at_root(session, root):
+        return 'export_committed'
+    return 'export_required' if owned_at_root(session, root) else 'document_ownership_required'

@@ -1,5 +1,9 @@
 # Flow — managed documents
 
+The P002 [knowledge exchange lane](knowledge-documents.md) has explicit whole-file ownership and separate
+revision-bound import/export receipts (D294). This page describes the retained documentary lane, which refuses
+projects after that new ownership is adopted; T014/T015 own productive task/closure integration.
+
 Three paths write documentation in a project under the unified contract, and all of them end in a harness commit
 ([D036](../DECISIONS.md#d036--managed-document-blocks-and-reconcilable-document-writes),
 [D081](../DECISIONS.md#d081--profile-protected-paths-limit-the-executor-not-confirmed-document-writes),

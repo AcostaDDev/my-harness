@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0035_permissions`, 85 tables, defined in
+SQLite schema of the local service: Alembic head `0036_knowledge_exchange`, 86 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -1603,3 +1603,36 @@ knowledge proposal hash, exact source locators/hashes, brief and inventory finge
 records the exact staged/accepted revision and knowledge hash, preview and `owner_confirmed` origin in its
 decision evidence. No private configuration, preparation receipt or activation is created by these records.
 Legacy `project-profile-proposal-1` rows and frozen requests remain unchanged; table count/head are unchanged.
+
+## P002 document exchange (D294)
+
+Schema `0036_knowledge_exchange` adds insert-only `knowledge_exchange_records`: `id` PK,
+`project_id` FK to knowledge_projects, `record_key` (unique per project), `kind`, JSON `payload`,
+`sha256` and `created_at`. Records retain selected import bytes/reports, sealed draft/map/consent bindings,
+explicit ownership manifests and original file bytes, export intents, per-target and commit outcomes.
+Payload digests are reverified on reads; update/delete/replacement triggers protect evidence.
+
+`checkout_locks.exchange_id` is a nullable unique FK to this table. Exactly one of job_id,
+preparation_id or exchange_id owns the checkout. A failed synchronous delivery retains its lock;
+recovery requires explicit confirmation of a stopped writer, never lease expiry. Managed jobs still
+use the same root lock and cannot run alongside document delivery. No legacy rows are converted.
+
+```mermaid
+erDiagram
+    knowledge_projects ||--o{ knowledge_exchange_records : owns
+    knowledge_exchange_records ||--o| checkout_locks : fences
+    knowledge_exchange_records {
+        string id PK
+        string project_id FK
+        string record_key UK
+        string kind
+        json payload
+        string sha256
+        string created_at
+    }
+```
+
+T013 review corrections add no tables or columns. Current receipt queries verify `export_completed.intent_id`
+against the same-project export intent, current accepted revision/hash and adopted ownership ID/manifest/renderer
+and target set. Historical insert-only receipts remain unchanged. Import-stage records bind the selected
+relationship scope and the merged root/child order through their input and canonical draft hashes.

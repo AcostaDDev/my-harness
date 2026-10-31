@@ -87,3 +87,11 @@ and blocking setup modes retain consultation only. Reload repeats project discov
 reads while preserving local input and pending mutations. Read generations fence late selections; search results
 and cursors are invalidated on project/revision/query changes. Consultation, forms and comparisons use typed
 presentation labels and localized timestamps. Both inspection and adoption preview announce context truncation.
+
+## Document exchange commands (T013)
+
+D294 adds owner-only `documents.*` commands for deterministic download, input staging, exact import
+preview/adoption, ownership preview/adoption and export intent preparation. The envelope contains a bounded
+codec-validated payload; no SQL or filesystem execution command is exposed. External delivery uses the
+[document exchange service](knowledge-documents.md) under a persistent checkout lock. New import drafts are
+sealed to their source/mapping/report consent and cannot use the ordinary draft adopter.

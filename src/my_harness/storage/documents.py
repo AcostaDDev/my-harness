@@ -288,6 +288,8 @@ IMAGE_TYPES = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
 
 def _edit_phase(session, context, *, resume=False):
     root = str(context.root)
+    from my_harness.storage.knowledge_exchange import require_documentary_lane
+    require_documentary_lane(session, root)
     phase = latest_phase(session, root)
     if phase is None:
         raise Conflict(tr('documents.create_bootstrap_phase_before'))

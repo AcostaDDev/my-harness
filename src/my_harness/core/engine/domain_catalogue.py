@@ -328,3 +328,25 @@ CATALOGUE = Catalogue((*CATALOGUE,
           _result('revision', 'members', 'links', 'contexts'),
           summary='Inspect verified knowledge and persisted frozen context associations.'),
 ))
+
+# D294 owner-only document staging and deterministic delivery intents. Payload JSON is validated by the codec.
+_DOCUMENT_PAYLOAD = _object({'payload': {'type': 'string', 'maxLength': 24 * 1024 * 1024}}, ('payload',))
+_DOCUMENT_CONSENT = _object({'record_id': ID, 'preview_sha256': SHA,
+    'expected_revision_id': {'type': ['string', 'null']}, 'reason': {'type': 'string', 'minLength': 1, 'maxLength': 2000}},
+    ('record_id', 'preview_sha256', 'expected_revision_id', 'reason'))
+CATALOGUE = Catalogue((*CATALOGUE,
+    Entry('documents.bundle', 1, 'query', ('owner',), (), _object({}), _result('files', 'portable'), summary='Render verified project knowledge for explicit download.'),
+    Entry('documents.stage', 1, 'propose', ('owner',), (), _DOCUMENT_PAYLOAD, _result('record_id', 'draft_id', 'report'), summary='Stage selected untrusted document bytes and explicit identity choices.'),
+    Entry('documents.preview', 1, 'query', ('owner',), (), _object({'record_id': ID}, ('record_id',)), _result('preview_sha256', 'comparison'), summary='Exact import consent including source, mapping and loss report.'),
+    Entry('documents.adopt', 1, 'adopt', ('owner',), (), _DOCUMENT_CONSENT, _result('revision_id', 'continuation'), summary='Adopt the exact staged document import.'),
+    Entry('documents.ownership.prepare', 1, 'propose', ('owner',), (), _DOCUMENT_PAYLOAD, _result('record_id', 'preview_sha256', 'files'), summary='Seal an explicit target ownership preview.'),
+    Entry('documents.ownership.adopt', 1, 'adopt', ('owner',), (), _DOCUMENT_CONSENT, _result('record_id', 'manifest'), summary='Explicitly adopt exact generated targets.'),
+    Entry('documents.export.prepare', 1, 'effect', ('owner',), (), _DOCUMENT_PAYLOAD, _result('record_id', 'preview_sha256', 'files'), summary='Seal deterministic export bytes before external delivery.'),
+))
+
+# T013 review correction: independent download availability and explicit continuation/effect statuses.
+CATALOGUE = Catalogue((*CATALOGUE,
+    Entry('documents.bundle', 2, 'query', ('owner',), (), _object({}),
+          _result('files', 'portable', 'render_error', 'portable_error', 'delivery'),
+          summary='Independent Markdown and portable downloads with per-capability availability.'),
+))

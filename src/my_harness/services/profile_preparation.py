@@ -5,6 +5,7 @@ process gates and before/after content guards do not constitute an OS sandbox.
 """
 from dataclasses import asdict
 import json
+import hashlib
 import os
 import re
 import stat
@@ -257,6 +258,17 @@ class ProfilePreparation(ProjectPreparation):
         if not profile.validations:
             raise refuse()
         technical = validate_plan(candidate.get('preparation_plan'), profile, project.context)
+        if (conversation.source or {}).get('authority') == 'structured-intake-1':
+            from my_harness.storage.knowledge_exchange import completed_at_root
+            completed = completed_at_root(session, current.root)
+            binding = (proposal.decision or {}).get('knowledge_binding') or {}
+            if (not completed or binding.get('revision_id') != completed['result']['revision_id']
+                    or binding.get('knowledge_sha256') != completed['knowledge_sha256']):
+                raise refuse('documents')
+            documents = {path: hashlib.sha256(value.encode('utf-8')).hexdigest()
+                         for path, value in completed['intent']['files'].items()}
+            verify_files(project.context.root, documents)
+            return data, profile, technical, {'scope': scope, **ref}, completed['result']['commit'], documents, payload
         # A completed documentary operation, P001 and the accepted profile must agree before any preparation.
         documentary = session.scalar(select(Bootstrap).where(Bootstrap.root == current.root, Bootstrap.status == 'COMPLETED'))
         if documentary is None:

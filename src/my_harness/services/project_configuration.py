@@ -197,7 +197,10 @@ class ProjectConfiguration:
             documentary = session.scalar(select(Bootstrap).where(Bootstrap.root == str(project.context.root)))
             if documentary is None:
                 documentary = session.scalar(select(Import).where(Import.root == str(project.context.root)))
-        stage = 'PROFILE_PROPOSED'
+        from my_harness.storage.knowledge_exchange import completed_at_root
+        with Session(self.runtime.engine) as session:
+            structured_delivery = completed_at_root(session, str(project.context.root))
+        stage = ('PREPARATION_REQUIRED' if state['saved'] else 'DOCUMENTS_COMMITTED') if structured_delivery else 'PROFILE_PROPOSED'
         if documentary:
             stage = ('PREPARATION_REQUIRED' if state['saved'] else 'DOCUMENTS_COMMITTED') if documentary.status == 'COMPLETED' else 'PROFILE_PROPOSED'
         prepared = self.runtime.preparation.read(project_id)

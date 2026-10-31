@@ -360,6 +360,9 @@ class PhaseRepository:
 
     def _phase(self, session, phase_id, expected, context=None, *, resume_close=False):
         phase = session.get(Phase, phase_id)
+        if phase is not None:
+            from my_harness.storage.knowledge_exchange import require_documentary_lane
+            require_documentary_lane(session, phase.root)
         if phase is None:
             raise LookupError(tr('phases.unknown_managed_phase'))
         if context is not None and str(context.root) != phase.root:

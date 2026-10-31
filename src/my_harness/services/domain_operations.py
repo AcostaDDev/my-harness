@@ -208,8 +208,9 @@ class DomainOperations:
         self.judges = JudgeService(self, qualifications=judge_qualifications)
         from my_harness.services.permission_lifecycle import PermissionLifecycle
         self.permission_lifecycle = permissions if isinstance(permissions, PermissionLifecycle) else PermissionLifecycle(engine)
-        from my_harness.services import intake
+        from my_harness.services import intake, knowledge_exchange
         self.handlers = {
+            **knowledge_exchange.HANDLERS,
             'intake.stage': intake.stage, 'intake.preview': intake.preview, 'intake.adopt': intake.adopt,
             **{name: self.permission_lifecycle.handler for name in ('permissions.inspect', 'permissions.request', 'permissions.preview', 'permissions.respond')},
             'judge.decision.link': self.judges.link,
@@ -247,7 +248,7 @@ class DomainOperations:
             if schema_sha256 != entry.schema_sha256:
                 raise DomainRefusal('schema_mismatch', operation=operation_id)
             try:
-                if len(freeze(arguments).encode('utf-8')) > MAX_ARGUMENTS:
+                if len(freeze(arguments).encode('utf-8')) > (32 * 1024 * 1024 if operation_id.startswith('documents.') else MAX_ARGUMENTS):
                     raise SchemaError('$', 'size')
                 validate(entry.input, arguments)
             except (SchemaError, TypeError, ValueError) as error:
@@ -296,6 +297,11 @@ class DomainOperations:
                     call.authorize([target for dimension, target in previous.capability['requirements']
                                     if dimension == 'product'])
                     return Outcome(entry.id, previous.result, previous.command_id, True)
+            if writes and caller.root:
+                from my_harness.storage.models import CheckoutLockRow
+                lock = session.get(CheckoutLockRow, caller.root)
+                if lock is not None and lock.exchange_id is not None:
+                    raise DomainRefusal('knowledge_invalid', detail='document_writer_active')
             try:
                 result = self.handlers[entry.id](call)
             except StaleRevision:
@@ -374,7 +380,7 @@ class DomainOperations:
         if caller.root is None:
             raise DomainRefusal('not_found')
         found = knowledge.project_id(caller.root)
-        if found is None and entry.id in ('knowledge.draft.open', 'intake.stage'):
+        if found is None and entry.id in ('knowledge.draft.open', 'intake.stage', 'documents.stage'):
             return knowledge.create_project(caller.root)
         if found is None and entry.mutates:
             raise DomainRefusal('not_found')
@@ -440,11 +446,11 @@ class DomainOperations:
             raise DomainRefusal('not_found')
         opener = call.session.scalar(select(DomainCommandRow).where(
             DomainCommandRow.draft_id == draft.id,
-            DomainCommandRow.operation_id.in_(('knowledge.draft.open', 'intake.stage')),
+            DomainCommandRow.operation_id.in_(('knowledge.draft.open', 'intake.stage', 'documents.stage')),
             DomainCommandRow.outcome == 'ACCEPTED'))
         if opener is None:
             raise DomainRefusal('draft_unattributed')
-        if opener.operation_id == 'intake.stage' and call.entry.id != 'knowledge.draft.get':
+        if opener.operation_id in ('intake.stage', 'documents.stage') and call.entry.id != 'knowledge.draft.get' and not call.entry.id.startswith('documents.'):
             raise DomainRefusal('draft_not_owned')
         if opener.scope != call.caller.scope:
             if call.caller.principal != 'owner':
@@ -765,5 +771,7 @@ class DomainOperations:
         except StaleRevision:
             raise DomainRefusal('stale_revision') from None
         call.draft_id = call.revision_id = revision.id
+        from my_harness.services.knowledge_exchange import request_export
+        request_export(call.session, call.project_id, revision.id)
         return {'revision_id': revision.id, 'number': revision.number, 'revision_sha256': revision.revision_sha256,
                 'knowledge_sha256': revision.knowledge_sha256, 'origin': revision.origin, 'changes': revision.changes}

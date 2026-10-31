@@ -475,3 +475,19 @@ anything. Project documents:
 - [Decisions](docs/DECISIONS.md): the technical decisions of the starting baseline, cited by the code as `DNNN`.
 - [Changelog](CHANGELOG.md): released versions and the versioning policy. There is no hosted CI: run the checks
   above locally before proposing a change.
+
+### Unreleased P002 document exchange
+
+The development source includes explicit knowledge document export/import and portable project knowledge
+transfer (P002-T013, D294). In the registered project's knowledge view, select supported Markdown with its
+`knowledge.json` companion (or instruction files), resolve unknown identities/losses, review the exact canonical
+change and adopt it. Markdown and portable download show separate availability: a wrapper or generated-file budget refusal
+does not hide a valid portable snapshot and downloading acquires no checkout targets. A portable
+`project.harness.json` creates knowledge with fresh local identities; it is not
+a backup and imports no execution/approval/usage history.
+
+Before writing generated files, review and adopt the exact target list and originals, then preview and confirm
+the generation. Dirty changes refuse delivery; committed IDE edits can be replaced under D271. Pending delivery
+references survive reload; inspect the receipt and explicitly confirm the previous writer stopped before retry.
+Profile, preparation, activation and READY remain separate. These are unreleased source capabilities, not claims
+about the installed 0.1.9 application. See the [document flow](docs/flows/knowledge-documents.md).

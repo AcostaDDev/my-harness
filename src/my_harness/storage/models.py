@@ -148,9 +148,10 @@ class ManagedJobRow(Base):
 
 class CheckoutLockRow(Base):
     __tablename__ = "checkout_locks"
-    __table_args__ = (CheckConstraint('(job_id IS NOT NULL) != (preparation_id IS NOT NULL)',
+    __table_args__ = (CheckConstraint('(job_id IS NOT NULL) + (preparation_id IS NOT NULL) + (exchange_id IS NOT NULL) = 1',
                                     name='ck_checkout_lock_owner'),)
 
+    exchange_id: Mapped[str | None] = mapped_column(ForeignKey('knowledge_exchange_records.id'), unique=True, nullable=True)
     root: Mapped[str] = mapped_column(String, primary_key=True)
     job_id: Mapped[int | None] = mapped_column(ForeignKey("managed_jobs.id"), unique=True, nullable=True)
     preparation_id: Mapped[str | None] = mapped_column(ForeignKey('project_preparation_operations.id'),
@@ -1549,4 +1550,17 @@ class PermissionBoundaryRow(Base):
     snapshot_id: Mapped[str] = mapped_column(ForeignKey('permission_records.id'), unique=True)
     attempt_id: Mapped[str] = mapped_column(ForeignKey('managed_attempts.id'), unique=True)
     operation_id: Mapped[str] = mapped_column(ForeignKey('workflow_operations.id'))
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class KnowledgeExchangeRow(Base):
+    """D294: insert-only ownership, selected import bytes/maps and deterministic export receipts."""
+    __tablename__ = 'knowledge_exchange_records'
+    __table_args__ = (UniqueConstraint('project_id', 'record_key'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    record_key: Mapped[str] = mapped_column(String(240))
+    kind: Mapped[str] = mapped_column(String(40))
+    payload: Mapped[dict] = mapped_column(JSON)
+    sha256: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[str] = mapped_column(String(40))

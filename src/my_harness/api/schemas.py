@@ -2376,7 +2376,7 @@ class ProfileProposalConfirmCreate(ProfileProposalPreviewCreate):
 
 class ProfileProposalPreviewRead(BaseModel):
     knowledge_binding: dict[str, Any] | None = None
-    continuation: Literal['export_commit_pending_T013'] | None = None
+    continuation: Literal['export_commit_pending_T013', 'document_ownership_required', 'export_required', 'export_committed'] | None = None
     conversation_id: str
     proposal_id: str
     expected_version: int
@@ -2796,3 +2796,47 @@ class KnowledgeHistoryRead(BaseModel):
     total: int
     offset: int
     limit: int
+
+
+class KnowledgeDocumentStageCreate(_KnowledgeInput):
+    payload: str = Field(max_length=24 * 1024 * 1024, description='Selected document JSON; validated as harness-documents-1 or harness-project-1.')
+
+
+class KnowledgeDocumentConsentCreate(_KnowledgeInput):
+    record_id: KnowledgeId
+    preview_sha256: str = Field(pattern='^[0-9a-f]{64}$')
+    expected_revision_id: KnowledgeId | None
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class KnowledgeDocumentRecordCreate(_KnowledgeInput):
+    record_id: KnowledgeId
+
+
+class KnowledgeOwnershipPrepareCreate(_KnowledgeInput):
+    wrappers: list[Literal['claude', 'gemini']] = Field(default_factory=list, max_length=2)
+
+
+class KnowledgeDeliveryCreate(_KnowledgeInput):
+    record_id: KnowledgeId
+    preview_sha256: str = Field(pattern='^[0-9a-f]{64}$')
+    writer_stopped: bool = False
+
+
+class KnowledgeExchangeRead(BaseModel):
+    result: dict[str, Any]
+
+
+class KnowledgeDocumentsBundleResult(BaseModel):
+    files: dict[str, str] | None = Field(description='Markdown generation output; null if rendering is unavailable.')
+    portable: str | None = Field(description='Project knowledge transfer, independently available from rendering/ownership.')
+    render_error: str | None = Field(description='Rendering refusal code; never suppresses a valid portable snapshot.')
+    portable_error: str | None = Field(description='Portable-transfer refusal code; never suppresses valid document output.')
+    ownership_adopted: bool
+    ownership_id: str | None
+    revision_id: str
+    delivery: dict[str, Any] = Field(description='Continuation status; effect_status records the separate completed effect outcome.')
+
+
+class KnowledgeDocumentsBundleRead(BaseModel):
+    result: KnowledgeDocumentsBundleResult

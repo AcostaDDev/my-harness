@@ -94,6 +94,12 @@ merge and push of develop
 rich draft editing, exact adoption comparison and explicit context/READY association limits.
 No release or installation is claimed.
 
+P002-T013 source is complete on `feat/p002-t013-document-roundtrip`; independent technical re-review passed, including all four corrections;
+G09 is resolved by owner acceptance of D294. Versioned document export/import, explicit target ownership,
+project knowledge transfer and deterministic delivery recovery are exercised synthetically. Schema
+`0036_knowledge_exchange` has 86 tables in this local source. Source commit, merge into develop and push are authorized; pending. Release/publication/installation remain pending and unauthorized.
+[Evidence](phase/P002-T013-document-roundtrip.md). T014–T023 remain pending.
+
 **Exit criteria (adopted with D268):**
 
 - Created and onboarded projects use structured, revisioned database knowledge; task/decision access is attributable

@@ -5,6 +5,7 @@ import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { Alert, Loading, when, message } from "../ui";
 import { knowledgeLabel } from "../knowledge-labels";
+import { KnowledgeDocuments } from "./KnowledgeDocuments";
 import { RichMarkdown } from "./Docs";
 
 type Member = S["KnowledgeMember"];
@@ -150,6 +151,7 @@ export function KnowledgePage({ project }: { project?: string }) {
   function label(item: string) { return manifest?.members.find(m => m.item_id === item)?.code ?? item; }
   function relation(l: Relation) { return <p key={`${l.kind}/${l.source_item_id}/${l.target_item_id}`}><a href={`#item-${l.source_item_id}`}>{label(l.source_item_id)}</a> → {text("relation", l.kind)} → <a href={`#item-${l.target_item_id}`}>{label(l.target_item_id)}</a> {l.position} {text("qualifier", l.qualifier)}</p>; }
   return <main><h1 id="page-title" tabIndex={-1}>{t("knowledge.title")}</h1><p>{t("knowledge.lede")}</p>
+    {project && !draft && <KnowledgeDocuments key={project} project={project} head={head?.id ?? null} destinations={inspection && inspection.revision.id === head?.id ? inspection.members : []} onAdopt={() => void refresh()} />}
     {error && <Alert>{error}<p>{t("knowledge.conflict")}</p></Alert>}{busy && <Loading />}
     <button disabled={busy} onClick={() => void act(() => refresh())}>{t("knowledge.reload")}</button>
     {!project && <label>{t("knowledge.project")}<select value={id} onChange={e => { ++generation.current; resetSearch(); setDraft(undefined); setInspection(undefined); setHistory(undefined); setHead(null); setRulings([]); setOffset(0); setId(e.target.value); }}><option value="">—</option>{projects.map(p => <option key={p.id} value={p.id}>{p.root}</option>)}</select></label>}

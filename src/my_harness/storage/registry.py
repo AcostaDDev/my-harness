@@ -94,7 +94,7 @@ class ProjectRegistryRepository:
         pending = {f'preparation:{value}' for value in session.scalars(select(Preparation.id).where(
             Preparation.root == root, Preparation.reserved.is_(True)))}
         if locked is not None:
-            pending.add(locked.job_id if locked.job_id is not None else f'preparation:{locked.preparation_id}')
+            pending.add(locked.job_id if locked.job_id is not None else f'export:{locked.exchange_id}' if locked.exchange_id else f'preparation:{locked.preparation_id}')
         return sorted(set(jobs) | {p for p in pending if isinstance(p, int)}) + sorted(p for p in pending if isinstance(p, str))
 
     def unfinished(self, root):
@@ -114,6 +114,9 @@ class ProjectRegistryRepository:
             select(ManagedCommitRow.operation_id).join(Run, Run.id == ManagedCommitRow.run_id)
             .where(Run.root == root, ManagedCommitRow.status == 'INTENT'))]
         blockers += ProjectRegistryRepository._documentary_blockers(session, root)
+        lock = session.get(Lock, root)
+        if lock is not None and lock.exchange_id:
+            blockers.append(tr('registry.blocker_documents', id=lock.exchange_id))
         for model in (ProjectBootstrapRow, ProjectImportRow):
             blockers += [tr('registry.blocker_documents', id=value) for value in session.scalars(
                 select(model.id).where(model.root == root, model.status != 'COMPLETED'))]

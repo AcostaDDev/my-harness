@@ -1425,5 +1425,16 @@
   "intake.database_owned": "Review the database draft; documentary writes are unavailable.",
   "intake.profile_knowledge_required": "Stage the exact structured knowledge proposed with this profile before confirming it.",
   "intake.export_pending": "Knowledge and profile confirmations do not export or commit documents; that continuation awaits T013.",
-  "domain.intake_profile_required": "Before adopting knowledge, ask the reviewer for a valid profile proposal and stage that turn. The conversation remains open. Confirm the profile separately, before or after knowledge adoption."
+  "domain.intake_profile_required": "Before adopting knowledge, ask the reviewer for a valid profile proposal and stage that turn. The conversation remains open. Confirm the profile separately, before or after knowledge adoption.",
+  "documents.refused": "Document exchange refused: {detail}",
+  "documents.writer_required": "A configured Git writer is required.",
+  "documents.heading.specification": "Specification",
+  "documents.heading.architecture": "Architecture",
+  "documents.heading.data_model": "Data model",
+  "documents.heading.flows": "Flows",
+  "documents.heading.requirement": "Specification",
+  "documents.heading.phase": "Roadmap",
+  "documents.heading.task": "Tasks",
+  "documents.heading.decision": "Decisions",
+  "documents.heading.state": "Knowledge state"
 }

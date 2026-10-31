@@ -487,3 +487,19 @@ records/boundaries in `0035_permissions` (85 tables), composed as the provider i
 Owner controls use additive catalogue commands and API routes; native intent sealing and journal cancellation reuse
 existing context/usage/operation/process controls. [Flow](flows/permissions.md), [record](phase/P002-T010-permissions.md),
 D291. These are explicit interfaces for later workflows, with no new autonomy scheduler or native qualification.
+
+P002-T013 adds the pure `core/engine/knowledge_documents.py` codec, owner-only document commands and
+`services/knowledge_delivery.py` deterministic filesystem/Git delivery. Schema `0036_knowledge_exchange` adds
+one insert-only exchange evidence table and an exchange owner in the shared checkout lock (86 tables).
+Raw selected inputs, reports, mappings, adopted manifests, exact outputs and per-target/commit outcomes are
+retained separately from immutable accepted knowledge. The API and UI expose explicit ownership, rich import
+preview, download, portable transfer and same-consent recovery. Backup verification checks exchange digests and
+references; restored copies remain query-only. See the [flow](flows/knowledge-documents.md) and
+[T013 evidence](phase/P002-T013-document-roundtrip.md). No new dependency or productive task/closure graph is added.
+
+T013's review corrections share the current-delivery predicate between service and profile/configuration/
+preparation consumers, verifying the referenced intent's revision, exact ownership and renderer/targets.
+`documents.bundle@2` and its typed owner API distinguish Markdown and portable availability independently;
+the original catalogue entry remains unchanged. Partial imports own outgoing relations only for selected
+entities. Ordered merging preserves existing unselected entries and appends new roots/children deterministically,
+with the final order visible in the canonical preview. No schema/dependency or later workflow is added.

@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013–T023 are planned
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 source is complete and independent technical re-review passed; G09 remains accepted as D294; T014–T023 are planned
 and not started. Structured intake uses the knowledge service and existing accounted planning runner; product
 task/phase/autonomy graphs remain pending T014–T016. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
@@ -88,7 +88,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **source-complete (G09 accepted as D294; independent technical re-review passed; authorized integration pending)**; T014–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -419,7 +419,7 @@ consumer is introduced. The three technical-review blockers are corrected with r
 independent re-review passed with no outstanding relevant findings (record §7). The owner authorized the
 source commit, accompanying merge into `develop` and push of `develop` (record §8). Release/publication/installation remain pending.
 Route: verified source → develop → 0.2.0 through protected main → distribution/publication → installation.
-T011 and T012 are completed and integrated after successful technical re-review; next implementation task: T013.
+T011 and T012 are completed and integrated after successful technical re-review; T013 source is complete and independent technical re-review passed; authorized integration is pending. Do not start T014 before its dependency is integrated.
 
 ## P002-T011 — Database-owned creation and reverse-engineering intake
 
@@ -462,6 +462,11 @@ history, references and exact adoption previews. **Dependencies:** T004, T005, T
 
 **Gates:** —. **Threats:** TM18.
 ## P002-T013 — Exports, manual import and portable document format
+
+**Status:** G09/D294 remains accepted. Local source is complete and independent technical re-review passed, including all four corrections. Source commit, merge into develop and push are authorized after successful review; pending.
+[Single T013 record](phase/P002-T013-document-roundtrip.md), branch `feat/p002-t013-document-roundtrip`,
+base `1b0b755`. Source completion is local only. Source commit, merge into develop and push are authorized; pending.
+Release 0.2.0, distribution/publication and installation remain pending and unauthorized.
 
 **Problem:** generated Markdown must remain useful in the IDE and explicitly importable without automatic drift logic.
 **Expected result:** reproducible supported exports and a staged UI import round trip with clear identity/provenance
@@ -703,4 +708,4 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 10. **P002-T011** is completed and integrated as source `616846d` after successful technical re-review. The owner
     authorized its source commit, the accompanying merge and push of develop.
     [Evidence](phase/P002-T011-db-intake.md#independent-technical-re-review-and-authorized-delivery-2026-10-31).
-    **P002-T012** is completed and integrated as source `6643ada` after independent technical re-review ([evidence](phase/P002-T012-knowledge-editing.md)); the owner authorized its source commit, merge and push of develop. Next implementation task: **P002-T013**, not started. Release/publication/installation remain pending.
+    **P002-T012** is completed and integrated as source `6643ada` after independent technical re-review ([evidence](phase/P002-T012-knowledge-editing.md)); the owner authorized its source commit, merge and push of develop. Current task: **P002-T013**, G09 accepted as D294; independent technical re-review passed. Source commit, merge into develop and push are authorized; pending. Release/publication/installation remain pending.

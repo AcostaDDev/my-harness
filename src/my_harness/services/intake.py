@@ -213,7 +213,7 @@ def preview(call):
             'questions': questions, 'gaps': pending, 'changes': changes,
             'members': [call.service._member(m) for m in sorted(members.values(), key=lambda m: (m.kind, m.code))],
             'links': [call.service._link(l) for l in sorted(links, key=core.Link.key)],
-            'continuation': 'export_commit_pending_T013',
+            'continuation': 'document_ownership_required',
             'gates': ['profile_confirmation', 'preparation', 'activation', 'readiness_T016']}
     return {**data, 'preview_sha256': core.digest(data)}
 
@@ -230,6 +230,9 @@ def adopt(call):
     revision = call.knowledge.adopt(shown['draft_id'], None, origin='owner_confirmed',
                                    actor=call.caller.actor(), reason=call.arguments['reason'])
     call.draft_id = call.revision_id = revision.id
+    from my_harness.services.knowledge_exchange import request_export
+    request_export(call.session, call.project_id, revision.id, {'conversation_id': call.arguments['conversation_id'],
+        'intake_preview': shown})
     return {'revision_id': revision.id, 'number': revision.number, 'origin': revision.origin,
             'revision_sha256': revision.revision_sha256, 'continuation': shown['continuation'],
             'intake_preview': shown}

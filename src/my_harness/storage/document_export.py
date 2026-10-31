@@ -63,6 +63,8 @@ def snapshot(session, phase, context=None, *, projected=False):
 
 
 def _phase(session, context, phase_id, expected=None):
+    from my_harness.storage.knowledge_exchange import require_documentary_lane
+    require_documentary_lane(session, context.root)
     phase = session.get(Phase, phase_id)
     if phase is None or phase.root != str(context.root):
         raise LookupError(tr('export.unknown_phase_checkout'))

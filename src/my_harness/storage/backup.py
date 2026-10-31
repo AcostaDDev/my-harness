@@ -181,6 +181,8 @@ def _integrity(db, *, restored=False):
         verify_judge_archive(db)
         from my_harness.storage.permission_lifecycle import verify_archive as verify_permissions
         verify_permissions(db)
+        from my_harness.storage.knowledge_exchange import verify_archive as verify_exchange
+        verify_exchange(db)
     except (ValueError, KeyError, TypeError, IndexError) as exc:
         raise BackupError(tr('backup.context')) from exc
     try:

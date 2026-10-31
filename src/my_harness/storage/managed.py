@@ -369,6 +369,8 @@ class SQLiteManagedRepository:
     @staticmethod
     def _phase_open(session, root, code):
         """H3.3/H3.4: a closed, closing or abandoned phase accepts no tasks, resumptions or commits."""
+        from my_harness.storage.knowledge_exchange import require_documentary_lane
+        require_documentary_lane(session, root)
         from my_harness.storage.models import PhaseRow
         from my_harness.storage.documents import unresolved
         if unresolved(session, root):

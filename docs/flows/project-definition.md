@@ -15,7 +15,7 @@ Interrupted inference is never retried. Staging/adoption recover through the sam
 A later turn needs a new staging/review; stale previews cannot adopt it. Unresolved blocking questions
 require a later answered turn or explicit deferral; answers alone do not resolve them.
 
-Export/commit is explicitly pending T013. A structured profile proposal uses the existing full profile
+T013 now provides [explicit ownership and recoverable export/commit](knowledge-documents.md). A structured profile proposal uses the existing full profile
 validator, with exact knowledge and source bindings. Owner profile confirmation requires staged knowledge,
 current conversation/source versions and resolved or deferred blocking questions. The UI supports its
 review/edit/confirm controls. Knowledge adoption, profile confirmation, private configuration, preparation,

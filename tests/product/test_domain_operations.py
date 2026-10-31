@@ -269,9 +269,9 @@ def test_catalogue_entries_are_pinned_closed_and_free_of_caller_fields():
     assert {entry.id: entry.schema_sha256 for entry in CATALOGUE if entry.version == 1 and entry.id.startswith('knowledge.')} == DIGESTS
     for entry in CATALOGUE:
         assert lint(entry.input) == [] and lint(entry.output) == []
-        assert entry.kind in ('query', 'propose', 'adopt') and entry.version in (1, 2)
+        assert entry.kind in ('query', 'propose', 'adopt', 'effect') and entry.version in (1, 2)
         assert ('agent' in entry.principals) == bool(entry.roles)
-        assert entry.id.startswith(('knowledge.', 'judge.', 'permissions.', 'intake.'))  # no SQL, file, code or effect entry exists
+        assert entry.id.startswith(('knowledge.', 'judge.', 'permissions.', 'intake.', 'documents.'))  # no SQL, file, code or effect entry exists
     assert 'agent' not in CATALOGUE.current('knowledge.adopt').principals
     assert 'agent' not in CATALOGUE.current('knowledge.adoption.preview').principals
     assert lint({'type': 'object', 'properties': {'project_id': {'type': 'string'}}, 'additionalProperties': False})
@@ -308,7 +308,9 @@ def test_schema_validator_covers_the_subset_used():
 
 # Caller binding and project membership (E01–E03) -------------------------------------------------------------------
 
-MINIMAL = {'knowledge.inspect': {'revision': 1}, 'knowledge.history': {}, 'permissions.inspect': {}, 'permissions.request': {'request': {}},
+MINIMAL = {**{e.id: ({'payload': '{}'} if 'payload' in e.input.get('properties', {}) else
+    {'record_id': 'r', 'preview_sha256': 'a'*64, 'expected_revision_id': None, 'reason': 'Synthetic'} if e.kind == 'adopt' else
+    {'record_id': 'r'} if e.id == 'documents.preview' else {}) for e in CATALOGUE if e.id.startswith('documents.')}, 'knowledge.inspect': {'revision': 1}, 'knowledge.history': {}, 'permissions.inspect': {}, 'permissions.request': {'request': {}},
     'permissions.preview': {'action': 'grant', 'response': {}, 'expected_revision': 0},
     'permissions.respond': {'action': 'grant', 'response': {}, 'expected_revision': 0, 'preview_sha256': 'a'*64, 'confirmed': True},
     **{f'judge.{d}.submit': {'candidate': {}} for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
@@ -397,7 +399,7 @@ def test_agent_callers_fail_closed_in_the_product_composition(world):
 
 
 def test_only_the_service_mutates_knowledge_in_product_code():
-    allowed = {'storage/knowledge.py', 'services/domain_operations.py', 'storage/frozen_context.py'}
+    allowed = {'storage/knowledge.py', 'services/domain_operations.py', 'storage/frozen_context.py', 'services/knowledge_delivery.py', 'services/knowledge_exchange.py'}
     for path in SOURCE.rglob('*.py'):
         relative = path.relative_to(SOURCE).as_posix()
         names = {node.id for node in ast.walk(ast.parse(path.read_text())) if isinstance(node, ast.Name)}

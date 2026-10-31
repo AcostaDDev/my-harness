@@ -214,6 +214,7 @@ class DomainOperations:
             **{name: self.permission_lifecycle.handler for name in ('permissions.inspect', 'permissions.request', 'permissions.preview', 'permissions.respond')},
             'judge.decision.link': self.judges.link,
             **{f'judge.{d}.submit': self.judges.submit for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
+            'knowledge.history': self._history, 'knowledge.inspect': self._inspect,
             'knowledge.projects': self._projects, 'knowledge.head': self._head, 'knowledge.list': self._list,
             'knowledge.get': self._get, 'knowledge.draft.get': self._draft_get,
             'knowledge.draft.open': self._draft_open, 'knowledge.draft.apply': self._draft_apply,
@@ -534,6 +535,44 @@ class DomainOperations:
                 'number': head.number, 'revision_sha256': head.revision_sha256}})
         return {'items': items, 'total': total, 'offset': offset, 'limit': limit}
 
+    def _history(self, call):
+        call.authorize()
+        offset, limit = call.arguments.get('offset', 0), call.arguments.get('limit', 50)
+        rows = list(call.session.scalars(select(KnowledgeRevisionRow).where(
+            KnowledgeRevisionRow.project_id == call.project_id,
+            KnowledgeRevisionRow.status == 'ACCEPTED').order_by(KnowledgeRevisionRow.number.desc())
+            .offset(offset).limit(limit)))
+        total = call.session.scalar(select(func.count()).select_from(KnowledgeRevisionRow).where(
+            KnowledgeRevisionRow.project_id == call.project_id, KnowledgeRevisionRow.status == 'ACCEPTED'))
+        drafts = list(call.session.scalars(select(KnowledgeRevisionRow).where(
+            KnowledgeRevisionRow.project_id == call.project_id, KnowledgeRevisionRow.status == 'DRAFT')
+            .order_by(KnowledgeRevisionRow.created_at, KnowledgeRevisionRow.id).offset(offset).limit(limit)))
+        return {'revisions': [self._summary(call.knowledge.revision(call.project_id, r.number)) for r in rows],
+                'drafts': [{'id': r.id, 'base_revision_id': r.base_revision_id, 'created_at': r.created_at}
+                           for r in drafts], 'total': total, 'offset': offset, 'limit': limit}
+
+    @staticmethod
+    def _context_refs(call, revision_id):
+        from my_harness.storage.models import ContextSnapshotRow, InvocationContextRow, ManagedAttemptRow
+        contexts = call.session.execute(select(InvocationContextRow, ManagedAttemptRow.run_id).join(ManagedAttemptRow,
+            ManagedAttemptRow.id == InvocationContextRow.attempt_id).join(ContextSnapshotRow,
+            ContextSnapshotRow.id == InvocationContextRow.snapshot_id).where(
+            ContextSnapshotRow.project_id == call.project_id, ContextSnapshotRow.revision_id == revision_id)
+            .order_by(InvocationContextRow.created_at, InvocationContextRow.invocation_id).limit(101)).all()
+        return {'contexts': [{'invocation_id': c.invocation_id, 'attempt_id': c.attempt_id,
+                             'operation_id': c.operation_id, 'created_at': c.created_at, 'run_id': run_id}
+                            for c, run_id in contexts[:100]], 'contexts_truncated': len(contexts) > 100,
+                'readiness': 'unassociated'}
+
+    def _inspect(self, call):
+        call.authorize()
+        revision = self._revision(call, call.arguments['revision'])
+        return {'revision': {**self._summary(revision), 'actor': revision.actor, 'reason': revision.reason,
+                             'base_revision_id': revision.base_revision_id},
+                'members': [self._member(m) for m in revision.members.values()],
+                'links': [self._link(l) for l in sorted(revision.links, key=core.Link.key)],
+                **self._context_refs(call, revision.id)}
+
     def _head(self, call):
         call.authorize()
         revision = self._revision(call, None)
@@ -667,6 +706,15 @@ class DomainOperations:
         call.draft_id = draft.id
         return {'draft_id': draft.id, 'status': 'DISCARDED'}
 
+    def _comparison(self, members, links, previous):
+        old = previous['members'] if previous else {}
+        old_links = previous['links'] if previous else ()
+        return {'items': [{'before': self._member(old[i]) if i in old else None,
+                           'after': self._member(members[i]) if i in members else None}
+                          for i in sorted(set(old) | set(members)) if old.get(i) != members.get(i)],
+                'removed_links': [self._link(l) for l in old_links if l not in links],
+                'added_links': [self._link(l) for l in links if l not in old_links]}
+
     def _preview_of(self, call):
         draft, _opener = self._owned_draft(call, edit=False)
         if draft.status != 'DRAFT':
@@ -684,6 +732,8 @@ class DomainOperations:
         base_sha = head.revision_sha256 if head else None
         return {'draft_id': draft.id, 'base_revision_id': draft.base_revision_id, 'base_revision_sha256': base_sha,
                 'draft_sha256': sha, 'changes': changes, 'classification': classification,
+                'comparison': self._comparison(members, links, previous),
+                'impact': self._context_refs(call, head.id if head else None),
                 'reason_required': policy.reason_required(classification),
                 'preview_sha256': policy.preview_sha256(call.project_id, draft.id, draft.base_revision_id, base_sha,
                                                         sha, changes, classification)}

@@ -4,6 +4,8 @@ import type { Translate } from "./i18n.ts";
 
 export type Route =
   | { name: "home" }
+  | { name: "knowledge" }
+  | { name: "project-knowledge"; project: string }
   | { name: "stats" }
   | { name: "accounting" }
   | { name: "preferences" }
@@ -43,6 +45,7 @@ export function parse(pathname: string): Route {
   const [a, b, c, d, f, g, h, i] = parts as string[];
   const n = parts.length;
   if (n === 0) return { name: "home" };
+  if (a === "knowledge" && n === 1) return { name: "knowledge" };
   if (a === "stats" && n === 1) return { name: "stats" };
   if (a === "accounting" && n === 1) return { name: "accounting" };
   if (a === "preferences" && n === 1) return { name: "preferences" };
@@ -53,6 +56,7 @@ export function parse(pathname: string): Route {
   const project = b;
   // `new` is reserved: the server never registers a project with that id (D076).
   if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
+  if (c === "knowledge" && n === 3) return { name: "project-knowledge", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
   if (c === "stats" && n === 3) return { name: "project-stats", project };
   if (c === "accounting" && n === 3) return { name: "project-accounting", project };
@@ -87,6 +91,8 @@ export function parse(pathname: string): Route {
 export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
+    case "knowledge": return "/knowledge";
+    case "project-knowledge": return `/projects/${e(route.project)}/knowledge`;
     case "stats": return "/stats";
     case "accounting": return "/accounting";
     case "preferences": return "/preferences";
@@ -124,6 +130,7 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 /** Breadcrumb: each level of the route with its target. The last entry is the current page. */
 export function trail(route: Route, t: Translate): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: t("nav.projects"), to: { name: "home" } }];
+  if (route.name === "knowledge") items.push({ label: t("knowledge.title"), to: route });
   if (route.name === "stats") items.push({ label: t("nav.stats"), to: route });
   if (route.name === "accounting") items.push({ label: t("nav.accounting"), to: route });
   if (route.name === "preferences") items.push({ label: t("nav.preferences"), to: route });
@@ -134,6 +141,7 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
   if (!("project" in route)) return items;
   const { project } = route;
   items.push({ label: project, to: { name: "project", project } });
+  if (route.name === "project-knowledge") items.push({ label: t("knowledge.title"), to: route });
   if (route.name === "settings") items.push({ label: t("nav.settings"), to: route });
   if (route.name === "project-stats") items.push({ label: t("nav.stats"), to: route });
   if (route.name === "project-accounting") items.push({ label: t("nav.accounting"), to: route });

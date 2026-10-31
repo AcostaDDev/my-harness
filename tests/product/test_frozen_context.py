@@ -177,6 +177,14 @@ def test_freezing_search_lookup_and_failure_receipts_never_reveal_new_revision(w
     _, (new_id, _) = w.apply(draft, sha, [put('requirement', 'R002', requirement('SECRET_NEW_REVISION')),
         put('requirement', 'R001', requirement('CHANGED_NEW_REVISION'))])
     later = adopt(world['ops'], world['owner'], draft, world['revision']['revision_id'])
+    inspect_old = run(world['ops'], owner_reader(world['project']), 'knowledge.inspect',
+                      {'revision': world['revision']['number']}).result
+    inspect_new = run(world['ops'], owner_reader(world['project']), 'knowledge.inspect',
+                      {'revision': later['number']}).result
+    assert inspect_old['contexts'][0]['attempt_id'] == request.id
+    assert inspect_old['contexts'][0]['run_id'] == job.run_id
+    assert inspect_new['contexts'] == [] and inspect_new['readiness'] == 'unassociated'
+
     responses = [run(ops, caller, 'knowledge.head', {}, 'head').body(),
         run(ops, caller, 'knowledge.search', {'query': 'NEW_REVISION'}, 'search').body(),
         run(ops, caller, 'knowledge.list', {}, 'list').body(),

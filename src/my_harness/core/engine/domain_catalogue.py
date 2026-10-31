@@ -317,3 +317,14 @@ CATALOGUE = Catalogue((*CATALOGUE,
                   ('conversation_id', 'expected_version', 'preview_sha256', 'reason')),
           _result('revision_id', 'origin', 'continuation'), summary='Owner adoption with source and question guards.'),
 ))
+
+# T012 owner consultation; no agent surface or historical digest changes.
+CATALOGUE = Catalogue((*CATALOGUE,
+    Entry('knowledge.history', 1, 'query', ('owner',), (),
+          _object({'offset': OFFSET, 'limit': LIMIT}), _result('revisions', 'drafts', 'total'),
+          summary='Browse persisted accepted history and open drafts.'),
+    Entry('knowledge.inspect', 1, 'query', ('owner',), (),
+          _object({'revision': NUMBER}, ('revision',)),
+          _result('revision', 'members', 'links', 'contexts'),
+          summary='Inspect verified knowledge and persisted frozen context associations.'),
+))

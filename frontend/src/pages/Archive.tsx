@@ -16,6 +16,7 @@ export function ArchiveHome() {
   const { t } = useI18n();
   const [id, setId] = useState("");
   return <>
+    <Link to={{ name: "knowledge" }}>{t("knowledge.title")}</Link>
     <PageHeader title={t("archive.title")}><p>{t("archive.lede")}</p></PageHeader>
     <form className="panel" onSubmit={event => { event.preventDefault(); if (id.trim()) navigate({ name: "run-short", run: id.trim() }); }}>
       <label>{t("archive.run_id")}<input value={id} required onChange={event => setId(event.target.value)} /></label>

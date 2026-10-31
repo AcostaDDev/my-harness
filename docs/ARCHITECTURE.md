@@ -74,7 +74,7 @@ queue; closing the browser does not cancel work.
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
 | `orchestration/`, `storage/graph_continuations.py` | P002-T003 graph runtime: harness checkpoint saver, versioned graph registry, segment runner with quarantine and cancellation, operation port; the only LangGraph importer, used through `ManagedRuntime.graph_runner` ([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract), [D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine)) |
-| `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used by tests only ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
+| `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used through shared domain commands by structured intake and the T012 owner editor ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
 | `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`, `storage/operation_journal.py`, `api/traces.py` | P002-T006 operation journal behind `OperationPort` with fenced invocation operations and evidence-based recovery, ordered insert-only trace events, `trace-observation-1` counters, bounded sanitized payloads, T007/T008 envelopes and read-only trace routes ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract)) |
 | `core/engine/frozen_context.py`, `storage/frozen_context.py` | P002-T007: bounded accepted context, actual frozen profile and explicit Git/code captures, D285 prompt rendering, fenced invocation boundaries and exact query/tool/input receipts, with scoped archive readers ([D288](DECISIONS.md#d288--frozen-invocation-context-and-exact-exposure-evidence)) |
 | `core/engine/tool_bridge.py`, `services/tool_bridge.py`, `adapters/tool_bridge_transport.py`, `adapters/tool_bridge_stdio.py` | T008 (integrated into develop): three-tool MCP surface, frozen scope/capability cells, persisted caller resolver, supervisor broker and independently controlled stdio relay; no product graph or production permission provider ([D289](DECISIONS.md#d289--invocation-scoped-broker-binding-transactional-exposure-and-independent-relay-control)) |
@@ -210,7 +210,10 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
 - Knowledge (P002-T005, D286): `GET …/knowledge/projects[/{k}[/revisions/{n}/items[/{item}]|/drafts/{d}]]` read
   persisted knowledge, also on restored archives; `POST …/projects/{p}/knowledge/drafts[/{d}/changes|discard|
   adoption/preview|adopt]` change it with `Idempotency-Key`, expected draft hash, expected head and preview hash
-  ([flow](flows/domain-operations.md)).
+  ([flow](flows/domain-operations.md)). T012 adds owner-only `GET …/knowledge/projects/{k}/history`,
+  `…/revisions/{n}` and `…/revisions/{n}/search`; `GET …/projects/{p}/knowledge` resolves the
+  registered head without creating absent knowledge; the standalone knowledge UI uses persisted consultation
+  without an action workspace and uses shared commands for registered-project editing. Integrated into develop after technical re-review.
 - Traces (P002-T006, D287): `GET …/knowledge/projects/{k}/traces/{thread}[/operations|/events|/artifacts/{sha}]`
   read one graph thread's operations, ordered events and the content its events offloaded within that knowledge
   project, bounded pages, also on restored archives ([flow](flows/operation-journal.md)).
@@ -405,7 +408,7 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 
 <a id="13-p002-target-architecture-accepted-design-not-implemented"></a>
 
-## 13. P002 target architecture (accepted design; foundations implemented and integrated through T010)
+## 13. P002 target architecture (accepted design; foundations integrated through T012)
 
 T011 is integrated into develop after successful technical re-review: the existing accounted planning runner returns
 structured knowledge and validated profile proposals; `services/intake.py` stages/adopts D284 records only
@@ -414,6 +417,10 @@ D285 instruction staging preserves original HEAD bytes as reviewed sections. `pr
 binds the profile to the exact knowledge/source state through the existing owner preview/CAS confirmation.
 The API/UI expose those independent confirmations. No table, dependency, tool permission, inference launcher
 or installed conversion is added. Export/commit remains a T013 continuation. [Evidence](phase/P002-T011-db-intake.md).
+
+T012 adds standalone persisted knowledge consultation and registered-project editing, with transaction-derived
+comparisons and explicit frozen-context/READY association limits (D293), integrated as source `6643ada` after
+independent technical re-review. The owner authorized source commit, the accompanying merge and push of develop. No runtime graph, schema or dependency changes are introduced.
 
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus

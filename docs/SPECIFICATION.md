@@ -379,7 +379,7 @@ T006 [qualified the whole chain](archive/phase-001/P001-T006-qualification.md) w
 
 <a id="14-p002-autonomous-mode-and-project-authority-accepted-design-not-implemented"></a>
 
-## 14. P002 autonomous mode and project authority (accepted design; foundations implemented and integrated through T010)
+## 14. P002 autonomous mode and project authority (accepted design; foundations implemented and integrated through T012)
 
 [D268–D279](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), the
 [T001 contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md) and
@@ -406,7 +406,7 @@ rules change.
   revisions protected in the database. Instructions are canonical knowledge exported as `AGENTS.md` and derived
   wrappers, editable in the UI or imported explicitly through an authorized adoption (D285). T004 storage/core
   and T005 domain commands now serve T011 structured intake. T007 supplies explicit canonical context boundaries;
-  historical workflows retain D094 until their owning migration. General editing and export/import remain T012/T013.
+  historical workflows retain D094 until their owning migration. T012 adds general owner editing, accepted history/search and exact-content adoption previews, integrated into develop after independent technical re-review. Frozen invocation context stays unchanged after adoption, and absent READY associations are explicit. Export/import remain T013.
 - **Roles and permissions.** Reviewer, executor and judge are configured by provider, model and effort; the judge has
   duty-specific contracts and cannot grant owner-only capabilities. The five permission dimensions gain per-operation,
   time-limited and permanent revocable grants, enforced outside the model. T009 implements optional owner-selected

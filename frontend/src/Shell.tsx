@@ -58,6 +58,7 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
   const items: [MessageKey, Route, boolean][] = [
     ["nav.summary", { name: "project", project }, route.name === "project"],
     ["nav.phases", { name: "phases", project }, ["phases", "phase", "task", "run"].includes(route.name)],
+    ["knowledge.title", { name: "project-knowledge", project }, route.name === "project-knowledge"],
     ["nav.docs", { name: "docs", project }, route.name === "docs"],
     ["nav.chat", { name: "chat", project }, route.name === "chat"],
     ["nav.stats", { name: "project-stats", project }, route.name === "project-stats"],
@@ -111,6 +112,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <ul>
           <li><Link to={{ name: "home" }} current={route.name === "home"}>{archive ? t("archive.title") : t("nav.projects")}</Link></li>
           {mode && !archive && !configuring && <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>}
+          <li><Link to={{ name: "knowledge" }} current={route.name === "knowledge"}>{t("knowledge.title")}</Link></li>
           <li><Link to={{ name: "stats" }} current={route.name === "stats"}>{t("nav.stats")}</Link></li>
           <li><Link to={{ name: "accounting" }} current={route.name === "accounting"}>{t("nav.accounting")}</Link></li>
           {mode && !archive && <li><Link to={{ name: "preferences" }} current={route.name === "preferences"}>{t("nav.preferences")}</Link></li>}

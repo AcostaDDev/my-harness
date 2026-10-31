@@ -94,6 +94,7 @@ export const imageSrc = (project: string, path: string) => `/api/managed/project
 
 /** Accepted target of a link or an image; nothing outside this table reaches the HTML. */
 export function classify(url: string, context: { project: string; path: string }, image = false): LinkTarget {
+  if (!context.project && !/^https?:/i.test(url)) return { kind: "blocked", reason: "scheme" };
   const value = url.trim();
   if (!value) return { kind: "blocked", reason: "empty" };
   if (value.startsWith("//")) return { kind: "blocked", reason: "no_scheme" };

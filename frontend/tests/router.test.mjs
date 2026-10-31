@@ -158,3 +158,8 @@ test('onboarding keeps private draft URLs and refuses traversal', () => {
     assert.equal(parse(path).name, 'not-found');
   }
 });
+
+test('knowledge routes remain separate from file documentation', () => {
+  for (const route of [{ name: 'knowledge' }, { name: 'project-knowledge', project: 'synthetic' }])
+    assert.deepEqual(parse(href(route)), route);
+});

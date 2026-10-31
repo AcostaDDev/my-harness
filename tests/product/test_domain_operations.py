@@ -38,6 +38,8 @@ KNOWLEDGE_TABLES = ('knowledge_projects', 'knowledge_items', 'knowledge_item_ver
                     'knowledge_revision_members', 'knowledge_revision_links', 'domain_commands')
 # Pinned digests: any change of an entry's schema, principals, roles or capabilities changes its digest (TM02).
 DIGESTS = {
+    'knowledge.inspect': '897d685918dfe5b478a4879c95a4b4bf02a954aa44fd96a758eef3934f0f0875',
+    'knowledge.history': 'c940d6910d3a65f851a4cc8cc704cc66e7d5ab8cfdf2a2b3c6a8404b64d576d7',
     'knowledge.lookup': '18c8e98fa6b9183ffded177aecb88fcd0a60044eb95dc1c0ca19122349b0ad72',
     'knowledge.search': 'ccb4717d970cee6219a28a748da7ffc8ecd5b251337a44ad72c741d3538f020b',
     'knowledge.projects': '75b0e3fc4dfcb89e99ad93a2eae6e7d25b5db128cc7265408b0dea9316ff8479',
@@ -306,7 +308,7 @@ def test_schema_validator_covers_the_subset_used():
 
 # Caller binding and project membership (E01–E03) -------------------------------------------------------------------
 
-MINIMAL = {'permissions.inspect': {}, 'permissions.request': {'request': {}},
+MINIMAL = {'knowledge.inspect': {'revision': 1}, 'knowledge.history': {}, 'permissions.inspect': {}, 'permissions.request': {'request': {}},
     'permissions.preview': {'action': 'grant', 'response': {}, 'expected_revision': 0},
     'permissions.respond': {'action': 'grant', 'response': {}, 'expected_revision': 0, 'preview_sha256': 'a'*64, 'confirmed': True},
     **{f'judge.{d}.submit': {'candidate': {}} for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},

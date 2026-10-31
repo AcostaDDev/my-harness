@@ -383,8 +383,12 @@ function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsS
 
 /** Rendered Markdown (markdown.ts) with internal navigation and isolated diagrams (mermaid-view.ts). */
 export function MarkdownView({ source, path }: { source: string; path: string }) {
-  const { t } = useI18n();
   const { project } = useWorkspace();
+  return <RichMarkdown source={source} path={path} project={project} />;
+}
+
+export function RichMarkdown({ source, path = "", project = "" }: { source: string; path?: string; project?: string }) {
+  const { t } = useI18n();
   const rendered = useMemo(() => renderMarkdown(source, { project, path }), [source, project, path]);
   const container = useRef<HTMLDivElement>(null);
   const [dark, setDark] = useState(prefersDark);

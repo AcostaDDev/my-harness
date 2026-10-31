@@ -2389,3 +2389,25 @@ available. Adoption reuses the exact profile preview checks under its transactio
 English/Spanish continuation diagnostic. This prevents closing the only conversation before a profile can
 be obtained. It does not confirm the profile, and selected-profile intake is exempt. Separate profile
 confirmation before or after knowledge adoption, idempotency and the post-adoption context guard remain intact.
+## D293 — Owner knowledge consultation and exact adoption presentation
+
+Status: implementation detail within the owner's P002-T012 authorization; independent technical re-review passed;
+source commit, integration into develop and push are authorized and pending. [Evidence](phase/P002-T012-knowledge-editing.md). No new policy authorization or design gate.
+
+The knowledge UI has a persisted consultation lane at `/knowledge`, separate from checkout documentation and from
+project action workspaces. Registered projects expose `/projects/{id}/knowledge` for shared-command drafting and
+owner adoption. Restored and unconfigured consultation mounts neither project workspace nor mutation controls.
+Owner-only history/inspection queries are additive catalogue entries; agent surfaces and historical digests remain
+unchanged. Search exposes the existing revision-bound shared query.
+
+Adoption presentation derives before/after members and added/removed typed links from the verified base and exact
+draft in the preview transaction. It preserves historical content/revision/preview hash formats. Root/child order,
+content, provenance and supersession are visible without requiring JSON. The sealed draft, not unsaved input, is
+adopted. Editing invalidates the visible preview; stale head/draft/preview is refused without automatic rebase.
+Pending envelopes retain their exact body/key across response loss and reload; recovery explicitly resends them.
+
+Frozen context associations come only from persisted snapshot → invocation → attempt → run relations, bounded to
+100 with explicit truncation. Advancing knowledge changes neither old contexts nor evidence. No revision-bound
+READY association is provided by the current operational model; the view explicitly reports that absence and never
+labels legacy READY as validation of a new revision. Product decisions and separately queried operational rulings
+remain distinct. No table, migration, dependency, automatic conversion, drift watcher or delegated adoption is added.

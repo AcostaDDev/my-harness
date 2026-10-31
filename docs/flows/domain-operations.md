@@ -58,3 +58,32 @@ sequenceDiagram
 - **Errors.** `{code, diagnostic}` with the diagnostic in the interface language: 404 for missing or foreign ids and
   unregistered projects, 422 for schema, argument, key and invalid-knowledge refusals, 403 for caller and capability
   refusals, 409 for stale or conflicting state.
+
+## Owner knowledge editing (T012 local source)
+
+1. Open `/knowledge` for persisted consultation, including restored/unconfigured copies; page persisted projects,
+   accepted history and drafts, search a selected accepted revision, inspect content/provenance/adoption metadata.
+   The checkout documentation viewer retains its existing authority lane and drift behavior.
+2. A registered project's knowledge page opens a draft against the current head (explicitly null before first
+   adoption). Edit typed entities, rich document/instruction sections and ordered relationships through shared
+   draft commands. Local unsaved inputs and pending request envelopes survive reload in the browser session.
+3. Save the input to the draft before preview. The service validates the complete revision and compares the
+   exact manifests in the same transaction: before/after content/root order and added/removed typed links,
+   classification, sensitivity and context associations. The historical seal formats are unchanged.
+4. Explicit owner adoption sends that preview hash and exact expected base, with reason where required. Changing
+   input invalidates the visible preview. Stale draft/head/preview returns an actionable refusal; no automatic
+   rebase or automatic approval regeneration occurs. Response loss keeps the exact pending body/key for an explicit
+   retry. The command's stored outcome deduplicates adoption.
+5. Consult the new revision and immutable previous revisions. Context links follow only persisted snapshot,
+   invocation, attempt and run records. A later revision changes neither an old invocation nor its evidence.
+   No READY association is asserted when absent; T014–T016 own final operational readiness. Operational rulings
+   remain separately labelled audit records, never implicitly adopted product decisions.
+
+T013 owns renderer/export/import and portable format; T017/T018 own global inbox and graph layout; T020 owns
+installed conversion. No new migration or agent authority is part of this flow.
+
+T012 review corrections keep the project editor available with either null or READY configuration mode; archives
+and blocking setup modes retain consultation only. Reload repeats project discovery/resolution and dependent
+reads while preserving local input and pending mutations. Read generations fence late selections; search results
+and cursors are invalidated on project/revision/query changes. Consultation, forms and comparisons use typed
+presentation labels and localized timestamps. Both inspection and adoption preview announce context truncation.

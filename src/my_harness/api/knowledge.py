@@ -9,10 +9,11 @@ CSRF and `restored_read_only` guards of `/api/managed`.
 """
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query, Request
 
 from my_harness.api.managed import ERRORS, IdempotencyKey, Limit, Offset
 from my_harness.api.schemas import (
+    KnowledgeHistoryRead, KnowledgeInspectionRead,
     IntakeStageCreate, IntakePreviewCreate, IntakeAdoptCreate, KnowledgeAdoptCreate, KnowledgeAdoptRead, KnowledgeDocument, KnowledgeDraftChangesCreate,
     KnowledgeDraftChangesRead, KnowledgeDraftDiscardRead, KnowledgeDraftOpenCreate, KnowledgeDraftOpenRead,
     KnowledgeDraftRead, KnowledgeHeadRead, KnowledgeItemRead, KnowledgeItemsRead, KnowledgeKind, KnowledgePreviewRead,
@@ -47,6 +48,14 @@ def knowledge_router(runtime: ManagedRuntime) -> APIRouter:
         except (LookupError, RuntimeError):
             raise problem(404, 'project_unregistered',
                           message('domain.project_unregistered', language(runtime.engine))) from None
+
+    def closed_query(*allowed):
+        def validate_query(request: Request):
+            keys = list(request.query_params.keys())
+            if set(keys) - set(allowed) or any(len(request.query_params.getlist(k)) != 1 for k in keys):
+                raise problem(422, 'arguments_invalid',
+                              message('domain.arguments_invalid', language(runtime.engine), where='query'))
+        return Depends(validate_query)
 
     @router.get('/knowledge/projects/{knowledge_project_id}/permissions', response_model=StandingPermissionsRead,
                 operation_id='standing_permissions')
@@ -85,6 +94,11 @@ def knowledge_router(runtime: ManagedRuntime) -> APIRouter:
     def intake_adopt(project_id: str, body: IntakeAdoptCreate, idempotency_key: IdempotencyKey):
         return run(registered(project_id), 'intake.adopt', body.model_dump(), idempotency_key)
 
+    @router.get('/projects/{project_id}/knowledge', response_model=KnowledgeHeadRead,
+                operation_id='project_knowledge_head', dependencies=[closed_query()])
+    def project_head(project_id: str):
+        return run(registered(project_id), 'knowledge.head', {})
+
     @router.get('/knowledge/projects', response_model=KnowledgeProjectsRead, operation_id='knowledge_projects')
     def projects(offset: Offset = 0, limit: Limit = 50):
         """Persisted knowledge projects, including those of restored archives and unregistered roots."""
@@ -111,6 +125,26 @@ def knowledge_router(runtime: ManagedRuntime) -> APIRouter:
                 response_model=KnowledgeItemRead, operation_id='knowledge_item')
     def item(knowledge_project_id: str, number: Number, item_id: str):
         return run(owner_reader(knowledge_project_id), 'knowledge.get', {'revision': number, 'item_id': item_id})
+
+    @router.get('/knowledge/projects/{knowledge_project_id}/history', response_model=KnowledgeHistoryRead,
+                operation_id='knowledge_history', dependencies=[closed_query('offset', 'limit')])
+    def history(knowledge_project_id: str, offset: Offset = 0, limit: Limit = 50):
+        return run(owner_reader(knowledge_project_id), 'knowledge.history', {'offset': offset, 'limit': limit})
+
+    @router.get('/knowledge/projects/{knowledge_project_id}/revisions/{number}', response_model=KnowledgeInspectionRead,
+                operation_id='knowledge_inspect', dependencies=[closed_query()])
+    def inspect(knowledge_project_id: str, number: Number):
+        return run(owner_reader(knowledge_project_id), 'knowledge.inspect', {'revision': number})
+
+    @router.get('/knowledge/projects/{knowledge_project_id}/revisions/{number}/search', response_model=dict,
+                operation_id='knowledge_search', dependencies=[closed_query('query', 'cursor', 'limit')])
+    def search(knowledge_project_id: str, number: Number,
+               query: Annotated[str, Query(min_length=1, max_length=200)],
+               cursor: Annotated[str | None, Query(max_length=100)] = None, limit: Annotated[int, Query(ge=1, le=50)] = 20):
+        args = {'revision': number, 'query': query, 'limit': limit}
+        if cursor is not None:
+            args['cursor'] = cursor
+        return run(owner_reader(knowledge_project_id), 'knowledge.search', args)
 
     @router.get('/knowledge/projects/{knowledge_project_id}/drafts/{draft_id}', response_model=KnowledgeDraftRead,
                 operation_id='knowledge_draft')

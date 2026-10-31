@@ -2588,6 +2588,8 @@ class KnowledgeChangeClass(BaseModel):
 
 
 class KnowledgePreviewRead(BaseModel):
+    impact: dict[str, Any]
+    comparison: dict[str, Any]
     draft_id: str
     base_revision_id: str | None
     base_revision_sha256: str | None
@@ -2757,3 +2759,40 @@ class IntakePreviewCreate(BaseModel):
 class IntakeAdoptCreate(IntakePreviewCreate):
     preview_sha256: str = Field(pattern=SHA256)
     reason: str = Field(min_length=1, max_length=2000)
+
+
+class KnowledgeAcceptedRead(KnowledgeRevisionSummary):
+    actor: dict[str, Any]
+    reason: str | None
+    base_revision_id: str | None
+
+
+class KnowledgeContextRead(BaseModel):
+    invocation_id: str
+    attempt_id: str
+    operation_id: str
+    run_id: str
+    created_at: str
+
+
+class KnowledgeInspectionRead(BaseModel):
+    revision: KnowledgeAcceptedRead
+    members: list[KnowledgeMember]
+    links: list[KnowledgeLinkRead]
+    contexts: list[KnowledgeContextRead]
+    contexts_truncated: bool
+    readiness: Literal['unassociated']
+
+
+class KnowledgeDraftSummary(BaseModel):
+    id: str
+    base_revision_id: str | None
+    created_at: str
+
+
+class KnowledgeHistoryRead(BaseModel):
+    revisions: list[KnowledgeRevisionSummary]
+    drafts: list[KnowledgeDraftSummary]
+    total: int
+    offset: int
+    limit: int

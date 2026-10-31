@@ -18,6 +18,7 @@ import { Empty, Loading, PageHeader } from "./ui";
 import { ProjectWorkspace, useWorkspace } from "./workspace";
 
 // Documentation (markdown-it and, when drawing, Mermaid) is only downloaded when opened (H6.2 E3).
+const KnowledgePage = lazy(() => import("./pages/Knowledge").then(module => ({ default: module.KnowledgePage })));
 const DocsPage = lazy(() => import("./pages/Docs").then(module => ({ default: module.DocsPage })));
 // Creation and planning (H6.2 E4) share the Markdown viewer: same lazy-loading rule.
 const ImportPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.ImportPage })));
@@ -28,8 +29,9 @@ const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: 
 // Accounting (P001-T005a): calculated valuations over the accounting API, in its own chunk too.
 const AccountingPage = lazy(() => import("./pages/Accounting").then(module => ({ default: module.AccountingPage })));
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "accounting" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "knowledge" | "home" | "stats" | "accounting" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
   switch (route.name) {
+    case "project-knowledge": return null;
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;
     case "phase": return <PhasePage key={route.phase} code={route.phase} />;
@@ -61,6 +63,7 @@ export function Page({ route }: { route: Route }) {
   const mode = useServiceMode();
   const error = useServiceError();
   if (!mode) return error ? <p role="alert" className="state state-error">{error}</p> : <Loading />;
+  if (route.name === "knowledge" || route.name === "project-knowledge") return <Suspense fallback={<Loading />}><KnowledgePage key={route.name === "knowledge" ? "read" : route.project} project={route.name === "project-knowledge" && !mode.read_only_archive && (!mode.configuration_mode || mode.configuration_mode === "READY") ? route.project : undefined} /></Suspense>;
   if (mode.read_only_archive) {
     switch (route.name) {
       case "home": return <ArchiveHome />;

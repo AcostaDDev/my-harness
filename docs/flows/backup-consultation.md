@@ -53,3 +53,8 @@ flowchart TD
 - `frontend/src/ServiceMode.tsx`, `frontend/src/Page.tsx`, `frontend/src/router.ts`, `frontend/src/pages/Archive.tsx` and shared run components.
 - [Run evidence](task-run.md), [architecture](../ARCHITECTURE.md#5-persistence),
   [backup commands](../../README.md#operation).
+
+T012 local source adds a **Project knowledge** entry to archive consultation and the global navigation. It reads
+persisted projects, accepted history, drafts, search results and frozen context/run associations without a checkout,
+registered project or `ProjectWorkspace`. It mounts no pending confirmation handling or mutation controls in that
+lane. Missing accepted revisions and missing READY/task associations remain explicit; no conversion is performed.

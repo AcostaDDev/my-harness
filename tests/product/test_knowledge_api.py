@@ -26,6 +26,8 @@ def dump(path):
 
 def journey(http):
     base = '/api/managed/projects/synthetic/knowledge/drafts'
+    absent = http.get('/api/managed/projects/synthetic/knowledge').json()
+    assert absent['revision'] is None and absent['knowledge_project_id'] is None
     opened = http.post(base, json={'expected_revision_id': None}, headers={**H, 'Idempotency-Key': 'o1'})
     assert opened.status_code == 201, opened.text
     draft = opened.json()
@@ -106,6 +108,9 @@ def test_restored_archive_reads_knowledge_from_persisted_data_only(migrated_data
     before = dump(restored)
     archive = create_app(f'sqlite:///{restored}', tmp_path / 'ui', managed=ManagedConfig(supervisor=True))
     with TestClient(archive, base_url=LOCAL) as http:
+        for suffix in ('/history', '/revisions/1', '/revisions/1/search?query=verbatim'):
+            response = http.get(f'/api/managed/knowledge/projects/{project}{suffix}')
+            assert response.status_code == 200, response.text
         assert http.get('/api/managed/knowledge/projects').json()['items'][0]['id'] == project
         assert http.get(f'/api/managed/knowledge/projects/{project}').json() == expected['head']
         assert http.get(f'/api/managed/knowledge/projects/{project}/revisions/1/items').json() == expected['items']
@@ -116,3 +121,49 @@ def test_restored_archive_reads_knowledge_from_persisted_data_only(migrated_data
                                 headers={**H, 'Idempotency-Key': 'r'})
             assert refused.status_code == 409 and refused.json()['code'] == 'restored_read_only'
     assert dump(restored) == before
+
+
+def test_editor_history_preview_search_and_stale_consent(migrated_database, tmp_path):
+    url = migrated_database[0]
+    checkout = tmp_path / 'checkout'
+    checkout.mkdir()
+    app = create_app(url, tmp_path / 'ui', managed=config(make_context(checkout)))
+    with TestClient(app, base_url=LOCAL) as http:
+        project, _, head = journey(http)
+        read = f'/api/managed/knowledge/projects/{project}'
+        base = '/api/managed/projects/synthetic/knowledge/drafts'
+        old = http.get(f'{read}/revisions/1').json()
+        assert old['revision']['actor']['principal'] == 'owner'
+        assert old['contexts'] == [] and old['readiness'] == 'unassociated'
+        assert http.get(f'{read}/history').json()['revisions'][0]['id'] == head['revision']['id']
+        for suffix in ('/history?actor=forged', '/revisions/1?revision=2', '/revisions/1/search?query=x&query=y'):
+            assert http.get(read + suffix).status_code == 422
+        found = http.get(f'{read}/revisions/1/search?query=verbatim').json()
+        assert found['page']['total'] == 1
+        opened = http.post(base, json={'expected_revision_id': head['revision']['id']},
+                           headers={**H, 'Idempotency-Key': 'edit-open'}).json()
+        path = f"{base}/{opened['draft_id']}"
+        change = {'op': 'put', 'kind': 'requirement', 'code': 'R001', 'provenance': 'known',
+                  'content': {'title': 'Changed', 'statement': '**Rich**\n```mermaid\ngraph TD; A-->B\n```', 'status': 'active'}}
+        body = {'expected_draft_sha256': opened['draft_sha256'], 'changes': [change]}
+        applied = http.post(f'{path}/changes', json=body, headers={**H, 'Idempotency-Key': 'edit'}).json()
+        preview = http.post(f'{path}/adoption/preview', headers=H).json()
+        assert preview['comparison']['items'][0]['before'] == old['members'][0]
+        assert preview['comparison']['items'][0]['after']['content'] == change['content']
+        assert http.post(f'{path}/changes', json=body, headers={**H, 'Idempotency-Key': 'stale-edit'}).status_code == 409
+        consent = {'expected_revision_id': head['revision']['id'], 'preview_sha256': preview['preview_sha256'], 'reason': 'Review'}
+        # A later edit invalidates the displayed consent even when the head has not advanced.
+        change['content']['title'] = 'Later edit'
+        http.post(f'{path}/changes', json={'expected_draft_sha256': applied['draft_sha256'], 'changes': [change]},
+                  headers={**H, 'Idempotency-Key': 'later'})
+        assert http.post(f'{path}/adopt', json=consent, headers={**H, 'Idempotency-Key': 'stale-consent'}).json()['detail']['code'] == 'preview_stale'
+        preview = http.post(f'{path}/adoption/preview', headers=H).json()
+        consent['preview_sha256'] = preview['preview_sha256']
+        first = http.post(f'{path}/adopt', json=consent, headers={**H, 'Idempotency-Key': 'accepted'})
+        assert first.status_code == 200, first.text
+        assert http.post(f'{path}/adopt', json=consent, headers={**H, 'Idempotency-Key': 'accepted'}).json()['replayed']
+        current = http.get(f'{read}/revisions/2').json()
+        assert current['members'][0] == preview['comparison']['items'][0]['after']
+        assert http.get(f'{read}/revisions/1').json() == old
+        assert http.get('/api/managed/knowledge/projects/foreign/revisions/1').status_code == 404
+        assert http.get(f'{read}/revisions/2/search?query=x', headers={'Origin': 'http://evil.example'}).status_code == 403

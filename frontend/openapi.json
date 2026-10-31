@@ -17332,6 +17332,93 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/knowledge": {
+      "get": {
+        "summary": "Project Head",
+        "operationId": "project_knowledge_head",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeHeadRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/knowledge/projects": {
       "get": {
         "summary": "Projects",
@@ -17751,6 +17838,355 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/KnowledgeItemRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "knowledge_history",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeHistoryRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/revisions/{number}": {
+      "get": {
+        "summary": "Inspect",
+        "operationId": "knowledge_inspect",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483648,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeInspectionRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/knowledge/projects/{knowledge_project_id}/revisions/{number}/search": {
+      "get": {
+        "summary": "Search",
+        "operationId": "knowledge_search",
+        "parameters": [
+          {
+            "name": "knowledge_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Knowledge Project Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483648,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Query"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Knowledge Search"
                 }
               }
             }
@@ -28024,6 +28460,87 @@
         ],
         "title": "JudgeRequestsRead"
       },
+      "KnowledgeAcceptedRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "revision_sha256": {
+            "type": "string",
+            "title": "Revision Sha256"
+          },
+          "knowledge_sha256": {
+            "type": "string",
+            "title": "Knowledge Sha256"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "owner_confirmed",
+              "owner_delegated",
+              "harness_deterministic"
+            ],
+            "title": "Origin"
+          },
+          "accepted_at": {
+            "type": "string",
+            "title": "Accepted At"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "actor": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Actor"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "base_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Revision Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "revision_sha256",
+          "knowledge_sha256",
+          "origin",
+          "accepted_at",
+          "counts",
+          "actor",
+          "reason",
+          "base_revision_id"
+        ],
+        "title": "KnowledgeAcceptedRead"
+      },
       "KnowledgeAdoptCreate": {
         "properties": {
           "expected_revision_id": {
@@ -28165,6 +28682,39 @@
           "sensitive"
         ],
         "title": "KnowledgeChangeClass"
+      },
+      "KnowledgeContextRead": {
+        "properties": {
+          "invocation_id": {
+            "type": "string",
+            "title": "Invocation Id"
+          },
+          "attempt_id": {
+            "type": "string",
+            "title": "Attempt Id"
+          },
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invocation_id",
+          "attempt_id",
+          "operation_id",
+          "run_id",
+          "created_at"
+        ],
+        "title": "KnowledgeContextRead"
       },
       "KnowledgeDraftChangesCreate": {
         "properties": {
@@ -28414,6 +28964,36 @@
         ],
         "title": "KnowledgeDraftRead"
       },
+      "KnowledgeDraftSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "base_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Revision Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "base_revision_id",
+          "created_at"
+        ],
+        "title": "KnowledgeDraftSummary"
+      },
       "KnowledgeHeadRead": {
         "properties": {
           "knowledge_project_id": {
@@ -28462,6 +29042,92 @@
           "revision_sha256"
         ],
         "title": "KnowledgeHeadSummary"
+      },
+      "KnowledgeHistoryRead": {
+        "properties": {
+          "revisions": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeRevisionSummary"
+            },
+            "type": "array",
+            "title": "Revisions"
+          },
+          "drafts": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeDraftSummary"
+            },
+            "type": "array",
+            "title": "Drafts"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revisions",
+          "drafts",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "KnowledgeHistoryRead"
+      },
+      "KnowledgeInspectionRead": {
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/KnowledgeAcceptedRead"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeMember"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeLinkRead"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "contexts": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeContextRead"
+            },
+            "type": "array",
+            "title": "Contexts"
+          },
+          "contexts_truncated": {
+            "type": "boolean",
+            "title": "Contexts Truncated"
+          },
+          "readiness": {
+            "type": "string",
+            "const": "unassociated",
+            "title": "Readiness"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "members",
+          "links",
+          "contexts",
+          "contexts_truncated",
+          "readiness"
+        ],
+        "title": "KnowledgeInspectionRead"
       },
       "KnowledgeItemRead": {
         "properties": {
@@ -28843,6 +29509,16 @@
       },
       "KnowledgePreviewRead": {
         "properties": {
+          "impact": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Impact"
+          },
+          "comparison": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Comparison"
+          },
           "draft_id": {
             "type": "string",
             "title": "Draft Id"
@@ -28897,6 +29573,8 @@
         },
         "type": "object",
         "required": [
+          "impact",
+          "comparison",
           "draft_id",
           "base_revision_id",
           "base_revision_sha256",

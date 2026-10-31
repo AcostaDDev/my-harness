@@ -87,6 +87,11 @@ All four findings are corrected; the owner authorized source commit, merge into 
 Export/commit (T013), final readiness (T016), installed conversion (T020) and operational
 delivery remain pending. No native provider or browser qualification is claimed.
 
+P002-T012 is source-complete after independent technical re-review; source commit, integration and push are authorized and pending
+([evidence](phase/P002-T012-knowledge-editing.md), D293): persisted consultation/history/search, structured and
+rich draft editing, exact adoption comparison and explicit context/READY association limits.
+No release or installation is claimed.
+
 **Exit criteria (adopted with D268):**
 
 - Created and onboarded projects use structured, revisioned database knowledge; task/decision access is attributable

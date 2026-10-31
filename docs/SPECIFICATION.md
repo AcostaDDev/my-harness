@@ -406,7 +406,7 @@ rules change.
   revisions protected in the database. Instructions are canonical knowledge exported as `AGENTS.md` and derived
   wrappers, editable in the UI or imported explicitly through an authorized adoption (D285). T004 storage/core
   and T005 domain commands now serve T011 structured intake. T007 supplies explicit canonical context boundaries;
-  historical workflows retain D094 until their owning migration. General editing and export/import remain T012/T013.
+  historical workflows retain D094 until their owning migration. T012 local source adds general owner editing, accepted history/search and exact-content adoption previews; independent technical re-review passed, with source commit/integration/push authorized and pending. Frozen invocation context stays unchanged after adoption, and absent READY associations are explicit. Export/import remain T013.
 - **Roles and permissions.** Reviewer, executor and judge are configured by provider, model and effort; the judge has
   duty-specific contracts and cannot grant owner-only capabilities. The five permission dimensions gain per-operation,
   time-limited and permanent revocable grants, enforced outside the model. T009 implements optional owner-selected

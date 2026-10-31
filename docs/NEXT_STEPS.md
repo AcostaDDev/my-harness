@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012–T023 are planned
+its source commit, the accompanying merge and push of develop. T012 is source-complete after independent technical re-review, with source commit/integration/push authorized and pending; T013–T023 are planned
 and not started. Structured intake uses the knowledge service and existing accounted planning runner; product
 task/phase/autonomy graphs remain pending T014–T016. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
@@ -88,7 +88,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **source-complete; independent technical re-review passed; integration authorized and pending**; T013–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -419,7 +419,7 @@ consumer is introduced. The three technical-review blockers are corrected with r
 independent re-review passed with no outstanding relevant findings (record §7). The owner authorized the
 source commit, accompanying merge into `develop` and push of `develop` (record §8). Release/publication/installation remain pending.
 Route: verified source → develop → 0.2.0 through protected main → distribution/publication → installation.
-T011 is completed and integrated after successful technical re-review; next implementation task: T012.
+T011 is completed and integrated after successful technical re-review; T012 is source-complete after independent technical re-review, with source commit/integration/push authorized and pending.
 
 ## P002-T011 — Database-owned creation and reverse-engineering intake
 
@@ -442,6 +442,8 @@ reverse engineering preserved as a distinct path. **Dependencies:** T004, T005, 
 
 **Gates:** G12 inputs (with T016). **Threats:** TM01.
 ## P002-T012 — Authoritative knowledge and decision editing
+
+**Status:** source-complete; independent technical re-review passed. Source commit, integration into develop and push are authorized and pending. [Evidence](phase/P002-T012-knowledge-editing.md), D293.
 
 **Problem:** users must change project intent through the product once IDE Markdown edits have no authority.
 **Expected result:** usable project editors/read views support structured concepts and expressive prose with revision
@@ -701,4 +703,4 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 10. **P002-T011** is completed and integrated as source `616846d` after successful technical re-review. The owner
     authorized its source commit, the accompanying merge and push of develop.
     [Evidence](phase/P002-T011-db-intake.md#independent-technical-re-review-and-authorized-delivery-2026-10-31).
-    Next implementation task: **P002-T012**, not started. Release/publication/installation remain pending.
+    **P002-T012** is source-complete after independent technical re-review ([evidence](phase/P002-T012-knowledge-editing.md)); source commit, merge into develop and push are authorized and pending. T013 is the next implementation task after integration. Release/publication/installation remain pending.

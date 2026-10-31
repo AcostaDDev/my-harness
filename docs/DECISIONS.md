@@ -2427,3 +2427,17 @@ owner-confirmed adoption. Updates resolve scoped identities without similarity; 
 not historical execution or authority. Losses are located and resolved explicitly; raw input is preserved.
 Export intents and per-target outcomes support deterministic recovery without repeating inference.
 T014/T015 consume the boundaries; T016 readiness/delegation and T020 installed conversion remain separate.
+
+## D295 — Brief descriptive commit messages with implementation bullets
+
+Status: accepted at the owner's explicit request on 2026-10-31; repository development guidance.
+
+Commit messages are in English, with a brief descriptive subject following the recent `<kind>: <summary>`
+pattern and a task ID when relevant. After a blank line, a short bullet list summarizes the implemented changes.
+Merge commits retain their `Merge ... into ...` subjects and include the same brief bullet body. Messages describe
+completed changes concisely. The canonical instructions are in [AGENTS.md](../AGENTS.md#commit-messages), already
+imported by CLAUDE.md and GEMINI.md; existing commit messages are unchanged.
+
+The owner authorized this documentation maintenance directly on develop, with commit and push. This is a
+session-specific exception to creating a topic branch; D235/D261 remain the ordinary branch rules.
+Branch cleanup and verification are recorded in [maintenance evidence](phase/2026-10-31-repository-maintenance.md).

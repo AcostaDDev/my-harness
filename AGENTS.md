@@ -43,6 +43,13 @@ agents; its work language is English.
   Remove one-off sections after recording evidence and completing or explicitly deferring their agreed delivery.
   Say what was tested and what was not.
 
+## Commit messages
+
+Write messages in English with a brief, descriptive subject matching recent commits (`<kind>: <summary>`,
+including the task ID when relevant), followed by a blank line and a short bullet list of implemented changes.
+Merge commits keep the existing `Merge ... into ...` subject format and include the same brief bullet body.
+Describe the completed change concisely ([D295](docs/DECISIONS.md#d295--brief-descriptive-commit-messages-with-implementation-bullets)).
+
 ## Commands (from the root; offline after the first installation)
 
 Prefer the quiet wrappers ([D260](docs/DECISIONS.md#d260--quiet-development-checks-and-economical-agent-workflow)).

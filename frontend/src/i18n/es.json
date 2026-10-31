@@ -2303,5 +2303,18 @@
   "standing.operation": "Una operación lógica",
   "standing.temporary": "Temporal",
   "standing.restricted": "La política vigente restringe esta concesión.",
-  "standing.unknown": "El permiso efectivo no está disponible en esta vista."
+  "standing.unknown": "El permiso efectivo no está disponible en esta vista.",
+  "intake.lede": "Revisa el conocimiento estructurado antes de adoptarlo.",
+  "intake.continuation": "La exportación y el commit dependen de T013. La confirmación del perfil, preparación y activación siguen siendo gates separados.",
+  "intake.message": "Mensaje al revisor",
+  "intake.send": "Enviar mensaje",
+  "intake.stage": "Preparar borrador estructurado",
+  "intake.preview": "Revisar adopción",
+  "intake.source": "Fuente",
+  "intake.relations": "Relaciones",
+  "intake.changes": "Cambios",
+  "intake.gaps": "Carencias para preparación",
+  "intake.reason": "Motivo de adopción",
+  "intake.adopt": "Confirmar adopción exacta",
+  "intake.adopted": "Conocimiento adoptado por el propietario. Exportación y commit pendientes."
 }

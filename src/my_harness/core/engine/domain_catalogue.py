@@ -300,3 +300,20 @@ CATALOGUE = Catalogue((*CATALOGUE,
                    'confirmed': {'const': True}}, ('action', 'response', 'expected_revision', 'preview_sha256', 'confirmed')),
           _result('record_id', 'state'), summary='Confirm a fresh permission response or revoke authority.'),
 ))
+
+
+# T011: owner-only intake boundaries; no new agent permission or historical schema changes.
+_INTAKE = {'conversation_id': ID, 'expected_version': OFFSET}
+CATALOGUE = Catalogue((*CATALOGUE,
+    Entry('intake.stage', 1, 'propose', ('owner',), (),
+          _object({**_INTAKE, 'turn_id': ID, 'proposal_sha256': SHA},
+                  ('conversation_id', 'expected_version', 'turn_id', 'proposal_sha256')),
+          _result('draft_id', 'conversation_id'), summary='Stage a reviewed intake proposal as D284 entities.'),
+    Entry('intake.preview', 1, 'query', ('owner',), (),
+          _object(_INTAKE, ('conversation_id', 'expected_version')),
+          _result('preview_sha256', 'members', 'links', 'changes'), summary='Review exact intake knowledge and gaps.'),
+    Entry('intake.adopt', 1, 'adopt', ('owner',), (),
+          _object({**_INTAKE, 'preview_sha256': SHA, 'reason': {'type': 'string', 'minLength': 1, 'maxLength': 2000}},
+                  ('conversation_id', 'expected_version', 'preview_sha256', 'reason')),
+          _result('revision_id', 'origin', 'continuation'), summary='Owner adoption with source and question guards.'),
+))

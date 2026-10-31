@@ -1582,3 +1582,24 @@ invocation, job and owner token; a `domain_command` has its command and is `COMP
   validated before writing and never coerced; credential names and secret-looking values are refused.
 - Downgrade below 0032 is refused while any row exists. Backups copy the three tables; a query-only restore serves
   the read-only trace routes and refuses every journal write.
+
+
+## P002-T011 intake bindings (integrated into develop)
+
+No schema migration: head remains `0035_permissions`, 85 tables. Opt-in conversations add
+`source.authority=structured-intake-1`; onboarding retains its immutable inventory/HEAD alongside that marker.
+`planning_turns.request` freezes the explicit absence of an accepted revision and the structured response
+contract; `result` keeps the proposal evidence and its digest. `planning_conversations.log` appends
+structured intake references (draft/revision, turn, proposal/source/brief hashes), never canonical documents.
+The authority lives in the existing knowledge items, immutable versions, revision members and typed links.
+Domain command outcomes persist staging/adoption identities and exact adoption previews, including questions
+and deferrals. No legacy data is converted. [Evidence](phase/P002-T011-db-intake.md).
+
+T011 correction: conversation logs also seal the staged `draft_sha256` and conversation-scoped
+`sources_sha256`; prior answered owner evidence is verified against frozen request hashes. Original
+instruction members are merged from deterministic HEAD staging by exact identity/content/provenance.
+Profile proposals retain the `profile` proposal kind with `project-profile-proposal-2`: binding includes
+knowledge proposal hash, exact source locators/hashes, brief and inventory fingerprints. Profile confirmation
+records the exact staged/accepted revision and knowledge hash, preview and `owner_confirmed` origin in its
+decision evidence. No private configuration, preparation receipt or activation is created by these records.
+Legacy `project-profile-proposal-1` rows and frozen requests remain unchanged; table count/head are unchanged.

@@ -14,8 +14,10 @@ the correction passed technical re-review (T009 record §7). Source commit `3500
 authorized merge; the owner also authorized pushing `develop`. Release/publication/installation remain pending.
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
-T011–T023 are planned and not started; the T003 runtime and the T004 knowledge storage are exercised by synthetic
-data only and no product behavior uses them. Adoption authorizes planning, not implementation or operation. Read
+T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
+its source commit, the accompanying merge and push of develop. T012–T023 are planned
+and not started. Structured intake uses the knowledge service and existing accounted planning runner; product
+task/phase/autonomy graphs remain pending T014–T016. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -86,7 +88,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -101,7 +103,7 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T008 | Expose scoped tools with on-demand discovery through qualified CLI adapters | T002, T005, T006, T007 |
 | P002-T009 | Add configurable judge profiles and duty-specific adjudication contracts (**completed; integrated; D290**) | T007, T008 |
 | P002-T010 | Implement permission requests, standing grants and revocation (**completed; integrated; D291**) | T005, T006, T008, T009 |
-| P002-T011 | Move definition, reverse-engineering onboarding and managed adoption to DB knowledge | T004, T005, T007, T008 |
+| P002-T011 | Move definition, reverse-engineering onboarding and managed adoption to DB knowledge (**completed; integrated**) | T004, T005, T007, T008 |
 | P002-T012 | Provide authoritative project knowledge/decision editing in the UI | T004, T005, T006 |
 | P002-T013 | Deliver generated exports, explicit document import and portable format | T004, T005, T006, T011, T012 |
 | P002-T014 | Refactor task execution, acceptance, export parity and commit integration | T003, T006, T007, T008, T010, T013 |
@@ -417,9 +419,11 @@ consumer is introduced. The three technical-review blockers are corrected with r
 independent re-review passed with no outstanding relevant findings (record §7). The owner authorized the
 source commit, accompanying merge into `develop` and push of `develop` (record §8). Release/publication/installation remain pending.
 Route: verified source → develop → 0.2.0 through protected main → distribution/publication → installation.
-Next implementation task: T011, not started.
+T011 is completed and integrated after successful technical re-review; next implementation task: T012.
 
 ## P002-T011 — Database-owned creation and reverse-engineering intake
+
+**Status:** completed and integrated into develop as source `616846d` on `feat/p002-t011-db-intake`; independent technical re-review passed on 2026-10-31, including all four findings; [evidence](phase/P002-T011-db-intake.md). The owner authorized source commit, the accompanying merge and push of `develop`. Release 0.2.0, distribution/publication and installation remain pending and unauthorized.
 
 **Problem:** definition/onboarding currently create documentary drafts and adoption around Markdown authority.
 **Expected result:** both entry flows create reviewed structured drafts/accepted knowledge, with existing-code
@@ -694,4 +698,7 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 9. **P002-T010** is completed and integrated as source `d52fbb5` after independent technical re-review; G10 accepted (D291).
    The owner authorized source commit, merge and push of `develop`.
    [Evidence](phase/P002-T010-permissions.md#8-source-integration-and-delivery-record).
-   Next implementation task: **P002-T011**, not started; release/publication/installation remain pending.
+10. **P002-T011** is completed and integrated as source `616846d` after successful technical re-review. The owner
+    authorized its source commit, the accompanying merge and push of develop.
+    [Evidence](phase/P002-T011-db-intake.md#independent-technical-re-review-and-authorized-delivery-2026-10-31).
+    Next implementation task: **P002-T012**, not started. Release/publication/installation remain pending.

@@ -208,7 +208,9 @@ class DomainOperations:
         self.judges = JudgeService(self, qualifications=judge_qualifications)
         from my_harness.services.permission_lifecycle import PermissionLifecycle
         self.permission_lifecycle = permissions if isinstance(permissions, PermissionLifecycle) else PermissionLifecycle(engine)
+        from my_harness.services import intake
         self.handlers = {
+            'intake.stage': intake.stage, 'intake.preview': intake.preview, 'intake.adopt': intake.adopt,
             **{name: self.permission_lifecycle.handler for name in ('permissions.inspect', 'permissions.request', 'permissions.preview', 'permissions.respond')},
             'judge.decision.link': self.judges.link,
             **{f'judge.{d}.submit': self.judges.submit for d in ('permission', 'planning_choice', 'spec_gap', 'blocked_check')},
@@ -371,7 +373,7 @@ class DomainOperations:
         if caller.root is None:
             raise DomainRefusal('not_found')
         found = knowledge.project_id(caller.root)
-        if found is None and entry.id == 'knowledge.draft.open':
+        if found is None and entry.id in ('knowledge.draft.open', 'intake.stage'):
             return knowledge.create_project(caller.root)
         if found is None and entry.mutates:
             raise DomainRefusal('not_found')
@@ -436,10 +438,13 @@ class DomainOperations:
         if call.caller.principal == 'agent' and draft.status == 'ACCEPTED' and draft.id != call.caller.frozen_revision_id:
             raise DomainRefusal('not_found')
         opener = call.session.scalar(select(DomainCommandRow).where(
-            DomainCommandRow.draft_id == draft.id, DomainCommandRow.operation_id == 'knowledge.draft.open',
+            DomainCommandRow.draft_id == draft.id,
+            DomainCommandRow.operation_id.in_(('knowledge.draft.open', 'intake.stage')),
             DomainCommandRow.outcome == 'ACCEPTED'))
         if opener is None:
             raise DomainRefusal('draft_unattributed')
+        if opener.operation_id == 'intake.stage' and call.entry.id != 'knowledge.draft.get':
+            raise DomainRefusal('draft_not_owned')
         if opener.scope != call.caller.scope:
             if call.caller.principal != 'owner':
                 raise DomainRefusal('not_found')

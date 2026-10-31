@@ -1419,5 +1419,11 @@
   "judge.no_progress": "Consulta la solicitud de juez existente; no se permite otra inferencia",
   "judge.not_found": "No se encuentra la solicitud del juez",
   "judge.service_required": "La invocación del juez requiere el servicio compartido y el contexto acotado congelado",
-  "domain.permission_invalid": "La solicitud, autoridad o confirmación del permiso no es válida o ya no está vigente."
+  "domain.permission_invalid": "La solicitud, autoridad o confirmación del permiso no es válida o ya no está vigente.",
+  "intake.invalid": "Propuesta estructurada de entrada inválida.",
+  "intake.staged": "Esta entrada ya tiene conocimiento aceptado; se bloquean nuevos turnos de entrada.",
+  "intake.database_owned": "Revisa el borrador de la base de datos; la escritura documental no está disponible.",
+  "intake.profile_knowledge_required": "Prepara el conocimiento estructurado exacto propuesto con este perfil antes de confirmarlo.",
+  "intake.export_pending": "Las confirmaciones del conocimiento y del perfil no exportan ni hacen commit de documentos; esa continuación depende de T013.",
+  "domain.intake_profile_required": "Antes de adoptar el conocimiento, pide al revisor una propuesta de perfil válida y prepara ese turno. La conversación sigue abierta. Confirma el perfil por separado, antes o después de adoptar el conocimiento."
 }

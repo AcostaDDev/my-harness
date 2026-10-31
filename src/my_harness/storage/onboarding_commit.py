@@ -15,6 +15,8 @@ class OnboardingRepository(ImportRepository):
     drafts_class = OnboardingDrafts
 
     def _build_preview(self, context, conversation_id, source, record, writer):
+        if source.get('authority') == 'structured-intake-1':
+            raise Conflict(tr('intake.database_owned'))
         reader = HeadSnapshot(context.root, executable=writer.executable)
         reader.git = LocalGit(context.root, executable=writer.executable)
         head = reader.head()

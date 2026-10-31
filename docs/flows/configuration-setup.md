@@ -1,5 +1,13 @@
 # Guided installation and configuration
 
+P002-T011's integrated structured intake adopts knowledge independently of configuration. Its accepted revision
+is not a profile adoption, preparation receipt or activation. Export/commit remains pending T013 and
+the profile proposal and its exact owner confirmation bind staged structured knowledge and sources.
+No gate is inferred from canonical adoption. Invalid profile output refuses the whole turn.
+A profileless intake cannot adopt knowledge until a valid current profile proposal is available;
+confirmation of that profile remains a separate operation, allowed before or after knowledge adoption.
+See [T011 evidence](../phase/P002-T011-db-intake.md).
+
 Implemented in the starting baseline ([D216–D228](../DECISIONS.md#d216--isolated-installation-and-setup-session)).
 User commands and options are in the [README](../../README.md#install).
 

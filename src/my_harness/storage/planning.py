@@ -91,6 +91,10 @@ def settle(managed, session, run, outcome):
     turn.status, turn.finished_at = outcome['status'], managed._now()
     result = outcome['result']
     stored = result
+    if result and 'knowledge' in result:
+        from my_harness.core.engine.knowledge import digest as knowledge_digest
+        result = {**result, 'knowledge_sha256': knowledge_digest(result['knowledge'])}
+        stored = result
     if outcome['status'] == 'ANSWERED' and conversation.kind in DRAFT_KINDS:
         # The complete content lives in each proposal; the turn keeps path, reason and hash.
         stored = {**result, 'drafts': [{'path': d['path'], 'reason': d['reason'], 'content_sha256': text_hash(d['content'])}
@@ -171,6 +175,8 @@ def definition_acceptance(managed, context, data, writer) -> dict:
             raise LookupError(tr('planning.unknown_definition_conversation_project'))
         if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
             raise Conflict(tr('planning.definition_turn_pending_accept'))
+        if (conversation.source or {}).get('authority') == 'structured-intake-1':
+            raise Conflict(tr('intake.database_owned'))
         snapshot = PlanningRepository._record(session, conversation)
     shown = acceptance(context, snapshot, inspection, texts)
     return {**shown, 'target': inspection, 'ready': not shown['blockers']}
@@ -253,6 +259,12 @@ class PlanningRepository:
             numbers = {turn.id: turn.number for turn in turns}
             pending = any(turn.status == 'QUEUED' for turn in turns)
             created = self._drafts_created(session, row) if row.kind in DRAFT_KINDS else False
+            structured = (row.source or {}).get('authority') == 'structured-intake-1'
+            if structured:
+                from my_harness.storage.models import KnowledgeProjectRow, KnowledgeRevisionRow
+                created = session.scalar(select(KnowledgeRevisionRow.id).join(
+                    KnowledgeProjectRow, KnowledgeRevisionRow.project_id == KnowledgeProjectRow.id).where(
+                    KnowledgeProjectRow.root == row.root, KnowledgeRevisionRow.status == 'ACCEPTED')) is not None
             open_ = not pending and not created
             questions, items = current_questions(session, row)
             turn_views = [{
@@ -281,7 +293,12 @@ class PlanningRepository:
             if open_:
                 actions = ['message'] + {'definition': ['edit_draft', 'defer_question', 'accept'],
                                          'onboarding': ['edit_draft', 'defer_question']}.get(row.kind, [])
-            return {'id': row.id, 'root': row.root, 'kind': row.kind, 'title': row.title,
+            if structured:
+                actions = ['defer_question'] if open_ else []
+                if open_:
+                    actions.append('message')
+            return {'structured': (row.source or {}).get('authority') == 'structured-intake-1',
+                    'id': row.id, 'root': row.root, 'kind': row.kind, 'title': row.title,
                     'phase': None if phase is None else {'id': phase.id, 'code': phase.code, 'status': phase.status},
                     'brief': None if row.brief is None else {k: row.brief[k] for k in ('sha256', 'size')},
                     'source': (None if row.source is None else onboarding_identity(row.source)
@@ -349,7 +366,7 @@ class PlanningRepository:
 
     # --- conversation ------------------------------------------------------------------
 
-    def create(self, context, *, kind, title, brief=None, phase_id=None, writer=None, key=None):
+    def create(self, context, *, kind, title, brief=None, phase_id=None, writer=None, key=None, structured=False):
         """`key` (API): a retry with the same request returns the same conversation before reevaluating the
         target, which the original registration may have changed (project already created, phase transitioned)."""
         if kind not in KINDS:
@@ -357,7 +374,7 @@ class PlanningRepository:
         if isinstance(context, IntakeContext) and kind not in DRAFT_KINDS:
             raise Conflict(tr('profile_proposal.required'))
         request = digest({'action': 'planning_conversation', 'root': str(context.root), 'kind': kind, 'title': title,
-                          'brief': brief, 'phase_id': phase_id})
+                          'brief': brief, 'phase_id': phase_id, **({'structured': True} if structured else {})})
         if key is not None:
             with Session(self.managed.engine) as session:
                 if found := existing_creation(session, Conversation, key, request):
@@ -383,6 +400,10 @@ class PlanningRepository:
             if brief is not None:
                 raise ValueError(tr('planning.phase_planning_conversation_has'))
             frozen = None
+        if structured:
+            if kind not in DRAFT_KINDS:
+                raise ValueError(tr('intake.invalid'))
+            source = {**(source or {}), 'authority': 'structured-intake-1'}
         try:
             with self.managed._write() as session:
                 if key is not None and (found := existing_creation(session, Conversation, key, request)):
@@ -401,6 +422,12 @@ class PlanningRepository:
                     from my_harness.storage.documents import latest_phase
                     if latest_phase(session, phase.root).id != phase.id:
                         raise Conflict(tr('planning.plan_latest_phase_checkout'))
+                if structured:
+                    from my_harness.storage.models import KnowledgeProjectRow, KnowledgeRevisionRow
+                    if session.scalar(select(KnowledgeRevisionRow.id).join(KnowledgeProjectRow,
+                            KnowledgeRevisionRow.project_id == KnowledgeProjectRow.id).where(
+                            KnowledgeProjectRow.root == str(context.root), KnowledgeRevisionRow.status == 'ACCEPTED')):
+                        raise Conflict(tr('intake.database_owned'))
                 now = self.managed._now()
                 row = Conversation(id=str(uuid4()), root=str(context.root), kind=kind, phase_id=phase_id,
                                    title=title.strip(), brief=frozen, known={}, deferred={}, log=[], actor=actor(),
@@ -487,6 +514,8 @@ class PlanningRepository:
                 answered = turn.status == 'ANSWERED'
                 history.append({'number': turn.number, 'status': turn.status, 'message': turn.message,
                                 'answer': turn.result['result']['answer'] if answered else None,
+                                **({'knowledge_proposal': turn.result['result']['knowledge']}
+                                   if answered and 'knowledge' in turn.result['result'] else {}),
                                 'reasons': list((turn.result or {}).get('reasons', [])),
                                 'proposals': [{'number': p.number, 'kind': p.kind, 'path': p.path, 'status': p.status}
                                               for p in session.scalars(select(Proposal).where(Proposal.turn_id == turn.id)
@@ -502,6 +531,25 @@ class PlanningRepository:
                                              'phase': target.phase_dir}},
                       'conversation': {'id': conversation.id, 'title': conversation.title, 'turn': number},
                       'questions': questions, 'pending': pending, 'previous_turns': history}
+            if (conversation.source or {}).get('authority') == 'structured-intake-1':
+                if self.get(conversation.id)['created']:
+                    raise Conflict(tr('intake.staged'))
+                frozen['knowledge_authority'] = 'structured-intake-1'
+                frozen['accepted_revision'] = None
+                from my_harness.services.intake import binding
+                bound = binding(conversation)
+                if bound:
+                    from my_harness.services.domain_operations import DomainOperations, owner_writer
+                    from my_harness.core.engine.domain_catalogue import CATALOGUE
+                    frozen['structured_draft'] = dict(DomainOperations(self.managed.engine).execute(
+                        owner_writer(conversation.root), CATALOGUE.current('knowledge.draft.get').ref,
+                        {'draft_id': bound['draft_id']}).result)
+                from my_harness.storage.intake_sources import sources
+                frozen['intake_source_sha256'] = digest(conversation.source)
+                frozen['intake_brief_sha256'] = digest(conversation.brief)
+                frozen['intake_sources'] = sources(session, conversation)
+                frozen['intake_sources']['owner-message'] = text_hash(text)
+                frozen['owner_message_source'] = {'kind': 'observation', 'reference': 'owner-message', 'sha256': text_hash(text)}
             if isinstance(context, IntakeContext):
                 frozen['capabilities'] = 'project-intake-1'
                 frozen['executor_policy'] = {
@@ -584,6 +632,9 @@ class PlanningRepository:
         if not isinstance(context, IntakeContext):
             raise Conflict(tr('profile_proposal.required'))
         conversation = self._conversation(session, conversation_id, expected, context)
+        if (conversation.source or {}).get('authority') == 'structured-intake-1':
+            from my_harness.storage.profile_intake import structured_preview
+            return structured_preview(self.managed.engine, session, context, conversation, proposal_id, proposal_sha256, writer, versions)
         self._definition_open(session, conversation)
         proposal = session.get(Proposal, proposal_id)
         if (proposal is None or proposal.conversation_id != conversation.id or proposal.kind != 'profile'
@@ -664,6 +715,9 @@ class PlanningRepository:
             from my_harness.services.profile_proposal import validate
             frozen = {**turn.request['context'], 'drafts': [
                 {'path': path, 'sha256': value} for path, value in shown['profile']['binding']['documents'].items()]}
+            conversation = session.get(Conversation, conversation_id)
+            if (conversation.source or {}).get('authority') == 'structured-intake-1':
+                frozen['knowledge_proposal'] = turn.result['result']['knowledge']
             payload = validate(candidate, frozen, [], context=context)
             if payload is None:
                 raise ValueError(tr('profile_proposal.invalid'))
@@ -710,10 +764,16 @@ class PlanningRepository:
             proposal.decision = {**(proposal.decision or {}), 'decision': 'profile_draft_adopted', 'key': key, 'request_sha256': request,
                                  'preview_sha256': preview_sha256, 'reason': reason, 'actor': actor(),
                                  'at': self.managed._now(), 'result': result}
+            if shown.get('knowledge_binding') is not None:
+                proposal.decision = {**proposal.decision, 'origin': 'owner_confirmed',
+                                     'knowledge_binding': shown['knowledge_binding'], 'profile_preview': shown}
             _touch(self.managed, session.get(Conversation, conversation_id))
             return result
 
-    def _definition_open(self, session, conversation):
+    def _definition_open(self, session, conversation, *, documentary=True):
+        if (conversation.source or {}).get('authority') == 'structured-intake-1':
+            if documentary or self.get(conversation.id)['created']:
+                raise Conflict(tr('intake.database_owned'))
         if self._drafts_created(session, conversation):
             raise Conflict(tr('planning.project_already_created_edit'))
         if conversation.kind == 'onboarding':
@@ -780,7 +840,7 @@ class PlanningRepository:
             raise ValueError(tr('planning.explicit_deferral_reason_required'))
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected)
-            self._definition_open(session, conversation)
+            self._definition_open(session, conversation, documentary=False)
             questions, _ = current_questions(session, conversation)
             question = next((q for q in questions if q['id'] == question_id), None)
             if question is None:

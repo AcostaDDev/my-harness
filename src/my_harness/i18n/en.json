@@ -1419,5 +1419,11 @@
   "judge.no_progress": "Observe the existing judge request; another inference is not allowed",
   "judge.not_found": "Judge request not found",
   "judge.service_required": "Judge invocation requires the shared judge service and frozen scoped context",
-  "domain.permission_invalid": "The permission request, authority or confirmation is invalid or no longer current."
+  "domain.permission_invalid": "The permission request, authority or confirmation is invalid or no longer current.",
+  "intake.invalid": "Invalid structured intake proposal.",
+  "intake.staged": "This intake already has accepted knowledge; further intake turns are blocked.",
+  "intake.database_owned": "Review the database draft; documentary writes are unavailable.",
+  "intake.profile_knowledge_required": "Stage the exact structured knowledge proposed with this profile before confirming it.",
+  "intake.export_pending": "Knowledge and profile confirmations do not export or commit documents; that continuation awaits T013.",
+  "domain.intake_profile_required": "Before adopting knowledge, ask the reviewer for a valid profile proposal and stage that turn. The conversation remains open. Confirm the profile separately, before or after knowledge adoption."
 }

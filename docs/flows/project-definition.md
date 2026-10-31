@@ -1,5 +1,36 @@
 # Flow — project definition (new project)
 
+## Structured intake (P002-T011 integrated into develop; technical re-review passed)
+
+New UI conversations select `structured-intake-1`; API callers opt in with `structured=true`.
+Existing conversations keep the historical documentary lane described below. Brief/static HEAD and model
+output are noncanonical evidence. The accounted reviewer turn proposes D284 entities/relations with
+known/inferred/unknown sources. Earlier answered owner messages remain scoped, hash-verified evidence.
+Owner staging persists a normalized database draft. Deterministic original instructions are matched against
+HEAD and prior staging by identity, content and provenance, preserving them once with their ordered links. The owner reviews
+full contents, relations, changes, questions and gaps, then confirms an exact preview with a reason and
+Idempotency-Key. Adoption rechecks conversation version, proposal, draft and (onboarding) HEAD/inventory.
+It creates an immutable `owner_confirmed` revision without modifying source files or originals.
+Interrupted inference is never retried. Staging/adoption recover through the same domain outcome identity.
+A later turn needs a new staging/review; stale previews cannot adopt it. Unresolved blocking questions
+require a later answered turn or explicit deferral; answers alone do not resolve them.
+
+Export/commit is explicitly pending T013. A structured profile proposal uses the existing full profile
+validator, with exact knowledge and source bindings. Owner profile confirmation requires staged knowledge,
+current conversation/source versions and resolved or deferred blocking questions. The UI supports its
+review/edit/confirm controls. Knowledge adoption, profile confirmation, private configuration, preparation,
+activation and readiness are distinct states; satisfying one does not satisfy another. No operational delivery
+is claimed.
+
+For an intake with no selected profile, knowledge adoption requires an available, current validated profile
+proposal. A `profile: null` response remains valid but cannot close the conversation: the server refuses
+adoption with an actionable diagnostic and the owner can request another turn and stage its proposal.
+Profile confirmation is still independent and may precede or follow knowledge adoption. Intakes with an
+already selected profile retain their existing adoption path. No post-adoption inference path is added.
+See [active evidence](../phase/P002-T011-db-intake.md) for limitations and conversion references for T020.
+
+## Historical documentary lane
+
 For v9 own profiles, the [guided configuration flow](configuration-setup.md) adds profile adoption after context,
 private TOML save after the documentary commit, generic confirmed preparation and separate activation before tasks.
 The composition/recipe diagrams below describe the retained legacy lane; they do not bypass those v9 gates.

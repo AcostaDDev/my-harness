@@ -248,7 +248,17 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
         return done(history, 'FAILED', [history.stop.reason], observed=observed)
     try:
         if kind in DRAFT_KINDS:
-            if intake:
+            if snapshot['context'].get('knowledge_authority') == 'structured-intake-1':
+                from my_harness.core.engine.intake import validate_result
+                result = validate_result(data)
+                if intake:
+                    if 'profile' not in data or profile_validator is None:
+                        raise ContractError(tr('profile_proposal.invalid'))
+                    result['profile'] = profile_validator(data['profile'],
+                        {**snapshot['context'], 'knowledge_proposal': result['knowledge']}, [], context=context)
+                elif data.get('profile') is not None:
+                    raise ContractError(tr('profile_proposal.invalid'))
+            elif intake:
                 if not isinstance(data, dict) or set(data) != {'answer', 'questions', 'drafts', 'pending', 'profile'}:
                     raise ContractError(tr('profile_proposal.invalid'))
                 result = validate_definition_result({k: v for k, v in data.items() if k != 'profile'},

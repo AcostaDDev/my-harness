@@ -2303,5 +2303,18 @@
   "standing.operation": "One logical operation",
   "standing.temporary": "Time limited",
   "standing.restricted": "Current policy restricts this grant.",
-  "standing.unknown": "Effective permission is unavailable in this view."
+  "standing.unknown": "Effective permission is unavailable in this view.",
+  "intake.lede": "Review structured project knowledge before adopting it.",
+  "intake.continuation": "Export and commit await T013. Profile confirmation, preparation and activation remain separate gates.",
+  "intake.message": "Message to the reviewer",
+  "intake.send": "Send message",
+  "intake.stage": "Stage structured draft",
+  "intake.preview": "Review adoption",
+  "intake.source": "Source",
+  "intake.relations": "Relations",
+  "intake.changes": "Changes",
+  "intake.gaps": "Open gaps for readiness",
+  "intake.reason": "Reason for adoption",
+  "intake.adopt": "Confirm exact adoption",
+  "intake.adopted": "Knowledge adopted by the owner. Export and commit remain pending."
 }

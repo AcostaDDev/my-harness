@@ -1110,6 +1110,7 @@ class DefinitionAcceptCreate(BaseModel):
 
 
 class PlanningConversationCreate(BaseModel):
+    structured: bool = False
     model_config = ConfigDict(extra='forbid', strict=True)
     kind: PlanningKind
     title: str = Field(min_length=1, max_length=200)
@@ -1176,6 +1177,7 @@ class PlanningQuestionRead(BaseModel):
 
 
 class PlanningConversationRead(BaseModel):
+    structured: bool = False
     id: str
     project_id: str | None
     root: str
@@ -2373,6 +2375,8 @@ class ProfileProposalConfirmCreate(ProfileProposalPreviewCreate):
 
 
 class ProfileProposalPreviewRead(BaseModel):
+    knowledge_binding: dict[str, Any] | None = None
+    continuation: Literal['export_commit_pending_T013'] | None = None
     conversation_id: str
     proposal_id: str
     expected_version: int
@@ -2734,3 +2738,22 @@ class StandingPermissionResponseCreate(StandingPermissionPreviewCreate):
 class StandingPermissionResponseRead(BaseModel):
     record_id: str
     state: str
+
+
+class IntakeStageCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    conversation_id: str
+    expected_version: int = Field(ge=0)
+    turn_id: str
+    proposal_sha256: str = Field(pattern=SHA256)
+
+
+class IntakePreviewCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    conversation_id: str
+    expected_version: int = Field(ge=0)
+
+
+class IntakeAdoptCreate(IntakePreviewCreate):
+    preview_sha256: str = Field(pattern=SHA256)
+    reason: str = Field(min_length=1, max_length=2000)

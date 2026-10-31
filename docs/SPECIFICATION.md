@@ -182,6 +182,16 @@ definition, keeping the previous one ([D034](DECISIONS.md#d034--unattended-batch
 
 ## 8. The two entries
 
+P002-T011 source (technical re-review passed; integration pending) adds the explicit structured intake lane described in
+[definition](flows/project-definition.md) and [onboarding](flows/project-onboarding.md). New UI conversations
+stage D284 database knowledge and require exact owner adoption; existing documentary conversations retain the
+released behavior below. Structured profiles are validated with the whole turn and independently confirmed
+against staged knowledge and source evidence. Original instructions and historical owner sources survive
+later turns without duplicate members or invented provenance. Export/commit is explicitly pending T013;
+private configuration, preparation, activation and readiness remain separate. No installed conversion occurs.
+Without a selected profile, intake knowledge adoption requires a valid current profile proposal so the
+conversation cannot close before one is obtained. Its owner confirmation remains independently required.
+
 The product has two entries: create from scratch (F02) and onboard existing code without a harness (F03). Registering
 or reopening a project already managed is a normal operation on its existing authority. A repository with documents
 or history of another harness is refused; it is never silently converted.
@@ -394,8 +404,9 @@ rules change.
   previewed UI import, which never fabricates execution, approval or usage history. The knowledge model is D284:
   requirements, criteria, phases, tasks, decisions and sections of logical documents, with immutable accepted
   revisions protected in the database. Instructions are canonical knowledge exported as `AGENTS.md` and derived
-  wrappers, editable in the UI or imported explicitly through an authorized adoption (D285). Only the storage and
-  core of that model exist (P002-T004); no product path uses them yet, and D094 still governs instructions.
+  wrappers, editable in the UI or imported explicitly through an authorized adoption (D285). T004 storage/core
+  and T005 domain commands now serve T011 structured intake. T007 supplies explicit canonical context boundaries;
+  historical workflows retain D094 until their owning migration. General editing and export/import remain T012/T013.
 - **Roles and permissions.** Reviewer, executor and judge are configured by provider, model and effort; the judge has
   duty-specific contracts and cannot grant owner-only capabilities. The five permission dimensions gain per-operation,
   time-limited and permanent revocable grants, enforced outside the model. T009 implements optional owner-selected

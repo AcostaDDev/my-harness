@@ -407,6 +407,14 @@ See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounti
 
 ## 13. P002 target architecture (accepted design; foundations implemented and integrated through T010)
 
+T011 source is complete with technical re-review passed; integration is pending: the existing accounted planning runner returns
+structured knowledge and validated profile proposals; `services/intake.py` stages/adopts D284 records only
+through domain commands. `storage/intake_sources.py` verifies conversation-scoped owner evidence; deterministic
+D285 instruction staging preserves original HEAD bytes as reviewed sections. `profile_intake.structured_preview`
+binds the profile to the exact knowledge/source state through the existing owner preview/CAS confirmation.
+The API/UI expose those independent confirmations. No table, dependency, tool permission, inference launcher
+or installed conversion is added. Export/commit remains a T013 continuation. [Evidence](phase/P002-T011-db-intake.md).
+
 [T001 contracts](phase/P002-T001-contracts.md#3-authority-model),
 [D269–D278](DECISIONS.md#d269--langgraph-orchestration-over-sqlite-domain-authority). Sections 1–12 describe 0.1.9 plus
 the P002-T003 runtime foundation and the P002-T004 knowledge model; of the design below only the graph runtime and

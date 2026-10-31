@@ -15,6 +15,7 @@ import { EditProgress, MarkdownView } from "./Docs";
 import { recipeText } from "../preparation.ts";
 import { LiveActivity } from "../Activity";
 import { QuestionAnswers } from "./Answers";
+import { IntakeReview } from "./IntakeReview";
 import { ProposalBatch } from "./ProposalBatch";
 
 // Conversational creation and planning in the UI (H6.2 E4) over the H6.5 API (D075).
@@ -182,7 +183,7 @@ function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
       <h2 id="brief-title">{t("planning.step.brief")}</h2>
       <p className="hint">{rich("planning.brief.hint", { path: <code>archive/phase-000/BRIEF.md</code> })}</p>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
-        await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "definition", title: title.trim(), brief, phase_id: null } satisfies S["PlanningConversationCreate"]);
+        await createOnce<Conversation>(`/projects/${project}/planning`, { structured: true, kind: "definition", title: title.trim(), brief, phase_id: null } satisfies S["PlanningConversationCreate"]);
         try { sessionStorage.removeItem(key); } catch { /* no draft */ }
       }); }}>
         <label>{t("planning.brief.name")}<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} required /></label>
@@ -206,8 +207,9 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
   const base = `/projects/${project}/planning/${id}`;
   const read = usePoll<Conversation>(base, 1500, refresh);
   const c = read.data;
-  const drafts = usePoll<Drafts>(c && !c.created ? `${base}/drafts` : null, 3000, refresh);
+  const drafts = usePoll<Drafts>(c && !c.structured && !c.created ? `${base}/drafts` : null, 3000, refresh);
   if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
+  if (c.structured) return <IntakeReview conversation={c} base={base} />;
   const op = c.operation ?? status.definition_operation ?? null;
   const proposed = c.proposals.filter(p => p.status === "PROPOSED" || !c.created && p.kind === "profile" && p.status === "ACCEPTED");
   const step = op?.status === "COMPLETED" ? 3 : op ? 2 : 1;
@@ -650,7 +652,7 @@ export function PlanPage({ phase, conversation }: { phase: string; conversation?
           <Link to={{ name: "plan", project, phase, conversation: c.id }} current={conversation === c.id}>
             <span className="link-title">{c.title}</span><span className="link-meta">{n("chat.turns", c.turns)} · {when(c.updated_at)}</span></Link></li>)}</ul>}
         <form onSubmit={e => { e.preventDefault(); if (!canPlan) return; void operate(async () => {
-          const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "phase_planning", title: title.trim(), brief: null, phase_id: data.id } satisfies S["PlanningConversationCreate"]);
+          const created = await createOnce<Conversation>(`/projects/${project}/planning`, { structured: false, kind: "phase_planning", title: title.trim(), brief: null, phase_id: data.id } satisfies S["PlanningConversationCreate"]);
           setTitle(""); navigate({ name: "plan", project, phase, conversation: created.id });
         }); }}>
           <label>{t("chat.new")}<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} placeholder={t("planning.plan.placeholder", { phase })} /></label>
@@ -809,7 +811,7 @@ export function ImportPage({ conversation, path }: { conversation?: string; path
     {!op && <section className="panel conversation-picker">
       <ul className="link-list">{mine.map(c => <li key={c.id}><Link to={{ name: routeName, project, conversation: c.id }} current={selected === c.id}>{c.title} · {n("chat.turns", c.turns)}</Link></li>)}</ul>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
-        const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: flow, title: title.trim(), brief: null, phase_id: null } satisfies S["PlanningConversationCreate"]);
+        const created = await createOnce<Conversation>(`/projects/${project}/planning`, { structured: true, kind: flow, title: title.trim(), brief: null, phase_id: null } satisfies S["PlanningConversationCreate"]);
         setTitle(""); navigate({ name: routeName, project, conversation: created.id });
       }); }}><label>{t("onboarding.new")}<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label><button disabled={busy || !title.trim()}>{t("onboarding.create")}</button></form>
     </section>}
@@ -824,8 +826,9 @@ function ImportConversation({ id, path, operation, kind }: { id: string; path?: 
   const base = `/projects/${project}/planning/${id}`;
   const read = usePoll<Conversation>(base, 1500, refresh);
   const c = read.data;
-  const drafts = usePoll<Drafts>(c && !c.created ? `${base}/drafts` : null, 3000, refresh);
+  const drafts = usePoll<Drafts>(c && !c.structured && !c.created ? `${base}/drafts` : null, 3000, refresh);
   if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
+  if (c.structured) return <IntakeReview conversation={c} base={base} />;
   if (c.kind !== kind) return <Alert>{t("onboarding.other_flow")}</Alert>;
   return <div className="docs-layout">
     <DraftTree conversation={c} drafts={drafts.data} current={path} error={drafts.error} />

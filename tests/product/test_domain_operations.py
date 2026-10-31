@@ -269,7 +269,7 @@ def test_catalogue_entries_are_pinned_closed_and_free_of_caller_fields():
         assert lint(entry.input) == [] and lint(entry.output) == []
         assert entry.kind in ('query', 'propose', 'adopt') and entry.version in (1, 2)
         assert ('agent' in entry.principals) == bool(entry.roles)
-        assert entry.id.startswith(('knowledge.', 'judge.', 'permissions.'))  # no SQL, file, code or effect entry exists
+        assert entry.id.startswith(('knowledge.', 'judge.', 'permissions.', 'intake.'))  # no SQL, file, code or effect entry exists
     assert 'agent' not in CATALOGUE.current('knowledge.adopt').principals
     assert 'agent' not in CATALOGUE.current('knowledge.adoption.preview').principals
     assert lint({'type': 'object', 'properties': {'project_id': {'type': 'string'}}, 'additionalProperties': False})
@@ -320,6 +320,12 @@ MINIMAL = {'permissions.inspect': {}, 'permissions.request': {'request': {}},
     'knowledge.adopt': {'draft_id': 'd', 'expected_revision_id': None, 'preview_sha256': 'a' * 64},
 }
 
+
+MINIMAL.update({
+    'intake.stage': {'conversation_id': 'c', 'expected_version': 0, 'turn_id': 't', 'proposal_sha256': '0' * 64},
+    'intake.preview': {'conversation_id': 'c', 'expected_version': 0},
+    'intake.adopt': {'conversation_id': 'c', 'expected_version': 0, 'preview_sha256': '0' * 64, 'reason': 'Synthetic'},
+})
 
 def test_caller_fields_in_arguments_are_refused_for_every_entry(world):
     url, _engine, ops = world

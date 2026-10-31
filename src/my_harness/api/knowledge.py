@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, Path
 
 from my_harness.api.managed import ERRORS, IdempotencyKey, Limit, Offset
 from my_harness.api.schemas import (
-    KnowledgeAdoptCreate, KnowledgeAdoptRead, KnowledgeDocument, KnowledgeDraftChangesCreate,
+    IntakeStageCreate, IntakePreviewCreate, IntakeAdoptCreate, KnowledgeAdoptCreate, KnowledgeAdoptRead, KnowledgeDocument, KnowledgeDraftChangesCreate,
     KnowledgeDraftChangesRead, KnowledgeDraftDiscardRead, KnowledgeDraftOpenCreate, KnowledgeDraftOpenRead,
     KnowledgeDraftRead, KnowledgeHeadRead, KnowledgeItemRead, KnowledgeItemsRead, KnowledgeKind, KnowledgePreviewRead,
     KnowledgeProjectsRead, JudgeRequestRead, JudgeRequestsRead,
@@ -72,6 +72,18 @@ def knowledge_router(runtime: ManagedRuntime) -> APIRouter:
                  operation_id='standing_permission_response')
     def permission_response(project_id: str, body: StandingPermissionResponseCreate, idempotency_key: IdempotencyKey):
         return run(registered(project_id), 'permissions.respond', body.model_dump(), idempotency_key)
+
+    @router.post('/projects/{project_id}/intake/stage', response_model=dict, operation_id='intake_stage')
+    def intake_stage(project_id: str, body: IntakeStageCreate, idempotency_key: IdempotencyKey):
+        return run(registered(project_id), 'intake.stage', body.model_dump(), idempotency_key)
+
+    @router.post('/projects/{project_id}/intake/preview', response_model=dict, operation_id='intake_preview')
+    def intake_preview(project_id: str, body: IntakePreviewCreate):
+        return run(registered(project_id), 'intake.preview', body.model_dump())
+
+    @router.post('/projects/{project_id}/intake/adopt', response_model=dict, operation_id='intake_adopt')
+    def intake_adopt(project_id: str, body: IntakeAdoptCreate, idempotency_key: IdempotencyKey):
+        return run(registered(project_id), 'intake.adopt', body.model_dump(), idempotency_key)
 
     @router.get('/knowledge/projects', response_model=KnowledgeProjectsRead, operation_id='knowledge_projects')
     def projects(offset: Offset = 0, limit: Limit = 50):

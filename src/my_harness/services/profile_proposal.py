@@ -66,14 +66,24 @@ def validate(candidate, frozen, drafts, *, context=None):
             if context is None:
                 raise invalid()
             validate_plan(candidate['preparation_plan'], profile, context)
-        docs = documents(frozen, drafts)
-        layout = frozen['project']['layout']
-        target = Layout(layout['docs'], layout['state'], layout['next_steps'])
-        if not {target.specification, target.architecture} <= docs.keys():
-            raise invalid('context_required')
+        structured = frozen.get('knowledge_authority') == 'structured-intake-1'
+        docs = {} if structured else documents(frozen, drafts)
         sources = {entry['path']: entry['sha256'] for entry in frozen.get('inventory', {}).get('entries', [])
                    if entry['status'] == 'read' and entry['sha256']}
-        sources.update(docs)
+        if structured:
+            from my_harness.core.engine.knowledge import digest as knowledge_digest
+            knowledge = frozen['knowledge_proposal']
+            if not {'specification', 'architecture'} <= {item.get('document') for item in knowledge['items']}:
+                raise invalid('context_required')
+            sources.update(frozen['intake_sources'])
+            sources.update({f"knowledge:{item['kind']}:{item.get('document') or ''}:{item['code']}": knowledge_digest(item)
+                            for item in knowledge['items']})
+        else:
+            layout = frozen['project']['layout']
+            target = Layout(layout['docs'], layout['state'], layout['next_steps'])
+            if not {target.specification, target.architecture} <= docs.keys():
+                raise invalid('context_required')
+            sources.update(docs)
         commands = {('preparation', index): command.argv for index, command in enumerate(profile.preparation)}
         commands.update({('validation', index): command.argv for index, command in enumerate(profile.validations)})
         commands.update({('prefix', index): argv for index, argv in enumerate(profile.allowed_command_prefixes)})
@@ -124,7 +134,11 @@ def validate(candidate, frozen, drafts, *, context=None):
                     raise invalid('evidence')
         binding = {'documents': docs, 'head': frozen.get('head'), 'tree': frozen.get('tree'),
                    'inventory_sha256': frozen.get('inventory_sha256')}
-        return {'contract': CONTRACT, 'candidate': deepcopy(candidate), 'binding': binding,
+        if structured:
+            binding.update(knowledge_proposal_sha256=knowledge_digest(knowledge), sources=sources,
+                           intake_source_sha256=frozen['intake_source_sha256'],
+                           intake_brief_sha256=frozen['intake_brief_sha256'])
+        return {'contract': 'project-profile-proposal-2' if structured else CONTRACT, 'candidate': deepcopy(candidate), 'binding': binding,
                 'binding_sha256': digest(binding), 'tools_status': 'DEFERRED',
                 'preparation_status': 'NOT_CHECKED', 'configuration_status': 'NOT_SAVED'}
     except ContractError:

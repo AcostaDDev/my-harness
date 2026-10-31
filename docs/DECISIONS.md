@@ -2357,3 +2357,35 @@ Service-derived equivalence survives rewording/broadening; those changes alone a
 authority, ancestry, expiry and revocation are checked transactionally at commands and admission. Native side
 effects remain cooperatively contained and uncertain effects require existing stop/reconciliation. No later-task
 autonomy bounds, native judge qualification, network installation or operational delivery is authorized.
+
+## D292 — Structured intake evidence and independent profile confirmation
+
+Status: accepted implementation detail under the owner's P002-T011 authorization; source is complete and technical
+re-review passed on 2026-10-31; authorized integration is pending. No new owner-policy gate is introduced. [Evidence](phase/P002-T011-db-intake.md).
+
+Structured intake stages D284 knowledge through the shared domain service and adopts it only on an exact owner
+preview. Before first adoption the accepted revision is explicitly absent. Historical documentary conversations
+and their frozen records retain their lane. Structured profile proposals use `project-profile-proposal-2` with
+exact proposed-knowledge and source bindings; `project-profile-proposal-1` remains unchanged for documentary
+conversations. Full profile validation still determines whether a turn succeeds. Profile review/confirmation
+binds the actual staged or separately accepted revision/hash/status, conversation version, question deferrals,
+source ledger and candidate. Owner confirmation preserves that preview and its `owner_confirmed` origin.
+
+An answered owner message remains evidence only in its own conversation, verified through its frozen request and
+context hashes. Stable owner-turn locators, brief and inventory references survive subsequent turns without
+invented sources. Deterministic instruction staging rereads frozen local HEAD, verifies any preserved original
+members against exact identity/content/provenance and prior staging, and merges members/ordered links once.
+A prefix alone establishes no identity or trust. Failed staging rolls back without replacing prior evidence.
+
+Knowledge adoption, profile confirmation, private configuration, preparation, activation and readiness are distinct.
+Export/commit is an explicit pending T013 continuation; profile confirmation does not depend on a fictional export.
+T016 owns final readiness and T020 owns installed conversion. No dependency, new table, permission expansion,
+automatic conversion, new inference launcher or rewrite of historical records is introduced.
+
+
+T011 completion clarification (same owner-authorized scope): a profileless intake may keep a valid
+`profile: null` response as a draft, but cannot adopt knowledge until a current valid profile proposal is
+available. Adoption reuses the exact profile preview checks under its transaction and refuses with an
+English/Spanish continuation diagnostic. This prevents closing the only conversation before a profile can
+be obtained. It does not confirm the profile, and selected-profile intake is exempt. Separate profile
+confirmation before or after knowledge adoption, idempotency and the post-adoption context guard remain intact.

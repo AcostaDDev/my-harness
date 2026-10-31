@@ -1051,7 +1051,7 @@ def managed_router(runtime: ManagedRuntime):
         request return the same conversation."""
         item = planning_project(project_id)
         writer = conversation_port(item, body.kind)
-        conversation_id = call(planning_repository().create, item.context, kind=body.kind, title=body.title, brief=body.brief,
+        conversation_id = call(planning_repository().create, item.context, kind=body.kind, title=body.title, brief=body.brief, structured=body.structured,
                                phase_id=body.phase_id, writer=writer, key=idempotency_key)
         return planning_read(item, conversation_id)
 

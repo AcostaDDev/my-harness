@@ -118,16 +118,27 @@ def binding(snapshot: dict, evidence: ContentEvidence, documents: dict) -> dict:
             "fingerprint": evidence.fingerprint, "documents": documents,
             "tasks": {task: (None if item is None else {"run_id": item["run_id"], "commit": item["commit"]})
                       for task, item in snapshot["tasks"].items()},
-            "questions_sha256": snapshot["questions_sha256"]}
+            "questions_sha256": snapshot["questions_sha256"],
+            **({"knowledge": snapshot["knowledge"]} if "knowledge" in snapshot else {})}
 
 
 def observe(context: ProjectContext, snapshot: dict, git: PhaseGit):
     """Current content and the reasons it cannot be ready; reads only."""
     definition = snapshot["definition"]
     documents = document_hashes(context, definition["documents"])
-    drift = sorted(path for path, value in documents.items() if snapshot["documents"].get(path) != value)
+    structured = snapshot.get("structured")
+    drift = [] if structured else sorted(path for path, value in documents.items() if snapshot["documents"].get(path) != value)
     evidence = git.capture(context)
     reasons = []
+    if structured:
+        plan = definition.get("knowledge", {})
+        if snapshot.get('queued_knowledge') and snapshot['queued_knowledge'] != snapshot['knowledge']:
+            reasons.append(tr('phases.structured_refused', reason='queued_knowledge_stale'))
+        if snapshot.get("terminal") != "ABANDONED":
+            if not plan.get("planned") or plan.get("revision") != snapshot["knowledge"]["revision"]:
+                reasons.append(tr("phases.structured_refused", reason="current_accepted_plan_required"))
+            if any(value is None for value in documents.values()):
+                reasons.append(tr("phases.structured_refused", reason="required_documents_missing"))
     try:
         git_provenance(evidence)
     except CommitError as exc:
@@ -155,7 +166,7 @@ def validate_phase_result(definition: dict, data: dict) -> dict:
     results = data.get("exit_criteria_results")
     if (not isinstance(results, list) or not all(
             isinstance(item, dict) and isinstance(item.get("criterion"), str) and type(item.get("passed")) is bool
-            and isinstance(item.get("evidence"), str) for item in results)
+            and isinstance(item.get("evidence"), str) and bool(item["evidence"].strip()) for item in results)
             or sorted(item["criterion"] for item in results) != sorted(definition["exit_criteria"])):
         raise ContractError(tr('phases.phase_review_evaluate_each'))
     if data["verdict"] == "READY" and (not all(item["passed"] for item in results)
@@ -167,14 +178,21 @@ def validate_phase_result(definition: dict, data: dict) -> dict:
 
 
 def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, agents, commands, git: PhaseGit,
-                journal, catalog, language=None) -> tuple[RunHistory, dict]:
+                journal, catalog, language=None, *, canonical=None) -> tuple[RunHistory, dict]:
     """Deterministic gates before spending a call; the agent only evaluates."""
     definition = snapshot["definition"]
 
     def outcome(verdict, reasons, *, bound=None, result=None, validation=None, questions=()):
         return {"verdict": verdict, "reasons": list(reasons), "binding": bound,
                 "binding_sha256": digest(bound) if bound else None, "result": result,
-                "validation": validation, "questions": list(questions)}
+                "validation": validation, "questions": list(questions),
+                **({"deterministic_actor": "Harness", "classification": {"READY": "ready", "NOT_READY": "missing_work", "REVISE": "reconciliation",
+                    "NEEDS_RECONCILIATION": "reconciliation", "BLOCKED": "unresolved_questions", "FAILED": "operational_failure"}[verdict],
+                    "reviewer": {"participated": (True if any(a.result.payload_json is not None and a.result.terminal_observed
+                        for a in history.attempts) else None if history.attempts else False),
+                    "attempt_count": len(history.attempts),
+                    "model": context.policy.reviewer_model, "effort": context.policy.reviewer_effort}}
+                   if snapshot.get("structured") else {})}
 
     def done(history, value):
         return replace(history, status="completed", stop=None), value
@@ -190,15 +208,16 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
     if drift:
         return done(history, outcome("NEEDS_RECONCILIATION",
                                      [tr('phases.documents_drift', paths=", ".join(drift))]))
-    from my_harness.core.engine.documents import BUDGETS, base_section
-    try:
-        state = context.path(context.state_file).read_bytes()
-        base = base_section(state.decode('utf-8')) or ''
-    except (ValueError, OSError, UnicodeError) as exc:
-        return done(history, outcome('FAILED', [tr('phases.state_unreadable', error=exc)]))
-    if len(state) > BUDGETS['state'] or len(base.encode('utf-8')) > BUDGETS['base']:
-        return done(history, outcome("NEEDS_RECONCILIATION", [
-            tr('phases.compact_state')]))
+    if not snapshot.get('structured'):
+        from my_harness.core.engine.documents import BUDGETS, base_section
+        try:
+            state = context.path(context.state_file).read_bytes()
+            base = base_section(state.decode('utf-8')) or ''
+        except (ValueError, OSError, UnicodeError) as exc:
+            return done(history, outcome('FAILED', [tr('phases.state_unreadable', error=exc)]))
+        if len(state) > BUDGETS['state'] or len(base.encode('utf-8')) > BUDGETS['base']:
+            return done(history, outcome("NEEDS_RECONCILIATION", [
+                tr('phases.compact_state')]))
     if reasons:
         return done(history, outcome("NOT_READY", reasons))
     bound = binding(snapshot, evidence, documents)
@@ -217,7 +236,7 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
                    "documents": documents, "tasks": snapshot["task_evidence"], "validation": validation,
                    "answered_questions": snapshot["answered_questions"]}
         prompt, prompt_snapshot = render_attempt(catalog, "close-phase", {
-            "PHASE_ID": definition["code"], "EVIDENCE_JSON": freeze(payload)}, context, language)
+            "PHASE_ID": definition["code"], "EVIDENCE_JSON": freeze({**payload, **({"knowledge": snapshot["knowledge"], "plan": definition["knowledge"]} if snapshot.get("structured") else {})})}, context, language, canonical=canonical() if callable(canonical) else canonical)
     except (ValueError, KeyError, TypeError) as exc:
         return done(stop_history(history, "prompts", str(exc)), outcome("FAILED", [str(exc)], validation=validation))
     history = replace(history, prompt_catalog_json=catalog_json)
@@ -253,6 +272,14 @@ def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, gi
     done = replace(history, status="completed", stop=None)
     closure = snapshot.get('closure')
     continuing = closure and closure.get('commit_intent')
+    if continuing and snapshot.get('structured'):
+        from my_harness.core.engine.commit import CommitIntent
+        intent = CommitIntent.from_json(closure['commit_intent'])
+        published = git.reconcile_published(context, intent, closure['preview'], snapshot.get('tag_intent'))
+        if published is not None:
+            return done, {**published, 'status': snapshot['terminal'], 'reasons': [],
+                          'binding_sha256': ready['binding_sha256'], 'archive': closure['preview']['archive'],
+                          'reconciled': True, 'published_recovery': True}
     if not continuing and not snapshot["authorization"]["usable"]:
         return done, {"status": "EXPIRED", "reasons": [tr('phases.close_expired')]}
     journal.checkpoint(history, "phase")
@@ -278,7 +305,12 @@ def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, gi
         intent = snapshot.get('tag_intent') or tag_intent(snapshot, git, context, now)
         if not snapshot.get('tag_intent'):
             journal.tag_intent(intent)
-        tag = git.tag(context, intent)
+        if snapshot.get('structured'):
+            tag = git.tag(context, intent, closure_intent=sealed)
+        else:
+            tag = git.tag(context, intent)
+        if tag["status"] == "stale":
+            return done, {"status": "STALE", "reasons": [tag["diagnostic"]], "tag": tag}
         if tag["status"] == "conflict":
             return done, {"status": "FAILED", "reasons": [tag["diagnostic"]], "tag": tag}
     result = {'status': snapshot.get('terminal', 'CLOSED'), 'reasons': [], 'tag': tag,

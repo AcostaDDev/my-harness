@@ -142,6 +142,11 @@ def run_task_graph(repository, claim, journal, work):
     return execute_task_job(repository, claim, journal, work)
 
 
+def run_phase_graph(repository, claim, journal, work):
+    from my_harness.orchestration.phase import execute_phase_job
+    return execute_phase_job(repository, claim, journal, work)
+
+
 class SupervisorWorker:
     """One job per lane (writer/chat); errors are quarantined, without retry."""
 

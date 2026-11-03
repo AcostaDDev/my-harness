@@ -69,7 +69,8 @@ def _clean_capture(context, git):
 
 def _sealed_preview(context, evidence, provenance, tree: str,
                     changes: list[tuple[str, str | bytes | None, str | bytes | None]],
-                    reason: str, extra: dict, disk: dict[str, str] | None = None) -> dict:
+                    reason: str, extra: dict, disk: dict[str, str] | None = None, *,
+                    large_archive_paths: frozenset[str] = frozenset()) -> dict:
     """`disk`: local bytes the commit replaces in addition to the base ones (regenerated blocks)."""
     documents, updates, diffs = [], [], []
     for path, old, new in changes:
@@ -77,7 +78,7 @@ def _sealed_preview(context, evidence, provenance, tree: str,
             continue
         raw = new if isinstance(new, bytes) else (new.encode('utf-8') if new is not None else None)
         before = old if isinstance(old, bytes) else (old.encode('utf-8') if old is not None else None)
-        if raw is not None and len(raw) > MAX_DOCUMENT_BYTES:
+        if raw is not None and len(raw) > MAX_DOCUMENT_BYTES and path not in large_archive_paths:
             raise ValueError(tr('definition.would_exceed_512_kib', path=path))
         binary = isinstance(new, bytes)
         content = base64.b64encode(new).decode('ascii') if binary else new

@@ -2486,3 +2486,37 @@ bubble. Only the reviewer offers free conversation (the project chat), from a se
 phase, task, run or step, it includes that element's context by default behind a removable tag, recorded as a
 knowledge delivery. Every action is an ordinary guarded command with fresh checks; a bubble never carries approval.
 Details and sketches: [visual direction](phase/P002-T018-visual-direction.md).
+
+## D298 — Structured manual phase plans and sealed lifecycle exports
+
+Status: accepted implementation refinement within the owner-authorized P002-T015 contract (2026-11-03);
+local source and technical review status are tracked in the [T015 record](phase/P002-T015-phase-lifecycle.md).
+
+An operational phase starts from a phase identity in accepted SQLite knowledge, pending planning. A confirmed
+plan binds the complete accepted revision, phase/task/criterion identities and versions, dependencies and explicit
+criterion-to-task coverage. Reviewer proposals are durable read-only results; staging validates a separate draft,
+and adoption requires an independent exact owner preview/hash, CAS and idempotency key. Plan edits cannot alter
+product meaning or erase identities. Owner changes to objectives/criteria use general knowledge adoption first;
+subsequent phase-plan confirmation invalidates READY and batches. Replacement tasks retain D296 lineage/budgets.
+
+READY additionally binds the accepted revision and documentary ownership manifest. A committed acceptance of an
+older task version or task dependency/criterion contract is insufficient. Checks classify pending work,
+reconciliation, unresolved questions and operational failure, attributing deterministic controls to Harness and
+reporting actual reviewer participation/configuration. T009 planning-choice candidates are produced only after
+plan validation; only explicitly classified planning ambiguity can supply a blocked-check candidate. Neither
+candidate nor ruling authorizes adoption or replaces READY. Autonomous authorization policies remain T016 work;
+T015 admits owner-confirmed effects and refuses absent or fabricated delegated authority.
+
+Closure freezes the accepted domain, evidence, ownership, archive paths and generated files in the existing phase
+operation and D294 exchange records. The existing writer reconciles one commit and an unmoved tag on the evaluated
+HEAD. Committed artifacts are archived byte-for-byte, including nested binaries. Succession uses only the sealed
+accepted roadmap; the result transaction creates one ACTIVE unplanned successor or explicitly leaves none.
+Recovery needs confirmed stopped writers and a fresh explicit confirmation of the same operation; expiry alone
+never releases a writer or retries inference. Origin, scope, fingerprint, validity and current knowledge are
+rechecked under the database writer through Git reference effects.
+
+The canonical D294 renderer and historical generations remain unchanged. `harness:phase-view-1` decoration adds
+operational phase/plan/archive status beside canonical generated fields. Explicit import retains the raw input,
+reports this decoration as `operational_view_not_imported`, and never adopts its execution/approval claims.
+Owned targets are replaced from sealed inputs and committed prior bytes, with per-target recovery receipts;
+there is no comparison of Markdown with SQLite and no automatic import. No schema or dependency change.

@@ -476,7 +476,15 @@ class CLIProcessAdapter:
         from uuid import UUID
         UUID(request.id)
         directory.mkdir(mode=0o700)
-        prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(reader_schema(request) if request.role == 'judge' else SHAPES[request.role])
+        snapshot = json.loads(request.prompt_snapshot_json or "{}")
+        parts = snapshot.get("parts", ())
+        structured_plan = (
+            request.role == "planning" and parts
+            and parts[0].get("version", {}).get("name") == "structured-phase-plan"
+            and snapshot.get("output_schema", {}).get("properties", {}).get("plan") == {"type": "null"}
+        )
+        shape = reader_schema(request) if request.role == "judge" or structured_plan else SHAPES[request.role]
+        prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(shape)
         if config.provider == "codex" and request.role == "executor":
             prompt += ("\n\nRequested executor filesystem access:\n"
                        "The CLI is invoked with workspace-write and the following canonical checkout "

@@ -2492,5 +2492,20 @@
   "documents.render_unavailable": "Markdown generation is unavailable. Portable download is evaluated separately.",
   "documents.portable_unavailable": "Portable transfer is unavailable for this snapshot. Document generation is evaluated separately.",
   "documents.wrapper_required": "Select the required client wrappers in the ownership preview before generating files.",
-  "documents.instruction_budget": "The complete instructions exceed the generated file budget. No rules were truncated."
+  "documents.instruction_budget": "The complete instructions exceed the generated file budget. No rules were truncated.",
+  "phase.accepted.activate": "Activate an accepted roadmap phase",
+  "phase.accepted.plan": "Accepted phase plan and revisions",
+  "phase.accepted.hint": "Uses accepted project knowledge. Review the exact scope, tasks and criterion coverage before adopting.",
+  "phase.accepted.coverage": "Criterion coverage: criterion code: task codes separated by commas",
+  "phase.accepted.propose": "Ask reviewer for a plan",
+  "phase.accepted.proposal": "Reviewer proposal (not adopted)",
+  "phase.accepted.stage": "Validate and stage candidate",
+  "phase.accepted.preview": "Preview accepted plan",
+  "phase.accepted.hash": "Exact preview",
+  "phase.accepted.confirm": "I reviewed this exact phase contract and coverage.",
+  "phase.accepted.adopt": "Adopt confirmed contract",
+  "phase.accepted.deterministic": "Deterministic controls: Harness.",
+  "phase.accepted.reviewer": "Reviewer participated: {model} / {effort}.",
+  "phase.accepted.no_reviewer": "The reviewer has not participated in this check.",
+  "phase.accepted.reviewer_unknown": "A reviewer attempt was recorded; participation is unknown because no response was observed."
 }

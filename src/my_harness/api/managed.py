@@ -513,6 +513,20 @@ def managed_router(runtime: ManagedRuntime):
                     archived[path] = "unreadable"
         detail = call(runtime.phases.get, phase_id, current, archived)
         actions = detail["actions"] if project_id is not None else []
+        reconciling_close = any(op['kind'] == 'close' and op['status'] == 'INTERRUPTED'
+                                and op['request'].get('commit_intent') for op in detail['operations'])
+        if detail.get('ready') and not reconciling_close and project_id is not None and runtime.config.commit_factory is not None:
+            item = runtime.projects[project_id]
+            try:
+                captured = runtime.config.commit_factory(item.context, frozen_versions(item)).capture(item.context)
+                bound = detail['ready']['binding']
+                changed = [name for name, value in (('head', captured.base_revision), ('fingerprint', captured.fingerprint))
+                           if bound.get(name) != value]
+            except (OSError, ValueError, RuntimeError):
+                changed = ['code_evidence_unavailable']
+            if changed:
+                detail['ready']['stale_reasons'].append(say('phases.ready_stale_changed', parts=', '.join(changed)))
+                actions = [a for a in actions if a != 'close']
         if current is None:
             actions = [a for a in actions if a != "reconcile"]
         if runtime.config.commit_factory is None:
@@ -559,6 +573,37 @@ def managed_router(runtime: ManagedRuntime):
             data["documents"] = (list(target.phase_documents) if target is not None
                                  else [context.state_file, context.next_steps_file])
         return phase_read(call(runtime.phases.create, context, data))
+
+    from my_harness.api.schemas import (AcceptedPhasePreviewCreate, AcceptedPhasePreviewRead,
+        AcceptedPhaseAdoptCreate, PhaseProposalStageCreate, PhaseProposalStageRead, PhaseVersioned)
+    from my_harness.storage.structured_phases import StructuredPhases
+
+    @router.post('/projects/{project_id}/phases/accepted/preview', response_model=AcceptedPhasePreviewRead,
+                 operation_id='managed_accepted_phase_preview')
+    def accepted_phase_preview(project_id: str, body: AcceptedPhasePreviewCreate):
+        return call(StructuredPhases(runtime.repository).preview, project(project_id).context, **body.model_dump())
+
+    @router.post('/projects/{project_id}/phases/accepted/adopt', response_model=PhaseRead,
+                 operation_id='managed_accepted_phase_adopt')
+    def accepted_phase_adopt(project_id: str, body: AcceptedPhaseAdoptCreate, idempotency_key: IdempotencyKey):
+        ident = call(StructuredPhases(runtime.repository).adopt, project(project_id).context,
+                     key=idempotency_key, **body.model_dump())
+        return phase_read(ident)
+
+    @router.post('/phases/{phase_id}/plan/propose', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_phase_plan_propose')
+    def propose_phase_plan(phase_id: str, body: PhaseVersioned, idempotency_key: IdempotencyKey):
+        item, _ = registered_phase(phase_id)
+        job = call(StructuredPhases(runtime.repository).propose, item.context, phase_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item))
+        return queued(job)
+
+    @router.post('/phases/{phase_id}/plan/stage', response_model=PhaseProposalStageRead,
+                 operation_id='managed_phase_plan_stage')
+    def stage_phase_plan(phase_id: str, body: PhaseProposalStageCreate):
+        item, _ = registered_phase(phase_id)
+        return call(StructuredPhases(runtime.repository).stage, item.context, phase_id, body.operation_id,
+                    body.expected_version, proposal_sha256=body.proposal_sha256)
 
     @router.get("/phases/{phase_id}", response_model=PhaseRead, operation_id="managed_phase")
     def phase(phase_id: str):

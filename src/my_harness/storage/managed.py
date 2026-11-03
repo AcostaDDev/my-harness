@@ -369,6 +369,15 @@ class SQLiteManagedRepository:
                 raise Conflict(tr('domain.permission_invalid'))
             self._phase_open(session, str(context.root), phase_id, owned=documents is not None)
             if documents is not None:
+                from my_harness.storage.models import PhaseRow
+                phase_row = session.scalar(select(PhaseRow).where(PhaseRow.root == str(context.root), PhaseRow.code == phase_id))
+                if phase_row is not None and phase_row.definition.get('knowledge'):
+                    from my_harness.storage.structured_phases import current, stamp, refuse
+                    plan = phase_row.definition['knowledge']
+                    if (not plan['planned'] or plan['revision'] != stamp(current(session, context.root))
+                            or task_id not in phase_row.definition['tasks']
+                            or phase_row.status not in ('ACTIVE', 'NEEDS_RECONCILIATION')):
+                        refuse('task_requires_current_adopted_phase_plan')
                 from my_harness.core.engine.contracts import RECONCILE_TASK
                 if RECONCILE_TASK.fullmatch(task_id):
                     raise Conflict(tr('intake.database_owned'))

@@ -1,3 +1,4 @@
+import { AcceptedPhase } from "./AcceptedPhase";
 import { useEffect, useState } from "react";
 import { useI18n } from "./Language";
 import { managed, jobRequest } from "./managed-api";
@@ -12,12 +13,19 @@ const lines = (value: string) => value.split("\n").map(item => item.trim()).filt
 export function PhaseCreate() {
   const { t } = useI18n();
   const { project, busy, operate } = useWorkspace();
+  const [structured, setStructured] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    void managed<S["KnowledgeHeadRead"]>(`/projects/${project}/knowledge`).then(head => { if (alive) setStructured(!!head.revision); }).catch(() => {});
+    return () => { alive = false; };
+  }, [project]);
   const [code, setCode] = useState("");
   const [objective, setObjective] = useState("");
   const [criteria, setCriteria] = useState("");
   const [tasks, setTasks] = useState("");
   const [documents, setDocuments] = useState("");
   const [tag, setTag] = useState("");
+  if (structured) return <AcceptedPhase />;
   return <section className="panel" aria-labelledby="phase-create">
     <h2 id="phase-create">{t("phase.create.title")}</h2>
     <p className="hint">{t("phase.create.hint")}</p>
@@ -88,6 +96,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
   const criteria = phase.definition.exit_criteria as string[];
   const superseded = phase.successor !== null;
   return <>
+    {phase.definition.knowledge && phase.actions.includes("plan") && (!section || section === "phase-definition") ? <AcceptedPhase phase={phase} /> : null}
     {(!section || section === "phase-definition") && <section className="panel" aria-labelledby="phase-definition">
       <h2 id="phase-definition">{t("phase.definition")}</h2>
       <Fields items={[
@@ -101,6 +110,11 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
       <Evidence title={t("phase.definition.evidence")} value={{ definition: phase.definition, tasks: phase.tasks }} />
       <Evidence title={t("phase.definition.versions", { count: phase.definitions.length })} value={phase.definitions} />
     </section>}
+
+    {phase.definition.knowledge && phase.closure && (!section || section === "phase-documents") ? <section className="panel">
+      <h2>{t("settings.documents")}</h2>
+      <Evidence title={t("phase.closure.evidence")} value={{ archive: phase.closure.archive, files: phase.closure.archive_files, altered: phase.closure.archive_altered }} />
+    </section> : null}
 
     {(!section || section === "phase-questions") && <section className="panel" aria-labelledby="phase-questions">
       <h2 id="phase-questions">{t("phase.questions")} <span className="count">{n("phase.questions.pending", open.length)}</span></h2>
@@ -120,7 +134,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
         <button className="button-quiet" disabled={!can("question") || !question.trim()}>{t("phase.question.register")}</button></div></form>
     </section>}
 
-    {(!section || section === "phase-documents") && <section className="panel" aria-labelledby="phase-documents">
+    {(!section || section === "phase-documents") && !phase.definition.knowledge && <section className="panel" aria-labelledby="phase-documents">
       <h2 id="phase-documents">{t("settings.documents")}</h2>
       {phase.closure ? <ClosureDocuments phase={phase} closure={phase.closure} />
         : phase.documents.drift === null ? <p className="state state-error">{t("phase.documents.unreadable")}</p>
@@ -165,6 +179,11 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
     {(!section || section === "phase-check") && <section className="panel" aria-labelledby="phase-check">
       <h2 id="phase-check">{t("phase.check.title")}</h2>
       <p className="hint">{t("phase.check.hint")}</p>
+      {phase.check?.reviewer && <>
+        <p>{t("phase.accepted.deterministic")}</p>
+        <p>{phase.check.reviewer.participated === null ? t("phase.accepted.reviewer_unknown") : phase.check.reviewer.participated ? t("phase.accepted.reviewer", { model: phase.check.reviewer.model, effort: phase.check.reviewer.effort }) : t("phase.accepted.no_reviewer")}</p>
+        <Evidence title={t("phase.ready.evidence")} value={phase.check} />
+      </>}
       <button disabled={!can("check")} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/actions`, { action: "check", expected_version: v })))}>{t("phase.check.submit")}</button>
       {phase.closure ? <ClosureCheck closure={phase.closure} />
         : phase.ready ? <>
@@ -210,7 +229,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
 
     {!section && <details className="panel panel-collapsible">
       <summary><h2>{t("phase.amend_abandon")}</h2></summary>
-      <div className="decision">
+      {!phase.definition.knowledge && <div className="decision">
         <h3>{t("phase.amend.title")}</h3>
         <p className="hint">{t("phase.amend.hint", { version: phase.definition_number + 1 })}</p>
         <label>{t("phase.field.objective")}<input value={amendObjective} maxLength={4000} onChange={e => setAmendObjective(e.target.value)} /></label>
@@ -225,7 +244,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
             documents: lines(amendDocuments), tag: amendTag.trim() || null, reason: amendReason, confirmed: true } satisfies S["PhaseAmendCreate"]);
           setAmendReason("");
         })}>{t("phase.amend.title")}</button>
-      </div>
+      </div>}
       <div className="decision decision-danger">
         <h3>{t("phase.abandon.title")}</h3>
         <p className="hint">{t("phase.abandon.hint")}</p>

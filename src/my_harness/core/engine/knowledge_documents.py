@@ -339,7 +339,9 @@ def _parse_portable(text):
 
 def parse(files):
     try:
-        return _parse(files)
+        clean, omitted = without_phase_views(files)
+        parsed, report, language = _parse(clean)
+        return parsed, report + omitted, language
     except (KeyError, TypeError, AttributeError, IndexError, RecursionError) as exc:
         raise ValueError('invalid_document_shape') from exc
 
@@ -437,3 +439,36 @@ def _state(data, language):
             code = (member['document'] + '/' if member['document'] else '') + member['code']
             text += '\n- ' + code + ' — ' + member['content']['title']
     return text + '\n'
+
+
+PHASE_VIEW_START = '<!-- harness:phase-view-1 -->\n'
+PHASE_VIEW_END = '<!-- harness:end-phase-view-1 -->\n'
+
+
+def phase_views(files, *, active, pending, archives, language):
+    """Operational decoration beside canonical fields. Never imports execution/approval authority."""
+    files = dict(files)
+    from my_harness.i18n import message
+    status = message('documents.phase_active', language, phase=active or message('documents.phase_none', language)) + '\n'
+    if active and pending:
+        status += message('documents.phase_planning_pending', language) + '\n'
+    links = ''.join(f'[{code}: {state["status"]}]({state["archive"]})\n'
+                    for code, state in sorted(archives.items())
+                    if state['status'] in ('CLOSED', 'ABANDONED') and state.get('archive'))
+    for path in ('docs/STATE.md', 'docs/NEXT_STEPS.md', 'docs/ROADMAP.md'):
+        content = (links if path == 'docs/ROADMAP.md' else '') + status
+        files[path] += '\n' + PHASE_VIEW_START + content + PHASE_VIEW_END
+    return files
+
+
+def without_phase_views(files):
+    """Explicit import retains raw inputs and reports omitted operational decoration, never adopts it."""
+    result, reports = dict(files), []
+    pattern = re.compile(r'\n' + re.escape(PHASE_VIEW_START) + r'.*?' + re.escape(PHASE_VIEW_END) + r'\Z', re.S)
+    for path in ('docs/STATE.md', 'docs/NEXT_STEPS.md', 'docs/ROADMAP.md'):
+        if path in result:
+            text, count = pattern.subn('', result[path])
+            if count:
+                result[path] = text
+                reports.append({'code': 'operational_view_not_imported', 'path': path, 'blocking': False})
+    return result, reports

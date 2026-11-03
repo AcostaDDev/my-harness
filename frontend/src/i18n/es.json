@@ -2492,5 +2492,20 @@
   "documents.render_unavailable": "La generación Markdown no está disponible. La descarga portable se evalúa por separado.",
   "documents.portable_unavailable": "La transferencia portable no está disponible para esta revisión. La generación documental se evalúa por separado.",
   "documents.wrapper_required": "Selecciona los wrappers de cliente necesarios en la vista de propiedad antes de generar archivos.",
-  "documents.instruction_budget": "Las instrucciones completas superan el límite del archivo generado. No se ha truncado ninguna regla."
+  "documents.instruction_budget": "Las instrucciones completas superan el límite del archivo generado. No se ha truncado ninguna regla.",
+  "phase.accepted.activate": "Activar una fase del roadmap aceptado",
+  "phase.accepted.plan": "Plan aceptado y revisiones de fase",
+  "phase.accepted.hint": "Utiliza el conocimiento aceptado del proyecto. Revisa el alcance, las tareas y la cobertura antes de adoptar.",
+  "phase.accepted.coverage": "Cobertura: código de criterio: códigos de tareas separados por comas",
+  "phase.accepted.propose": "Pedir un plan al revisor",
+  "phase.accepted.proposal": "Propuesta del revisor (sin adoptar)",
+  "phase.accepted.stage": "Validar y preparar candidata",
+  "phase.accepted.preview": "Vista previa del plan aceptado",
+  "phase.accepted.hash": "Vista previa exacta",
+  "phase.accepted.confirm": "He revisado este contrato exacto de fase y su cobertura.",
+  "phase.accepted.adopt": "Adoptar contrato confirmado",
+  "phase.accepted.deterministic": "Controles deterministas: Harness.",
+  "phase.accepted.reviewer": "Revisor participante: {model} / {effort}.",
+  "phase.accepted.no_reviewer": "El revisor no ha participado en esta comprobación.",
+  "phase.accepted.reviewer_unknown": "Hay un intento registrado del revisor; su participación es desconocida porque no se observó respuesta."
 }

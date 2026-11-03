@@ -2461,3 +2461,28 @@ This supplies T014's task boundary. Phase remediation admission and roadmap limi
 
 Implementation and synthetic evidence are recorded in
 [P002-T014](phase/P002-T014-task-execution.md).
+
+## D297 — Work map visual direction and agent conversation entry points
+
+Status: accepted explicitly by the owner on 2026-11-03 as the G14 visual direction (T018) and the G13 conversation
+kinds (T017); design only, implementation pending T017 and T018 in the existing order (T015 → T016 → T017 → T018).
+
+The task-instance graph of D278 becomes a hand-drawn, zoomable work map and the home page, with the existing list
+pages one toggle away as the accessible alternative. Clicking a node or zooming past a threshold enters it: projects →
+phases → tasks (`depends_on` edges, `replaces` lineage) → steps of the latest run, with a selector for earlier runs →
+the trace of one invocation. Every level is an existing or new URL. Circles R, E, J (only with a judge profile) and H
+(Harness deterministic stages) sit on the element where work happens; the active one shows rays. Clicking or zooming
+into a circle opens that invocation's trace. Status uses colour plus icon and text; polling remains the default.
+
+The trace graph needs an additive observed-step projection of ordered native turns and tool calls, derived from the
+sealed stream at settlement so that it survives stream retention; T018 defines it without reopening T006. The style
+is generated at runtime with rough.js and a bundled hand-drawn font in SVG with theme tokens and stable seeds; their
+exact versions, licences and packaging are a dependency decision at T018 before adding. A documentation drawer
+shows the project documents read-only beside the map.
+
+Unresolved owner requests attributed to an agent show a speech bubble that opens T017's conversation panel at any
+level: permission request, blocking question, judge escalation and lifecycle confirmation; notifications have no
+bubble. Only the reviewer offers free conversation (the project chat), from a separate talk button; opened from a
+phase, task, run or step, it includes that element's context by default behind a removable tag, recorded as a
+knowledge delivery. Every action is an ordinary guarded command with fresh checks; a bubble never carries approval.
+Details and sketches: [visual direction](phase/P002-T018-visual-direction.md).

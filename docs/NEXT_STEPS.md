@@ -555,10 +555,16 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 **Expected result:** visible origin, useful context and current authorized actions for notifications/owner requests.
 **Dependencies:** T005, T006, T015, T016.
 
+**Owner input (accepted 2026-11-03, D297):** agent speech bubbles open a conversation panel per kind — permission
+request, blocking question, judge escalation, lifecycle confirmation; notifications without a bubble. Free
+conversation is the reviewer's chat from a separate talk button, with the viewed element's context included behind a
+removable tag ([visual direction §6](phase/P002-T018-visual-direction.md#6-conversation-bubbles-and-owner-input-to-g13-t017)).
+Notification types and remaining shortcuts complete G13 here.
+
 **Subtasks:**
 
 - Agree taxonomy and shortcuts with the owner; implement project/phase/task/run links, unread vs unresolved states
-  and bounded global/project filtering.
+  and bounded global/project filtering. Provide the conversation panel per kind that T018's bubbles open.
 - Derive deduplicated inbox items from committed events, including normal-mode task/phase events and autonomous
   questions; persist across browser closure/restart and keep optional OS delivery secondary.
 - Route answers/shortcuts through ordinary guarded commands with current revisions/READY, idempotency and archive
@@ -574,10 +580,18 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 **Expected result:** a comfortable graph/detail experience linked to complete observable traces and knowledge access.
 **Dependencies:** T006, T007, T012, T015, T016, T017; owner-supplied visual direction before layout adoption.
 
+**Owner direction (accepted 2026-11-03, D297; resolves G14's direction):** a hand-drawn zoomable work map as the
+home page — projects → phases → tasks → run steps → agent trace — with R/E/J/H circles marking the active agent,
+speech bubbles opening T017's conversations and a documentation drawer
+([visual direction](phase/P002-T018-visual-direction.md), answers Q1–Q6).
+
 **Subtasks:**
 
 - Agree phase/task cards, navigation and required information with the owner; provide bounded projections rather
-  than a visual workflow editor or another executable graph authority.
+  than a visual workflow editor or another executable graph authority. Implement the accepted map levels, zoom and
+  click entry, map/list toggle, status encoding, agent circles and documentation drawer.
+- Define the additive observed-step projection (ordered native turns/tool calls from the sealed stream, surviving
+  stream retention) and decide the hand-drawn style and any dependency before adding it.
 - Show agent identity/configuration, stage/status, defined turn/attempt/tool counters, errors and phase-operation
   involvement; attribute deterministic stages to Harness and label missing telemetry honestly.
 - Add trace/knowledge-receipt drill-down, lazy history and refresh semantics, accessible alternatives and read-only
@@ -685,6 +699,9 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 **Gates:** —. **Threats:** TM19.
 ## Plan revisions
 
+- **v0.3 owner input (2026-11-03).** The owner supplied and accepted the G14 visual direction and G13 conversation
+  kinds (D297, [visual direction](phase/P002-T018-visual-direction.md)). T017/T018 subtasks are refined in place;
+  no task ID added, removed or reordered and no acceptance dropped; the order stays T015 → T016 → T017 → T018.
 - **v0.3 (2026-10-29, T001).** Plan adopted as the evolving baseline; T001 completed as design; gates G01–G17 and
   threats TM01–TM20 assigned to owning tasks; T002 adds the LangGraph placement question; T013 implements the adopted
   replacement policy. No task ID added, removed, merged or renumbered; no acceptance or pending delivery dropped

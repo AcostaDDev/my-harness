@@ -380,6 +380,32 @@ class GitWorkspace:
         from my_harness.adapters.bootstrap import execute
         return execute(self, context, shown, intent)
 
+    def published_commit(self, context: ProjectContext, intent: CommitIntent):
+        """Prove the exact sealed commit is reachable without creating objects or changing refs."""
+        git = self._git(context.root)
+        self._require_root(git, context.root)
+        head = git.text("rev-parse", "--verify", "HEAD^{commit}")
+        if not self._reachable(git, intent, head):
+            return None
+        expected = self._commit_text(intent.expected_tree, intent.base_revision, intent.message,
+                                     intent.author_name, intent.author_email, intent.committed_at)
+        if git.run("cat-file", "commit", intent.expected_commit) != expected:
+            raise CommitUncertain(tr('git.commit_object_expected_id'))
+        return head
+
+    def reconcile_published_index(self, context: ProjectContext, intent: CommitIntent):
+        if self.published_commit(context, intent) == intent.expected_commit:
+            self._refresh_index(self._git(context.root), intent)
+
+    def published_tag(self, context: ProjectContext, intent: dict) -> dict:
+        git = self._tag_git(context, intent)
+        expected = intent.get("object", intent["target"])
+        actual = git.run("rev-parse", "-q", "--verify", intent["ref"], ok=(0, 1)).decode().strip()
+        if actual != expected:
+            raise CommitUncertain(tr('git.phase_tag_state_could', exc=intent["ref"]))
+        return {"status": "reconciled", "ref": intent["ref"], "target": intent["target"],
+                **({"object": expected} if "object" in intent else {})}
+
     def execute(self, context: ProjectContext, intent: CommitIntent, *, ref_guard=None) -> CommitOutcome:
         git = self._git(context.root)
         self._require_root(git, context.root)
@@ -586,7 +612,7 @@ class GitWorkspace:
         except GitError as exc:
             raise CommitError(tr('git.phase_tag_could_not', exc=exc)) from exc
 
-    def tag(self, context: ProjectContext, intent: dict) -> dict:
+    def tag(self, context: ProjectContext, intent: dict, *, closure_intent: CommitIntent | None = None) -> dict:
         """Deterministic lightweight or annotated tag: create only if absent (CAS); never move or overwrite."""
         git = self._tag_git(context, intent)
         ref, target = intent["ref"], intent["target"]
@@ -615,13 +641,25 @@ class GitWorkspace:
                 written = git.text("hash-object", "-t", "tag", "-w", "--stdin", input=self._tag_text(intent))
                 if written != expected:
                     raise CommitError(tr('git.annotated_tag_object_differs'))
+            message = f"harness: close phase {intent['operation_id']}"
             try:
-                git.run("update-ref", "-m", f"harness: close phase {intent['operation_id']}", ref, expected,
-                        "0" * len(expected))
+                if closure_intent is None:
+                    git.run("update-ref", "-m", message, ref, expected, "0" * len(expected))
+                else:
+                    evidence = self.capture(context)
+                    if (evidence.base_revision != closure_intent.base_revision
+                            or evidence.fingerprint != closure_intent.reviewed_fingerprint):
+                        return outcome("stale", diagnostic=tr('git.content_changed_review',
+                            reviewed=closure_intent.reviewed_fingerprint, observed=evidence.fingerprint))
+                    # Verify HEAD in the same ref transaction that creates the tag.
+                    transaction = f"verify HEAD {closure_intent.base_revision}\ncreate {ref} {expected}\n"
+                    git.run("update-ref", "-m", message, "--stdin", input=transaction.encode("ascii"))
             except GitError:
                 # A failed CAS does not prove what happened: observe again.
                 if observed() == expected:
                     return outcome("reconciled", **({"object": expected} if annotated else {}))
+                if closure_intent is not None and git.text("rev-parse", "--verify", "HEAD^{commit}") != closure_intent.base_revision:
+                    return outcome("stale", diagnostic=tr('documents.checkout_changed_after_preview'))
                 raise
             return outcome("created", **({"object": expected} if annotated else {}))
         except GitError as exc:

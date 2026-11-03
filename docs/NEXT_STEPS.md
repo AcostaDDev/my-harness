@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015–T023 are planned and not started. Structured intake uses the knowledge service and existing accounted planning runner; product
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is locally implemented and verified; technical review/integration are pending. T016–T023 remain planned. Structured intake uses the knowledge service and existing accounted planning runner; product
 phase/autonomy graphs remain pending T015–T016; T014 supplies the managed task graph. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -87,7 +87,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 has **local source verified, review/integration pending**; T016–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -507,10 +507,24 @@ tools in both modes. **Dependencies:** T003, T006, T007, T008, T010, T013.
 typed owner gap clarification and continuation, and persistent replacement-family correction budgets (D296).
 Technical review found a singleton budget reset across new runs. The correction now preserves consumption
 and the smallest ceiling even without replacement links, with regression evidence in the
-[task record](phase/P002-T014-task-execution.md). Independent technical re-review and the final complete check passed. The owner authorized source commit, merge into develop and push. Source `624631e` is integrated by the accompanying merge. T015 is the next implementation task.
+[task record](phase/P002-T014-task-execution.md). Independent technical re-review and the final complete check passed. The owner authorized source commit, merge into develop and push. Source `624631e` is integrated by the accompanying merge. T015 local source and review status follow below.
 
 **Gates:** —. **Threats:** TM01, TM10, TM12.
 ## P002-T015 — Phase lifecycle and successor planning
+
+**Local status:** source implemented and synthetically verified; independent technical review pending on `feat/p002-t015-phase-lifecycle` from develop
+`c707986`, isolated worktree `/private/tmp/my-harness-p002-t015`. See the
+[contract/evidence](phase/P002-T015-phase-lifecycle.md) and D298. Technical review, commit and develop integration
+remain pending. Delivery continues separately through release 0.2.0 via main, distribution and installation.
+The complete check and all four corrected failures are recorded in the evidence (final targeted selection: 166 passed).
+Technical review reproduced three defects in published closure recovery, archive history and the native planning
+contract. The affected suites passed 244 tests. The final full check reported one SQLite lease test failure
+that passed in isolation. The T015 record gives the full results and limits. Independent re-review is pending.
+The previous three corrections passed re-review. The final correction revalidates the checkout immediately
+before publishing a new tag. The 134 focused phase tests and the final full check passed.
+The earlier lease failure did not recur. Final re-review remains pending.
+T015 remains the current bounded task until technical review is complete; T016 is the next
+implementation task after reviewed integration. No one-off or visual-direction work is included.
 
 **Problem:** phase checks and transitions currently bind documentary baselines and separate explicit planning flows.
 **Expected result:** manual and delegated phase operations use accepted knowledge revisions while retaining exact

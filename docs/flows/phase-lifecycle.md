@@ -103,3 +103,53 @@ if the documents change.
 - `storage/phases.py` (`closure_view`, `expected_documents`), `storage/documents.py` (`status`) and
   `frontend/src/Phases.tsx`: reading a finished phase.
 - `core/engine/documents.py`: REVIEW, SUMMARY and the STATE, NEXT_STEPS and ROADMAP projections.
+
+## Structured knowledge lane (P002-T015)
+
+The documentary diagrams above remain the compatibility lane. For accepted structured knowledge, SQLite owns
+meaning and the accepted roadmap. See [D298](../DECISIONS.md#d298--structured-manual-phase-plans-and-sealed-lifecycle-exports)
+and the [implementation evidence](../phase/P002-T015-phase-lifecycle.md).
+
+```mermaid
+flowchart TD
+    K[Accepted roadmap identity] --> A[Owner previews and activates phase: ACTIVE, unplanned]
+    A --> P[Reviewer proposes or owner supplies accepted task plan and coverage]
+    P --> V[Validate scoped draft, identity history, DAG and criterion coverage]
+    V --> C[Separate exact owner preview/hash and CAS adoption]
+    C --> T[Existing task operations and D296 replacement budget]
+    T --> D[Deterministic phase controls: accepted plan, exact task commits, clean code, required docs, questions]
+    D --> R[Accounted reviewer with frozen canonical context and exact code]
+    R -->|missing work or reconciliation| P
+    R -->|unresolved questions| Q[Existing durable owner question and answer flow]
+    Q --> D
+    R -->|operational failure| F[Explicit failure; no inferred success or automatic retry]
+    R -->|READY| O[Owner confirms current binding]
+    O --> S[Single writer revalidates authority; seals domain/evidence/export/commit/tag intents]
+    S --> E[Tag evaluated HEAD, archive bytes and render owned views in one reconcilable commit]
+    E --> N{Successor in sealed accepted roadmap?}
+    N -->|yes| A
+    N -->|no| Z[Final phase archived; no active phase]
+```
+
+Changing accepted knowledge, adopted plans, task evidence, questions, required committed documents or code invalidates
+old evidence. Committed edits of generated files are inputs to replacement, not database drift; uncommitted bytes,
+links, traversal and unowned archive collisions refuse writes. Reconciliation means a scoped adopted plan revision;
+it never adopts changed Markdown as authority. General owner knowledge edits supply product amendments separately.
+
+The supervisor owns phase jobs; `managed-phase@1` records inference routing and invocation ledger identities.
+The existing phase journal and exchange records own effects and recovery. Partial generation, an existing tag/commit
+or an unrecorded result reconcile the same sealed inputs after explicit stopped-writer confirmation. A manual batch
+only queues/commits tasks; it cannot check/close a phase and is invalidated by plan adoption or stale knowledge.
+History and query-only archives expose evidence without mutation. Events correlate phase, operation, run and job
+identities for T017/T018; those interfaces and T016's delegated loop are outside T015.
+
+On structured closure recovery, Git first checks the sealed commit. A reachable exact commit and its sealed tag
+provide evidence for recording the original closure even after a later knowledge adoption. Archive and export
+receipts come from the committed tree and retain the original revision. If publication is still pending, the
+current binding and authority must pass before further effects. Generated ROADMAP views rebuild all archived
+phase links and terminal statuses from persisted closure outcomes.
+
+A new structured closure tag requires the sealed checkout fingerprint immediately before publication.
+Git verifies HEAD in the same reference transaction that creates the tag. A stale checkout stops closure
+before archive publication. Recovery of an exact existing tag and validation of sealed partial archive bytes
+remain separate from new tag publication.

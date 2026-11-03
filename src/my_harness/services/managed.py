@@ -426,6 +426,9 @@ class LocalSupervisor:
                 from my_harness.storage.phases import PhaseRepository
                 git = self.commit_factory(context, versions)
                 snapshot = PhaseRepository(self.repository).snapshot(claim.run_id)
+                if snapshot.get('structured'):
+                    from my_harness.storage.structured_phases import GuardedPhaseGit
+                    git = GuardedPhaseGit(git, self.repository, claim)
                 if request["action"] == "phase_close":
                     history, outcome = close_phase(context, record.history, snapshot, git, journal,
                                                    now=self.repository.clock)
@@ -435,9 +438,16 @@ class LocalSupervisor:
                     if hasattr(agents, "bind_process_journal"):
                         agents.bind_process_journal(journal)
                     from my_harness.storage.prompts import PromptRepository
-                    history, outcome = check_phase(context, record.history, snapshot, agents, commands, git, journal,
-                                                   PromptRepository(self.repository.engine).catalog(context),
-                                                   language)
+                    catalog = PromptRepository(self.repository.engine).catalog(context)
+                    if snapshot.get('structured'):
+                        from my_harness.services.phase_lifecycle import execute
+                        from my_harness.services.managed_runtime import run_phase_graph
+                        work = lambda: execute(self.repository, context, record.history, snapshot, agents, commands,
+                                               git, journal, catalog, versions, language)
+                        history, outcome = run_phase_graph(self.repository, claim, journal, work)
+                    else:
+                        history, outcome = check_phase(context, record.history, snapshot, agents, commands, git,
+                                                       journal, catalog, language)
             elif request["action"] == "commit":
                 if self.commit_factory is None:
                     raise RuntimeError(tr('supervisor.no_commit_writer_configured'))

@@ -87,7 +87,7 @@ export function PhasePage({ code }: { code: string }) {
       <Pagination offset={offset} next={tasks.data?.next_offset} onChange={setOffset} label={t("stats.pages.tasks")} />
     </section>
     {(open || undefinedPhase) && <TaskForm phase={code} title={t("phases.queue")} />}
-    {data && v2 && data.status === "ACTIVE" && !(data.definition.tasks as string[]).length
+    {data && v2 && !data.definition.knowledge && data.status === "ACTIVE" && !(data.definition.tasks as string[]).length
       && <Suspense fallback={<Loading />}><PhasePlanPanel key={data.id} phase={data} stale={!!phase.error} /></Suspense>}
     {data && following && <p className="hint">{rich("phases.following", { phase: <Link to={{ name: "phase", project, phase: following }}>{following}</Link> })}</p>}
     {data && <PhaseDetail phase={data} stale={!!phase.error} />}

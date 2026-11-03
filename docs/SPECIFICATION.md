@@ -452,3 +452,19 @@ manifest/renderer; historical completion does not deliver newly selected targets
 entities and their outgoing relationships unchanged. New roots/children append deterministically while retaining
 existing entries; the preview displays the resulting order. A valid portable download remains available even
 when Markdown generation refuses wrappers or size budgets, and downloading never adopts checkout ownership.
+
+### P002-T015 local implementation: structured manual lifecycle
+
+For projects with accepted structured knowledge, §§5/7's documentary phase definition and baseline rules are
+superseded by [D298](DECISIONS.md#d298--structured-manual-phase-plans-and-sealed-lifecycle-exports).
+Phase activation, planning and amendments bind accepted identities/revisions and explicit criterion coverage.
+Reviewer proposal, draft validation and owner adoption are separate; existing knowledge editing supplies
+owner-only product amendments. READY includes knowledge/ownership, exact task contracts and commits, questions,
+required documents and code. Deterministic controls precede a frozen-context reviewer; participation is explicit.
+
+Confirmed closure seals domain/evidence and export/Git intents, archives nested artifacts by bytes, tags the
+reviewed HEAD and renews generated views in one reconciliable commit. The accepted roadmap alone supplies an
+ACTIVE successor pending planning; the final phase leaves no active phase. Recovery never retries uncertain
+inference or infers a stopped writer from lease expiry. Abandonment, manual task-only batches, answers and
+historical consultation remain available. No Markdown/database drift check or automatic import is introduced.
+This is local source pending technical review/integration, not the released 0.1.9 behavior or T016 autonomy.

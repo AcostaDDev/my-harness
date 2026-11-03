@@ -736,6 +736,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/phases/accepted/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accepted Phase Preview */
+        post: operations["managed_accepted_phase_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/phases/accepted/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accepted Phase Adopt */
+        post: operations["managed_accepted_phase_adopt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/plan/propose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Propose Phase Plan */
+        post: operations["managed_phase_plan_propose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/plan/stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stage Phase Plan */
+        post: operations["managed_phase_plan_stage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/phases/{phase_id}": {
         parameters: {
             query?: never;
@@ -3294,6 +3362,82 @@ export interface components {
             fingerprint: string;
             /** Changed Paths */
             changed_paths: string[];
+        };
+        /** AcceptedPhaseAdoptCreate */
+        AcceptedPhaseAdoptCreate: {
+            /** Code */
+            code: string;
+            /** Phase Id */
+            phase_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+            /** Draft Id */
+            draft_id?: string | null;
+            /** Coverage */
+            coverage?: {
+                [key: string]: string[];
+            };
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** AcceptedPhasePreviewCreate */
+        AcceptedPhasePreviewCreate: {
+            /** Code */
+            code: string;
+            /** Phase Id */
+            phase_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+            /** Draft Id */
+            draft_id?: string | null;
+            /** Coverage */
+            coverage?: {
+                [key: string]: string[];
+            };
+        };
+        /** AcceptedPhasePreviewRead */
+        AcceptedPhasePreviewRead: {
+            /** Judge Input */
+            judge_input?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Format
+             * @constant
+             */
+            format: "structured-phase-1";
+            /** Phase Id */
+            phase_id: string | null;
+            /** Code */
+            code: string;
+            /** Expected Version */
+            expected_version: number | null;
+            /** Revision */
+            revision: {
+                [key: string]: unknown;
+            };
+            /** Draft Id */
+            draft_id: string | null;
+            /** Draft Sha256 */
+            draft_sha256: string;
+            /** Definition */
+            definition: {
+                [key: string]: unknown;
+            };
+            /**
+             * Origin
+             * @constant
+             */
+            origin: "owner_confirmed";
+            /** Preview Sha256 */
+            preview_sha256: string;
         };
         /** AccountingAmountPairRead */
         AccountingAmountPairRead: {
@@ -7559,6 +7703,41 @@ export interface components {
              */
             action: "check";
         };
+        /** PhaseCheckOutcomeRead */
+        PhaseCheckOutcomeRead: {
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "READY" | "NOT_READY" | "REVISE" | "NEEDS_RECONCILIATION" | "BLOCKED" | "FAILED";
+            /** Reasons */
+            reasons: string[];
+            /** Binding */
+            binding: {
+                [key: string]: unknown;
+            } | null;
+            /** Binding Sha256 */
+            binding_sha256: string | null;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Validation */
+            validation: {
+                [key: string]: unknown;
+            } | null;
+            /** Questions */
+            questions: string[];
+            /** Classification */
+            classification?: ("ready" | "missing_work" | "reconciliation" | "unresolved_questions" | "operational_failure") | null;
+            /** Deterministic Actor */
+            deterministic_actor?: "Harness" | null;
+            reviewer?: components["schemas"]["PhaseReviewerRead"] | null;
+            /** Judge Input */
+            judge_input?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** PhaseCloseCreate */
         PhaseCloseCreate: {
             /** Expected Version */
@@ -7732,7 +7911,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon" | "document_export" | "transition" | "document_edit";
+            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon" | "document_export" | "transition" | "document_edit" | "plan";
             /** Run Id */
             run_id: string | null;
             /** Status */
@@ -7817,6 +7996,24 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** PhaseProposalStageCreate */
+        PhaseProposalStageCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Operation Id */
+            operation_id: string;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+        };
+        /** PhaseProposalStageRead */
+        PhaseProposalStageRead: {
+            /** Draft Id */
+            draft_id: string | null;
+            /** Coverage */
+            coverage: {
+                [key: string]: string[];
+            };
+        };
         /** PhaseQuestionCreate */
         PhaseQuestionCreate: {
             /** Expected Version */
@@ -7898,10 +8095,11 @@ export interface components {
             /** Authorizations */
             authorizations: components["schemas"]["PhaseAuthorizationRead"][];
             ready: components["schemas"]["PhaseReadyRead"] | null;
+            check?: components["schemas"]["PhaseCheckOutcomeRead"] | null;
             /** @description Recorded closure or abandonment; null while the phase is open. */
             closure: components["schemas"]["PhaseClosureRead"] | null;
             /** Actions */
-            actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
+            actions: ("plan" | "check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
             /**
              * Successor
              * @description Code of the next phase of the checkout; null if this is the last. Only the last one exports its state and decides on its documents.
@@ -7939,6 +8137,21 @@ export interface components {
         PhaseReconcileTaskCreate: {
             /** Expected Version */
             expected_version: number;
+        };
+        /** PhaseReviewerRead */
+        PhaseReviewerRead: {
+            /** Participated */
+            participated: boolean | null;
+            /** Attempt Count */
+            attempt_count: number;
+            /** Model */
+            model: string;
+            /** Effort */
+            effort: string;
+            /** Provider */
+            provider?: string | null;
+            /** Cli */
+            cli?: string | null;
         };
         /** PhaseRevokeCreate */
         PhaseRevokeCreate: {
@@ -7985,6 +8198,11 @@ export interface components {
              */
             runs: number;
             latest: components["schemas"]["ManagedRunSummaryRead"] | null;
+        };
+        /** PhaseVersioned */
+        PhaseVersioned: {
+            /** Expected Version */
+            expected_version: number;
         };
         /** PlanProposalRef */
         PlanProposalRef: {
@@ -12797,6 +13015,270 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_PhaseTaskRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accepted_phase_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptedPhasePreviewCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedPhasePreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_accepted_phase_adopt: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptedPhaseAdoptCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhaseRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_plan_propose: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseVersioned"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_plan_stage: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseProposalStageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhaseProposalStageRead"];
                 };
             };
             /** @description Forbidden */

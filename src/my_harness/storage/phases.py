@@ -48,8 +48,19 @@ HIDDEN_SCOPE = ('text', 'context_json', 'versions_json')
 def _event(managed, session, phase, kind, payload):
     phase.version += 1
     phase.updated_at = managed._now()
+    if phase.definition.get('knowledge'):
+        owner_events = {'phase_created', 'phase_plan_adopted', 'phase_plan_staged', 'phase_check_queued',
+            'phase_plan_requested', 'close_authorized', 'phase_close_queued', 'phase_close_resumed',
+            'question_raised', 'question_answered', 'batch_authorized', 'authorization_revoked'}
+        payload = {'origin': 'owner_confirmed' if kind in owner_events else 'harness_deterministic', **payload}
     session.add(PhaseEvent(phase_id=phase.id, sequence=phase.version, kind=kind, recorded_at=phase.updated_at,
                            payload={**payload, 'status': phase.status}))
+    if phase.definition.get('knowledge'):
+        from my_harness.storage.operation_journal import record_event
+        record_event(session, kind='phase.' + kind, dedupe_key=f'phase:{phase.id}:{phase.version}',
+            root=phase.root, causation_id=payload.get('operation_id'),
+            payload={'phase_id': phase.id, 'phase_code': phase.code, 'sequence': phase.version,
+                     'status': phase.status, **payload}, at=phase.updated_at)
 
 
 def _questions(session, phase_id):
@@ -69,6 +80,10 @@ def committed_tasks(session, phase):
             Run.root == phase.root, Run.phase_id == phase.code, Run.task_id == task, Run.purpose == 'task',
             Commit.status == 'COMMITTED').order_by(Commit.finished_at.desc(), Commit.operation_id).limit(1)).first()
         result[task] = None if row is None else {'run_id': row.run_id, 'commit': row.commit_sha}
+        if result[task] and phase.definition.get('knowledge'):
+            from my_harness.storage.structured_phases import task_evidence_current
+            if not task_evidence_current(session, phase, task, row.run_id):
+                result[task] = None
     return result
 
 
@@ -90,8 +105,12 @@ def authority(session, phase):
     """Parts of the READY binding that live in SQLite."""
     rows = _questions(session, phase.id)
     sha = digest([[q.id, q.status, q.text, q.answer['text'] if q.answer else None] for q in rows])
-    return {'definition_sha256': phase.definition_sha256, 'tasks': committed_tasks(session, phase),
-            'questions_sha256': sha}, rows
+    parts = {'definition_sha256': phase.definition_sha256, 'tasks': committed_tasks(session, phase),
+             'questions_sha256': sha}
+    if phase.definition.get('knowledge'):
+        from my_harness.storage.structured_phases import authority as structured_authority
+        parts.update(structured_authority(session, phase))
+    return parts, rows
 
 
 def stale_reasons(parts, bound):
@@ -255,11 +274,25 @@ def settle(managed, session, run, outcome):
     if op.status not in ('QUEUED', 'INTENT'):
         raise Conflict('Phase operation already settled')
     now = managed._now()
-    parts, rows = authority(session, phase)
+    parts, rows = ({}, []) if outcome.get('published_recovery') else authority(session, phase)
+    if op.kind == 'plan':
+        outcome = {**outcome, 'proposal_sha256': digest(outcome['result']) if outcome.get('result') else None}
+        op.status, op.result, op.finished_at = outcome['verdict'], outcome, now
+        phase.status = op.previous_status
+        for question in (outcome.get('result') or {}).get('questions', []):
+            if question['blocking']:
+                session.add(Question(id=str(uuid4()), phase_id=phase.id, text=question['text'], status='OPEN',
+                    answer=None, version=1, created_at=now, source={'kind': 'phase_plan', 'operation_id': op.id, 'run_id': run.id}))
+                phase.status = 'BLOCKED'
+        _event(managed, session, phase, 'phase_plan_proposed', {
+            'operation_id': op.id, 'run_id': run.id, 'verdict': op.status,
+            'proposal_sha256': digest(outcome['result']) if outcome.get('result') else None})
+        return
     if op.kind == 'check':
         outcome = dict(outcome)
         if outcome['verdict'] == 'READY' and stale_reasons(parts, outcome['binding']):
             outcome.update(verdict='NOT_READY', binding=None, binding_sha256=None,
+                           **({'classification': 'missing_work'} if phase.definition.get('knowledge') else {}),
                            reasons=[tr('phases.authority_changed_check',
                                        reasons=', '.join(stale_reasons(parts, outcome['binding'])))])
         attempt = load_history(run.history_json).attempts
@@ -279,10 +312,11 @@ def settle(managed, session, run, outcome):
         return
     op.result, op.finished_at = outcome, now
     if outcome['status'] in ('CLOSED', 'ABANDONED'):
-        # Questions and commits are excluded during CLOSING; a change here requires manual recovery.
-        changed = stale_reasons(parts, op.request['binding'])
-        if changed or (outcome['status'] == 'CLOSED' and _open(rows)):
-            raise Conflict(tr('phases.phase_authority_changed_during'))
+        # A published recovery has already verified the sealed commit and tag under the writer fence.
+        if not outcome.get('published_recovery'):
+            changed = stale_reasons(parts, op.request['binding'])
+            if changed or (outcome['status'] == 'CLOSED' and _open(rows)):
+                raise Conflict(tr('phases.phase_authority_changed_during'))
         auth = session.get(Authorization, op.request['authorization_id'])
         auth.status, auth.version = 'CONSUMED', auth.version + 1
         auth.closed = {'at': now, 'operation_id': op.id, 'reason': tr('phases.closed_reason')}
@@ -335,6 +369,10 @@ def record_tag_intent(managed, session, run, intent):
 def record_intent(managed, session, run, intent):
     from my_harness.storage.documents import record_operation_intent
     record_operation_intent(managed, session, run, intent, 'close', lambda session, phase: phase.status == 'CLOSING')
+    op, phase = _operation(session, run)
+    if op.request.get('export_intent_id'):
+        from my_harness.storage.structured_phases import record_export_commit
+        record_export_commit(session, phase, op, intent)
 
 
 def insert_phase(managed, session, root, definition, documents, source=None):
@@ -350,7 +388,8 @@ def insert_phase(managed, session, root, definition, documents, source=None):
                            reason=None, actor=actor(), created_at=now))
     _event(managed, session, phase, 'phase_created', {
         'definition_sha256': phase.definition_sha256, 'documents': documents, 'actor': actor(),
-        **({'source': source} if source else {})})
+        **({'source': source} if source else {}),
+        **({'origin': 'harness_deterministic'} if source and source.get('kind') == 'closure' and definition.get('knowledge') else {})})
     return phase.id
 
 
@@ -360,7 +399,7 @@ class PhaseRepository:
 
     def _phase(self, session, phase_id, expected, context=None, *, resume_close=False):
         phase = session.get(Phase, phase_id)
-        if phase is not None:
+        if phase is not None and not phase.definition.get('knowledge'):
             from my_harness.storage.knowledge_exchange import require_documentary_lane
             require_documentary_lane(session, phase.root)
         if phase is None:
@@ -438,13 +477,15 @@ class PhaseRepository:
                 op_views.append(view)
             definitions = session.scalars(select(Definition).where(Definition.phase_id == phase.id)
                                           .order_by(Definition.number)).all()
+            latest_check = _latest(session, phase.id, 'check')
             ready = _ready(session, phase)
             ready_view = None if ready is None else {
                 'operation_id': ready.id, 'binding': ready.result['binding'],
                 'binding_sha256': ready.result['binding_sha256'],
                 'stale_reasons': stale_reasons(parts, ready.result['binding'])}
+            structured = bool(phase.definition.get('knowledge'))
             drift = None
-            if current_documents is not None:
+            if current_documents is not None and not structured:
                 drift = sorted(path for path, value in current_documents.items() if phase.documents.get(path) != value)
                 if ready_view is not None and current_documents != ready.result['binding']['documents']:
                     ready_view['stale_reasons'].append(tr('phases.documents_changed_ready_view'))
@@ -481,7 +522,11 @@ class PhaseRepository:
             successor = session.scalar(select(Phase.code).where(Phase.root == phase.root, or_(
                 Phase.created_at > phase.created_at, and_(Phase.created_at == phase.created_at, Phase.id > phase.id)))
                 .order_by(Phase.created_at, Phase.id).limit(1))
-            closure = closure_view(session, phase, current_documents, archive_documents, successor)
+            if structured:
+                actions = [a for a in actions if a not in ('reconcile', 'reconcile_task', 'amend')]
+                if phase.status in CHECKABLE and not pending:
+                    actions += ['plan']
+            closure = closure_view(session, phase, None if structured else current_documents, archive_documents, successor)
             return {
                 'id': phase.id, 'root': phase.root, 'code': phase.code, 'definition': phase.definition,
                 'definition_sha256': phase.definition_sha256, 'definition_number': phase.definition_number,
@@ -492,7 +537,7 @@ class PhaseRepository:
                               'current_sha256': digest(current_documents) if current_documents is not None else None},
                 'tasks': parts['tasks'], 'questions': [question_view(q) for q in rows],
                 'operations': op_views, 'authorizations': auth_views,
-                'ready': ready_view, 'closure': closure, 'actions': actions, 'successor': successor}
+                'check': latest_check.result if latest_check else None, 'ready': ready_view, 'closure': closure, 'actions': actions, 'successor': successor}
 
     def events(self, phase_id, after=0, limit=100):
         if type(after) is not int or after < 0 or type(limit) is not int or not 1 <= limit <= 1000:
@@ -511,6 +556,19 @@ class PhaseRepository:
         with Session(self.managed.engine) as session:
             run = session.get(Run, run_id)
             op, phase = _operation(session, run)
+            if (op.kind == 'close' and op.request.get('commit_intent')
+                    and (op.request.get('preview') or {}).get('structured')):
+                shown = op.request['preview']
+                auth = session.get(Authorization, op.request['authorization_id'])
+                return {'operation_id': op.id, 'kind': op.kind, 'definition': shown['snapshot']['phase']['definition'],
+                        'definition_sha256': op.request['binding']['definition_sha256'],
+                        'documents': shown['snapshot']['phase']['documents'],
+                        'tasks': op.request['binding']['tasks'], 'questions_sha256': op.request['binding']['questions_sha256'],
+                        'knowledge': shown['structured']['knowledge'], 'structured': shown['structured'],
+                        'terminal': op.request['terminal'], 'tag_kind': op.request['tag_kind'],
+                        'tag_intent': op.request.get('tag_intent'), 'closure': {**op.request, 'operation_id': op.id},
+                        'ready': {'binding': op.request['binding'], 'binding_sha256': op.request['binding_sha256']},
+                        'authorization': {'usable': auth.status == 'ACTIVE' and auth.expires_at > self.managed._now()}}
             parts, rows = authority(session, phase)
             evidence = {}
             for task, item in parts['tasks'].items():
@@ -525,7 +583,12 @@ class PhaseRepository:
                       'open_questions': [q.text for q in rows if q.status == 'OPEN'],
                       'answered_questions': [{'question': q.text, 'answer': q.answer['text']}
                                              for q in rows if q.status == 'ANSWERED'],
-                      'task_evidence': evidence}
+                      'task_evidence': evidence, **({'knowledge': parts['knowledge']} if 'knowledge' in parts else {})}
+            if phase.definition.get('knowledge'):
+                from my_harness.storage.structured_phases import closure_inputs
+                result['structured'] = closure_inputs(session, phase)
+                result['plan_request'] = op.request if op.kind == 'plan' else None
+                result['queued_knowledge'] = op.request.get('knowledge')
             if op.kind == 'close':
                 auth = session.get(Authorization, op.request['authorization_id'])
                 result['ready'] = {'binding': op.request['binding'], 'binding_sha256': op.request['binding_sha256']}
@@ -546,6 +609,10 @@ class PhaseRepository:
     # --- definition and documents --------------------------------------------------------
 
     def create(self, context, data):
+        with Session(self.managed.engine) as session:
+            from my_harness.storage.structured_phases import current, refuse
+            if current(session, context.root):
+                refuse('use_accepted_phase_preview')
         definition = phase_definition(context, data)
         documents = document_hashes(context, definition['documents'])
         with self.managed._write() as session:
@@ -567,6 +634,9 @@ class PhaseRepository:
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError(tr('phases.explicit_reconciliation_reason_required'))
         root, definition = self.definition(phase_id)
+        if definition.get('knowledge'):
+            from my_harness.storage.structured_phases import refuse
+            refuse('use_accepted_phase_preview')
         if root != str(context.root):
             raise LookupError(tr('phases.phase_belongs_another_checkout'))
         current = document_hashes(context, definition['documents'])
@@ -656,7 +726,8 @@ class PhaseRepository:
             job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-CHECK',
                                               phase.code, key, request, purpose='phase_check')
             op = Operation(id=str(uuid4()), phase_id=phase.id, kind='check', run_id=job.run_id, status='QUEUED',
-                           previous_status=phase.status, request={'job_id': job.id, 'actor': actor()},
+                           previous_status=phase.status, request={'job_id': job.id, 'actor': actor(),
+                                    **({'knowledge': authority(session, phase)[0]['knowledge']} if phase.definition.get('knowledge') else {})},
                            created_at=self.managed._now())
             session.add(op)
             phase.status = 'CHECKING'
@@ -698,6 +769,9 @@ class PhaseRepository:
                 if self._closure_pending(session, phase.root) or unresolved(session, phase.root):
                     raise Conflict(tr('phases.checkout_has_unfinished_work_2'))
                 frozen = archive_snapshot(session, phase)
+                if phase.definition.get('knowledge'):
+                    from my_harness.storage.structured_phases import closure_inputs
+                    frozen['structured'] = closure_inputs(session, phase)
                 frozen['phase'] = {**frozen['phase'], 'status': terminal}
                 frozen['summary']['phase'] = {**frozen['summary']['phase'], 'status': terminal}
         shown = prepare(context, frozen, git) if frozen is not None else None
@@ -714,6 +788,20 @@ class PhaseRepository:
                     raise Conflict(tr('phases.resume_requires_original_ready'))
                 if self._root_pending(session, phase.root):
                     raise Conflict(tr('phases.checkout_has_unfinished_jobs_4'))
+                published = False
+                if (interrupted.request.get('preview') or {}).get('structured'):
+                    from my_harness.core.engine.commit import CommitIntent
+                    intent = CommitIntent.from_json(interrupted.request['commit_intent'])
+                    published = git is not None and git.published_commit(context, intent) is not None
+                if phase.definition.get('knowledge') and not published:
+                    # An explicit recovery confirmation renews the existing child authority only.
+                    auth = session.get(Authorization, interrupted.request['authorization_id'])
+                    if stale_reasons(authority(session, phase)[0], interrupted.request['binding']):
+                        raise Conflict(tr('phases.ready_evidence_stale'))
+                    auth.status = 'ACTIVE'
+                    auth.expires_at = (datetime.fromisoformat(self.managed._now()) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
+                    auth.fingerprint = digest({'phase_id': phase.id, 'scope': auth.scope, 'expires_at': auth.expires_at})
+                    auth.version += 1
                 job = _resume_job(self.managed, session, interrupted, context, versions, key, request, assessment,
                                   'phase_close')
                 phase.status = 'CLOSING'
@@ -736,7 +824,7 @@ class PhaseRepository:
                 raise Conflict(tr('phases.checkout_has_unfinished_work_2'))
             if terminal == 'ABANDONED':
                 bound = {**parts, 'head': shown['head'], 'fingerprint': shown['fingerprint'],
-                         'documents': phase.documents}
+                         'documents': shown.get('required_documents', phase.documents)}
                 binding_sha256 = digest(bound)
                 ready = SimpleNamespace(id=None, result={'binding': bound, 'binding_sha256': binding_sha256})
             stale = stale_reasons(parts, ready.result['binding'])
@@ -750,7 +838,8 @@ class PhaseRepository:
             now = self.managed._now()
             expires = (datetime.fromisoformat(now) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
             scope = {'check_operation_id': ready.id, 'binding_sha256': binding_sha256, 'tag': phase.definition['tag'],
-                     'tag_kind': tag_kind}
+                     'tag_kind': tag_kind,
+                     **({'origin': 'owner_confirmed'} if phase.definition.get('knowledge') else {})}
             auth = Authorization(id=str(uuid4()), phase_id=phase.id, kind='close', status='ACTIVE', scope=scope,
                                  fingerprint=digest({'phase_id': phase.id, 'scope': scope, 'expires_at': expires}),
                                  actor=actor(), reason=reason.strip(), expires_at=expires, created_at=now,
@@ -764,6 +853,9 @@ class PhaseRepository:
                                'binding': ready.result['binding'], 'binding_sha256': binding_sha256,
                                'tag_kind': tag_kind, 'preview': shown, 'terminal': terminal})
             session.add(op)
+            if shown and shown.get('export'):
+                from my_harness.storage.structured_phases import seal_export
+                seal_export(session, phase, op, shown['export'])
             phase.status = 'CLOSING'
             _event(self.managed, session, phase, 'close_authorized', authorization_view(auth, now))
             _event(self.managed, session, phase, 'phase_close_queued',
@@ -803,10 +895,13 @@ class PhaseRepository:
                 raise Conflict(tr('phases.revoke_active_batch_authorization'))
             expires = (datetime.fromisoformat(now) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
             scope = {'tasks': tasks}
+            if phase.definition.get('knowledge'):
+                scope['knowledge'] = authority(session, phase)[0]['knowledge']
             if chain_commits:
                 scope = {'tasks': tasks, 'chain_commits': True, 'plan_sha256': digest(text), 'text': text,
                          'definition_sha256': phase.definition_sha256, 'context_json': context_snapshot(context),
-                         'versions_json': freeze(versions)}
+                         'versions_json': freeze(versions),
+                         **({'knowledge': authority(session, phase)[0]['knowledge']} if phase.definition.get('knowledge') else {})}
             row = Authorization(id=str(uuid4()), phase_id=phase.id, kind='batch', status='ACTIVE', scope=scope,
                                 fingerprint=digest({'phase_id': phase.id, 'scope': scope, 'expires_at': expires}),
                                 actor=actor(), reason=reason.strip(), expires_at=expires, created_at=now,
@@ -850,6 +945,8 @@ class PhaseRepository:
             if (auth is None or auth.phase_id != phase.id or auth.kind != 'batch' or auth.status != 'ACTIVE'
                     or auth.expires_at <= now):
                 raise Conflict(tr('phases.current_batch_authorization_phase'))
+            if auth.scope.get('knowledge') and auth.scope['knowledge'] != authority(session, phase)[0].get('knowledge'):
+                raise Conflict(tr('phases.ready_evidence_stale'))
             if auth.scope.get('chain_commits'):
                 raise Conflict(tr('phases.unattended_batch_advanced_supervisor'))
             if phase.status != 'ACTIVE' or _open(_questions(session, phase.id)):
@@ -885,6 +982,9 @@ class PhaseRepository:
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError(tr('phases.explicit_amendment_reason_required'))
         root, current = self.definition(phase_id)
+        if current.get('knowledge'):
+            from my_harness.storage.structured_phases import refuse
+            refuse('use_accepted_phase_preview')
         if root != str(context.root):
             raise LookupError(tr('phases.phase_belongs_another_checkout'))
         if not isinstance(data, dict) or 'code' in data:
@@ -1054,6 +1154,8 @@ def _batch_step(managed, session, auth_id, context, assessment):
         _batch_stop(managed, session, phase, auth, status, reason)
     if auth.expires_at <= managed._now():
         return stop('EXPIRED', tr('phases.batch_authorization_expired_nothing'))
+    if scope.get('knowledge') and scope['knowledge'] != authority(session, phase)[0].get('knowledge'):
+        return stop('INVALIDATED', tr('phases.ready_evidence_stale'))
     if phase.definition_sha256 != scope['definition_sha256']:
         return stop('INVALIDATED', tr('phases.phase_definition_changed_since'))
     if _open(_questions(session, phase.id)):

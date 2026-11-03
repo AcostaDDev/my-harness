@@ -356,7 +356,8 @@ def prepare_task_generation(session, owner, root, run_id):
 
     revision = KnowledgeSession(session).revision(owner.project_id)
     manifest = owner.payload["manifest"]
-    files = d.render(d.snapshot(revision), manifest)
+    from my_harness.storage.structured_phases import generation_files
+    files = generation_files(session, root, revision, manifest)
     captured = baseline(root, files)
     if not captured["head"]:
         raise Conflict(tr('intake.database_owned'))

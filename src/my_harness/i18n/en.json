@@ -1440,5 +1440,10 @@
   "documents.heading.phase": "Roadmap",
   "documents.heading.task": "Tasks",
   "documents.heading.decision": "Decisions",
-  "documents.heading.state": "Knowledge state"
+  "documents.heading.state": "Knowledge state",
+  "phases.structured_refused": "Structured phase operation refused: {reason}",
+  "orchestration.phase_graph_failed": "Managed phase graph {thread}: {status} ({reason})",
+  "documents.phase_active": "Active phase: {phase}",
+  "documents.phase_none": "None",
+  "documents.phase_planning_pending": "Planning pending."
 }

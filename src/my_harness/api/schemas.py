@@ -538,7 +538,7 @@ class PermissionRequestRead(BaseModel):
 
 PhaseStatus = Literal['ACTIVE', 'CHECKING', 'READY_TO_CLOSE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'CLOSING', 'CLOSED',
                       'ABANDONED']
-PhaseAction = Literal['check', 'reconcile', 'reconcile_task', 'close', 'question', 'authorize_batch', 'batch_next',
+PhaseAction = Literal['plan', 'check', 'reconcile', 'reconcile_task', 'close', 'question', 'authorize_batch', 'batch_next',
                       'amend', 'abandon']
 
 
@@ -583,7 +583,7 @@ class PhaseQuestionRead(BaseModel):
 class PhaseOperationRead(BaseModel):
     id: str
     kind: Literal['check', 'close', 'reconcile', 'reconcile_task', 'amend', 'abandon', 'document_export',
-                  'transition', 'document_edit']
+                  'transition', 'document_edit', 'plan']
     run_id: str | None
     status: str
     previous_status: str
@@ -656,6 +656,29 @@ class PhaseDefinitionRead(BaseModel):
     created_at: str
 
 
+class PhaseReviewerRead(BaseModel):
+    participated: bool | None
+    attempt_count: int
+    model: str
+    effort: str
+    provider: str | None = None
+    cli: str | None = None
+
+
+class PhaseCheckOutcomeRead(BaseModel):
+    verdict: Literal['READY', 'NOT_READY', 'REVISE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'FAILED']
+    reasons: list[str]
+    binding: dict[str, Any] | None
+    binding_sha256: str | None
+    result: dict[str, Any] | None
+    validation: dict[str, Any] | None
+    questions: list[str]
+    classification: Literal['ready', 'missing_work', 'reconciliation', 'unresolved_questions', 'operational_failure'] | None = None
+    deterministic_actor: Literal['Harness'] | None = None
+    reviewer: PhaseReviewerRead | None = None
+    judge_input: dict[str, Any] | None = None
+
+
 class PhaseRead(BaseModel):
     id: str
     project_id: str | None
@@ -677,6 +700,7 @@ class PhaseRead(BaseModel):
     operations: list[PhaseOperationRead]
     authorizations: list[PhaseAuthorizationRead]
     ready: PhaseReadyRead | None
+    check: PhaseCheckOutcomeRead | None = None
     closure: PhaseClosureRead | None = Field(description='Recorded closure or abandonment; null while the phase is open.')
     actions: list[PhaseAction]
     successor: str | None = Field(description='Code of the next phase of the checkout; null if this is the last. Only the '
@@ -2865,3 +2889,42 @@ class KnowledgeDocumentsBundleResult(BaseModel):
 
 class KnowledgeDocumentsBundleRead(BaseModel):
     result: KnowledgeDocumentsBundleResult
+
+
+class AcceptedPhasePreviewCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    code: str = Field(pattern=r'^P\d{3}$')
+    phase_id: str | None = None
+    expected_version: int | None = Field(default=None, ge=0)
+    draft_id: str | None = None
+    coverage: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class AcceptedPhasePreviewRead(BaseModel):
+    judge_input: dict[str, Any] | None = None
+    format: Literal['structured-phase-1']
+    phase_id: str | None
+    code: str
+    expected_version: int | None
+    revision: dict[str, Any]
+    draft_id: str | None
+    draft_sha256: str
+    definition: dict[str, Any]
+    origin: Literal['owner_confirmed']
+    preview_sha256: str
+
+
+class AcceptedPhaseAdoptCreate(AcceptedPhasePreviewCreate):
+    preview_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+    reason: str = Field(min_length=1, max_length=4000)
+    confirmed: Literal[True]
+
+
+class PhaseProposalStageCreate(PhaseVersioned):
+    operation_id: str
+    proposal_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
+class PhaseProposalStageRead(BaseModel):
+    draft_id: str | None
+    coverage: dict[str, list[str]]

@@ -13,6 +13,9 @@ def prepare(context, state, git):
     if git is None:
         raise Conflict(tr('phases.unified_phase_closure_requires'))
     try:
+        if state.get('structured'):
+            from my_harness.storage.structured_phases import closure_preview
+            return closure_preview(context, state, git)
         return preview_transition(context, state, git, None, unified=True)
     except (ValueError, OSError, UnicodeError, RuntimeError) as exc:
         raise Conflict(str(exc)) from exc
@@ -23,7 +26,10 @@ def adopt(managed, session, run, op, phase, outcome):
     from my_harness.storage.phases import insert_phase
     verify_committed(op, outcome)
     shown = op.request['preview']
-    context = observed_documents(run, shown)
+    context = None if outcome.get('published_recovery') else observed_documents(run, shown)
+    if shown.get('structured'):
+        from my_harness.storage.structured_phases import complete_export
+        complete_export(session, phase, op, outcome)
     phase.status = outcome['status']
     session.flush()  # releases the single-open-phase constraint before creating N+1
     following = shown['next']
@@ -31,7 +37,7 @@ def adopt(managed, session, run, op, phase, outcome):
         if session.scalar(select(Phase.id).where(Phase.root == phase.root, Phase.code == following['code'])):
             raise Conflict(tr('phases.successor_already_exists_reconcile'))
         outcome = {**outcome, 'next_phase_id': insert_phase(
-            managed, session, phase.root, following, document_hashes(context, following['documents']),
+            managed, session, phase.root, following, {} if shown.get('structured') else document_hashes(context, following['documents']),
             source={'kind': 'closure', 'operation_id': op.id, 'from_phase': phase.code, 'commit': outcome['commit']})}
     run.status, run.stage = 'COMMITTED', 'committed'
     return outcome

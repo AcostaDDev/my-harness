@@ -503,3 +503,20 @@ preparation consumers, verifying the referenced intent's revision, exact ownersh
 the original catalogue entry remains unchanged. Partial imports own outgoing relations only for selected
 entities. Ordered merging preserves existing unselected entries and appends new roots/children deterministically,
 with the final order visible in the canonical preview. No schema/dependency or later workflow is added.
+
+### P002-T015 local source: structured phase consumer
+
+`storage/structured_phases.py` composes accepted knowledge, scoped plan validation, operational definition versions,
+coverage, CAS adoption, D296 task evidence and sealed lifecycle exports over existing phase/exchange tables.
+`services/knowledge_exchange.PhaseKnowledge` supplies bounded root/CAS-checked knowledge composition; raw knowledge
+mutation remains inside the existing service boundary.
+`services/phase_lifecycle.py` supplies canonical context and T009 candidate boundaries; `orchestration/phase.py`
+registers `managed-phase@1` through the lazy `managed_runtime.run_phase_graph` boundary over supervisor-owned jobs and the existing invocation ledger. Core phase controls
+retain deterministic-first evaluation and exact READY. `GuardedPhaseGit` rechecks current authority under SQLite's
+writer through tag/reference effects. Commit/tag/export inputs and per-target receipts use existing journals;
+there is no new scheduler, ledger, migration or dependency. The API exposes accepted-phase preview/adoption and
+reviewer plan proposal/staging; existing phase pages provide confirmations and reviewer attribution. OpenAPI and
+client types are regenerated together. [Evidence and delivery](phase/P002-T015-phase-lifecycle.md).
+
+The retained documentary planning/closure services remain guarded for database-owned projects. Structured manual
+operations do not imply delegated autonomy, native-provider qualification, global inbox/map or installed conversion.

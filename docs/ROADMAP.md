@@ -104,7 +104,7 @@ P002-T014 is completed and integrated as source `624631e` after independent tech
 correction-budget finding. The managed task graph, frozen scoped attempts, owner gap continuation and
 recoverable task/document commit have synthetic evidence. Schema `0037_task_lineage` retains 86 tables.
 The final complete check passed. The owner authorized source commit, the accompanying merge and push of develop; phase
-release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015–T023 remain pending.
+release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015 has locally implemented and verified structured lifecycle source; technical review and integration remain pending ([record](phase/P002-T015-phase-lifecycle.md)). T016–T023 remain pending.
 
 **Exit criteria (adopted with D268):**
 

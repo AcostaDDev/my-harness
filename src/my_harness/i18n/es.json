@@ -1440,5 +1440,10 @@
   "documents.heading.phase": "Hoja de ruta",
   "documents.heading.task": "Tareas",
   "documents.heading.decision": "Decisiones",
-  "documents.heading.state": "Estado del conocimiento"
+  "documents.heading.state": "Estado del conocimiento",
+  "phases.structured_refused": "Operación de fase estructurada rechazada: {reason}",
+  "orchestration.phase_graph_failed": "Grafo de fase gestionada {thread}: {status} ({reason})",
+  "documents.phase_active": "Fase activa: {phase}",
+  "documents.phase_none": "Ninguna",
+  "documents.phase_planning_pending": "Planificación pendiente."
 }

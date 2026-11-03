@@ -247,6 +247,8 @@ if mode == 'recipe':
             assert not target.is_absolute() and '..' not in target.parts
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content)
+    elif 'coverage' in required:
+        role = 'structured_phase_plan'
     elif 'drafts' in required:
         role = 'definition'
     elif 'executor_prompt' in required:

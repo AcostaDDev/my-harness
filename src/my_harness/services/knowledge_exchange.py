@@ -249,7 +249,8 @@ def export_prepare(call):
     if not adopted:
         raise ValueError('ownership_required')
     revision = head(call)
-    files = d.render(d.snapshot(revision), adopted.payload['manifest'])
+    from my_harness.storage.structured_phases import generation_files
+    files = generation_files(call.session, call.caller.root, revision, adopted.payload['manifest'])
     baseline = d.loads(call.arguments['payload'])
     if baseline.pop('ownership_id', None) != adopted.id:
         raise ValueError('ownership_stale')
@@ -356,3 +357,69 @@ def _merge_links(call, draft, imported):
         for position, source in enumerate(order):
             link = replace(by_source[source], position=position)
             call.knowledge.link(draft, kind, source, target, position=link.position, qualifier=link.qualifier)
+
+
+class PhaseKnowledge:
+    """T015 trusted composition of the existing knowledge service, inside the phase writer transaction.
+
+    No repository or agent receives a raw knowledge writer. These bounded operations preserve root/CAS,
+    immutable adoption and separate owner confirmation; phase scope validation runs before publishing a draft.
+    """
+    @staticmethod
+    def accepted(session, root, number=None):
+        from my_harness.storage.knowledge import KnowledgeSession
+        knowledge = KnowledgeSession(session)
+        project = knowledge.project_id(str(root))
+        return knowledge.revision(project, number) if project and knowledge.head(project) else None
+
+    @staticmethod
+    def candidate(session, root, draft_id, expected):
+        from my_harness.storage.knowledge import KnowledgeSession
+        from my_harness.core.engine.knowledge import validate_revision
+        knowledge = KnowledgeSession(session)
+        revision = PhaseKnowledge.accepted(session, root)
+        draft = knowledge.draft(draft_id)
+        if (not revision or revision.id != expected or draft.project_id != revision.project_id
+                or draft.base_revision_id != expected):
+            raise ValueError('stale_draft')
+        members, links = knowledge.manifest(draft_id)
+        validate_revision(members, links, {'members': revision.members, 'links': revision.links}, adoption=True)
+        return members, links
+
+    @staticmethod
+    def adopt(session, root, draft_id, expected, *, reason, confirmed):
+        from my_harness.storage.knowledge import KnowledgeSession
+        from my_harness.storage.permissions import actor
+        if confirmed is not True or not isinstance(reason, str) or not reason.strip():
+            raise ValueError('explicit_owner_confirmation_required')
+        PhaseKnowledge.candidate(session, root, draft_id, expected)
+        return KnowledgeSession(session).adopt(draft_id, expected, origin='owner_confirmed', actor=actor(), reason=reason)
+
+    @staticmethod
+    def stage(session, root, expected, proposal, validate):
+        from dataclasses import replace
+        from my_harness.storage.knowledge import KnowledgeSession
+        from my_harness.core.engine import knowledge as core
+        knowledge = KnowledgeSession(session)
+        revision = PhaseKnowledge.accepted(session, root)
+        if not revision or revision.id != expected:
+            raise ValueError('stale_revision')
+        draft = knowledge.open_draft(revision.project_id, expected)
+        ids = {':'.join((m.kind, m.document or '', m.code)): m.item_id for m in revision.members.values()}
+        for item in proposal['items']:
+            data = dict(item)
+            data.pop('op', None)
+            kind, code, content = data.pop('kind'), data.pop('code'), data.pop('content')
+            ident = knowledge.put(draft, kind, code, content, **data)
+            ids[':'.join((kind, data.get('document') or '', code))] = ident
+        for link in proposal['links']:
+            source, target = ids.get(link['source'], link['source']), ids.get(link['target'], link['target'])
+            knowledge.unlink(draft, link['kind'], source, target)
+            knowledge.link(draft, link['kind'], source, target,
+                           **{k: v for k, v in link.items() if k in ('position', 'qualifier')})
+        members, links = PhaseKnowledge.candidate(session, root, draft, expected)
+        validate(replace(revision, members=members, links=tuple(links)))
+        if core.knowledge_sha256(revision.project_id, members.values(), links) == revision.knowledge_sha256:
+            knowledge.discard(draft)
+            return None
+        return draft

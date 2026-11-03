@@ -2393,6 +2393,7 @@
   "knowledge.label.relation.depends_on": "Depends on",
   "knowledge.label.relation.addresses": "Addresses",
   "knowledge.label.relation.supersedes": "Supersedes",
+  "knowledge.label.relation.replaces": "Replaces task",
   "knowledge.label.qualifier.full": "Full",
   "knowledge.label.qualifier.partial": "Partial",
   "knowledge.label.format.markdown": "Markdown",

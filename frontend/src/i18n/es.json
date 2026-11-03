@@ -2393,6 +2393,7 @@
   "knowledge.label.relation.depends_on": "Depende de",
   "knowledge.label.relation.addresses": "Aborda",
   "knowledge.label.relation.supersedes": "Sustituye a",
+  "knowledge.label.relation.replaces": "Sustituye a la tarea",
   "knowledge.label.qualifier.full": "Total",
   "knowledge.label.qualifier.partial": "Parcial",
   "knowledge.label.format.markdown": "Markdown",

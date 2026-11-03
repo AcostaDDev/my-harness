@@ -137,6 +137,11 @@ def validate_projects(config: ManagedConfig) -> None:
         raise ValueError(tr('runtime.ports_factory'))
 
 
+def run_task_graph(repository, claim, journal, work):
+    from my_harness.orchestration.task import execute_task_job
+    return execute_task_job(repository, claim, journal, work)
+
+
 class SupervisorWorker:
     """One job per lane (writer/chat); errors are quarantined, without retry."""
 
@@ -161,7 +166,8 @@ class SupervisorWorker:
 
     def _loop(self, lane='writer') -> None:
         supervisor = LocalSupervisor(self.supervisor.repository, self.supervisor.ports_factory,
-            lease_seconds=self.supervisor.lease_seconds, commit_factory=self.supervisor.commit_factory, lane=lane)
+            lease_seconds=self.supervisor.lease_seconds, commit_factory=self.supervisor.commit_factory, lane=lane,
+            task_graph=self.supervisor.task_graph)
         while not self.stopping.is_set():
             try:
                 prepared = self.preparation.run_once() if lane != 'chat' and getattr(self, 'preparation', None) else None
@@ -296,10 +302,15 @@ class ManagedRuntime:
 
     def _start_worker(self, config: ManagedConfig) -> None:
         # The factories are read on every claim, so a live switch reaches both lanes (D238).
-        ports = (lambda context, versions: self.config.ports_factory(context, versions))
+        def ports(context, versions):
+            agents, commands, evidence = self.config.ports_factory(context, versions)
+            if hasattr(agents, 'bind_tool_bridges'):
+                agents.bind_tool_bridges(self.tool_bridges())
+            return agents, commands, evidence
         commit = ((lambda context, versions: self.config.commit_factory(context, versions))
                   if config.commit_factory is not None else None)
-        supervisor = LocalSupervisor(self.repository, ports, lease_seconds=config.lease_seconds, commit_factory=commit)
+        supervisor = LocalSupervisor(self.repository, ports, lease_seconds=config.lease_seconds, commit_factory=commit,
+                                     task_graph=run_task_graph)
         self.worker = SupervisorWorker(supervisor, config.poll_seconds)
         self.worker.preparation = self.preparation
         if self.setup is not None:

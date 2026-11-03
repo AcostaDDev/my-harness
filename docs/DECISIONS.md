@@ -2441,3 +2441,23 @@ imported by CLAUDE.md and GEMINI.md; existing commit messages are unchanged.
 The owner authorized this documentation maintenance directly on develop, with commit and push. This is a
 session-specific exception to creating a topic branch; D235/D261 remain the ordinary branch rules.
 Branch cleanup and verification are recorded in [maintenance evidence](phase/2026-10-31-repository-maintenance.md).
+
+## D296 — Owner-adopted task replacement lineage and shared correction budget
+
+Status: accepted explicitly by the owner on 2026-11-03 during P002-T014 implementation.
+
+The directed knowledge link `replaces` connects a replacement task to a predecessor task. The owner adopts
+the link through the existing knowledge adoption path. Links form an acyclic graph and adopted links cannot
+be removed. Existing accepted revisions and catalogue fingerprints remain unchanged. A new
+`knowledge.draft.apply@2` schema permits proposals containing the new link while @1 retains its exact schema.
+
+All tasks connected by adopted replacement links, including ancestors, descendants and branches, share
+the smallest recorded local correction ceiling and the persisted executor intents of the whole family.
+The initial execution plus that correction ceiling is the total allowed executor count. Failed, denied
+and uncertain executor attempts consume that count. New runs, policy increases, restart and changes of
+task identity cannot replenish it. Unrelated tasks retain independent budgets. The managed journal records
+the bound family and consumption, and the supervisor and fenced attempt transaction enforce the budget.
+This supplies T014's task boundary. Phase remediation admission and roadmap limits remain T015/T016 work.
+
+Implementation and synthetic evidence are recorded in
+[P002-T014](phase/P002-T014-task-execution.md).

@@ -889,7 +889,7 @@ def test_each_operation_needs_its_own_exact_current_capability(world, agents):
     permissions.revoke('knowledge.propose:task')
     refused('capability_denied', lambda: Session(ops, caller, 'cap8').apply(draft, done[0], [
         {**put('task', 'P001-T003', task()), 'provenance': 'inferred'}]))
-    capability, = [row[17] for row in accepted(url) if row[4] == 1 and row[3] == 'knowledge.draft.apply'
+    capability, = [row[17] for row in accepted(url) if row[4] == CATALOGUE.current('knowledge.draft.apply').version and row[3] == 'knowledge.draft.apply'
                    and row[9].count('inv-1')]
     assert all(part in capability.replace(' ', '') for part in (
         '"snapshot_sha256":"' + '0' * 64, '"grants":[', '"ceilings_sha256"', '"policy_version":"domain-policy-1"'))

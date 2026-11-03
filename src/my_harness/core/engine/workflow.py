@@ -83,13 +83,17 @@ class OfflineEngine:
     """Injected ports; no CLI is activated from the core."""
 
     def __init__(self, agents: AgentAdapter, commands: CommandRunner, evidence: EvidenceCapture,
-                 journal: EngineJournal | None = None, prompts=None, language: dict | None = None):
+                 journal: EngineJournal | None = None, prompts=None, language: dict | None = None, canonical_context=None, document_evidence=None, gap_resolution=None, execution_allowed=None):
         """`language`: the pair frozen when the job was admitted (D167), rendered as the D169 directive."""
         self.agents = agents
         self.commands = commands
         self.evidence = evidence
         self.journal = journal
         self.language = language
+        self.canonical_context = canonical_context
+        self.document_evidence = document_evidence
+        self.gap_resolution = gap_resolution
+        self.execution_allowed = execution_allowed
         self.prompts = prompts or (lambda context: builtin_catalog())
         self.resuming = False
 
@@ -103,10 +107,26 @@ class OfflineEngine:
         return self.prompts(context)
 
     def _invoke(self, context, history, role, selection, name, values):
+        if role == "executor" and self.execution_allowed is not None and not self.execution_allowed():
+            return replace(history, status="revision_limit", stop=None), None
         try:
             catalog = self._catalog(context, history)
             history = replace(history, prompt_catalog_json=dump_catalog(catalog))
-            prompt, snapshot = render_attempt(catalog, name, values, context, self.language)
+            canonical = self.canonical_context(context, role) if self.canonical_context else None
+            resolution = self.gap_resolution() if self.gap_resolution is not None else None
+            if resolution is not None:
+                if (history.attempts and history.attempts[-1].request.id == resolution["source_attempt_id"]
+                        and self.evidence.capture(context).fingerprint != resolution["code_fingerprint"]):
+                    return stopped(history, "gap", tr('managed.gap_resolution_invalid')), None
+                if "INPUT_JSON" in values:
+                    values = {**values, "INPUT_JSON": freeze({
+                        "task_input": json.loads(values["INPUT_JSON"]), "owner_gap_clarification": resolution})}
+                elif "INSTRUCTIONS" in values:
+                    values = {**values, "INSTRUCTIONS": values["INSTRUCTIONS"] +
+                        "\nOwner clarification within the frozen task scope\n" + freeze(resolution)}
+            prompt, snapshot = render_attempt(catalog, name, values, context, self.language, canonical=canonical)
+            if resolution is not None:
+                snapshot = freeze({**json.loads(snapshot), "task_gap_resolution": resolution})
         except (ValueError, KeyError, TypeError) as exc:
             return stopped(history, "prompts", str(exc)), None
         return invoke_agent(context, history, self.agents, role, selection, prompt, self.journal,
@@ -153,6 +173,8 @@ class OfflineEngine:
             if current.changed_paths:
                 return stopped(history, "start", tr('workflow.uncommitted_changes',
                                                     paths=", ".join(current.changed_paths[:20])))
+        if self.execution_allowed is not None and not self.execution_allowed():
+            return replace(history, status="revision_limit", stop=None)
         history = self._prepare(context, history)
         if history.stop:
             return history
@@ -210,6 +232,8 @@ class OfflineEngine:
             raise ContractError(tr('managed.read_tasks_cannot_retry'))
         has_execution = any(item.request.role == "executor" for item in history.attempts)
         if retry_executor and has_execution and history.revisions >= context.policy.max_revision_cycles:
+            return replace(history, status="revision_limit", stop=None)
+        if retry_executor and self.execution_allowed is not None and not self.execution_allowed():
             return replace(history, status="revision_limit", stop=None)
         history = replace(history, status="planned", stop=None, acceptance=None)
         history = self._prepare(context, history)
@@ -303,6 +327,11 @@ class OfflineEngine:
             parity = documentation_parity(context, evidence.changed_paths)
             if parity is not None:
                 review_input["documentation"] = parity
+            if self.document_evidence is not None:
+                try:
+                    review_input["generated_documents"] = self.document_evidence()
+                except ValueError as exc:
+                    return stopped(history, "evidence", str(exc))
             proposals = _latest_executor_proposals(history)
             if proposals:
                 review_input["executor_decision_proposals"] = proposals

@@ -22,7 +22,8 @@ const labels: Record<string, Record<string, MessageKey>> = {
     "criterion_of": "knowledge.label.relation.criterion_of",
     "depends_on": "knowledge.label.relation.depends_on",
     "addresses": "knowledge.label.relation.addresses",
-    "supersedes": "knowledge.label.relation.supersedes"
+    "supersedes": "knowledge.label.relation.supersedes",
+    "replaces": "knowledge.label.relation.replaces"
   },
   "qualifier": {
     "full": "knowledge.label.qualifier.full",

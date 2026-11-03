@@ -61,7 +61,10 @@ def test_new_manifest_invalidates_current_delivery_but_keeps_historical_receipt(
     delivered = delivery.execute(new['record_id'], new['preview_sha256'], IDENTITY)
     assert (root / 'CLAUDE.md').read_text() == '@AGENTS.md\n'
     with Session(engine) as session:
-        assert completed_at_root(session, root)['result'] == delivered
+        completed = completed_at_root(session, root)
+        assert completed['result'] == delivered
+        assert completed['commit_receipt']['commit'] == delivered['commit']
+        assert set(completed['target_receipts']) == set(new['files'])
         assert _continuation(session, root) == 'export_committed'
 
 
@@ -279,3 +282,19 @@ def test_portable_failure_does_not_suppress_valid_rendering(migrated_database, t
     bundle = run(engine, tmp_path, 'documents.bundle', {})
     assert bundle['files'] and bundle['render_error'] is None
     assert bundle['portable'] is None and bundle['portable_error'] == 'portable_absolute_source'
+
+
+def test_completion_without_effect_receipts_cannot_satisfy_delivery(migrated_database, tmp_path):
+    from my_harness.storage.knowledge_exchange import add
+
+    root = tmp_path / 'checkout'
+    root.mkdir()
+    LocalGit(root).run('init')
+    engine, _, project, _ = world(migrated_database[0], root)
+    shown = prepare_export(engine, root, project)
+    with Session(engine) as session, session.begin():
+        add(session, project, 'export_completed', {
+            'intent_id': shown['record_id'], 'status': 'COMPLETED', 'commit': '1' * 40,
+            'revision_id': shown['revision_id'], 'revision_sha256': shown['revision_sha256'],
+        })
+        assert completed_at_root(session, root) is None

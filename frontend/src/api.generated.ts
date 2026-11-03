@@ -470,6 +470,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/runs/{run_id}/gap-resolutions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer Task Gap */
+        post: operations["managed_answer_task_gap"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/runs/{run_id}/gap-resolutions/{resolution_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Task Gap */
+        post: operations["managed_revoke_task_gap"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -6450,7 +6484,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes";
+            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes" | "replaces";
             /** Source Item Id */
             source_item_id: string;
             /** Target Item Id */
@@ -6466,7 +6500,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes";
+            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes" | "replaces";
             /** Source Item Id */
             source_item_id: string;
             /** Target Item Id */
@@ -6649,7 +6683,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes";
+            kind: "part_of" | "criterion_of" | "depends_on" | "addresses" | "supersedes" | "replaces";
             /** Source Item Id */
             source_item_id: string;
             /** Target Item Id */
@@ -9282,6 +9316,8 @@ export interface components {
             action: "revalidate" | "retry_executor" | "commit";
             /** Expected Version */
             expected_version: number;
+            /** Gap Resolution Id */
+            gap_resolution_id?: number | null;
         };
         /** RunCreate */
         RunCreate: {
@@ -9482,6 +9518,47 @@ export interface components {
             requested_effort: string | null;
             /** Attempts */
             attempts: number;
+        };
+        /** TaskGapResolutionCreate */
+        TaskGapResolutionCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Gap Event Id */
+            gap_event_id: number;
+            /** Request Sha256 */
+            request_sha256: string;
+            /** Answers */
+            answers: string[];
+            /** Ttl Seconds */
+            ttl_seconds: number;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** TaskGapResolutionRead */
+        TaskGapResolutionRead: {
+            /** Event Id */
+            event_id: number;
+            /** Run Id */
+            run_id: string;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "task_gap_resolved";
+            /** Request Sha256 */
+            request_sha256: string;
+            /** Expires At */
+            expires_at: string;
+        };
+        /** TaskGapRevokeCreate */
+        TaskGapRevokeCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
         };
         /** TaskMetricsRead */
         TaskMetricsRead: {
@@ -11622,6 +11699,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_answer_task_gap: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskGapResolutionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskGapResolutionRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_revoke_task_gap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                run_id: string;
+                resolution_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskGapRevokeCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskGapResolutionRead"];
                 };
             };
             /** @description Forbidden */

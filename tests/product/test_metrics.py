@@ -275,6 +275,8 @@ def test_cli_flow_materializes_one_row_per_attempt_from_the_sealed_capture(tmp_p
 
 
 def test_cancelled_failed_and_double_terminal_attempts_are_counted_once(tmp_path, context, repository):
+    # All three capture scenarios consume the same task's persisted executor budget.
+    context = replace(context, policy=replace(context.policy, max_revision_cycles=2))
     port, job, supervisor = flow(tmp_path / 'hang', context, repository, mode='hang', planning='deterministic')
     with ThreadPoolExecutor() as pool:
         future = pool.submit(supervisor.run_once)
@@ -301,6 +303,9 @@ def test_cancelled_failed_and_double_terminal_attempts_are_counted_once(tmp_path
     [invalid] = metric_rows(repository, double_job.run_id)
     # Two terminals: invalid status and the total of only one, never the sum of both.
     assert (invalid['status'], invalid['total_tokens'], invalid['turns']) == ('INVALID', 776, 2)
+    from my_harness.storage.task_lineage import budget
+    with Session(repository.engine) as session:
+        assert budget(session, str(context.root), 'P001-T001', 2)['executions'] == 3
 
 
 def _stream_has(port, kind, count):

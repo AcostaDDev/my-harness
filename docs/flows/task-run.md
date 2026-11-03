@@ -97,7 +97,39 @@ checkpoint and `PLANNING`/`EXECUTING`/`REVIEWING` when each attempt starts; the 
 effects keeps the history's terminal state (or `COMMITTED`) and only marks `REFUSED` when there was none. An
 `INVALIDATED` commit does not block a revalidation; a `COMMITTED` commit prevents resuming and repeating the commit.
 The job follows `QUEUED → ACTIVE → DONE | REFUSED | RECOVERY_REQUIRED → INTERRUPTED`; an attempt without a result
-when the stop is confirmed becomes `INTERRUPTED` with no automatic retry.
+when the stop is confirmed becomes `INTERRUPTED` with no automatic retry. A stopped task commit worker with a sealed
+intent or recorded commit preserves the accepted history when all invocations have settled. The interrupted job
+and stop confirmation remain recorded separately. A pending intent can only be reconciled through commit dispatch.
+For a new reference update, Git recaptures the checkout after creating the sealed commit object and before
+the compare-and-swap. A changed working tree or index invalidates the intent and leaves local edits intact.
+
+## Tasks with adopted document ownership
+
+Admission binds either a completed export of the current revision and ownership manifest or a new task export
+intent. For a new generation, admission seals the clean Git baseline, verified revision, manifest, renderer
+and exact rendered files. The frozen profile protects those paths. Review sees the generation and target
+digests alongside the code fingerprint and D090 parity evidence. Manual commit confirmation still applies.
+
+The scheduler dispatches owned-document start, revalidate and retry jobs through `managed-task@1`. Each
+invocation has its own deterministic operation identity, persisted with the managed attempt and usage intent.
+The attempt transaction rechecks the bound generation and records its revision and export intent. An explicit
+provider identity selects the frozen canonical instructions and task knowledge. Reviewer and executor
+invocations with canonical context also seal a persistent permission boundary. Exact qualified reviewer
+clients can use the configured read-only tool scope through the broker. Unqualified clients receive no scoped
+broker tools. A trusted internal delegated admission checks exact writable paths and task identity against an
+active child authorization with a live parent. The supervisor rechecks the chain at execution and commit.
+
+An unsettled invocation leaves the job in recovery and is never automatically redispatched. A stopped or
+blocked review that contains a gap or scope request records an event linked to the settled attempt and cycle.
+The original history supplies the correction count on a new dispatch. Runs outside the owned-document lane
+retain their existing dispatch.
+
+For a new task export, the commit transaction pairs the export intent with the sealed commit and tree.
+The current managed writer uses T013 target replacement guards, allows only baseline or sealed bytes per
+target and records per-target receipts. The Git writer checks the exact reviewed code and index, the
+generated targets and the current writer fence. Its SQLite write barrier covers the final authority check
+and the Git reference CAS. Re-entry observes the sealed commit first, or resumes the pending replacements
+after explicit stopped-writer confirmation. Commit and export completion receipts settle together.
 
 ## Lease renewal and interrupted attempts
 
@@ -211,3 +243,30 @@ settles a process or certifies that a writer stopped ([accounting flow](metrics-
   (projection and run reads), `services/managed.py` (supervisor), `adapters/cli_agents.py`,
   `adapters/commands.py`, `adapters/git.py`.
 - Managed blocks in the commit: `core/engine/documents.py` (see [documents](documents.md)).
+
+## Owner clarification of a task gap
+
+A settled owned-document review with blocking questions records a fingerprinted request in the managed
+event journal. It binds the reviewer attempt, review cycle, code fingerprint, contract, context and documentary
+generation. The owner answers through `POST /runs/{run_id}/gap-resolutions` with the request event ID and hash,
+one answer per question, explicit validity and confirmation. The resolution kind is `clarification`.
+It supplies data within the existing contract. Changes to product meaning require the knowledge adoption
+path, and capability grants retain their permission path. The endpoint cannot grant delegated authority.
+
+A continuation uses `gap_resolution_id` in the existing run action. Admission checks the request and current
+generation and consumes the resolution for one job. A repeated identical continuation returns the same job.
+The supervisor verifies the source code fingerprint before work. Every new attempt receives a frozen answer
+marker, new canonical context and permission snapshot when the provider identity is available, and the fenced
+attempt transaction checks expiry and revocation. A revoked resolution also blocks a new Git reference update.
+The owner can revoke through `POST /runs/{run_id}/gap-resolutions/{resolution_id}/revoke`. Decisions and revocations
+remain append-only, and uncertain inference retains the existing FL13 recovery requirements.
+
+## Replacement task correction budgets
+
+Owner-adopted `replaces` links connect replacement tasks to predecessors (D296). The persisted executor
+intents of all tasks in the connected family consume one shared budget. A single task identity is already
+a family, so all its runs consume the same budget before any replacement link exists. The smallest recorded
+correction ceiling remains authoritative when a later run or replacement task requests a larger local limit. The graph checks before
+an executor invocation, and the fenced attempt transaction checks again before creating the intent.
+Family and consumption events remain queryable after restart. Each run keeps its own immutable history,
+while unrelated task families retain independent correction budgets.

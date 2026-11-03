@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0036_knowledge_exchange"
+SCHEMA_REVISION = "0037_task_lineage"
 # Protection triggers of 0030 (knowledge), 0031 (domain commands), 0032 (trace events/artifacts) and
 # 0033 (frozen context/receipts), 0034 (judge evidence), 0035 (permissions) and 0036 (document exchange),
 # by name and whitespace-normalized SQL. A database, backup or

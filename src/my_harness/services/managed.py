@@ -6,6 +6,7 @@ uses a thread and it never holds an SQL session during engine calls.
 """
 
 from dataclasses import asdict, replace
+from functools import partial
 import json
 from threading import Event, Thread
 from uuid import uuid4
@@ -16,7 +17,7 @@ from my_harness.core.engine.journal import JournalError
 from my_harness.core.engine.serialization import restore_context
 from my_harness.core.engine.workflow import OfflineEngine
 from my_harness.i18n import emission, tr
-from my_harness.storage.managed import OwnershipLost
+from my_harness.storage.managed import OwnershipLost, TaskDocumentsChanged
 
 
 class _Journal:
@@ -61,8 +62,41 @@ class _Journal:
     def checkpoint(self, history, stage):
         self._call(self.repository.checkpoint, history, stage)
 
+    invocation_operation = None
+
     def agent_started(self, history, request):
-        return self._call(self.repository.agent_started, history, request)
+        if self.invocation_operation is None:
+            return self._call(self.repository.agent_started, history, request)
+        operation = self.invocation_operation(history)
+        snapshot = json.loads(request.prompt_snapshot_json or "{}")
+        if "canonical_context" in snapshot and request.role in {"reviewer", "executor"}:
+            from my_harness.core.engine.contracts import freeze
+            from my_harness.core.engine.domain_catalogue import CATALOGUE
+            from my_harness.core.engine import tool_bridge
+            from my_harness.storage.models import KnowledgeProjectRow
+            from sqlalchemy import select
+            from sqlalchemy.orm import Session
+
+            versions = json.loads(self.repository.get_run(self.claim.run_id).versions_json)
+            authority = json.loads(versions.get("permission_authority", "{}"))
+            with Session(self.repository.engine) as session:
+                root = json.loads(request.context_json)["root"]
+                project = session.scalar(select(KnowledgeProjectRow.id).where(KnowledgeProjectRow.root == root))
+            lifecycle = self.repository.permission_lifecycle
+            snapshot["permissions"] = lifecycle.prepare(project, role=request.role, purpose="task",
+                                                        operation_key=operation.key, authority=authority)
+            request = replace(request, prompt_snapshot_json=freeze(snapshot))
+            provider, cli = versions.get(request.role + "_provider"), versions.get(request.role + "_cli")
+            cell = next((cell for cell in tool_bridge.NATIVE if
+                         (cell.client, cell.version, cell.role) == (provider, cli, request.role)), None)
+            if cell is not None:
+                refs = [entry.ref for entry in CATALOGUE if not entry.mutates
+                        and "agent" in entry.principals and request.role in entry.roles
+                        and all(entry.tool_target in authority.get(layer, {}).get("tools", ())
+                                for layer in ("global", "project", "contract", "provider"))]
+                if refs:
+                    request = tool_bridge.policy(request, refs, cell)
+        return self._call(self.repository.agent_started, history, request, operation)
 
     def process_intent(self, attempt_id, spec):
         self._call(self.repository.process_intent, attempt_id, spec)
@@ -158,7 +192,7 @@ def guarded_writer(factory, guard):
 
 
 class LocalSupervisor:
-    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None):
+    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None, task_graph=None):
         """factory(context, frozen_versions) returns agents, commands and evidence.
 
         The H2.3 CLI ports are connected only by explicit injection. The selection/versions are explicit;
@@ -168,6 +202,7 @@ class LocalSupervisor:
         """
         self.lane = lane
         self.repository = repository
+        self.task_graph = task_graph
         def ports(context, versions):
             from my_harness.storage.managed_mode import bind_git_mode
             agents, commands, evidence = ports_factory(context, versions)
@@ -233,7 +268,16 @@ class LocalSupervisor:
             versions = json.loads(record.versions_json)
             language = self.repository.job_language(claim)  # D169: only the pair sealed at admission
             outcome = None
-            if request["action"] == "bootstrap_discovery":
+            history = None
+            if request["action"] in ("start", "retry", "revalidate", "commit"):
+                try:
+                    if request["action"] != "commit" or journal.pending_commit() is None:
+                        self.repository.check_task_documents(claim)
+                except TaskDocumentsChanged as exc:
+                    history = stop_history(replace(record.history, acceptance=None), request["action"], str(exc))
+            if history is not None:
+                pass  # Stale documentary evidence stops before invoking any port.
+            elif request["action"] == "bootstrap_discovery":
                 from my_harness.core.engine.bootstrap_discovery import execute
                 from my_harness.storage.bootstrap_discovery import DiscoveryRepository
                 if self.commit_factory is None:
@@ -400,7 +444,7 @@ class LocalSupervisor:
                 writer = self.commit_factory(context, versions)
                 updates = tuple(MechanicalUpdate(**item) for item in request["mechanical"])
                 history, blocks, committer = None, frozenset(), journal
-                if context.documents is not None:
+                if context.documents is not None and not self.repository.task_has_owned_documents(claim.run_id):
                     # D072: managed blocks regenerated over what was reviewed, in the same commit.
                     committer = _DocumentsJournal(journal, writer, context)
                     if journal.pending_commit() is None:
@@ -412,22 +456,58 @@ class LocalSupervisor:
                             history = stop_history(record.history, "commit",
                                                    tr('supervisor.managed_documentation_blocks_could', exc=exc))
                 if history is None:
+                    from my_harness.adapters.git import GitWorkspace
+                    execute = None
+                    if isinstance(writer, GitWorkspace):
+                        export = self.repository.task_export(claim)
+                        if export is not None:
+                            from my_harness.services.knowledge_delivery import execute_task_export
+                            updates = tuple(MechanicalUpdate(path, content, "Required knowledge export")
+                                            for path, content in export["files"].items())
+                            execute = partial(execute_task_export, self.repository, claim, writer, export)
+                        else:
+                            execute = partial(writer.execute, ref_guard=partial(self.repository.task_ref_guard, claim))
+                    elif self.repository.task_has_owned_documents(claim.run_id):
+                        raise TaskDocumentsChanged(tr('intake.database_owned'))
                     history, _ = commit_accepted(context, record.history, writer, committer, mechanical=updates,
-                                                 now=self.repository.clock, block_paths=blocks)
+                                                 now=self.repository.clock, block_paths=blocks, execute=execute)
             else:
                 agents, commands, evidence = self.ports_factory(context, versions)
                 _bind_commands(commands, journal, versions)
                 if hasattr(agents, "bind_process_journal"):
                     agents.bind_process_journal(journal)
                 from my_harness.storage.prompts import PromptRepository
+                owned_documents = self.repository.task_has_owned_documents(claim.run_id)
+                canonical = None
+                if owned_documents and self.task_graph is not None:
+                    canonical = lambda ctx, role: self.repository.task_canonical_context(claim, ctx, role, versions)
                 engine = OfflineEngine(agents, commands, evidence, journal,
-                                       prompts=PromptRepository(self.repository.engine).catalog, language=language)
-                if request["action"] == "start":
-                    history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
-                                           history=record.history, contract=request.get("contract_json"),
-                                           notes=request.get("notes"))
+                                       prompts=PromptRepository(self.repository.engine).catalog, language=language,
+                                       canonical_context=canonical,
+                                       document_evidence=partial(self.repository.task_review_documents, claim)
+                                       if owned_documents else None,
+                                       gap_resolution=partial(self.repository.task_gap_resolution, claim),
+                                       execution_allowed=partial(self.repository.task_execution_allowed, claim))
+                def work():
+                    resolution = self.repository.task_gap_resolution(claim)
+                    if resolution is not None:
+                        if evidence.capture(context).fingerprint != resolution["code_fingerprint"]:
+                            return stop_history(record.history, "gap", tr('managed.gap_resolution_invalid'))
+                    if request["action"] == "start":
+                        return engine.start(context, request["task_id"], request["phase_id"], request["text"],
+                                            history=record.history, contract=request.get("contract_json"),
+                                            notes=request.get("notes"))
+                    return engine.resume(context, record.history, retry_executor=request["action"] == "retry")
+
+                if self.task_graph is not None and owned_documents:
+                    history = self.task_graph(self.repository, claim, journal, work)
                 else:
-                    history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
+                    history = work()
+            if request["action"] in ("start", "retry", "revalidate") and history.status == "acceptance_ready":
+                try:
+                    self.repository.check_task_documents(claim)
+                except TaskDocumentsChanged as exc:
+                    history = stop_history(replace(history, acceptance=None), "acceptance", str(exc))
             stopped.set()
             thread.join()
             self.repository.close_owner(claim, heartbeat=renewal)

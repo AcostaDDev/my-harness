@@ -41,6 +41,10 @@ class Conflict(ValueError):
     pass
 
 
+class TaskDocumentsChanged(Conflict):
+    pass
+
+
 class OwnershipLost(RuntimeError):
     pass
 
@@ -168,9 +172,11 @@ class SQLiteManagedRepository:
     def _event(self, session, run, kind, payload):
         run.version += 1
         run.updated_at = self._now()
-        session.add(Event(run_id=run.id, sequence=run.version, kind=kind, recorded_at=run.updated_at,
-                          payload={**payload, "status": run.status, "stage": run.stage,
-                                   "revisions": run.revisions}))
+        event = Event(run_id=run.id, sequence=run.version, kind=kind, recorded_at=run.updated_at,
+                      payload={**payload, "status": run.status, "stage": run.stage,
+                               "revisions": run.revisions})
+        session.add(event)
+        return event
 
     @staticmethod
     def _language(session, inherit_run: str | None = None, *, root: str | None = None) -> dict | None:
@@ -293,7 +299,8 @@ class SQLiteManagedRepository:
         return row
 
     def submit(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
-               versions: dict, *, key: str, notes: str | None = None) -> JobRecord:
+               versions: dict, *, key: str, notes: str | None = None,
+               delegated_authorization: str | None = None) -> JobRecord:
         for value, name in ((task_id, "task identity"), (phase_id, "phase identity"), (text, "plan text")):
             _nonempty(value, name)
         if notes is not None:
@@ -309,6 +316,12 @@ class SQLiteManagedRepository:
                    "versions_json": freeze(versions), "task_id": task_id, "phase_id": phase_id, "text": text}
         if notes is not None:
             request["notes"] = notes  # P009-T020: in the job request; without notes, the request does not change
+        if delegated_authorization is not None:
+            from my_harness.core.engine.planning import deterministic_task
+            request["contract_json"] = deterministic_task(context, task_id, phase_id, text)
+            request["delegated_authorization"] = delegated_authorization
+            if notes is not None:
+                raise Conflict(tr('domain.permission_invalid'))
         request = freeze(request)
         assessment = self.guard.assess(context.root)
         with self._write() as session:
@@ -343,17 +356,36 @@ class SQLiteManagedRepository:
             from my_harness.storage.bootstrap import unresolved
             if unresolved(session, str(context.root)):
                 raise Conflict(tr('managed.bootstrap_awaits_completion_explicit'))
+        submitted = json.loads(request)
+        delegated = submitted.get("delegated_authorization")
+        if delegated is not None:
+            self._check_delegated_scope(session, str(context.root), phase_id, task_id, delegated,
+                                        submitted["contract_json"])
+        run_id = str(uuid4())
+        documents = None
         if purpose == "task":
-            self._phase_open(session, str(context.root), phase_id)
+            documents = self._task_documents(session, str(context.root), task_run_id=run_id)
+            if delegated is not None and documents is None:
+                raise Conflict(tr('domain.permission_invalid'))
+            self._phase_open(session, str(context.root), phase_id, owned=documents is not None)
+            if documents is not None:
+                from my_harness.core.engine.contracts import RECONCILE_TASK
+                if RECONCILE_TASK.fullmatch(task_id):
+                    raise Conflict(tr('intake.database_owned'))
+                context = replace(context, profile=replace(context.profile, protected_paths=tuple(dict.fromkeys(
+                    (*context.profile.protected_paths, *documents["intent"]["files"])))))
         activation_id = self._admit(session, assessment)
         snapshot = context_snapshot(context)
-        history = RunHistory(str(uuid4()), snapshot)
+        history = RunHistory(run_id, snapshot)
         now = self._now()
         action = json.loads(request)["action"]
+        from my_harness.storage.task_lineage import budget
+        lineage = budget(session, str(context.root), task_id, context.policy.max_revision_cycles) if purpose == "task" else None
         run = Run(id=history.id, root=str(context.root), task_id=task_id, phase_id=phase_id,
                   context_json=snapshot, versions_json=freeze(versions), history_json=dump_history(history),
                   status="QUEUED", stage=action, revisions=0, purpose=purpose,
-                  revision_limit=context.policy.max_revision_cycles, version=0, created_at=now, updated_at=now)
+                  revision_limit=lineage["revision_limit"] if lineage else context.policy.max_revision_cycles,
+                  version=0, created_at=now, updated_at=now)
         session.add(run)
         session.flush()
         run_projection.create(session, run.id, run.history_json, history)
@@ -364,13 +396,192 @@ class SQLiteManagedRepository:
         session.add(job)
         session.flush()
         self._event(session, run, "job_queued", {"job_id": job.id, "action": action})
+        if documents is not None:
+            self._event(session, run, "task_documents_frozen", {"intent_id": documents["result"]["intent_id"],
+                         **({"task_export": True} if documents["intent"].get("task_run_id") else {})})
+        if lineage is not None:
+            self._event(session, run, "task_lineage_bound", lineage)
+        if delegated is not None:
+            self._event(session, run, "task_delegated", {"authorization_id": delegated,
+                                                        "contract_json": submitted["contract_json"]})
         return _job(job)
 
+    def _check_delegated_scope(self, session, root, phase, task, identity, contract):
+        from my_harness.core.engine import permission_targets as targets
+        from my_harness.services.permission_lifecycle import PermissionLifecycle
+        from my_harness.storage.models import KnowledgeProjectRow
+
+        project = session.scalar(select(KnowledgeProjectRow.id).where(KnowledgeProjectRow.root == root))
+        permissions = getattr(self, "permission_lifecycle", None) or PermissionLifecycle(self.engine)
+        row = permissions.get(session, project, identity, "authorization")
+        expected = json.loads(contract)["allowed_paths"]
+        scope = [targets.normalize("files", {"path": path, "operation": "write"}, root) for path in expected]
+        if (not row.payload.get("parent") or row.payload["origin"] != "owner_delegated"
+                or row.payload["grantee"] != "executor" or row.payload["purpose"] != f"task:{phase}:{task}"
+                or not permissions.active(session, row)
+                or any(targets.owner_only(target) or target not in row.payload["targets"] for target in scope)):
+            raise Conflict(tr('domain.permission_invalid'))
+
+    def _check_task_delegation(self, session, run):
+        binding = session.scalar(select(Event.payload).where(Event.run_id == run.id, Event.kind == "task_delegated"))
+        if binding is not None:
+            try:
+                self._check_delegated_scope(session, run.root, run.phase_id, run.task_id,
+                                            binding["authorization_id"], binding["contract_json"])
+            except ValueError as exc:
+                raise TaskDocumentsChanged(tr('domain.permission_invalid')) from exc
+
     @staticmethod
-    def _phase_open(session, root, code):
+    def _task_documents(session, root, *, task_run_id=None):
+        from my_harness.storage import knowledge_exchange as exchange
+        owner = exchange.owned_at_root(session, root)
+        if owner is None:
+            return None
+        delivery = exchange.completed_for_project(session, owner.project_id)
+        if delivery is not None:
+            return delivery
+        if task_run_id is None:
+            raise Conflict(tr('intake.database_owned'))
+        from my_harness.services.knowledge_delivery import prepare_task_generation
+        return prepare_task_generation(session, owner, root, task_run_id)
+
+    @staticmethod
+    def _task_document_binding(session, run_id):
+        return session.scalar(select(Event.payload).where(
+            Event.run_id == run_id, Event.kind == "task_documents_frozen"))
+
+    def task_has_owned_documents(self, run_id):
+        with Session(self.engine) as session:
+            return self._task_document_binding(session, run_id) is not None
+
+    def check_task_documents(self, claim):
+        with Session(self.engine) as session:
+            self._check_task_documents(session, claim)
+
+    @contextmanager
+    def task_ref_guard(self, claim, *, rendered=False, authority_only=False):
+        """Serialize revision and ownership changes against the Git reference CAS."""
+        with self._write() as session:
+            try:
+                if authority_only:
+                    _, run = self._owned(session, claim)
+                    self._bound_task_delivery(session, run)
+                else:
+                    self._check_task_documents(session, claim, rendered=rendered)
+                from my_harness.storage.task_gaps import TaskGaps
+                _, run = self._owned(session, claim)
+                TaskGaps(self).check_acceptance(session, run)
+            except Conflict as exc:
+                yield str(exc)
+            else:
+                yield None
+
+    def _check_task_documents(self, session, claim, *, rendered=False):
+        from my_harness.services.knowledge_delivery import read
+        from my_harness.adapters.local_git import LocalGit
+        _, run = self._owned(session, claim)
+        delivery = self._bound_task_delivery(session, run)
+        if delivery is None:
+            return
+        root = run.root
+        files = delivery["intent"]["files"]
+        git = LocalGit(Path(root))
+        if delivery["intent"].get("task_run_id") == run.id:
+            base = delivery["intent"]["baseline"]
+            expected = files if rendered else base["targets"]
+            try:
+                intact = all(read(root, path) == content for path, content in expected.items())
+            except (ValueError, OSError) as exc:
+                raise TaskDocumentsChanged(tr('intake.database_owned')) from exc
+            if (not intact or git.text("symbolic-ref", "HEAD") != base["ref"]
+                    or git.text("rev-parse", "HEAD") != base["head"]
+                    or git.code("diff", "--cached", "--quiet", base["head"], "--", *files) != 0):
+                raise TaskDocumentsChanged(tr('intake.database_owned'))
+            return
+        try:
+            intact = all(read(root, path) == content for path, content in files.items())
+        except (ValueError, OSError) as exc:
+            raise TaskDocumentsChanged(tr('intake.database_owned')) from exc
+        if (not intact or git.code("merge-base", "--is-ancestor", delivery["result"]["commit"], "HEAD") != 0
+                or git.code("diff", "--cached", "--quiet", delivery["result"]["commit"], "--", *files) != 0):
+            raise TaskDocumentsChanged(tr('intake.database_owned'))
+
+    def _bound_task_delivery(self, session, run):
+        self._check_task_delegation(session, run)
+        binding = self._task_document_binding(session, run.id)
+        if binding and binding.get("task_export"):
+            from my_harness.storage import knowledge_exchange as exchange
+            from my_harness.services.knowledge_delivery import current_task_generation
+            owner = exchange.owned_at_root(session, run.root)
+            if owner is None:
+                raise TaskDocumentsChanged(tr('intake.database_owned'))
+            intent = exchange.get(session, owner.project_id, binding["intent_id"])
+            if not current_task_generation(session, owner, intent, run.id):
+                raise TaskDocumentsChanged(tr('intake.database_owned'))
+            return {"result": {"intent_id": intent.id}, "intent": intent.payload}
+        try:
+            delivery = self._task_documents(session, run.root)
+        except Conflict as exc:
+            raise TaskDocumentsChanged(str(exc)) from exc
+        if binding is None and delivery is None:
+            return None
+        if binding is None or delivery is None or binding["intent_id"] != delivery["result"]["intent_id"]:
+            raise TaskDocumentsChanged(tr('intake.database_owned'))
+        return delivery
+
+    def task_execution_allowed(self, claim):
+        from my_harness.storage.task_lineage import budget
+        with Session(self.engine) as session:
+            _, run = self._owned(session, claim)
+            state = budget(session, run.root, run.task_id, run.revision_limit)
+            return state["executions"] < state["revision_limit"] + 1
+
+    def task_gap_resolution(self, claim):
+        from my_harness.storage.task_gaps import TaskGaps
+        with Session(self.engine) as session:
+            job, run = self._owned(session, claim)
+            return TaskGaps(self).for_job(session, run, job)
+
+    def task_review_documents(self, claim):
+        from my_harness.core.engine.knowledge_documents import sha
+        with Session(self.engine) as session:
+            _, run = self._owned(session, claim)
+            delivery = self._bound_task_delivery(session, run)
+            intent = delivery["intent"]
+            return {"intent_id": delivery["result"]["intent_id"], "revision_id": intent["revision_id"],
+                    "revision_sha256": intent["revision_sha256"], "manifest": intent["manifest"],
+                    "targets": {path: sha(content) for path, content in intent["files"].items()}}
+
+    def task_canonical_context(self, claim, context, role, versions):
+        from my_harness.services.knowledge_delivery import task_context_snapshot
+        client = versions.get(f"{'executor' if role == 'executor' else 'reviewer'}_provider")
+        if client is None:
+            return None  # Retained adapters without an explicit provider identity.
+        with Session(self.engine) as session:
+            _, run = self._owned(session, claim)
+            delivery = self._bound_task_delivery(session, run)
+            task_id = run.task_id
+        return task_context_snapshot(self.engine, context, client, task_id, delivery["intent"]["revision_id"])
+
+    def task_export(self, claim):
+        """Read the sealed task generation even when reconciling an already published commit."""
+        from my_harness.storage import knowledge_exchange as exchange
+        with Session(self.engine) as session:
+            _, run = self._owned(session, claim)
+            binding = self._task_document_binding(session, run.id)
+            if not binding or not binding.get("task_export"):
+                return None
+            owner = exchange.owned_at_root(session, run.root)
+            if owner is None:
+                raise TaskDocumentsChanged(tr('intake.database_owned'))
+            return exchange.get(session, owner.project_id, binding["intent_id"]).payload
+
+    @staticmethod
+    def _phase_open(session, root, code, *, owned=False):
         """H3.3/H3.4: a closed, closing or abandoned phase accepts no tasks, resumptions or commits."""
         from my_harness.storage.knowledge_exchange import require_documentary_lane
-        require_documentary_lane(session, root)
+        if not owned:
+            require_documentary_lane(session, root)
         from my_harness.storage.models import PhaseRow
         from my_harness.storage.documents import unresolved
         if unresolved(session, root):
@@ -379,11 +590,16 @@ class SQLiteManagedRepository:
                                                     PhaseRow.status.in_(("CLOSED", "CLOSING", "ABANDONED")))):
             raise Conflict(tr('managed.phase_closed_closing_abandoned'))
 
-    def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False) -> JobRecord:
+    def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False, gap_resolution_id: int | None = None) -> JobRecord:
         if type(expected_version) is not int or type(retry_executor) is not bool:
             raise ValueError(tr('managed.explicit_resource_version_boolean'))
-        request = freeze({"action": "retry" if retry_executor else "revalidate", "run_id": run_id,
-                          "expected_version": expected_version})
+        request = {"action": "retry" if retry_executor else "revalidate", "run_id": run_id,
+                   "expected_version": expected_version}
+        if gap_resolution_id is not None:
+            if type(gap_resolution_id) is not int or gap_resolution_id < 1:
+                raise ValueError(tr('managed.gap_resolution_invalid'))
+            request["gap_resolution_id"] = gap_resolution_id
+        request = freeze(request)
         root = self._run_root(run_id)
         assessment = self.guard.assess(root) if root is not None else None
         with self._write() as session:
@@ -409,10 +625,13 @@ class SQLiteManagedRepository:
                 raise Conflict(tr('managed.stopped_run_frozen_contract'))
             if retry_executor and not json.loads(history.task_json)["allowed_paths"]:
                 raise Conflict(tr('managed.read_tasks_cannot_retry'))
-            self._phase_open(session, run.root, run.phase_id)
+            self._phase_open(session, run.root, run.phase_id,
+                             owned=self._task_document_binding(session, run.id) is not None)
             self._registry_current(session, run.root, json.loads(run.versions_json))
             from my_harness.storage.preparation import admit
             admit(session, run.root, json.loads(run.versions_json), run.purpose)
+            from my_harness.storage.task_gaps import TaskGaps
+            resolution = TaskGaps(self).admit(session, run, gap_resolution_id)
             activation_id = self._admit(session, assessment)
             job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now(),
                       activation_id=activation_id, language_context=self._language(session, run_id))
@@ -420,6 +639,10 @@ class SQLiteManagedRepository:
             session.flush()
             run.status, run.stage = "QUEUED", json.loads(request)["action"]
             self._event(session, run, "job_queued", {"job_id": job.id, "action": run.stage})
+            if resolution is not None:
+                self._event(session, run, "task_gap_resolution_applied", {
+                    "resolution_id": resolution.id, "gap_event_id": resolution.payload["gap_event_id"],
+                    "job_id": job.id})
             return _job(job)
 
     def get_run(self, run_id: str) -> RunRecord:
@@ -569,9 +792,34 @@ class SQLiteManagedRepository:
                 raise Conflict(tr('managed.earlier_invocation_still_has'))
             executions = sum(json.loads(row.request_json)["role"] == "executor" for row in attempts)
             if request.role == "executor":
+                from my_harness.storage.task_lineage import budget
+                lineage = budget(session, run.root, run.task_id, run.revision_limit)
+                if lineage["executions"] >= lineage["revision_limit"] + 1:
+                    raise Conflict(tr('managed.lineage_budget_exhausted'))
+                self._event(session, run, "task_lineage_attempt", lineage)
                 run.revisions = max(0, executions)
                 if run.revisions > run.revision_limit:
                     raise Conflict("Persisted correction budget exhausted")
+            if operation is not None and run.purpose == "task" and self._task_document_binding(session, run.id):
+                delivery = self._bound_task_delivery(session, run)
+                canonical = json.loads(request.prompt_snapshot_json or "{}").get("canonical_context")
+                if canonical and canonical["revision_id"] != delivery["intent"]["revision_id"]:
+                    raise TaskDocumentsChanged(tr('intake.database_owned'))
+                operation = replace(operation, refs={
+                    **operation.refs,
+                    "revision_id": delivery["intent"]["revision_id"],
+                    "export_intent_id": delivery["result"]["intent_id"],
+                })
+            from my_harness.storage.task_gaps import TaskGaps
+            resolution = TaskGaps(self).for_job(session, run, job)
+            if resolution is not None:
+                marker = json.loads(request.prompt_snapshot_json or "{}").get("task_gap_resolution")
+                if marker != resolution:
+                    raise Conflict(tr('managed.gap_resolution_invalid'))
+                if operation is not None:
+                    operation = replace(operation, refs={**operation.refs,
+                        "gap_resolution_id": str(resolution["resolution_id"]),
+                        "gap_event_id": str(resolution["gap_event_id"])})
             from my_harness.storage.permissions import authorize
             request = authorize(session, self, run, request)
             attempt = AttemptRow(id=request.id, run_id=run.id, number=len(attempts) + 1,
@@ -640,6 +888,21 @@ class SQLiteManagedRepository:
                 run.status, run.stage = "COMMITTED", "committed"
             if outcome is not None:
                 _operation_module(run).settle(self, session, run, outcome)
+            if (run.purpose == "task" and self._task_document_binding(session, run.id)
+                    and history.cycles and (history.status == "blocked"
+                    or history.stop and history.stop.stage == "permissions")):
+                cycle = history.cycles[-1]
+                review = json.loads(cycle.review_json or "{}")
+                for field in ("blocking_questions", "scope_grants"):
+                    if review.get(field):
+                        attempt = next(a for a in reversed(history.attempts) if a.request.role == "reviewer")
+                        payload = {"source_attempt_id": attempt.request.id, "review_cycle": cycle.number, "kind": field}
+                        if field == "blocking_questions":
+                            from my_harness.storage.task_gaps import TaskGaps
+                            from my_harness.core.engine.knowledge import digest
+                            payload = TaskGaps(self).binding(session, run, history, attempt.request.id)
+                            payload["request_sha256"] = digest(payload)
+                        self._event(session, run, "task_decision_requested", payload)
             job.status, job.finished_at = "DONE", self._now()
             self._release(session, job, run)
             self._event(session, run, "job_finished", {"job_id": job.id, "history_status": history.status})
@@ -692,9 +955,12 @@ class SQLiteManagedRepository:
                 record_metrics(session, run, row, recorded_at=row.finished_at, executor_round=round_)
                 settle_usage(session, run, row)
                 operation_journal.settle_attempt(session, row, revision_round=round_, at=row.finished_at)
-            history = stop_history(history, run.stage, reason)
+            commit = self._live_commit(session, run.id) if run.purpose == "task" else None
+            # A stopped commit worker interrupts delivery. Its sealed input remains eligible for reconciliation.
+            if commit is None or pending:
+                history = stop_history(history, run.stage, reason)
             self._history(session, run, history)
-            run.status = "COMMITTED" if self._live_commit(session, run.id, ("COMMITTED",)) else "INTERRUPTED"
+            run.status = "COMMITTED" if commit is not None and commit.status == "COMMITTED" else "INTERRUPTED"
             job.status, job.finished_at, job.diagnostic = "INTERRUPTED", self._now(), reason
             self._release(session, job, run)
             self._event(session, run, "writer_stopped_confirmed", {"job_id": job.id, "owner_token": owner_token, "reason": reason})
@@ -743,8 +1009,14 @@ class SQLiteManagedRepository:
         live = self._live_commit(session, run_id)
         if live is not None and live.status == "COMMITTED":
             raise Conflict(tr('managed.run_already_has_recorded'))
-        self._phase_open(session, run.root, run.phase_id)
+        self._phase_open(session, run.root, run.phase_id,
+                             owned=self._task_document_binding(session, run.id) is not None)
         history = load_history(run.history_json)
+        if updates and self._task_document_binding(session, run.id) is not None:
+            delivery = self._bound_task_delivery(session, run)
+            if (delivery is None or delivery["intent"].get("task_run_id")
+                    or any(update.path in delivery["intent"]["files"] for update in updates)):
+                raise Conflict(tr('intake.database_owned'))
         if live is not None:
             if updates and updates != CommitIntent.from_json(live.intent_json).mechanical:
                 raise Conflict("A pending commit operation fixed different mechanical updates")
@@ -794,16 +1066,55 @@ class SQLiteManagedRepository:
                 raise Conflict("Commit intent must name this run's reviewed acceptance evidence")
             if self._live_commit(session, run.id) is not None:
                 raise Conflict(tr('managed.run_already_has_live'))
-            self._phase_open(session, run.root, run.phase_id)
+            self._phase_open(session, run.root, run.phase_id,
+                             owned=self._task_document_binding(session, run.id) is not None)
             session.add(Commit(operation_id=intent.operation_id, run_id=run.id, job_id=job.id, status="INTENT",
                                base_revision=intent.base_revision, reviewed_fingerprint=intent.reviewed_fingerprint,
                                expected_tree=intent.expected_tree, expected_commit=intent.expected_commit,
                                intent_json=intent.to_json(), created_at=self._now()))
+            binding = self._task_document_binding(session, run.id)
+            if binding and binding.get("task_export"):
+                from my_harness.storage import knowledge_exchange as exchange
+                delivery = self._bound_task_delivery(session, run)
+                payload = delivery["intent"]
+                generated = {update.path: update.content for update in intent.mechanical
+                             if update.path in payload["files"]}
+                if generated != payload["files"] or intent.base_revision != payload["baseline"]["head"]:
+                    raise Conflict(tr('intake.database_owned'))
+                owner = exchange.owned_at_root(session, run.root)
+                exchange.add(session, owner.project_id, "export_commit", {
+                    "intent_id": binding["intent_id"], "operation_id": intent.operation_id,
+                    "commit": intent.expected_commit, "tree": intent.expected_tree},
+                    key=binding["intent_id"] + ":commit")
             run.stage, run.status = "commit", "COMMITTING"
             self._event(session, run, "commit_intent", {
                 "job_id": job.id, "operation_id": intent.operation_id, "base_revision": intent.base_revision,
                 "expected_tree": intent.expected_tree, "expected_commit": intent.expected_commit,
                 "reviewed_fingerprint": intent.reviewed_fingerprint})
+
+    @staticmethod
+    def _record_task_export_target(session, project, ident, path, content):
+        from my_harness.storage import knowledge_exchange as exchange
+        from my_harness.core.engine.knowledge_documents import sha
+        key = ident + ":target:" + sha(path)
+        if not any(record.record_key == key for record in exchange.records(session, project, "export_target")):
+            exchange.add(session, project, "export_target", {
+                "intent_id": ident, "path": path, "sha256": sha(content), "status": "WRITTEN"}, key=key)
+
+    def record_task_export_target(self, claim, operation_id, path):
+        from my_harness.storage import knowledge_exchange as exchange
+        from my_harness.services.knowledge_delivery import read
+        with self._write() as session:
+            _, run = self._owned(session, claim)
+            commit = self._live_commit(session, run.id, ("INTENT",))
+            delivery = self._bound_task_delivery(session, run)
+            if commit is None or commit.operation_id != operation_id or not delivery["intent"].get("task_run_id"):
+                raise TaskDocumentsChanged(tr('intake.database_owned'))
+            content = delivery["intent"]["files"][path]
+            if read(run.root, path) != content:
+                raise TaskDocumentsChanged(tr('intake.database_owned'))
+            owner = exchange.owned_at_root(session, run.root)
+            self._record_task_export_target(session, owner.project_id, delivery["result"]["intent_id"], path, content)
 
     def commit_result(self, claim: JobRecord, outcome: CommitOutcome, adopt: dict | None = None) -> None:
         """`adopt` (D072): hashes of managed blocks that the commit itself regenerated, adopted atomically."""
@@ -821,6 +1132,17 @@ class SQLiteManagedRepository:
                 return
             if (outcome.commit != row.expected_commit or outcome.tree != row.expected_tree):
                 raise Conflict("Commit result differs from the persisted intent")
+            binding = self._task_document_binding(session, run.id)
+            if binding and binding.get("task_export"):
+                from my_harness.storage import knowledge_exchange as exchange
+                owner = exchange.owned_at_root(session, run.root)
+                ident = binding["intent_id"]
+                payload = exchange.get(session, owner.project_id, ident).payload
+                for path, content in payload["files"].items():
+                    self._record_task_export_target(session, owner.project_id, ident, path, content)
+                exchange.add(session, owner.project_id, "export_completed", {
+                    "intent_id": ident, "status": "COMPLETED", "commit": outcome.commit,
+                    "revision_id": payload["revision_id"], "revision_sha256": payload["revision_sha256"]})
             row.status, row.commit_sha = "COMMITTED", outcome.commit
             run.status, run.stage = "COMMITTED", "committed"
             if adopt:

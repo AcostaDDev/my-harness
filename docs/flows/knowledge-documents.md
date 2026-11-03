@@ -51,6 +51,8 @@ flowchart TD
   Current delivery additionally verifies the referenced export intent against the current accepted revision/hash,
   exact adopted ownership ID, full manifest (including renderer) and required target set. Adopting another manifest
   leaves delivery pending until that generation completes; old receipts remain available as historical evidence.
+  Completion must match its sealed commit receipt and exactly one write receipt per rendered path and content
+  digest under the same export intent. Consumers must also verify the current checkout at their effect boundary.
   Continuation `status=export_committed` and effect `effect_status=COMPLETED` are distinct.
 - Profile confirmation may occur before or after knowledge adoption/export. A known documentary commit can
   continue the structured intake profile/preparation boundary without creating an operational phase. Profile,
@@ -64,8 +66,11 @@ flowchart TD
   execution/phase/READY states are forbidden. This is distinct from evidence-bearing backup/restore.
 
 T014/T015 consume the revision/manifest/renderer and exact delivery receipts for task acceptance and closure.
-Their productive workflows, T016 final readiness/delegation and T020 installed conversion and integral recovery
-remain pending. Old task/document/closure writers are refused after new target ownership is adopted.
+A managed task can consume a completed current delivery or seal a new generation under its existing writer.
+A task generation carries a task run ID, pairs its export commit record with the managed commit operation
+and settles completion with that commit. The standalone exporter cannot execute a task generation.
+Phase closure, T016 final readiness and roadmap admission, and T020 installed conversion remain pending.
+Legacy document and closure writers refuse adopted ownership.
 
 Sources: `core/engine/knowledge_documents.py`, `services/knowledge_exchange.py`, `services/knowledge_delivery.py`,
 `storage/knowledge_exchange.py`, `api/knowledge_documents.py`, `pages/KnowledgeDocuments.tsx`.

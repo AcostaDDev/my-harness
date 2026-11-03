@@ -1169,7 +1169,7 @@ class GraphCheckpointWriteRow(Base):
 
 KNOWLEDGE_KINDS = ('requirement', 'criterion', 'phase', 'task', 'decision', 'section')
 KNOWLEDGE_DOCUMENTS = ('specification', 'architecture', 'data_model', 'flows', 'instructions')
-KNOWLEDGE_LINKS = ('part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes')
+KNOWLEDGE_LINKS = ('part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes', 'replaces')
 KNOWLEDGE_ORIGINS = ('owner_confirmed', 'owner_delegated', 'harness_deterministic')
 KNOWLEDGE_LEGACY = ('managed_phase', 'phase_task', 'decision_heading', 'document_section')
 

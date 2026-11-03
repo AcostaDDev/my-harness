@@ -263,7 +263,9 @@ def commit_accepted(context: ProjectContext, history: RunHistory, writer: Commit
                     journal: CommitJournal, *, mechanical: tuple[MechanicalUpdate, ...] = (),
                     message_prefix: str = "harness", now: Callable[[], datetime] | None = None,
                     operation_id: str | None = None,
-                    block_paths: frozenset[str] = frozenset()) -> tuple[RunHistory, CommitOutcome]:
+                    block_paths: frozenset[str] = frozenset(),
+                    execute: Callable[[ProjectContext, CommitIntent], CommitOutcome] | None = None,
+                    ) -> tuple[RunHistory, CommitOutcome]:
     """Intent persisted before the effect, result afterwards, reconciling on resume."""
     intent = journal.pending_commit()
     if intent is not None:
@@ -279,7 +281,7 @@ def commit_accepted(context: ProjectContext, history: RunHistory, writer: Commit
             return stop_history(history, "commit", prepared.diagnostic or tr('commit.acceptance_invalidated')), prepared
         intent = prepared
         journal.commit_intent(intent)
-    outcome = writer.execute(context, intent)
+    outcome = (execute or writer.execute)(context, intent)
     journal.commit_result(outcome)
     if outcome.status == "invalidated":
         history = stop_history(history, "commit", outcome.diagnostic or tr('commit.acceptance_invalidated'))

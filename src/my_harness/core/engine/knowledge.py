@@ -18,7 +18,7 @@ DOCUMENTS = ('specification', 'architecture', 'data_model', 'flows', 'instructio
 PROVENANCES = ('known', 'inferred', 'unknown')
 SOURCE_KINDS = ('legacy_document', 'legacy_record', 'observation')
 ORIGINS = ('owner_confirmed', 'owner_delegated', 'harness_deterministic')
-LINK_KINDS = ('part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes')
+LINK_KINDS = ('part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes', 'replaces')
 ORDERED_LINKS = ('part_of', 'criterion_of')
 QUALIFIERS = ('full', 'partial')
 TARGETS = ('agents', 'claude', 'gemini')
@@ -60,6 +60,7 @@ ENDPOINTS = {
     'depends_on': {('task', 'task')},
     'addresses': {('phase', 'requirement'), ('task', 'requirement')},
     'supersedes': {('decision', 'decision')},
+    'replaces': {('task', 'task')},
 }
 
 
@@ -255,7 +256,7 @@ def validate_revision(members: dict[str, Member], links, previous: dict | None =
             _fail('proposed_decision', item=_label(member))
     for document, positions in roots.items():
         _dense(positions, f'roots of {document}')
-    for kind in ('part_of', 'depends_on', 'supersedes'):
+    for kind in ('part_of', 'depends_on', 'supersedes', 'replaces'):
         edges: dict[str, list[str]] = {}
         for link in by_kind[kind]:
             edges.setdefault(link.source, []).append(link.target)
@@ -281,6 +282,10 @@ def validate_revision(members: dict[str, Member], links, previous: dict | None =
     for link in old_links:
         if link.kind == 'supersedes' and (link.kind, link.source, link.target, link.qualifier) not in current_links:
             _fail('decision_frozen', item=_label(old_members[link.target]))
+    retained = {(link.source, link.target) for link in by_kind['replaces']}
+    for link in old_links:
+        if link.kind == 'replaces' and (link.source, link.target) not in retained:
+            _fail('lineage_frozen')
     for link in by_kind['supersedes']:
         if (old_members.get(link.target) is None or old_members[link.target].content['status'] != 'accepted') and (
                 link.kind, link.source, link.target, link.qualifier) not in {

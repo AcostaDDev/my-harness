@@ -133,8 +133,9 @@ def supervisor(repository, context, responses, *, workspace=None, **kwargs):
         assert frozen == context
         return agents, runner, workspace
 
+    from my_harness.services.managed_runtime import run_task_graph
     return LocalSupervisor(repository, factory, commit_factory=lambda frozen, versions: workspace,
-                           **kwargs), agents
+                           task_graph=run_task_graph, **kwargs), agents
 
 
 def accept(repository, context, files=None, *, key="start", workspace=None):
@@ -576,7 +577,13 @@ def test_crash_around_the_git_effect_recovers_without_duplicate_commit(task, rep
     assert object_exists is (point != "before-object")
     # Restart: reconciliation needs neither another review nor rebuilding the intention.
     recover(repository, job, queued)
-    assert repository.get_run(job.run_id).status == "INTERRUPTED"
+    interrupted = repository.get_run(job.run_id)
+    assert interrupted.status == "INTERRUPTED"
+    assert interrupted.history.status == "acceptance_ready"
+    assert interrupted.history.acceptance == record.history.acceptance
+    with pytest.raises(Conflict):
+        repository.resume(job.run_id, key="retry-inference", expected_version=interrupted.version,
+                          retry_executor=True)
     _, fresh = run_commit(repository, job, key="reconcile")
     assert fresh.run_once().status == "DONE"
     record = repository.commit_record(job.run_id)
@@ -646,9 +653,9 @@ def test_content_changed_between_intent_and_effect_never_commits(task, repositor
     job, _ = accept(repository, context)
     original = GitWorkspace.execute
 
-    def execute(self, ctx, intent):
+    def execute(self, ctx, intent, **kwargs):
         write(ctx.root, "app/main.txt", "modified after the intent was persisted\n")
-        return original(self, ctx, intent)
+        return original(self, ctx, intent, **kwargs)
 
     monkeypatch.setattr(GitWorkspace, "execute", execute)
     _, worker = run_commit(repository, job)
@@ -786,3 +793,265 @@ def test_commit_migration_round_trip_keeps_managed_history(task, repository, mig
     assert "managed_commits" in inspect(repository.engine).get_table_names()
     assert repository.get_run(job.run_id) == before
     command.check(migrated_database[1])
+
+
+@pytest.mark.parametrize("stage_edit", [False, True])
+def test_edit_after_commit_object_is_written_invalidates_before_ref_move(task, repository, monkeypatch, stage_edit):
+    context, info = task
+    job, _ = accept(repository, context)
+    original = Git.run
+
+    def mutate_after_object(self, *args, **kwargs):
+        result = original(self, *args, **kwargs)
+        if written_commit(args):
+            write(context.root, "app/main.txt", "edit during commit dispatch\n")
+            if stage_edit:
+                git(context.root, "add", "app/main.txt")
+        return result
+
+    monkeypatch.setattr(Git, "run", mutate_after_object)
+    queued, worker = run_commit(repository, job)
+    assert worker.run_once().id == queued.id
+    record = repository.commit_record(job.run_id)
+    assert record.status == "INVALIDATED"
+    assert record.outcome.status == "invalidated"
+    assert git(context.root, "rev-parse", "HEAD") == info.base_revision
+    assert (context.root / "app/main.txt").read_text() == "edit during commit dispatch\n"
+    staged = git(context.root, "diff", "--cached", "--name-only")
+    assert staged == ("app/main.txt" if stage_edit else "")
+
+
+@pytest.mark.parametrize("drift", [None, "bytes", "revision", "late_revision", "after_ref"])
+def test_managed_task_commits_with_current_owned_documents(repo, repository, migrated_database, drift, monkeypatch):
+    from test_knowledge_documents import KnowledgeDelivery, prepare_export, world
+
+    engine, knowledge, project, revision = world(migrated_database[0], repo)
+    export = prepare_export(engine, repo, project)
+    delivered = KnowledgeDelivery(engine, repo, project).execute(
+        export["record_id"], export["preview_sha256"], IDENTITY)
+    context = make_context(repo)
+    job = repository.submit(context, TASK, PHASE, PLAN, VERSIONS, key="owned-task")
+    assert repository.submit(context, TASK, PHASE, PLAN, VERSIONS, key="owned-task").id == job.id
+    worker, agents = supervisor(repository, load_context(repository.get_run(job.run_id)), [edit(), review()])
+    assert worker.run_once().id == job.id
+    assert repository.get_run(job.run_id).history.status == "acceptance_ready"
+    queued, worker = run_commit(repository, job)
+    if drift == "bytes":
+        path = next(iter(export["files"]))
+        write(repo, path, "local edit after acceptance\n")
+    elif drift in {"revision", "late_revision", "after_ref"}:
+        from test_knowledge_documents import OWNER, section
+
+        def adopt_revision():
+            draft = knowledge.open_draft(project, revision.id)
+            knowledge.put(draft, "section", "later", section("Later", "A new revision."),
+                          document="architecture", root_position=0)
+            knowledge.adopt(draft, revision.id, origin="owner_confirmed", actor=OWNER)
+
+        if drift == "revision":
+            adopt_revision()
+        elif drift == "late_revision":
+            original = Git.run
+
+            def drift_after_object(self, *args, **kwargs):
+                result = original(self, *args, **kwargs)
+                if written_commit(args):
+                    adopt_revision()
+                return result
+
+            monkeypatch.setattr(Git, "run", drift_after_object)
+        else:
+            restore = crash_on(monkeypatch, ref_update, after=True)
+            with pytest.raises(SyntheticCrash):
+                worker.run_once()
+            restore()
+            intent = repository.commit_record(job.run_id).intent
+            recover(repository, job, queued)
+            adopt_revision()
+            queued, worker = run_commit(repository, job, key="owned-reconcile")
+            assert worker.run_once().id == queued.id
+            receipt = repository.commit_record(job.run_id)
+            assert receipt.intent == intent and receipt.outcome.status == "reconciled"
+            assert commits_after(repo, delivered["commit"]) == "1"
+            assert len(agents.requests) == 2
+            return
+    assert worker.run_once().id == queued.id
+    assert worker.run_once() is None
+    assert len(agents.requests) == 2
+    if drift is not None:
+        run = repository.get_run(job.run_id)
+        assert run.history.status == "stopped"
+        if drift == "late_revision":
+            assert repository.commit_record(job.run_id).status == "INVALIDATED"
+        else:
+            assert run.history.acceptance is None
+        assert commits_after(repo, delivered["commit"]) == "0"
+        assert (repo / "app/main.txt").read_text() == "implemented\n"
+        if drift == "bytes":
+            assert (repo / path).read_text() == "local edit after acceptance\n"
+        return
+    assert repository.get_run(job.run_id).status == "COMMITTED"
+    assert commits_after(repo, delivered["commit"]) == "1"
+    assert git(repo, "status", "--porcelain") == ""
+
+
+def test_owned_task_graph_quarantines_lost_invocation_receipt(repo, repository, migrated_database, monkeypatch):
+    from sqlalchemy import select
+    from sqlalchemy.orm import Session
+
+    from my_harness.storage.models import WorkflowOperationRow
+    from test_knowledge_documents import KnowledgeDelivery, prepare_export, world
+
+    engine, _, project, _ = world(migrated_database[0], repo)
+    export = prepare_export(engine, repo, project)
+    KnowledgeDelivery(engine, repo, project).execute(export["record_id"], export["preview_sha256"], IDENTITY)
+    job = repository.submit(make_context(repo), TASK, PHASE, PLAN, VERSIONS, key="owned-lost-invocation")
+    worker, agents = supervisor(repository, load_context(repository.get_run(job.run_id)), [edit(), review()])
+    checkpoint = repository.checkpoint
+
+    def lose_result(claim, history, stage):
+        if stage == "executor" and history.attempts:
+            raise RuntimeError("Synthetic lost executor receipt")
+        checkpoint(claim, history, stage)
+
+    monkeypatch.setattr(repository, "checkpoint", lose_result)
+    with pytest.raises(RuntimeError, match="Managed task graph"):
+        worker.run_once()
+    assert repository.get_job(job.id).status == "RECOVERY_REQUIRED"
+    assert worker.run_once() is None
+    assert len(agents.requests) == 1
+    assert (repo / "app/main.txt").read_text() == "implemented\n"
+    with Session(engine) as session:
+        operation = session.scalar(select(WorkflowOperationRow).where(
+            WorkflowOperationRow.thread_id == f"task-job-{job.id}"))
+        assert operation.status in {"INTENDED", "UNCERTAIN"}
+
+
+@pytest.mark.parametrize("point", ["target", "ref"])
+def test_owned_task_export_recovers_without_repeating_inference(repo, repository, migrated_database, monkeypatch, point):
+    from sqlalchemy.orm import Session
+
+    from my_harness.services import knowledge_delivery
+    from my_harness.storage.knowledge_exchange import completed_at_root
+    from test_knowledge_documents import prepare_export, world
+
+    engine, _, project, _ = world(migrated_database[0], repo)
+    export = prepare_export(engine, repo, project)
+    base = git(repo, "rev-parse", "HEAD")
+    job = repository.submit(make_context(repo), TASK, PHASE, PLAN, VERSIONS, key="task-with-export")
+    worker, agents = supervisor(repository, load_context(repository.get_run(job.run_id)), [edit(), review()])
+    assert worker.run_once().status == "DONE"
+    queued, worker = run_commit(repository, job)
+    original = knowledge_delivery.write_target
+    written = []
+
+    def lose_target_receipt(root, ident, path, before, rendered):
+        original(root, ident, path, before, rendered)
+        written.append(path)
+        raise SyntheticCrash()
+
+    if point == "target":
+        monkeypatch.setattr(knowledge_delivery, "write_target", lose_target_receipt)
+    else:
+        restore = crash_on(monkeypatch, ref_update, after=True)
+    with pytest.raises(SyntheticCrash):
+        worker.run_once()
+    if point == "target":
+        monkeypatch.setattr(knowledge_delivery, "write_target", original)
+        assert len(written) == 1 and (repo / written[0]).read_text() == export["files"][written[0]]
+    else:
+        restore()
+    intent = repository.commit_record(job.run_id).intent
+    assert commits_after(repo, base) == ("1" if point == "ref" else "0")
+    assert (repo / "app/main.txt").read_text() == "implemented\n"
+    recover(repository, job, queued)
+    retry, worker = run_commit(repository, job, key="recover-owned-export")
+    assert worker.run_once().id == retry.id
+    assert worker.run_once() is None
+    assert repository.commit_record(job.run_id).intent == intent
+    assert commits_after(repo, base) == "1" and len(agents.requests) == 2
+    with Session(engine) as session:
+        delivery = completed_at_root(session, repo)
+        assert delivery["result"]["commit"] == intent.expected_commit
+        assert set(delivery["target_receipts"]) == set(export["files"])
+
+
+@pytest.mark.parametrize("revoked", [False, True])
+def test_delegated_task_uses_same_graph_with_exact_parent_scope(repo, repository, migrated_database, revoked):
+    from my_harness.core.engine.permission_targets import normalize
+    from my_harness.services.permission_lifecycle import PermissionLifecycle
+    from test_knowledge_documents import prepare_export, world
+
+    engine, _, project, _ = world(migrated_database[0], repo)
+    prepare_export(engine, repo, project)
+    lifecycle = PermissionLifecycle(engine)
+    purpose = f"task:{PHASE}:{TASK}"
+    target = normalize("files", {"path": "app/main.txt", "operation": "write"}, repo)
+    parent = lifecycle.authorize(project, grantee="executor", targets_list=[target], purpose=purpose)
+    child = lifecycle.authorize(project, grantee="executor", targets_list=[target], purpose=purpose, parent=parent)
+    exact_plan = PLAN.replace("app/**", "app/main.txt")
+    context = make_context(repo)
+    with pytest.raises(ValueError):
+        repository.submit(context, TASK, PHASE, PLAN, VERSIONS, key="out-of-scope",
+                          delegated_authorization=child)
+    job = repository.submit(context, TASK, PHASE, exact_plan, VERSIONS, key="delegated-task",
+                            delegated_authorization=child)
+    if revoked:
+        from sqlalchemy.orm import Session
+        from test_knowledge_documents import OWNER
+        with Session(engine) as session, session.begin():
+            lifecycle.respond(session, project, "revoke", {"record_id": parent, "reason": "Synthetic revocation"}, OWNER)
+    worker, agents = supervisor(repository, load_context(repository.get_run(job.run_id)), [edit(), review()])
+    assert worker.run_once().status == "DONE"
+    assert repository.get_run(job.run_id).history.status == ("stopped" if revoked else "acceptance_ready")
+    assert len(agents.requests) == (0 if revoked else 2)
+    assert any(event["kind"] == "task_delegated" for event in repository.events(job.run_id))
+
+
+@pytest.mark.parametrize("gap", [False, True])
+def test_owned_task_graph_preserves_correction_limit_or_gap(repo, repository, migrated_database, gap):
+    from test_knowledge_documents import prepare_export, world
+
+    engine, _, project, _ = world(migrated_database[0], repo)
+    prepare_export(engine, repo, project)
+    context = make_context(repo)
+    job = repository.submit(context, TASK, PHASE, PLAN, VERSIONS, key="owned-correction")
+    revise = {**review("REVISE"), "next_prompt": "Correct the output.",
+              "executor_selection": {"model": "synthetic-executor", "effort": "medium", "reason": "Synthetic"}}
+    if gap:
+        revise["blocking_questions"] = ["Which output is required?"]
+    responses = [edit(), revise]
+    if not gap:
+        responses += [edit({"app/main.txt": "corrected\n"}), revise]
+    worker, agents = supervisor(repository, load_context(repository.get_run(job.run_id)), responses)
+    assert worker.run_once().status == "DONE"
+    record = repository.get_run(job.run_id)
+    if gap:
+        assert record.history.stop.stage == "permissions"
+        assert (repo / "app/main.txt").read_text() == "implemented\n"
+        event = next(e for e in repository.events(job.run_id) if e["kind"] == "task_decision_requested")
+        assert event["payload"]["source_attempt_id"] == agents.requests[-1].id
+        from my_harness.storage.permissions import PermissionRepository
+        permissions = PermissionRepository(repository)
+        request = permissions.create(job.run_id, record.version, kind="files", target="app/main.txt",
+                                     operation="write", arguments=[], requested_by="reviewer",
+                                     source_attempt_id=agents.requests[-1].id, reason="Synthetic request", ttl_seconds=60)
+        permissions.decide(job.run_id, request["id"], repository.get_run(job.run_id).version,
+                           expected_request_version=request["version"], fingerprint=request["fingerprint"],
+                           decision="deny", scope="once", reason="Synthetic denial")
+        from my_harness.storage.task_gaps import TaskGaps
+        answer = TaskGaps(repository).answer(job.run_id, key="gap-answer",
+            expected_version=repository.get_run(job.run_id).version, gap_event_id=event["id"],
+            request_sha256=event["payload"]["request_sha256"], answers=["Keep the frozen task output."],
+            ttl_seconds=60)
+        repository.resume(job.run_id, key="denied-retry", expected_version=repository.get_run(job.run_id).version,
+                          retry_executor=True, gap_resolution_id=answer["event_id"])
+        worker, retry_agents = supervisor(repository, load_context(record), [])
+        assert worker.run_once().status == "DONE"
+        assert retry_agents.requests == []
+        assert repository.get_run(job.run_id).history.status == "stopped"
+        assert (repo / "app/main.txt").read_text() == "implemented\n"
+    else:
+        assert record.history.status == "revision_limit" and record.revisions == 1
+        assert len(agents.requests) == 4
+        assert (repo / "app/main.txt").read_text() == "corrected\n"

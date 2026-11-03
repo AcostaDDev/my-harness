@@ -22,7 +22,7 @@ from my_harness.api.schemas import (
     ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
     ModeRead, Page, PhaseTaskRead, PreferencesRead, PreferencesUpdate, PreferencesUpdateRead, ProblemResponse,
-    RunActionCreate, RunCreate, SupervisorRead, TaskSourcesRead, WorkLanguageMigrationApplyCreate,
+    RunActionCreate, RunCreate, TaskGapResolutionCreate, TaskGapRevokeCreate, TaskGapResolutionRead, SupervisorRead, TaskSourcesRead, WorkLanguageMigrationApplyCreate,
     WorkLanguageMigrationApplyRead, WorkLanguageMigrationInput, WorkLanguageMigrationPreviewRead,
 )
 from my_harness.api.security import local_request, problem
@@ -383,6 +383,8 @@ def managed_router(runtime: ManagedRuntime):
         runtime.ready()
         registered_run(run_id)
         if body.action == "commit":
+            if body.gap_resolution_id is not None:
+                raise problem(409, "conflict", say('managed.gap_resolution_invalid'))
             if runtime.config.commit_factory is None:
                 raise problem(409, "commit_writer_unavailable",
                               say('api.writer_commit'))
@@ -391,8 +393,26 @@ def managed_router(runtime: ManagedRuntime):
                        expected_version=body.expected_version)
         else:
             job = call(runtime.repository.resume, run_id, key=idempotency_key,
-                       expected_version=body.expected_version, retry_executor=body.action == "retry_executor")
+                       expected_version=body.expected_version, retry_executor=body.action == "retry_executor",
+                       gap_resolution_id=body.gap_resolution_id)
         return queued(job)
+
+    @router.post("/runs/{run_id}/gap-resolutions", response_model=TaskGapResolutionRead,
+                 operation_id="managed_answer_task_gap")
+    def answer_task_gap(run_id: str, body: TaskGapResolutionCreate, idempotency_key: IdempotencyKey):
+        runtime.ready()
+        registered_run(run_id)
+        from my_harness.storage.task_gaps import TaskGaps
+        return call(TaskGaps(runtime.repository).answer, run_id, key=idempotency_key,
+                    **body.model_dump(exclude={"confirmed"}))
+
+    @router.post("/runs/{run_id}/gap-resolutions/{resolution_id}/revoke", response_model=TaskGapResolutionRead,
+                 operation_id="managed_revoke_task_gap")
+    def revoke_task_gap(run_id: str, resolution_id: int, body: TaskGapRevokeCreate):
+        runtime.ready()
+        registered_run(run_id)
+        from my_harness.storage.task_gaps import TaskGaps
+        return call(TaskGaps(runtime.repository).revoke, run_id, resolution_id, **body.model_dump())
 
     @router.get("/jobs/{job_id}", response_model=ManagedJobRead, operation_id="managed_job")
     def job(job_id: int):

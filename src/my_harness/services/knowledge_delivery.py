@@ -93,6 +93,28 @@ def baseline(root, paths):
     return {'head': committed, 'index': tree, 'ref': git.text('symbolic-ref', 'HEAD'), 'targets': values}
 
 
+def write_target(root, ident, path, original, rendered):
+    """Write one sealed generation target with the T013 path and byte guards."""
+    if read(root, path) != rendered:
+        target = safe(root, path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        safe(root, path)
+        temp = target.parent / ('.harness-export-' + ident + '-' + d.sha(path)[:12])
+        fd = os.open(temp, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+        try:
+            with os.fdopen(fd, 'wb') as f:
+                f.write(rendered.encode('utf-8'))
+                f.flush()
+                os.fsync(f.fileno())
+            # Rule 8 CAS against the sealed baseline or the same intent's output.
+            if read(root, path) not in (original, rendered):
+                raise ValueError('export_target_changed')
+            os.replace(temp, target)
+        finally:
+            if os.path.exists(temp):
+                os.unlink(temp)
+
+
 class KnowledgeDelivery:
     def __init__(self, engine, root, project):
         self.engine, self.root, self.project = engine, str(root), project
@@ -163,7 +185,7 @@ class KnowledgeDelivery:
         GitIdentity(identity.name, identity.email)
         with self.write() as session:
             intent = store.get(session, self.project, ident)
-            if intent.kind != 'export_intent' or intent.sha256 != preview_sha256:
+            if intent.kind != 'export_intent' or intent.sha256 != preview_sha256 or intent.payload.get('task_run_id'):
                 raise ValueError('export_consent_mismatch')
             completed = next((r for r in store.records(session, self.project, 'export_completed')
                               if r.payload['intent_id'] == ident), None)
@@ -222,24 +244,7 @@ class KnowledgeDelivery:
             if actual != base['targets'][path] and actual != rendered:
                 raise ValueError('export_target_changed')
         for path, rendered in files.items():
-            if read(self.root, path) != rendered:
-                target = safe(self.root, path)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                safe(self.root, path)
-                temp = target.parent / ('.harness-export-' + ident + '-' + d.sha(path)[:12])
-                fd = os.open(temp, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
-                try:
-                    with os.fdopen(fd, 'wb') as f:
-                        f.write(rendered.encode('utf-8'))
-                        f.flush()
-                        os.fsync(f.fileno())
-                    # Rule 8 CAS against the sealed baseline or the same intent's output.
-                    if read(self.root, path) not in (base['targets'][path], rendered):
-                        raise ValueError('export_target_changed')
-                    os.replace(temp, target)
-                finally:
-                    if os.path.exists(temp):
-                        os.unlink(temp)
+            write_target(self.root, ident, path, base['targets'][path], rendered)
             with self.write() as session:
                 key = ident + ':target:' + d.sha(path)
                 if not any(r.record_key == key for r in store.records(session, self.project, 'export_target')):
@@ -285,3 +290,104 @@ class KnowledgeDelivery:
             store.add(session, self.project, 'export_completed', result)
             session.delete(lock)
         return result
+
+
+def execute_task_export(repository, claim, writer, export, context, intent):
+    """Use the current task writer and the paired commit intent to deliver a generation."""
+    from functools import partial
+    from my_harness.core.engine.commit import CommitOutcome
+    from my_harness.storage.managed import TaskDocumentsChanged
+
+    publish = partial(writer.execute, ref_guard=partial(repository.task_ref_guard, claim, rendered=True))
+    if writer.contains(context, intent.expected_commit):
+        return publish(context, intent)
+
+    base, files = export['baseline'], export['files']
+    git = LocalGit(context.root)
+    if head(git) != base['head'] or git.text('symbolic-ref', 'HEAD') != base['ref']:
+        return CommitOutcome('invalidated', intent.operation_id, diagnostic='export_head_changed')
+    documents = []
+    for path, rendered in files.items():
+        original = base['targets'][path]
+        if writer.read_blob(context, intent.expected_tree, path) != rendered.encode('utf-8'):
+            return CommitOutcome('invalidated', intent.operation_id, diagnostic='export_tree_changed')
+        documents.append({'path': path, 'before_sha256': None if original is None else d.sha(original),
+                          'after_sha256': d.sha(rendered)})
+
+    def inspect_document(context, doc):
+        try:
+            content = read(context.root, doc['path'])
+        except (ValueError, OSError):
+            return False
+        return None if content is None else d.sha(content)
+
+    def write_document(update):
+        with repository.task_ref_guard(claim, authority_only=True) as refusal:
+            if refusal:
+                raise TaskDocumentsChanged(refusal)
+            if head(git) != base['head'] or git.text('symbolic-ref', 'HEAD') != base['ref']:
+                raise ValueError('export_head_changed')
+            write_target(context.root, intent.operation_id, update.path, base['targets'][update.path],
+                         files[update.path])
+
+    with repository.task_ref_guard(claim, authority_only=True) as refusal:
+        if refusal:
+            return CommitOutcome('invalidated', intent.operation_id, diagnostic=refusal)
+        for path, rendered in files.items():
+            scratch = str(Path(path).parent / ('.harness-export-' + intent.operation_id + '-' + d.sha(path)[:12]))
+            temporary = read(context.root, scratch)
+            if temporary is not None:
+                if not rendered.startswith(temporary):
+                    return CommitOutcome('invalidated', intent.operation_id, diagnostic='export_scratch_changed')
+                safe(context.root, scratch).unlink()
+    try:
+        return writer.execute_documents(context, intent, documents, publish=publish,
+                                        inspect_document=inspect_document, write_document=write_document,
+                                        observe_document=partial(repository.record_task_export_target, claim,
+                                                                 intent.operation_id))
+    except TaskDocumentsChanged as exc:
+        return CommitOutcome('invalidated', intent.operation_id, diagnostic=str(exc))
+
+
+def prepare_task_generation(session, owner, root, run_id):
+    """Seal renderable documentary inputs for a managed task before admitting its writer job."""
+    from my_harness.i18n import tr
+    from my_harness.storage.managed import Conflict
+
+    revision = KnowledgeSession(session).revision(owner.project_id)
+    manifest = owner.payload["manifest"]
+    files = d.render(d.snapshot(revision), manifest)
+    captured = baseline(root, files)
+    if not captured["head"]:
+        raise Conflict(tr('intake.database_owned'))
+    payload = {"task_run_id": run_id, "ownership_id": owner.id, "manifest": manifest,
+               "revision_id": revision.id, "revision_sha256": revision.revision_sha256,
+               "files": files, "baseline": captured}
+    row = store.add(session, owner.project_id, "export_intent", payload)
+    return {"result": {"intent_id": row.id}, "intent": payload}
+
+
+def current_task_generation(session, owner, intent, run_id):
+    revision = KnowledgeSession(session).head(owner.project_id)
+    payload = intent.payload
+    return (intent.kind == "export_intent" and payload.get("task_run_id") == run_id
+            and owner.id == payload["ownership_id"] and owner.payload["manifest"] == payload["manifest"]
+            and revision is not None and revision.id == payload["revision_id"]
+            and revision.revision_sha256 == payload["revision_sha256"])
+
+
+def task_context_snapshot(engine, context, client, task_id, revision_id):
+    from my_harness.i18n import tr
+    from my_harness.storage.frozen_context import ContextRepository
+    from my_harness.storage.managed import TaskDocumentsChanged
+
+    with Session(engine) as session:
+        knowledge = KnowledgeSession(session)
+        project = knowledge.project_id(str(context.root))
+        revision = knowledge.revision(project)
+        if revision.id != revision_id:
+            raise TaskDocumentsChanged(tr('intake.database_owned'))
+        item = revision.item("task", task_id)
+    contexts = ContextRepository(engine)
+    snapshot = contexts.prepare_for(context, [item.item_id] if item else [], client=client, revision=revision.number)
+    return contexts.snapshot(project, snapshot)

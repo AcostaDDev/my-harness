@@ -66,7 +66,24 @@ def completed_for_project(session, project):
             or intent.payload.get('manifest') != manifest
             or set(intent.payload.get('files', {})) != {t['path'] for t in manifest['targets']}):
         return None
-    return {'result': complete.payload, 'intent': intent.payload, 'knowledge_sha256': current.knowledge_sha256}
+    from my_harness.core.engine.knowledge_documents import sha
+
+    commits = [row.payload for row in records(session, project, 'export_commit')
+               if row.payload.get('intent_id') == intent.id]
+    targets = [row.payload for row in records(session, project, 'export_target')
+               if row.payload.get('intent_id') == intent.id]
+    expected = {
+        path: {'intent_id': intent.id, 'path': path, 'sha256': sha(content), 'status': 'WRITTEN'}
+        for path, content in intent.payload['files'].items()
+    }
+    if (len(commits) != 1 or not commits[0].get('tree')
+            or commits[0].get('commit') != complete.payload.get('commit')
+            or not complete.payload.get('commit')
+            or len(targets) != len(expected)
+            or {target.get('path'): target for target in targets} != expected):
+        return None
+    return {'result': complete.payload, 'intent': intent.payload, 'knowledge_sha256': current.knowledge_sha256,
+            'commit_receipt': commits[0], 'target_receipts': expected}
 
 
 def completed_at_root(session, root):

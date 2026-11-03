@@ -98,7 +98,13 @@ P002-T013 is completed and integrated into develop as source `2c54fa9` on `feat/
 G09 is resolved by owner acceptance of D294. Versioned document export/import, explicit target ownership,
 project knowledge transfer and deterministic delivery recovery are exercised synthetically. Schema
 `0036_knowledge_exchange` has 86 tables in develop. The owner authorized source commit, the accompanying merge and push of develop. Release/publication/installation remain pending and unauthorized.
-[Evidence](phase/P002-T013-document-roundtrip.md). T014–T023 remain pending.
+[Evidence](phase/P002-T013-document-roundtrip.md).
+
+P002-T014 is completed as local source after independent technical re-review, including the singleton
+correction-budget finding. The managed task graph, frozen scoped attempts, owner gap continuation and
+recoverable task/document commit have synthetic evidence. Schema `0037_task_lineage` retains 86 tables.
+The final complete check passed. Source commit, integration and push are authorized and pending; phase
+release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015–T023 remain pending.
 
 **Exit criteria (adopted with D268):**
 

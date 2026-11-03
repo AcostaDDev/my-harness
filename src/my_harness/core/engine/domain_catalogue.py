@@ -188,7 +188,7 @@ LIMIT = {'type': 'integer', 'minimum': 1, 'maximum': 100}
 KIND = {'type': 'string', 'enum': list(knowledge.KINDS)}
 DOCUMENT = {'type': ['string', 'null'], 'enum': [*knowledge.DOCUMENTS, None]}
 OPEN = {'type': 'object', 'additionalProperties': True}
-LINK_KIND = {'type': 'string', 'enum': list(knowledge.LINK_KINDS)}
+LINK_KIND = {'type': 'string', 'enum': ['part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes']}
 PUT = _object({'op': {'const': 'put'}, 'kind': KIND, 'code': {'type': 'string', 'minLength': 1, 'maxLength': 120},
                'document': DOCUMENT, 'content': OPEN,
                'provenance': {'type': 'string', 'enum': list(knowledge.PROVENANCES)},
@@ -250,6 +250,17 @@ CATALOGUE = Catalogue((
                   ('draft_id', 'expected_draft_sha256', 'changes')),
           _result('draft_id', 'draft_sha256', 'item_ids'), product='propose',
           summary="Apply typed changes to the caller's own draft."),
+    Entry('knowledge.draft.apply', 2, 'propose', ('owner', 'harness', 'agent'), ('reviewer',),
+          _object({'draft_id': ID, 'expected_draft_sha256': SHA,
+                   'changes': {'type': 'array', 'minItems': 1, 'maxItems': 200,
+                               'items': {'oneOf': [PUT, REMOVE,
+                                   {**LINK, 'properties': {**LINK['properties'],
+                                       'kind': {'type': 'string', 'enum': list(knowledge.LINK_KINDS)}}},
+                                   {**UNLINK, 'properties': {**UNLINK['properties'],
+                                       'kind': {'type': 'string', 'enum': list(knowledge.LINK_KINDS)}}}]}}},
+                  ('draft_id', 'expected_draft_sha256', 'changes')),
+          _result('draft_id', 'draft_sha256', 'item_ids'), product='propose',
+          summary="Propose changes including task replacement lineage; adoption requires the owner."),
     Entry('knowledge.draft.discard', 1, 'propose', ('owner', 'harness', 'agent'), ('reviewer',),
           _object({'draft_id': ID}, ('draft_id',)), _result('draft_id', 'status'),
           summary='Discard a draft.'),

@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0036_knowledge_exchange`, 86 tables, defined in
+SQLite schema of the local service: Alembic head `0037_task_lineage`, 86 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -1636,3 +1636,10 @@ T013 review corrections add no tables or columns. Current receipt queries verify
 against the same-project export intent, current accepted revision/hash and adopted ownership ID/manifest/renderer
 and target set. Historical insert-only receipts remain unchanged. Import-stage records bind the selected
 relationship scope and the merged root/child order through their input and canonical draft hashes.
+
+
+Schema `0037_task_lineage` retains 86 tables and extends `knowledge_revision_links.kind` with `replaces`.
+The source and target are tasks in the same adopted revision. The directed relation is acyclic, and
+adopted edges cannot be removed. Ancestors and descendants share the smallest existing task correction
+ceiling and all persisted executor intents, including failed or uncertain attempts. Unrelated tasks
+retain separate budgets. The managed event journal records the bound family and its consumption.

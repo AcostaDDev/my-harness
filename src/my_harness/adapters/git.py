@@ -7,6 +7,7 @@ Only Git objects (blobs/trees) are written. There are no filters defined outside
 repository and no sandbox: a worktree separates work, it does not isolate security.
 """
 
+from contextlib import nullcontext
 from dataclasses import dataclass, replace
 import hashlib
 import json
@@ -379,7 +380,7 @@ class GitWorkspace:
         from my_harness.adapters.bootstrap import execute
         return execute(self, context, shown, intent)
 
-    def execute(self, context: ProjectContext, intent: CommitIntent) -> CommitOutcome:
+    def execute(self, context: ProjectContext, intent: CommitIntent, *, ref_guard=None) -> CommitOutcome:
         git = self._git(context.root)
         self._require_root(git, context.root)
         text = self._commit_text(intent.expected_tree, intent.base_revision, intent.message,
@@ -425,7 +426,19 @@ class GitWorkspace:
             update = ("update-ref", "-m", f"harness: commit {intent.operation_id}", "HEAD",
                       intent.expected_commit, intent.base_revision)
             try:
-                git.run(*update)
+                with (ref_guard() if ref_guard is not None else nullcontext()) as refusal:
+                    if refusal is not None:
+                        return CommitOutcome("invalidated", intent.operation_id, head=observed.base_revision,
+                                             observed_fingerprint=observed.fingerprint, diagnostic=refusal)
+                    # Creating the object can take time. Recheck the checkout before publishing it.
+                    current = self.capture(context)
+                    if current != observed:
+                        return CommitOutcome(
+                            "invalidated", intent.operation_id, head=current.base_revision,
+                            observed_fingerprint=current.fingerprint,
+                            diagnostic=tr('git.content_changed_review', reviewed=intent.reviewed_fingerprint,
+                                          observed=current.fingerprint))
+                    git.run(*update)
             except GitError:
                 # A failed CAS does not by itself prove what happened: observe again.
                 head = git.text("rev-parse", "--verify", "HEAD^{commit}")
@@ -455,7 +468,8 @@ class GitWorkspace:
             raise ValueError(tr('git.not_regular_file', path=path, revision=revision))
         return git.run("cat-file", "blob", spec)
 
-    def execute_documents(self, context: ProjectContext, intent: CommitIntent, documents: list[dict]) -> CommitOutcome:
+    def execute_documents(self, context: ProjectContext, intent: CommitIntent, documents: list[dict], *,
+                          publish=None, inspect_document=None, write_document=None, observe_document=None) -> CommitOutcome:
         """H2.4 with recovery of a partial document write by old/new hashes.
 
         Never adopts external bytes. Even after a crash, the tree when completing the
@@ -463,14 +477,16 @@ class GitWorkspace:
         D072: a new document (phase file) has a null previous hash and must remain absent
         or already contain its sealed bytes.
         """
+        publish = publish or self.execute
+        inspect_document = inspect_document or self._document_sha
         git = self._git(context.root)
         head = git.text("rev-parse", "--verify", "HEAD^{commit}")
         if self._reachable(git, intent, head):
-            return self.execute(context, intent)
+            return publish(context, intent)
         if head != intent.base_revision:
-            return self.execute(context, intent)
+            return publish(context, intent)
         for doc in documents:
-            sha = self._document_sha(context, doc)
+            sha = inspect_document(context, doc)
             if sha is False:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic=tr('git.export_not_regular'))
             # `disk_sha256`: local bytes that the confirmed preview replaces (regenerated blocks, H6.2 E3).
@@ -492,16 +508,23 @@ class GitWorkspace:
         # hashes are accepted; no other commit intent/identity is generated.
         for update in intent.mechanical:
             doc = next(d for d in documents if d['path'] == update.path)
-            sha = self._document_sha(context, doc)
+            sha = inspect_document(context, doc)
             if sha == doc['after_sha256']:
+                if observe_document is not None:
+                    observe_document(update.path)
                 continue
             allowed = {doc['before_sha256']}
             if doc.get('disk_sha256') is not None:
                 allowed.add(doc['disk_sha256'])
             if sha is False or sha not in allowed:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic=tr('git.export_document_changed'))
-            self._write_mechanical(context, replace(intent, mechanical=(update,)))
-        return self.execute(context, intent)
+            if write_document is None:
+                self._write_mechanical(context, replace(intent, mechanical=(update,)))
+            else:
+                write_document(update)
+            if observe_document is not None:
+                observe_document(update.path)
+        return publish(context, intent)
 
     execute_export = execute_documents  # D036: name kept
 

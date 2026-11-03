@@ -147,6 +147,31 @@ class RunActionCreate(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     action: Literal["revalidate", "retry_executor", "commit"]
     expected_version: int = Field(ge=0)
+    gap_resolution_id: int | None = Field(default=None, ge=1)
+
+
+class TaskGapResolutionCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    expected_version: int = Field(ge=0)
+    gap_event_id: int = Field(ge=1)
+    request_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    answers: list[Annotated[str, Field(min_length=1, max_length=4000)]] = Field(min_length=1, max_length=100)
+    ttl_seconds: int = Field(ge=1, le=86400)
+    confirmed: Literal[True]
+
+
+class TaskGapRevokeCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    expected_version: int = Field(ge=0)
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class TaskGapResolutionRead(BaseModel):
+    event_id: int
+    run_id: str
+    kind: Literal["task_gap_resolved"]
+    request_sha256: str
+    expires_at: str
 
 
 class ConfirmStoppedCreate(BaseModel):
@@ -2409,7 +2434,7 @@ KnowledgeId = Annotated[str, Field(min_length=1, max_length=64)]
 KnowledgeSha = Annotated[str, Field(pattern=SHA256)]
 KnowledgeKind = Literal['requirement', 'criterion', 'phase', 'task', 'decision', 'section']
 KnowledgeDocument = Literal['specification', 'architecture', 'data_model', 'flows', 'instructions']
-KnowledgeLinkKind = Literal['part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes']
+KnowledgeLinkKind = Literal['part_of', 'criterion_of', 'depends_on', 'addresses', 'supersedes', 'replaces']
 
 
 class KnowledgeHeadSummary(BaseModel):

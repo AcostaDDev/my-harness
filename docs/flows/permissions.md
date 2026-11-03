@@ -59,3 +59,16 @@ rechecks old records. For native postprocessing, `command_started` pins `permiss
 executor, even after its result settles. Intent admission and runner cancellation recheck that command's pinned
 boundary; later attempts do not rebind it and older snapshots do not cancel new valid stages. Historical events,
 snapshots and schema stay unchanged. [Correction evidence](../phase/P002-T010-permissions.md#6-technical-review-corrections--owner-only-tools-inherited-tiers-and-post-executor-revocation).
+
+The owned-document task graph binds canonical reviewer and executor requests to persisted permission
+snapshots when the provider identity is available. Exact qualified reviewer clients can receive an
+allowlisted read-only tool scope; the broker still requires current grant authority. The internal
+delegated task admission checks the child authorization against the exact writable paths and task
+purpose and rechecks live ancestry before inference and publication. The run-scoped owner decision path
+continues to apply explicit denials at the next executor attempt. See [task execution](task-run.md).
+
+Owner gap clarifications use the task event journal and never create file, tool, network or product grants.
+A continuation checks the linked clarification's scope, validity and revocation at the next frozen attempt.
+Only the owner-facing managed endpoint can record a clarification. Judge proposals continue to require their
+existing duty contract and service validation before any adoption or permission effect. See
+[task execution](task-run.md#owner-clarification-of-a-task-gap).

@@ -11,8 +11,9 @@ Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md); the o
 on `main`, D261). **P001 Metrics Records is closed** (D266): released as **0.1.9**, installed on the operator machine
 and archived in [`archive/phase-001/`](archive/phase-001/SUMMARY.md). **Active phase: P002 Continuous Mode** (target
 **0.2.0** at its closure, D253). The owner adopted the expanded autonomous-mode/database-authority plan as the
-evolving baseline (**v0.3, 23 tasks**,
-[D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
+evolving baseline (**v0.4, 29 tasks**,
+[D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline);
+T018 split by responsibility into T018–T024 and the former T019–T023 renumbered T025–T029, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)).
 **P002-T001 is completed as design** ([contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md),
 [threat model](phase/P002-T001-threat-model.md), D268–D279) on `docs/p002-t001-contracts`, committed and merged
 into develop at the owner's authorization. **P002-T002 is completed** ([feasibility](phase/P002-T002-feasibility.md);
@@ -71,7 +72,7 @@ of develop. Release 0.2.0, distribution and installation remain pending.
 **P002-T017 is complete and integrated into develop**, source `9ebb800` on `feat/p002-t017-global-inbox` from `9e8995b`.
 The owner accepted G13 (D302) and deferred a direct response to judge rulings. The global and per-project inbox,
 read receipts, reusable conversation panel and guarded shortcuts are implemented with synthetic evidence; owner technical review passed after one judge-resolution correction.
-Schema `0039_inbox_read_marks` (94 tables). T018 is next. Release 0.2.0 via protected `main`,
+Schema `0039_inbox_read_marks` (94 tables). T018 (work-map contract, plan v0.4) is next. Release 0.2.0 via protected `main`,
 distribution/publication and installation are pending. The operator installation remains 0.1.9.
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
@@ -245,4 +246,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018–T023 remain planned. The owner accepted the T018 work-map visual direction as design (D297, [visual direction](phase/P002-T018-visual-direction.md)). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018–T029 remain planned (plan v0.4, D303). The owner accepted the T018 work-map visual direction as design (D297, [visual direction](phase/P002-T018-visual-direction.md)). No OpenCode adapter exists, and installed behavior remains 0.1.9.

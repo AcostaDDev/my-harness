@@ -1,7 +1,7 @@
 # P002 — Autonomous mode and project authority redesign (target: 0.2.0)
 
-**Status:** active phase; **task plan v0.3, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
-refined by T001; [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
+**Status:** active phase; **task plan v0.4, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
+refined by T001; T018 split by responsibility on 2026-11-04, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered); [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
 **P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
 develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018–T023 remain planned. Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. T018 is next. Evidence is synthetic only. Read
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. T018 is next. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -38,7 +38,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 - This is a complete initial problem/outcome map, not a promise that every implementation detail is known. Refine,
   split or add tasks/subtasks with a recorded reason and revised dependencies/acceptance coverage. Keep stable task
-  IDs and never silently discard requirements, qualification or pending delivery. Subtasks are reviewable checklists
+  IDs (the single recorded exception is plan v0.4, D303) and never silently discard requirements, qualification or pending delivery. Subtasks are reviewable checklists
   inside their owning task, not independently admitted harness contracts. Never rewrite a contract already frozen
   by an actual product execution to match a new plan.
 - T001 resolved the normative contracts and flow guards; T002 resolves capability/dependency feasibility before
@@ -55,8 +55,8 @@ Start from these before inferring missing details. Technical baseline: [phase li
   their owning task. No new dependency before an accepted recorded decision with exact versions and packaging
   impact. Preserve historical prompts, receipts, catalogues, snapshots, runs and accounting provenance.
 - Every implementation task includes focused synthetic evidence for its boundary. Security and recovery checks
-  begin with the foundations and continue throughout; T021 is an integrated audit, not the first security review.
-  New inference paths must participate in existing invocation accounting from introduction, before T019 aggregation.
+  begin with the foundations and continue throughout; T027 is an integrated audit, not the first security review.
+  New inference paths must participate in existing invocation accounting from introduction, before T025 aggregation.
 - Any design area that remains unresolved becomes an explicit prerequisite or bounded follow-up. Source completion
   is distinct from integration/distribution/installation. One-offs use D261's latest-main-release route and do not
   absorb unreleased P002 work.
@@ -86,7 +86,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018–T029 are **planned** (plan v0.4, D303). Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -108,12 +108,18 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T015 | Refactor phase checks, planning, closure/archive and manual lifecycle | T004, T005, T007, T009, T013, T014 |
 | P002-T016 | Deliver autonomous roadmap execution, local bounds and durable human waits | T003, T006, T009, T010, T014, T015 |
 | P002-T017 | Deliver the global inbox and guarded actions for both modes | T005, T006, T015, T016 |
-| P002-T018 | Deliver the task-instance graph and correlated trace inspection | T006, T007, T012, T015, T016, T017; owner visual direction |
-| P002-T019 | Extend accounting/projections and measure context/tool efficiency | T006, T008, T009, T014, T015, T016 |
-| P002-T020 | Qualify installed-data migration, crash recovery, backup/restore and archives | T003–T007, T011, T013–T017, T019 |
-| P002-T021 | Audit integrated authority, provider contracts and failure containment | T002, T008–T010, T016, T017, T020 |
-| P002-T022 | Qualify complete journeys, normal-mode regression, UX and performance | T011–T021 |
-| P002-T023 | Qualify 0.2.0 documentation/package and track authorized delivery | T021, T022 |
+| P002-T018 | Agree the work-map contract and rendering dependency decision (design) | T006, T007, T012, T015, T016, T017; D297 |
+| P002-T019 | Derive the durable observed-step projection from sealed native streams (backend) | T006, T008, T014, T018 |
+| P002-T020 | Provide bounded work-map and trace read projections and API (backend) | T007, T009, T010, T015–T019 |
+| P002-T021 | Build the hand-drawn rendering foundation and adopt its dependency (frontend) | T018 |
+| P002-T022 | Deliver map levels L0–L3 as the home page with agents and bubbles (frontend) | T017, T020, T021 |
+| P002-T023 | Deliver the agent trace graph and the documentation drawer (frontend) | T012, T020, T021, T022 |
+| P002-T024 | Deliver the contextual reviewer conversation (full stack) | T007, T017, T020, T022 |
+| P002-T025 | Extend accounting/projections and measure context/tool efficiency (formerly T019) | T006, T008, T009, T014–T016, T023 |
+| P002-T026 | Qualify installed-data migration, crash recovery, backup/restore and archives (formerly T020) | T003–T007, T011, T013–T017, T019, T024, T025 |
+| P002-T027 | Audit integrated authority, provider contracts and failure containment (formerly T021) | T002, T008–T010, T016, T017, T019, T020, T024, T026 |
+| P002-T028 | Qualify complete journeys, normal-mode regression, UX and performance (formerly T022) | T011–T027 |
+| P002-T029 | Qualify 0.2.0 documentation/package and track authorized delivery (formerly T023) | T027, T028 |
 
 ## P002-T001 — Scope adoption, authority contracts and flow gates
 
@@ -582,11 +588,17 @@ installation remain pending. The recorded installation is 0.1.9.
 
 **Basis:** B10, B12–B13, B17–B19, B23. **Gate:** G13 accepted for this scope. **Threats:** TM13, TM17, TM18.
 
-## P002-T018 — Task graph and correlated trace views
+## P002-T018 — Work-map contract and rendering decision
 
-**Problem:** users need to inspect actual task instances and agent work without reading raw workflow storage.
-**Expected result:** a comfortable graph/detail experience linked to complete observable traces and knowledge access.
-**Dependencies:** T006, T007, T012, T015, T016, T017; owner-supplied visual direction before layout adoption.
+**Problem:** D297 fixes the visual direction of the work map, but the information, data sources and refresh
+behavior of each level, the observed-step projection and the rendering dependency are not yet a contract that the
+backend and frontend tasks can implement and review separately.
+**Expected result:** an owner-accepted design record that binds T019–T024, without source, schema, API or
+dependency changes. **Dependencies:** T006, T007, T012, T015, T016, T017; D297.
+
+**Responsibility:** design (documentation only). Plan v0.4 split the former T018 by responsibility
+([D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)); this task keeps its ID
+and the owner gate.
 
 **Owner direction (accepted 2026-11-03, D297; resolves G14's direction):** a hand-drawn zoomable work map as the
 home page — projects → phases → tasks → run steps → agent trace — with R/E/J/H circles marking the active agent,
@@ -595,25 +607,202 @@ speech bubbles opening T017's conversations and a documentation drawer
 
 **Subtasks:**
 
-- Agree phase/task cards, navigation and required information with the owner; provide bounded projections rather
-  than a visual workflow editor or another executable graph authority. Implement the accepted map levels, zoom and
-  click entry, map/list toggle, status encoding, agent circles and documentation drawer.
-- Define the additive observed-step projection (ordered native turns/tool calls from the sealed stream, surviving
-  stream retention) and decide the hand-drawn style and any dependency before adding it.
-- Show agent identity/configuration, stage/status, defined turn/attempt/tool counters, errors and phase-operation
-  involvement; attribute deterministic stages to Harness and label missing telemetry honestly.
-- Add trace/knowledge-receipt drill-down, lazy history and refresh semantics, accessible alternatives and read-only
-  archive parity. Choose streaming only when it improves the agreed experience over existing polling.
+- Agree with the owner the phase/task cards and the information required at each level (L0–L4): agent identity and
+  configuration, stage/status, defined turn/attempt/tool counters, errors and phase-operation involvement. Also
+  agree navigation, routes (including the new invocation route), breadcrumb and the map/list toggle. Map persisted
+  statuses to colour, icon and label, and define actor attribution: R/E/J/H, every active invocation including the
+  chat lane, and Harness for deterministic stages.
+- Specify the observed-step projection: event kind and fields, per-client derivation from the sealed stream at
+  attempt settlement, order and causation, bounds, sanitization, idempotent recovery, missing-telemetry labels,
+  behavior after stream retention, in backups and in query-only archives, and the policy for runs settled earlier
+  (no invented history).
+- Specify the bounded read projections per level, which are read-only and neither a workflow editor nor another
+  executable graph authority: pagination, lazy history, refresh and cursor-gap semantics, archive parity and bubble
+  aggregation over T017 items. Decide between polling and streaming, which is chosen only if it improves the agreed
+  experience. Specify the context reference of the contextual reviewer conversation and its knowledge-delivery
+  receipt.
+- Record the rough.js and hand-drawn font decision: exact versions, licences, notice files, offline packaging and
+  serving, en/es glyph coverage and bundle impact. Any network download requires explicit authorization;
+  installation belongs to T021. Set the accessibility and realistic-size performance budgets that T019–T024 verify.
 
-**Evidence:** realistic-size synthetic histories, UI accessibility/navigation, refresh gaps and archive rendering.
+**Evidence:** design record in `docs/phase/`, accepted decisions, SPECIFICATION §14/ARCHITECTURE §13 labelled as not
+implemented, and `scripts/check-docs`.
+**Review:** explicit owner review and acceptance of the contract and decisions before T019 starts.
 **Basis:** B05, B10–B11, B17, B19–B20, B23.
 
-**Gates:** G14 (owner). **Threats:** TM14.
-## P002-T019 — Accounting and efficiency analysis
+**Gates:** G14 (owner: cards, information and navigation; D297 settled the visual direction). **Threats:** designs
+the controls for TM13, TM14, TM15, TM17, TM18 and TM19.
+## P002-T019 — Observed-step projection
+
+**Problem:** the ordered native turns and tool calls of an invocation exist only in the retained stream journal,
+which explicit retention can remove, so the trace graph has no durable source.
+**Expected result:** every settled native attempt has bounded, sanitized and ordered `measured` steps, derived once
+from its sealed stream. They survive retention, backups and query-only consultation, and missing telemetry is
+labelled. **Dependencies:** T006, T008, T014, T018.
+
+**Responsibility:** backend (engine, storage and recovery).
+
+**Subtasks:**
+
+- Implement T018's event kind and the per-client derivation for Claude Code and Codex at attempt settlement, in the
+  settlement transaction or as an idempotent recoverable effect. Do not reopen T006's contract, depend on retained
+  bytes after settlement or repeat inference.
+- Record order, causation, parallel tool calls, outcomes (completed, error, denied), durations and discovery/schema
+  loads where observed. Label malformed, truncated, cancelled or unsupported streams as not observed; never
+  manufacture turns.
+- Keep the steps through stream retention, backups and query-only restore, and apply T018's policy for runs settled
+  earlier. Update DDBB-DIAGRAM, `docs/flows/` and any migration in the same task.
+
+**Evidence:** fake-CLI stream fixtures per client (parallel calls, errors, denials, malformed and truncated streams,
+cancellation), reads after retention, backup/restore and archive reads, secret-pattern sanitization, bounds and
+crash/replay idempotency.
+**Review:** independent technical review, with re-review of the corrections before integration.
+**Basis:** B05, B10, B12, B20, B23.
+
+**Gates:** —. **Threats:** TM12, TM14, TM15, TM17.
+## P002-T020 — Work-map and trace read projections
+
+**Problem:** the map and trace views need bounded, attributable data per level, which the existing list and trace
+routes do not provide.
+**Expected result:** versioned read-only projections and API for the five map levels with honest attribution, refresh
+and archive parity, following T018's contract. **Dependencies:** T007, T009, T010, T015–T019.
+
+**Responsibility:** backend (projections and API).
+
+**Subtasks:**
+
+- Project L0 projects (status, active actors, aggregated pending-request counts, archive mark), L1 phases (order,
+  status, actual participation in opening, check and closure), L2 task instances (`depends_on` links, `replaces`
+  lineage) and L3 steps of the latest run, with earlier runs selectable. Include agent identity and configuration,
+  stage/status, defined counters and errors. Attribute deterministic stages to Harness and report every active
+  invocation, including the chat lane.
+- Project the L4 trace of one invocation: observed steps (T019), knowledge receipts (T007), discovery and schema loads
+  (T008), permission requests (T010) and judge rulings (T009), with lazy keyset pages and links to stored artifacts.
+  Label absent telemetry instead of inferring it.
+- Provide T018's refresh semantics: an activity summary for polling, cursor-gap recovery by snapshot, and streaming
+  only if T018 chose it. Enforce project isolation and query-only archive parity. Update OpenAPI, the generated
+  client types and `docs/flows/` in the same task.
+
+**Evidence:** realistic-size synthetic histories with query bounds and timings, parity against the source ledgers,
+missing-telemetry cases, refusal of foreign projects and cursors, session and Host/Origin guards, and reads of
+restored archives.
+**Review:** independent technical review, with re-review of the corrections before integration.
+**Basis:** B10–B11, B17, B19–B20, B23.
+
+**Gates:** —. **Threats:** TM04, TM14, TM15, TM17, TM18.
+## P002-T021 — Hand-drawn map rendering foundation
+
+**Problem:** the accepted hand-drawn style and semantic zoom need a rendering base and an adopted dependency before
+any map level can be built.
+**Expected result:** rough.js and the font installed under T018's decision, plus a tested in-house SVG map engine
+exercised with synthetic fixtures. **Dependencies:** T018.
+
+**Responsibility:** frontend (dependency adoption and rendering engine).
+
+**Subtasks:**
+
+- With explicit network authorization, install rough.js and the font at T018's exact locked versions. Ship licence
+  and notice files in the wheel and sdist, serve the font offline from the package and verify en/es glyph coverage.
+- Build the SVG map engine: camera pan and zoom (wheel, pinch, drag, keyboard) and a zoom threshold that enters a node
+  through the existing routes and browser history. Transitions are immediate under `prefers-reduced-motion`. Add the
+  layered layout for task dependency graphs and focusable, labelled nodes; no layout or zoom library without
+  measured evidence.
+- Draw shapes with seeds derived from stable entity IDs and colours from the existing light and dark theme tokens.
+  Use the hand-drawn font only for map labels. Product projections are not wired yet.
+
+**Evidence:** Node tests for layout, camera, seed stability and route binding; the frontend build and bundle size;
+package member inspection for licence, notice and font; rendering within T018's realistic-size budget.
+**Review:** independent technical review with re-review of the corrections. Before integration, the owner reviews the
+synthetic fixture visually in the browser (`scripts/dev`, light/dark, desktop/mobile, en/es).
+**Basis:** B20, B23.
+
+**Gates:** —. **Threats:** TM15, TM19.
+## P002-T022 — Work-map levels and home page
+
+**Problem:** users need the map as their entry point to follow manual and autonomous work across projects, phases,
+tasks and run steps.
+**Expected result:** the home page is the map at L0–L3, with status, agents and bubbles, and the existing lists are
+one toggle away. **Dependencies:** T017, T020, T021.
+
+**Responsibility:** frontend (map levels L0–L3).
+
+**Subtasks:**
+
+- Replace the home page with the map and add the map/list toggle. The existing list pages remain the accessible
+  alternative, and every level keeps its URL and breadcrumb.
+- Render L0–L3 from T020's projections. Status uses colour plus icon and text. R/E/J (J only with a judge profile) and
+  H circles sit on the element where work happens, and rays mark every active invocation the data reports. Show agent
+  identity/configuration, counters and errors as agreed in T018.
+- Show speech bubbles for unresolved owner requests attributed to an agent, aggregated on ancestors. They open T017's
+  conversation panel without leaving the view, and a stale item is refreshed instead of applied. Refresh by polling
+  with gap recovery. Query-only archives render read-only, without action bubbles or polling timers. Keep en/es
+  catalogue parity.
+
+**Evidence:** Node tests and server renders per level, route round-trips, status mapping, bubble aggregation and
+stale-item refresh, refresh gaps, archive render, i18n parity, keyboard navigation and the frontend build.
+**Review:** independent technical review with re-review of the corrections. Before integration, the owner reviews the
+synthetic project visually in the browser (`scripts/dev`, light/dark, desktop/mobile, en/es).
+**Basis:** B17, B19–B20, B23.
+
+**Gates:** —. **Threats:** TM13, TM14, TM17.
+## P002-T023 — Agent trace graph and documentation drawer
+
+**Problem:** users need to follow what one agent actually did and to read the project documentation without leaving
+the map.
+**Expected result:** an L4 trace graph per invocation with honest coverage, and a read-only documentation drawer
+beside the map. **Dependencies:** T012, T020, T021, T022.
+
+**Responsibility:** frontend (trace graph L4 and documentation drawer).
+
+**Subtasks:**
+
+- Render the trace of one invocation, reached from a circle or a step. Turns fan out into parallel tool calls with
+  outcome and duration, and retries and failures stay as their own nodes. Include knowledge deliveries, discovery,
+  permission requests and judge rulings, and show missing telemetry as explicit "not observed" nodes.
+- Add lazy history, drill-down to receipts and stored artifacts, and an accessible list alternative for the same
+  trace.
+- Add the documentation drawer from L1 inward: tree on the right, document in the centre and the map visible on the
+  left. Reuse the existing documentation view read-only and open the document relevant to the level by default.
+  Edits stay in the T012/T013 views.
+
+**Evidence:** Node tests and server renders for trace shapes (parallel calls, failures, missing telemetry, long
+histories), drawer navigation and default documents, archive render, i18n parity and the frontend build.
+**Review:** independent technical review with re-review of the corrections. Before integration, the owner reviews the
+synthetic project visually in the browser (`scripts/dev`, light/dark, desktop/mobile, en/es).
+**Basis:** B10–B11, B20, B23.
+
+**Gates:** —. **Threats:** TM14, TM17.
+## P002-T024 — Contextual reviewer conversation
+
+**Problem:** asking the reviewer about the element in view needs that element's context, delivered and recorded
+like any other knowledge, never silently added.
+**Expected result:** a separate talk button for the reviewer chat that includes the context of the element in view
+behind a removable tag, with an exact delivery receipt. **Dependencies:** T007, T017, T020, T022.
+
+**Responsibility:** full stack (chat context delivery and map entry point).
+
+**Subtasks:**
+
+- Add the reviewer's separate talk button on the map and a removable tag naming the phase, task, run or step whose
+  context will be included. Removing the tag sends no element context.
+- Deliver the context as a bounded reference (stable ID and accepted revision or run evidence) through the existing
+  chat over its read-only snapshot. Record it as a knowledge delivery with its receipt and invocation accounting.
+- Executor and judge panels keep no free composer. Chat commands and proposals still need confirmation, and new
+  mutations keep the session, Host/Origin and CSRF guards. Update OpenAPI, client types and flow parity.
+
+**Evidence:** one receipt per delivered context and none after removing the tag, refusal of stale or foreign
+element references, injected instructions in element content treated as evidence, read-only archives, API misuse
+cases, Node tests and the frontend build.
+**Review:** independent technical review with re-review of the corrections. Before integration, the owner reviews the
+synthetic project visually in the browser (`scripts/dev`, light/dark, desktop/mobile, en/es).
+**Basis:** B05, B11, B19–B20, B23.
+
+**Gates:** —. **Threats:** TM01, TM04, TM17, TM18.
+## P002-T025 — Accounting and efficiency analysis (formerly T019)
 
 **Problem:** new roles, operations and discovery/context paths change attribution and can obscure consumption.
 **Expected result:** P001-compatible accounting covers the complete hierarchy and efficiency claims have evidence.
-**Dependencies:** T006, T008, T009, T014, T015, T016.
+**Dependencies:** T006, T008, T009, T014–T016, T023 (trace display).
 
 **Subtasks:**
 
@@ -628,11 +817,11 @@ speech bubbles opening T017's conversations and a documentation drawer
 **Basis:** B08–B11, B13, B18, B21–B23.
 
 **Gates:** —. **Threats:** TM14, TM15.
-## P002-T020 — Installed-state migration and integrated recovery
+## P002-T026 — Installed-state migration and integrated recovery (formerly T020)
 
 **Problem:** the redesigned authority/runtime must preserve existing installations and recover across all persisted effects.
 **Expected result:** a verified conversion/backup/restore path preserves legacy evidence and coherent new execution
-state, with explicit handling of unsupported continuations. **Dependencies:** T003–T007, T011, T013–T017, T019.
+state, with explicit handling of unsupported continuations. **Dependencies:** T003–T007, T011, T013–T017, T019, T024, T025.
 
 **Subtasks:**
 
@@ -647,11 +836,11 @@ state, with explicit handling of unsupported continuations. **Dependencies:** T0
 **Basis:** B02–B03, B10–B17, B19, B21–B23.
 
 **Gates:** —. **Threats:** TM12, TM17, TM20.
-## P002-T021 — Integrated security and provider audit
+## P002-T027 — Integrated security and provider audit (formerly T021)
 
 **Problem:** individually passing features do not establish safe combined authority or provider compatibility.
 **Expected result:** an explicit audit of the integrated threat model, capability matrix and failure behavior, with
-findings resolved or recorded as owner-visible release blockers. **Dependencies:** T002, T008–T010, T016, T017, T020.
+findings resolved or recorded as owner-visible release blockers. **Dependencies:** T002, T008–T010, T016, T017, T019, T020, T024, T026.
 
 **Subtasks:**
 
@@ -667,11 +856,11 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Basis:** B05–B13, B18–B23.
 
 **Gates:** G15; audits TM01–TM20 against the threat model. **Threats:** TM03, TM06, TM08, TM11, TM16.
-## P002-T022 — Complete journeys and usability qualification
+## P002-T028 — Complete journeys and usability qualification (formerly T022)
 
 **Problem:** the full redesign must be useful from intake through completion and preserve normal-mode operation.
 **Expected result:** reproducible end-to-end evidence covers the proposed phase criteria and the owner's agreed UI.
-**Dependencies:** T011–T021.
+**Dependencies:** T011–T027.
 
 **Subtasks:**
 
@@ -686,11 +875,11 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Basis:** B01–B24.
 
 **Gates:** G15. **Threats:** —.
-## P002-T023 — Release qualification and delivery disposition
+## P002-T029 — Release qualification and delivery disposition (formerly T023)
 
 **Problem:** a source-complete redesign is not yet a verified installable 0.2.0 release.
 **Expected result:** coherent operator/developer documentation and qualified distributables, with every authorized
-delivery stage tracked to its actual outcome. **Dependencies:** T021, T022.
+delivery stage tracked to its actual outcome. **Dependencies:** T027, T028.
 
 **Subtasks:**
 
@@ -707,6 +896,15 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 **Gates:** —. **Threats:** TM19.
 ## Plan revisions
 
+- **v0.4 owner revision (2026-11-04, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)).** Before T018 started, the owner split it by
+  responsibility into T018 (design), T019–T020 (backend), T021–T023 (frontend) and T024 (full stack), and
+  renumbered the former T019–T023 as T025–T029 with unchanged content (T019→T025, T020→T026, T021→T027,
+  T022→T028, T023→T029). Each new task has focused synthetic tests, its record and an independent technical review
+  with re-review of the corrections; the frontend tasks T021–T024 also end with an owner visual review. The rough.js
+  and font decision is taken in T018 and installed in T021. Dependencies follow the split: T025 adds T023 (trace
+  display), T026 adds T019/T024 (new persisted evidence) and T027 adds T019/T020/T024 (audit scope). G14 stays with
+  T018 and G15 moves with its tasks to T027/T028. No acceptance, requirement, gate, threat or pending delivery is
+  dropped; the order T017 → T018 is unchanged. Records written before D303 use the former numbering.
 - **v0.3 owner input (2026-11-03).** The owner supplied and accepted the G14 visual direction and G13 conversation
   kinds (D297, [visual direction](phase/P002-T018-visual-direction.md)). T017/T018 subtasks are refined in place;
   no task ID added, removed or reordered and no acceptance dropped; the order stays T015 → T016 → T017 → T018.
@@ -748,3 +946,6 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
     Complete and integrated as source `9ebb800` after owner technical review; one judge-resolution finding was
     corrected before integration. Next: **P002-T018**. Release 0.2.0, distribution/publication and installation
     remain pending.
+14. **Plan v0.4 (2026-11-04, D303).** The former T018 is split by responsibility into T018–T024 and the former
+    T019–T023 are T025–T029. Next: **P002-T018** (work-map contract and rendering decision), a design task on its
+    own `docs/` topic branch from develop.

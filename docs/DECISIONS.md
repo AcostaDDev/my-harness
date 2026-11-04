@@ -1847,7 +1847,8 @@ Evidence: [P002 planning maintenance](phase/P002-portable-tools-and-archive-main
 
 ## D268 — P002 scope: complete-roadmap autonomy and evolving plan baseline
 
-Status: accepted at the owner's explicit authorization of P002-T001 (2026-10-29); implementation pending T002–T023.
+Status: accepted at the owner's explicit authorization of P002-T001 (2026-10-29); implementation pending T002–T029
+(plan v0.4, D303).
 Supersedes D156 and D233's Continuous Mode description; the 0.2.0 target of D253 is retained.
 
 P002 delivers optional autonomy over the **whole authorized roadmap** of a defined or onboarded project, without a
@@ -1995,7 +1996,8 @@ call. Stops are `WAITING_FOR_OWNER`, `PAUSED`, `LIMIT_REACHED`, `FAILED`, `RECOV
 
 ## D277 — Correlated traces, operations and knowledge-access receipts
 
-Status: accepted design in P002-T001 (owner direction); implementation pending T006–T008, T018, T019.
+Status: accepted design in P002-T001 (owner direction); implementation pending T006–T008, T018–T025 (plan v0.4,
+D303).
 
 Requests, workflow runs, recoverable operations, agent invocations/attempts, observed turns and tool calls are
 correlated by stable IDs, parent and causation links, ordered events and source labels (supplied, reported, derived,
@@ -2007,7 +2009,8 @@ reads are recorded only when observed. Command outcomes and their events commit 
 
 ## D278 — Global inbox and task-instance graph
 
-Status: accepted design in P002-T001 (owner direction). T017 implements the inbox under D302 (integrated). T018 owns the pending map.
+Status: accepted design in P002-T001 (owner direction). T017 implements the inbox under D302 (integrated). T018–T024 own the pending map
+(plan v0.4, D303).
 
 One global inbox serves manual and autonomous modes. Items are derived and deduplicated from committed events, name
 the project and optional phase, task, run, operation or request, and keep read and resolved states separate. Actions
@@ -2465,8 +2468,8 @@ Implementation and synthetic evidence are recorded in
 ## D297 — Work map visual direction and agent conversation entry points
 
 Status: accepted explicitly by the owner on 2026-11-03 as the G14 visual direction (T018) and the G13 conversation
-kinds (T017). T017 implements the inbox under D302. T018 owns the remaining visual work in the existing order
-(T015 → T016 → T017 → T018).
+kinds (T017). T017 implements the inbox under D302. Plan v0.4 assigns the remaining visual work to
+T018–T024 after T017 ([D303](#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)).
 
 The task-instance graph of D278 becomes a hand-drawn, zoomable work map and the home page, with the existing list
 pages one toggle away as the accessible alternative. Clicking a node or zooming past a threshold enters it: projects →
@@ -2639,3 +2642,45 @@ T017 uses the source ledgers as a read-through projection with stable source ide
 first-read timestamps are persisted by the inbox. The existing command boundary determines resolution and
 the same projection can be read in a restored archive. The [flow](flows/global-inbox.md) names each source and
 guarded route, and the [record](phase/P002-T017-global-inbox.md) tracks local verification and delivery.
+
+## D303 — T018 split by responsibility and later P002 tasks renumbered
+
+Status: accepted explicitly by the owner on 2026-11-04 as P002 plan revision v0.4, before T018 started. Planning only:
+no source, schema, API or dependency change.
+
+The former T018 (task graph and correlated trace views) becomes seven bounded tasks. Each one has its own focused
+synthetic tests, task record and independent technical review with re-review of the corrections. The frontend tasks
+(T021–T024) also end with an owner visual review in the browser over `scripts/dev` and a synthetic project.
+
+| Task | Responsibility | Scope |
+|---|---|---|
+| T018 | Design | Work-map contract and rendering decision (owner-accepted; documentation only) |
+| T019 | Backend | Observed-step projection from sealed native streams |
+| T020 | Backend | Work-map and trace read projections and API |
+| T021 | Frontend | Hand-drawn rendering foundation: rough.js and font installation, SVG map engine |
+| T022 | Frontend | Map levels L0–L3 as the home page |
+| T023 | Frontend | Agent trace graph (L4) and documentation drawer |
+| T024 | Full stack | Contextual reviewer conversation |
+
+The former T019–T023 keep their content and are renumbered:
+
+| Former | New | Task |
+|---|---|---|
+| T019 | T025 | Accounting and efficiency analysis |
+| T020 | T026 | Installed-state migration and integrated recovery |
+| T021 | T027 | Integrated security and provider audit |
+| T022 | T028 | Complete journeys and usability qualification |
+| T023 | T029 | Release qualification and delivery disposition |
+
+This is the single exception to the stable-ID rule of NEXT_STEPS and to the v0.3 statement of the T001 contracts
+(§14) that no task ID is renumbered. Records written before this decision keep their text and their former
+numbering, read through the table above. These records are the bodies of D268–D302, the T001 contracts, flows and
+threat model, the design basis and discussion, the T002–T017 records, the T018 visual direction and source
+comments. In those records every former T019–T023 means T025–T029: for example, G15's owners (T021, T022) are T027
+and T028, and TM19's owner T023 is T029. The former T018's ownership (G14, D277, D278, D297, TM14) is distributed across T018–T024 as NEXT_STEPS
+records. Living documents (STATE, NEXT_STEPS, ROADMAP, `docs/flows/` and decision status lines) use the new numbers.
+
+G14's remaining owner input (cards, information, navigation) belongs to T018. D297's dependency is decided in T018
+and installed in T021 with separate explicit network authorization. Dependencies follow the split: T025 adds T023,
+T026 adds T019 and T024, and T027 adds T019, T020 and T024. No acceptance, requirement, gate, threat or pending
+delivery is dropped, and T018 still follows T017.

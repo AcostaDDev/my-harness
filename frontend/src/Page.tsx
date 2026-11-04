@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
+import { AutonomousRun } from "./AutonomousRun";
+import { InboxPage } from "./Inbox";
 import { Chat } from "./Chat";
 import { useI18n } from "./Language";
 import { Link, navigate } from "./navigation";
@@ -29,12 +31,14 @@ const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: 
 // Accounting (P001-T005a): calculated valuations over the accounting API, in its own chunk too.
 const AccountingPage = lazy(() => import("./pages/Accounting").then(module => ({ default: module.AccountingPage })));
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "knowledge" | "home" | "stats" | "accounting" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "inbox" | "project-inbox" | "knowledge" | "home" | "stats" | "accounting" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
+  const { t } = useI18n();
   switch (route.name) {
     case "project-knowledge": return null;
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;
-    case "phase": return <PhasePage key={route.phase} code={route.phase} />;
+    case "phase": return <PhasePage key={route.phase} code={route.phase} checkOnly={route.section === "check"} />;
+    case "project-autonomous": return <><PageHeader title={t("autonomy.title")} /><AutonomousRun key={route.run} runId={route.run} /></>;
     case "task": return <TaskPage key={`${route.phase}/${route.task}`} phase={route.phase} task={route.task} />;
     case "run": return <RunPage key={route.run} phase={route.phase} task={route.task} run={route.run} />;
     case "chat": return <Chat conversation={route.conversation} />;
@@ -64,6 +68,11 @@ export function Page({ route }: { route: Route }) {
   const error = useServiceError();
   if (!mode) return error ? <p role="alert" className="state state-error">{error}</p> : <Loading />;
   if (route.name === "knowledge" || route.name === "project-knowledge") return <Suspense fallback={<Loading />}><KnowledgePage key={route.name === "knowledge" ? "read" : route.project} project={route.name === "project-knowledge" && !mode.read_only_archive && (!mode.configuration_mode || mode.configuration_mode === "READY") ? route.project : undefined} /></Suspense>;
+  if (route.name === "inbox" || route.name === "project-inbox") {
+    const scope = route.name === "project-inbox" ? route.project : undefined;
+    return <InboxPage key={scope ?? "global"} project={scope} item={route.name === "project-inbox" ? route.item : undefined}
+      canRespond={!mode.read_only_archive && (!mode.configuration_mode || mode.configuration_mode === "READY")} />;
+  }
   if (mode.read_only_archive) {
     switch (route.name) {
       case "home": return <ArchiveHome />;

@@ -25,6 +25,7 @@ from test_frozen_context import world  # noqa: F401
 from test_managed import PLAN, VERSIONS, context, repository  # noqa: F401
 from test_operation_journal import thread
 from test_configuration import setup as config_setup, dumps, project_data, active_global  # noqa: F401
+from test_structured_phases import structured  # noqa: F401  (fixture)
 
 DURATION = {'kind': 'operation', 'seconds': None}
 POLICY = {'id': 'synthetic-delegation', 'revision': 1, 'policy_version': 'synthetic-1', 'active': True,
@@ -539,3 +540,77 @@ def test_native_protocol_invalid_does_not_mask_operational_failure(judge_world, 
     outcome = w['service'].read(w['project'], row['id'])['ruling']
     assert outcome['status'] == 'FAILED' and outcome['continuation'] == 'operational_stop'
     repository.close_owner(claim)
+
+
+def test_inbox_judge_escalation_reads_exact_request_without_owner_command(judge_world, context, migrated_database, tmp_path):
+    from test_managed_api import client, config
+    w = judge_world
+    escalated = create({**w, 'versions': {}}, context, duty='blocked_check')
+    requested = create(w, context, duty='blocked_check', subject='unruled-request')
+    assert escalated['ruling']['status'] == 'ESCALATED' and requested['ruling'] is None
+    link = w['service'].link_decision(owner_reader(w['project']), w['project'], escalated['ruling']['id'],
+                                      w['ids']['D001'], 2, key='escalation-evidence-link')
+    with client(migrated_database[0], tmp_path, config(context, supervisor=False)) as http:
+        base = '/api/managed/inbox'
+        response = http.get(base, params={'kind': 'judge'})
+        assert response.status_code == 200, response.text
+        [item] = response.json()['items']
+        assert item['request_id'] == escalated['id'] and item['evidence_id'] == escalated['ruling']['id']
+        # D302: the later judge.decision.link has no authority over the blocker, so the escalation stays open.
+        assert item['origin'] == 'trace' and not item['resolved']
+        detail = http.get(f"{base}/{item['id']}", params={'project': w['project']}).json()
+        assert detail['context'] == ['blocked_check', 'ESCALATED', 'profile_required']
+        assert detail['response'] is None and not detail['resolved']
+        read = http.post(f"{base}/{item['id']}/read", json={'project_id': w['project']}, headers={'X-My-Harness': '1'})
+        assert read.status_code == 200, read.text
+        assert read.json()['read_at'] and not read.json()['resolved']
+        assert [i['id'] for i in http.get(base, params={'state': 'unresolved'}).json()['items']] == [item['id']]
+        ordinary = http.get(f"/api/managed/knowledge/projects/{w['project']}/judge/requests/{item['request_id']}")
+        assert ordinary.status_code == 200 and ordinary.json()['ruling']['id'] == item['evidence_id']
+        assert ordinary.json()['decision_links'][0]['id'] == link['link_id']
+
+
+def test_inbox_manual_blocked_check_escalation_resolves_when_its_check_is_superseded(structured, migrated_database,
+                                                                                    tmp_path):
+    """The escalation judged the BLOCKED check; a later current check (and the closure after it) ends that blocker."""
+    from my_harness.services.judge import JudgeService
+    from my_harness.services.permission_lifecycle import PermissionLifecycle
+    from my_harness.storage.frozen_context import ContextRepository
+    from test_managed_api import client, config
+    from test_structured_phases import evaluation, planned
+    w = structured
+    pid = planned(w)
+    w.accept_task()
+    blocked = {**evaluation(w, pid, 'BLOCKED'), 'blocking_questions': [], 'blocked_classification': 'planning_ambiguity'}
+    _, shown = w.check(pid, blocked)
+    check = shown['operations'][-1]
+    assert shown['status'] != 'READY_TO_CLOSE' and check['kind'] == 'check' and check['status'] == 'BLOCKED'
+    phase_item = shown['definition']['knowledge']['phase_item_id']
+    snapshot = ContextRepository(w.repository.engine).prepare_for(w.context, [phase_item], client='codex')
+    judges = JudgeService(DomainOperations(w.repository.engine, authorizations=PermissionLifecycle(w.repository.engine)))
+    escalated = judges.create(w.context, {}, duty='blocked_check', subject='manual-blocked-check',
+                              inputs={'classification': 'planning_ambiguity', 'blocked_evidence': 'Synthetic ambiguity.',
+                                      'intent_id': check['id']},
+                              evidence={'check_operation_id': check['id']}, snapshot_id=snapshot)
+    assert escalated['ruling']['status'] == 'ESCALATED'
+    phase_path = f'/api/managed/phases/{pid}'
+    with client(migrated_database[0], tmp_path, config(w.context, w.ports, supervisor=False)) as http:
+        def judged():
+            response = http.get('/api/managed/inbox', params={'kind': 'judge'})
+            assert response.status_code == 200, response.text
+            [item] = response.json()['items']
+            return item
+        item = judged()
+        assert item['request_id'] == escalated['id'] and item['operation_id'] == check['id']
+        assert item['phase_id'] == 'P001' and not item['resolved']
+        w.check(pid, evaluation(w, pid))  # the owner's next check supersedes the judged one
+        assert w.get(pid)['status'] == 'READY_TO_CLOSE'
+        assert judged()['id'] == item['id'] and judged()['resolved']
+        current = http.get(phase_path).json()
+        closed = http.post(f'{phase_path}/actions', headers={'Idempotency-Key': 'close-after-judge'},
+                           json={'action': 'close', 'expected_version': current['version'], 'confirmed': True,
+                                 'binding_sha256': current['ready']['binding_sha256'],
+                                 'reason': 'Synthetic confirmation.', 'ttl_seconds': 3600})
+        assert closed.status_code == 202, closed.text
+        w.run()
+        assert w.get(pid)['status'] == 'CLOSED' and judged()['resolved']

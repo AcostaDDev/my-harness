@@ -85,12 +85,14 @@ class FakeRoadmap:
         self.report_override = None
 
     # observations ------------------------------------------------------------------------------------------------
+    def accepted_revision(self, session):
+        return {'id': f'rev-{self.revision}', 'number': self.revision, 'sha256': f'sha-{self.revision}'}
+
     def readiness(self):
         roadmap = [{'code': c, 'item': p['item'], 'criteria': ['criterion-' + c], 'operational': p['operational'],
                     'authorized': p['operational'] not in ('CLOSED', 'ABANDONED')} for c, p in self.phases.items()]
         return {'project_id': self.project_id, 'roadmap': roadmap, 'scope_sha256': self.scope,
-                'revision': {'id': f'rev-{self.revision}', 'number': self.revision, 'sha256': f'sha-{self.revision}'},
-                'prepared': True, 'clients_compatible': True, 'git_clean': self.git_clean,
+                'revision': self.accepted_revision(None), 'prepared': True, 'clients_compatible': True, 'git_clean': self.git_clean,
                 'git': {'head': self.head, 'fingerprint': 'fp'}, 'uncertain_writers': list(self.uncertain_writers),
                 'pending_effects': [], 'active_run': self.active_run(), 'manual_batches': list(self.manual_batches),
                 'standing_grants': [], 'versions_sha256': 'versions-1'}
@@ -113,7 +115,7 @@ class FakeRoadmap:
     def usage(self, children, basis=None):
         return {'invocations': self.invocations, 'tokens': self.tokens, 'valuation': self.valuation}
 
-    def writers_settled(self, children):
+    def writers_settled(self, children, *, session=None):
         return {'settled': self.settled, 'active': [] if self.settled else ['job-1']}
 
     def revision_items(self, revision):
@@ -874,7 +876,7 @@ def test_revocation_blocks_admissions_and_ends_delegated_authority(world):
     assert service.status_by_id(run['id'])['status'] == 'REVOKED' and len(fake.effects) == effects
 
 
-def test_crash_recovery_requires_stopped_writer_and_never_reissues_the_effect(world):
+def test_crash_recovery_requires_stopped_writer_and_never_reissues_the_effect(world, monkeypatch):
     fake = FakeRoadmap(world.root, ['P001'])
     fake.crash_on = 'check_phase'
     service = world.build(fake)
@@ -897,9 +899,26 @@ def test_crash_recovery_requires_stopped_writer_and_never_reissues_the_effect(wo
                           reason='Owner checked the process.')
     assert refused.value.code == 'writer_not_confirmed_stopped'
     fake.settled = True
+    abandon = restarted.journal.abandon
+
+    def fail_after_abandon(*args, **kwargs):
+        abandon(*args, **kwargs)
+        raise Crash('after journal update')
+
+    with monkeypatch.context() as patch:
+        patch.setattr(restarted.journal, 'abandon', fail_after_abandon)
+        with pytest.raises(Crash):
+            restarted.recover(world.root, run['id'], expected_version=run['version'], writer_stopped=True,
+                              reason='Synthetic failure before commit.')
+    assert restarted.status_by_id(run['id'])['version'] == run['version']
+    with Session(world.engine) as session:
+        operation = session.scalar(select(WorkflowOperationRow).where(WorkflowOperationRow.key == crashed_key))
+        assert operation.status in ('INTENDED', 'UNCERTAIN')
     recovered = restarted.recover(world.root, run['id'], expected_version=run['version'], writer_stopped=True,
                                   reason='Owner confirmed the writer stopped.')
     assert recovered['status'] == 'PAUSED' and recovered['detail']['recovered']['abandoned']
+    with pytest.raises(AutonomyRefusal, match='run_version_stale'):
+        restarted.recover(world.root, run['id'], expected_version=run['version'], writer_stopped=True, reason='Stale.')
     with Session(world.engine) as session:
         operation = session.scalar(select(WorkflowOperationRow).where(WorkflowOperationRow.key == crashed_key))
         assert operation.status == 'ABANDONED'

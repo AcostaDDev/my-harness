@@ -2007,7 +2007,7 @@ reads are recorded only when observed. Command outcomes and their events commit 
 
 ## D278 — Global inbox and task-instance graph
 
-Status: accepted design in P002-T001 (owner direction); implementation pending T017 and T018.
+Status: accepted design in P002-T001 (owner direction). T017 implements the inbox under D302 (integrated). T018 owns the pending map.
 
 One global inbox serves manual and autonomous modes. Items are derived and deduplicated from committed events, name
 the project and optional phase, task, run, operation or request, and keep read and resolved states separate. Actions
@@ -2465,7 +2465,8 @@ Implementation and synthetic evidence are recorded in
 ## D297 — Work map visual direction and agent conversation entry points
 
 Status: accepted explicitly by the owner on 2026-11-03 as the G14 visual direction (T018) and the G13 conversation
-kinds (T017); design only, implementation pending T017 and T018 in the existing order (T015 → T016 → T017 → T018).
+kinds (T017). T017 implements the inbox under D302. T018 owns the remaining visual work in the existing order
+(T015 → T016 → T017 → T018).
 
 The task-instance graph of D278 becomes a hand-drawn, zoomable work map and the home page, with the existing list
 pages one toggle away as the accessible alternative. Clicking a node or zooming past a threshold enters it: projects →
@@ -2617,3 +2618,24 @@ evidence instead of a clean checkout and continues the same T014 run once by rev
 task-attempt consumption; any other change, stale evidence or writer doubt still refuses. The continuation job
 persists that evidence, and the revalidation's first effective capture must equal it before validation or review;
 otherwise the run stops durably with the files left for the owner (final review).
+
+## D302 — G13 inbox notifications and guarded shortcuts
+
+Status: accepted explicitly by the owner on 2026-11-04 for P002-T017, completing the G13 input that D297 began.
+
+| Item | Confirmed source | Owner interaction |
+|---|---|---|
+| Task completed | Task execution's `commit_recorded` with a `COMMITTED` acceptance | Notification without a bubble. Open the execution evidence. |
+| Phase closed | `phase_closed` with the phase in `CLOSED` | Notification without a bubble. Open the closure evidence. |
+| Permission and blocking question | Current persisted request | Reuse the ordinary guarded response. Autonomous answer and resume are separate. |
+| Lifecycle confirmation | Phase check entering `READY_TO_CLOSE` or autonomous stop in `LIMIT_REACHED`, `RECOVERY_REQUIRED` or `FAILED` | Show evidence and current state. Open the matching control with its existing confirmation. |
+| Judge escalation | `judge.ruled`, `ESCALATED`, continuation `owner` | Open the request and ruling read-only. |
+
+A later `judge.decision.link` records a reference to an already accepted decision and has no authority over the
+blocker. The owner deferred direct judge responses until an authoritative command is agreed. This deferral is
+outside T017's completion scope. D278 and D297 retain the observation, archive and T018 boundaries.
+
+T017 uses the source ledgers as a read-through projection with stable source identities and keyset pages. Only
+first-read timestamps are persisted by the inbox. The existing command boundary determines resolution and
+the same projection can be read in a restored archive. The [flow](flows/global-inbox.md) names each source and
+guarded route, and the [record](phase/P002-T017-global-inbox.md) tracks local verification and delivery.

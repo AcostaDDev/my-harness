@@ -2984,6 +2984,12 @@ class AutonomousRequest(BaseModel):
     delegation: AutonomousDelegation
 
 
+class AutonomousRevisionPreviewCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    request: AutonomousRequest
+    expected_version: int = Field(ge=1)
+
+
 class AutonomousConfirmCreate(BaseModel):
     model_config = ConfigDict(extra='forbid')
     request: AutonomousRequest
@@ -3033,6 +3039,7 @@ class AutonomousPreviewRead(BaseModel):
     preview_sha256: str
     root: str
     lineage_id: str | None
+    run_version: int | None = None
     project_id: str | None
     revision: dict[str, Any] | None
     scope: dict[str, Any]
@@ -3107,3 +3114,73 @@ class AutonomousAnswerCreate(BaseModel):
     expected_version: int = Field(ge=1)
     text: str = Field(min_length=1, max_length=8000)
     choice: str | None = Field(default=None, max_length=200)
+
+
+InboxKind = Literal['permission', 'question', 'judge', 'lifecycle', 'notification']
+InboxState = Literal['unread', 'unresolved', 'resolved']
+InboxMode = Literal['manual', 'autonomous']
+InboxTopic = Literal['run_permission', 'standing_permission', 'task_gap', 'phase_question', 'autonomous_question',
+                     'judge_escalation', 'phase_ready', 'limit_reached', 'recovery_required', 'failed',
+                     'task_completed', 'phase_closed']
+
+
+class InboxItemRead(BaseModel):
+    id: str
+    kind: InboxKind
+    topic: InboxTopic
+    mode: Literal['manual', 'autonomous']
+    project_id: str
+    registered_project_id: str | None
+    knowledge_project_id: str | None
+    at: str
+    origin: Literal['managed', 'phase', 'trace', 'autonomous']
+    event_id: str
+    phase_id: str | None
+    phase_instance_id: str | None
+    task_id: str | None
+    run_id: str | None
+    autonomous_run_id: str | None
+    operation_id: str | None
+    request_id: str | None
+    evidence_id: str | None
+    thread_id: str | None
+    read_at: str | None
+    resolved: bool
+    current_state: str | None
+
+
+class InboxResponseRead(BaseModel):
+    target_id: str
+    version: int
+    request_version: int
+    proof: str | None = None
+    prompts: list[str]
+
+
+class InboxStandingPermissionRead(BaseModel):
+    revision: int
+    duration: dict[str, Any]
+    targets: list[str]
+
+
+class InboxContinuationRead(BaseModel):
+    target_id: str
+    version: int
+    resolution_id: int
+
+
+class InboxItemDetail(InboxItemRead):
+    response: InboxResponseRead | None
+    standing_permission: InboxStandingPermissionRead | None
+    continuation: InboxContinuationRead | None
+    context: list[str]
+
+
+class InboxPageRead(BaseModel):
+    items: list[InboxItemRead]
+    next_before: str | None
+
+
+class InboxMarkRead(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    project_id: str = Field(min_length=1, max_length=160)

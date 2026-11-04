@@ -540,13 +540,23 @@ class ManagedRuntime:
         return self._domain_operations
 
     def permission_lifecycle(self):
+        from my_harness.services.domain_operations import DomainRefusal
         from my_harness.services.permission_lifecycle import PermissionLifecycle
+        from my_harness.storage.configuration import ConfigurationConflict
         from my_harness.storage.models import KnowledgeProjectRow
         def authority(session, project_id):
             row = session.get(KnowledgeProjectRow, project_id)
             project = next((p for p in self.projects.values() if row and str(p.context.root) == row.root), None)
             return project.permission_authority if project else None
-        return PermissionLifecycle(self.engine, authority=authority)
+
+        def response_guard(session):
+            if self.setup is not None:
+                try:
+                    self.setup.require_ready(session)
+                except (ConfigurationConflict, ValueError, OSError):
+                    raise DomainRefusal('configuration_not_ready') from None
+
+        return PermissionLifecycle(self.engine, authority=authority, response_guard=response_guard)
 
     def autonomous_roadmap(self, *, versions=None, git=None):
         """P002-T016 (D299): autonomous roadmap runs with the product gate policy, in which G11/G12/G17 are

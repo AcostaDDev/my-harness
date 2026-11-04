@@ -127,7 +127,7 @@ def pending_jobs(j):
             ManagedJobRow.status.in_(('QUEUED', 'ACTIVE'))))
 
 
-def test_managed_journey_completes_two_phases_through_delegated_production_effects(journey):
+def test_managed_journey_completes_two_phases_through_delegated_production_effects(journey, migrated_database, tmp_path):
     j = journey
     script_phase(j, 'P001')
     script_phase(j, 'P002', new_task=True, criterion_code='C002', statement='Successor evidence.', text='second\n')
@@ -157,6 +157,14 @@ def test_managed_journey_completes_two_phases_through_delegated_production_effec
         j.service.advance_all()
         j.build().advance_all()
     assert (pending_jobs(j), len(j.service.status(j.root)['children'])) == before
+
+    from test_managed_api import client, config
+    with client(migrated_database[0], tmp_path, config(w.context, supervisor=False)) as http:
+        notice = http.get('/api/managed/inbox', params={'mode': 'autonomous', 'kind': 'notification'})
+        assert notice.status_code == 200, notice.text
+        items = notice.json()['items']
+        assert sorted(i['topic'] for i in items) == ['phase_closed', 'phase_closed', 'task_completed', 'task_completed']
+        assert all(i['autonomous_run_id'] == done['id'] and i['run_id'] != done['id'] for i in items)
 
 
 def test_background_advancement_waits_for_jobs_and_never_continues_an_owner_stop(journey):
@@ -356,32 +364,76 @@ def test_versioned_review_prompts_run_through_fake_clis(journey, tmp_path, provi
     assert proposed.payload['status'] == 'proposed' and '`app/main.txt`' in proposed.payload['plan_text']
 
 
-def test_judge_request_binds_the_parent_delegation_and_escalates_with_its_exact_ruling(journey):
+def blocked_evaluation(world, code):
+    def respond(context, request):
+        pid = world.phases.by_code(str(world.context.root), code)
+        criteria = world.get(pid)['definition']['exit_criteria']
+        return {'phase_id': code, 'verdict': 'BLOCKED', 'summary': 'Synthetic planning ambiguity.',
+                'blocked_classification': 'planning_ambiguity',
+                'exit_criteria_results': [{'criterion': c, 'passed': False, 'evidence': 'Synthetic ambiguity.'}
+                                          for c in criteria], 'required_actions': [], 'blocking_questions': []}
+    return respond
+
+
+@pytest.mark.parametrize('ending', ['answer', 'revoke'])
+def test_judge_request_binds_the_parent_delegation_and_escalates_with_its_exact_ruling(journey, migrated_database,
+                                                                                       tmp_path, ending):
     from my_harness.services.judge import JudgeService
     from my_harness.services.domain_operations import DomainOperations
+    from test_managed_api import client, config
     j = journey
-    script_phase(j, 'P001')
+    j.w.script(plan_response('P001'), task_plan('P001-T001', 'Synthetic accepted behavior.'), edit('implemented\n'),
+               {**review(), 'task_id': 'P001-T001'}, blocked_evaluation(j.w, 'P001'))
     request = {**REQUEST, 'delegation': {**DELEGATION, 'duties': ['blocked_check']}}
     run = ready_and_start(j, request=request)
-    j.service.pause(j.root, run['id'], expected_version=j.service.status(j.root)['version'], reason='Inspect judge.')
     with Session(j.engine) as session:
         auth = store.authorization(session, run['authorization']['id'])
         parent = j.permissions.get(session, auth.project_id, auth.permission_record_id, 'authorization')
         delegation = parent.payload['delegation']
     assert delegation['duties'] == ['blocked_check'] and delegation['reconsiderations'] == DEFAULT_BOUNDS[
         'judge_reconsiderations'] and delegation['id'] == auth.id
-    phase_item = j.w.get(j.w.phases.by_code(j.root, 'P001'))['definition']['knowledge']['phase_item_id']
-    effects = j.service.effects(j.root)
-    outcome = effects.judge({'duty': 'blocked_check', 'phase': 'P001', 'operation_id': 'check-op',
-                             'phase_item': phase_item, 'parent': auth.permission_record_id, 'judge_identity': 'a' * 64,
-                             'judge_input': {'classification': 'planning_ambiguity',
-                                             'blocked_evidence': 'Synthetic ambiguity.', 'intent_id': 'check-op'}},
-                            'judge-key')
-    assert outcome['status'] == 'owner_required' and outcome['detail']['ruling_status'] == 'ESCALATED'
+    # The real route: the BLOCKED planning_ambiguity check asks the judge, whose escalation stops for the owner.
+    stopped = drive(j)
+    assert (stopped['status'], stopped['reason']) == ('WAITING_FOR_OWNER', 'owner_owner_required'), stopped['detail']
+    outcome = stopped['detail']['stop']
+    assert outcome['action'] == 'judge' and outcome['ruling_status'] == 'ESCALATED'
+    [question] = [q for q in stopped['questions'] if q['status'] == 'OPEN']
     judges = JudgeService(DomainOperations(j.engine, authorizations=j.permissions))
-    state = judges.read(auth.project_id, outcome['detail']['judge_request_id'])
+    state = judges.read(auth.project_id, outcome['judge_request_id'])
     assert state['payload']['policy'] == delegation  # bound to the parent's exact delegation contract
-    assert state['ruling']['id'] == outcome['detail']['ruling_id']
+    assert state['ruling']['id'] == outcome['ruling_id']
+    assert state['payload']['evidence']['check_operation_id'] == outcome['operation_id']
+
+    def items(http):
+        response = http.get('/api/managed/inbox', params={'mode': 'autonomous'})
+        assert response.status_code == 200, response.text
+        return {i['topic']: i for i in response.json()['items'] if i['topic'] in ('judge_escalation',
+                                                                                    'autonomous_question')}
+
+    with client(migrated_database[0], tmp_path, config(j.w.context, supervisor=False)) as http:
+        shown = items(http)
+        judge, asked = shown['judge_escalation'], shown['autonomous_question']
+        # Two identities: the judge's request and the autonomous question that carries it.
+        assert judge['id'] == f"judge:{outcome['judge_request_id']}" and asked['id'] == f"auto-question:{question['id']}"
+        assert judge['request_id'] == outcome['judge_request_id'] and judge['evidence_id'] == outcome['ruling_id']
+        assert asked['request_id'] == question['id'] and judge['autonomous_run_id'] == run['id']
+        assert not judge['resolved'] and not asked['resolved']
+        # Opening and reading the escalation does not resolve it; it stays read-only.
+        opened = http.get(f"/api/managed/inbox/{judge['id']}", params={'project': judge['project_id']}).json()
+        assert opened['response'] is None and not opened['resolved']
+        read = http.post(f"/api/managed/inbox/{judge['id']}/read", json={'project_id': judge['project_id']},
+                         headers={'X-My-Harness': '1'}).json()
+        assert read['read_at'] and not read['resolved']
+
+        if ending == 'answer':
+            j.service.answer(j.root, run['id'], question['id'], expected_version=question['version'],
+                             answer={'text': 'Keep the documented scope.'}, key='judge-answer')
+        else:
+            j.service.revoke(j.root, run['id'], expected_version=j.service.status(j.root)['version'],
+                             reason='Owner revokes after the escalation.')
+        after = items(http)
+        assert after['judge_escalation']['id'] == judge['id'] and after['autonomous_question']['id'] == asked['id']
+        assert after['judge_escalation']['resolved'] and after['autonomous_question']['resolved']
 
 
 @pytest.mark.parametrize('caps, reason, inferences', [({'invocations': 2}, 'cap_invocations', 2),

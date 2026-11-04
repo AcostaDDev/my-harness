@@ -1,4 +1,6 @@
 {
+  "inbox.not_found": "El elemento, el proyecto o la página de la bandeja no están disponibles.",
+  "domain.configuration_not_ready": "La configuración del servicio debe estar lista para confirmar esta respuesta.",
   "acceptance.content_changed_since_evidence": "El contenido cambió desde la captura de la evidencia",
   "acceptance.data_model_without_diagram": "El modelo de datos cambió sin {diagram} (D088): {paths}",
   "acceptance.deterministic_validation_failed": "La validación determinista falló",

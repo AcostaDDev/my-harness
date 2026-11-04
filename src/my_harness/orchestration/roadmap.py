@@ -71,11 +71,6 @@ class RoadmapGraphs:
     def recover(self, thread_id):
         return self.runner.recover(thread_id, writer_stopped=True)
 
-    def prepare_recovery(self, thread_id):
-        """After owner-confirmed reconciliation, a RECOVERY_REQUIRED thread may continue its last checkpoint."""
-        if self.runner.status(thread_id).status == 'RECOVERY_REQUIRED':
-            self.runner.threads.transition(thread_id, ('RECOVERY_REQUIRED',), 'RUNNING', reason='owner_reconciled')
-
     def revoke(self, thread_id):
         try:
             if self.runner.status(thread_id).status in ('RUNNING', 'WAITING'):

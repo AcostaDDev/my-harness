@@ -57,6 +57,7 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
   const { t } = useI18n();
   const items: [MessageKey, Route, boolean][] = [
     ["nav.summary", { name: "project", project }, route.name === "project"],
+    ["inbox.title", { name: "project-inbox", project }, route.name === "project-inbox"],
     ["nav.phases", { name: "phases", project }, ["phases", "phase", "task", "run"].includes(route.name)],
     ["knowledge.title", { name: "project-knowledge", project }, route.name === "project-knowledge"],
     ["nav.docs", { name: "docs", project }, route.name === "docs"],
@@ -77,7 +78,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   const mode = useServiceMode();
   const configuring = !!mode?.configuration_mode && mode.configuration_mode !== "READY";
   const [theme, cycle] = useTheme();
-  const items = archive ? [{ label: t("archive.title"), to: { name: "home" } as Route }, ...(route.name === "run-short" ? [{ label: route.run, to: route }] : [])] : trail(route, t);
+  const items = archive && route.name !== "inbox" && route.name !== "project-inbox" ? [{ label: t("archive.title"), to: { name: "home" } as Route }, ...(route.name === "run-short" ? [{ label: route.run, to: route }] : [])] : trail(route, t);
   const project = "project" in route ? route.project : undefined;
   const path = href(route);
   const first = useRef(true);
@@ -112,6 +113,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <ul>
           <li><Link to={{ name: "home" }} current={route.name === "home"}>{archive ? t("archive.title") : t("nav.projects")}</Link></li>
           {mode && !archive && !configuring && <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>}
+          <li><Link to={{ name: "inbox" }} current={route.name === "inbox"}>{t("inbox.title")}</Link></li>
           <li><Link to={{ name: "knowledge" }} current={route.name === "knowledge"}>{t("knowledge.title")}</Link></li>
           <li><Link to={{ name: "stats" }} current={route.name === "stats"}>{t("nav.stats")}</Link></li>
           <li><Link to={{ name: "accounting" }} current={route.name === "accounting"}>{t("nav.accounting")}</Link></li>
@@ -119,7 +121,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
           {mode?.configuration_mode && !archive && <li><Link to={{ name: configuring ? "initial-setup" : "configuration" }} current={route.name === "configuration" || route.name === "initial-setup"}>{t("configuration.title")}</Link></li>}
         </ul>
       </div>
-      {mode && !archive && !configuring && project && <ProjectNav route={route} project={project} />}
+      {mode && !archive && !configuring && project && route.name !== "project-inbox" && <ProjectNav route={route} project={project} />}
     </nav>
     <main id="main" className="content">
       {!archive && preferences?.status === "invalid" && route.name !== "preferences" && <p role="alert" className="state state-error">{t("preferences.invalid")}</p>}

@@ -535,3 +535,12 @@ registers `autonomous-roadmap@1` (loop and hold nodes, deterministic operation k
 lazy `managed_runtime.roadmap_graphs` boundary. T010 supplies the roadmap parent and task children; T014's delegated
 scope check and the existing cancellation poll consume them. `api/autonomous.py` exposes the minimal per-project
 controls; there is no new scheduler, ledger or dependency. [Record](phase/P002-T016-autonomous-roadmap.md).
+
+## Global inbox projection
+
+P002-T017 derives bounded list and item views in SQLite from committed managed, phase, autonomous and trace
+events. Canonical joins bind secondary references to the owning project and deduplicate source representations.
+A separate first-read receipt survives restart and archive restore. Resolution is derived from current domain
+outcomes, independently of the receipt. The reusable conversation panel calls the ordinary command routes,
+with version, fingerprint, preview and confirmation guards as applicable. See the
+[flow](flows/global-inbox.md) and [task record](phase/P002-T017-global-inbox.md).

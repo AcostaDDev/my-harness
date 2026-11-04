@@ -18,6 +18,7 @@ is written and never coerced. Operation results are kept verbatim within 16 KiB 
 continues from), so credentials and secret-looking values are refused, not masked. Event payloads are bounded by
 `trace-payload-1`; what they offload is stored in `trace_artifacts` with the event and read back by digest.
 """
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 import hashlib
@@ -413,17 +414,19 @@ class OperationJournal:
             transition(session, row, ('INTENDED',), 'COMPLETED', result=result, at=at)
             return _plain(row, False)
 
-    def recover(self, thread_id: str, *, writer_stopped: bool = False, at: str | None = None) -> list[dict]:
+    def recover(self, thread_id: str, *, writer_stopped: bool = False, at: str | None = None,
+                session=None, root: str | None = None) -> list[dict]:
         """Classifies the thread's non-terminal operations by evidence; never completes from a status or a lease."""
         at = at or now()
         changed = []
-        with self._write() as session:
+        with (self._write() if session is None else nullcontext(session)) as session:
             thread = session.get(GraphThreadRow, thread_id)
             if thread is None:
                 raise LookupError(tr('orchestration.thread_unknown', thread=thread_id))
-            rows = session.scalars(select(Operation).where(Operation.thread_id == thread_id,
-                                                           Operation.status == 'INTENDED')
-                                   .order_by(Operation.created_at, Operation.id)).all()
+            query = select(Operation).where(Operation.thread_id == thread_id, Operation.status == 'INTENDED')
+            if root is not None:
+                query = query.where(Operation.root == root)
+            rows = session.scalars(query.order_by(Operation.created_at, Operation.id)).all()
             for row in rows:
                 if row.kind == 'agent_invocation':
                     attempt = session.get(ManagedAttemptRow, row.attempt_id)
@@ -441,11 +444,11 @@ class OperationJournal:
                 changed.append({'operation_id': row.id, 'key': row.key, 'status': row.status})
         return changed
 
-    def abandon(self, operation_id: str, *, reason: str, actor: Mapping, at: str | None = None) -> dict:
+    def abandon(self, operation_id: str, *, reason: str, actor: Mapping, at: str | None = None, session=None) -> dict:
         """Owner decision on an UNCERTAIN operation: no effect is claimed and nothing is reissued under its key."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError(tr('journal.reason_required'))
-        with self._write() as session:
+        with (self._write() if session is None else nullcontext(session)) as session:
             row = session.get(Operation, operation_id)
             if row is None:
                 raise LookupError(tr('journal.operation_unknown', operation=operation_id))

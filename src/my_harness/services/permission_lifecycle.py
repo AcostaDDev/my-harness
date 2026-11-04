@@ -47,8 +47,9 @@ def invalid():
 
 
 class PermissionLifecycle:
-    def __init__(self, engine, *, authority=None, clock=now):
+    def __init__(self, engine, *, authority=None, clock=now, response_guard=None):
         self.engine, self.authority, self.clock = engine, authority, clock
+        self.response_guard = response_guard
 
     def records(self, session, project):
         return list(session.scalars(select(Record).where(Record.project_id == project).order_by(Record.sequence)))
@@ -130,6 +131,8 @@ class PermissionLifecycle:
             raise DomainRefusal('stale_revision')
         if call.entry.id == 'permissions.preview':
             return self.preview(call.session, call.project_id, a['action'], a['response'])
+        if self.response_guard is not None:
+            self.response_guard(call.session)
         preview = self.preview(call.session, call.project_id, a['action'], a['response'])
         if preview['preview_sha256'] != a['preview_sha256'] or not a['confirmed']:
             invalid()

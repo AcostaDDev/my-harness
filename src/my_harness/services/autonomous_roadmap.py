@@ -17,6 +17,8 @@ from sqlalchemy.orm import Session
 from my_harness.core.engine import autonomy
 from my_harness.core.engine.autonomy import AutonomyRefusal as Refusal
 from my_harness.storage import autonomous_runs as store
+from my_harness.storage.graph_continuations import GraphContinuationRepository
+from my_harness.storage.models import GraphThreadRow, WorkflowOperationRow
 from my_harness.storage.permissions import actor
 
 INFERENCE = autonomy.INFERENCE_ACTIONS
@@ -31,10 +33,11 @@ class RoadmapEffects(Protocol):
     Each effect returns {'status': 'done' | 'owner_required' | 'uncertain' | <failure class>, 'detail': {...}}."""
 
     def readiness(self) -> dict: ...
+    def accepted_revision(self, session) -> dict | None: ...
     def observe(self) -> dict: ...
     def versions_sha256(self) -> str: ...
     def usage(self, children: list) -> dict: ...
-    def writers_settled(self, children: list) -> dict: ...
+    def writers_settled(self, children: list, *, session=None) -> dict: ...
     def revision_items(self, revision: Mapping) -> list: ...
     def gap_report(self, revision: Mapping) -> dict | None: ...
     def propose_plan(self, action: Mapping, key: str) -> dict: ...
@@ -140,10 +143,15 @@ class AutonomousRoadmap:
                     'origin': row.origin, 'created_at': row.created_at}
 
     def preview(self, root, request: Mapping, *, lineage: str | None = None, generate: bool = True) -> dict:
-        own = None
+        own, version = None, None
         if lineage is not None:
             with Session(self.managed.engine) as session:
-                own = session.scalar(select(store.Run.id).where(store.Run.lineage_id == lineage))
+                run = session.scalar(select(store.Run).where(store.Run.lineage_id == lineage, store.Run.root == str(root)))
+                if run is None:
+                    raise LookupError(lineage)
+                if run.status not in ('LIMIT_REACHED', 'WAITING_FOR_OWNER', 'PAUSED'):
+                    raise Refusal('revision_requires_stopped_run')
+                own, version = run.id, run.version
         report = self.readiness(root, request, own_run=own, generate=generate)
         observation = report['observation']
         if set(request) - {'bounds', 'caps', 'delegation'}:
@@ -156,6 +164,7 @@ class AutonomousRoadmap:
                             'text': dict(self.policy.acknowledgement)}
                            if self.policy.acknowledgement else {'version': None, 'sha256': None, 'text': None})
         shown = {'format': autonomy.PREVIEW_FORMAT, 'root': str(root), 'lineage_id': lineage,
+                 **({'run_version': version} if version is not None else {}),
                  'project_id': observation.get('project_id'), 'revision': observation.get('revision'),
                  'scope': {'phases': [p['code'] for p in roadmap if p['authorized']],
                            'roadmap': [p['code'] for p in roadmap],
@@ -175,6 +184,17 @@ class AutonomousRoadmap:
         """Seal an `owner_confirmed` authorization for the exact preview, then create and start its run."""
         return self._seal(root, request, preview_sha256=preview_sha256, key=key, reason=reason, confirmed=confirmed,
                           acknowledgement_version=acknowledgement_version, lineage=None)
+
+    def revision_preview(self, root, run_id, request, *, expected_version):
+        with Session(self.managed.engine) as session:
+            run = self._owned(session, root, run_id)
+            if run.version != expected_version:
+                raise Refusal('run_version_stale')
+            lineage = run.lineage_id
+        preview = self.preview(root, request, lineage=lineage)
+        if preview['run_version'] != expected_version:
+            raise Refusal('run_version_stale')
+        return preview
 
     def revise(self, root, run_id, request, *, preview_sha256, key, reason, confirmed, acknowledgement_version):
         """A new authorization revision (raised bounds or an owner amendment); consumption is never reset."""
@@ -196,7 +216,7 @@ class AutonomousRoadmap:
         with Session(self.managed.engine) as session:
             existing = session.scalar(select(store.Authorization).where(store.Authorization.idempotency_key == key))
             if existing is not None:
-                if existing.request_sha256 != marker:
+                if existing.root != str(root) or existing.request_sha256 != marker:
                     raise Refusal('idempotency_conflict')
                 run = session.scalar(select(store.Run).where(store.Run.lineage_id == existing.lineage_id))
                 return self.reconcile_run(run.id)
@@ -214,15 +234,17 @@ class AutonomousRoadmap:
         bounds = autonomy.validate_bounds(request['bounds'])
         now = self.managed._now()
         sealed = {k: v for k, v in shown.items() if k not in ('blocking', 'pending_gates', 'gaps', 'default_bounds')}
+        effects = self.effects(str(root))
         with self.managed._write() as session:
             existing = session.scalar(select(store.Authorization).where(store.Authorization.idempotency_key == key))
             if existing is not None:
-                if existing.request_sha256 != marker:
+                if existing.root != str(root) or existing.request_sha256 != marker:
                     raise Refusal('idempotency_conflict')
                 run_id = session.scalar(select(store.Run.id).where(store.Run.lineage_id == existing.lineage_id))
             else:
                 project = store.project_id(session, root)
-                if project is None or project != shown['project_id']:
+                if (project is None or project != shown['project_id']
+                        or shown['revision'] != effects.accepted_revision(session)):
                     raise Refusal('preview_stale')
                 if store.active_batches(session, root):
                     raise Refusal('manual_batch_active')
@@ -234,6 +256,8 @@ class AutonomousRoadmap:
                     if current is None or current.lineage_id != lineage or current.status not in (
                             'LIMIT_REACHED', 'WAITING_FOR_OWNER', 'PAUSED'):
                         raise Refusal('revision_requires_stopped_run')
+                    if current.version != shown['run_version']:
+                        raise Refusal('preview_stale')
                     if not autonomy.raised(previous.preview['bounds'], bounds):
                         raise Refusal('bounds_cannot_decrease')
                 ident = store.preview_id(key)
@@ -367,8 +391,7 @@ class AutonomousRoadmap:
             run = store.run_by_id(session, run_id)
             auth = store.authorization(session, run.authorization_id)
             latest = store.latest(session, run.lineage_id)
-            parent = self.permissions.get(session, auth.project_id, auth.permission_record_id, 'authorization')
-            parent_active = self.permissions.active(session, parent)
+            parent_active = self._parent_active(session, auth)
         if latest.id != auth.id or not parent_active:
             return {'status': 'FAILED', 'reason': 'authority_inactive', 'detail': {}}
         if auth.policy.get('version') != self.policy.version or self.policy.pending():
@@ -381,9 +404,12 @@ class AutonomousRoadmap:
             return {'status': 'FAILED', 'reason': 'configuration_changed', 'detail': {}}
         return None
 
+    def _parent_active(self, session, auth):
+        parent = self.permissions.get(session, auth.project_id, auth.permission_record_id, 'authorization')
+        return self.permissions.active(session, parent)
+
     def _stop(self, run_id, stop):
         now = self.managed._now()
-        binding = self._binding(run_id) if stop.get('question') else None
         with self.managed._write() as session:
             run = store.run_by_id(session, run_id)
             if run.status != 'RUNNING':
@@ -392,21 +418,18 @@ class AutonomousRoadmap:
             refs = {}
             if question:
                 row = store.ask(session, run, kind=question['kind'], subject=question['subject'],
-                                binding=binding, now=now)
+                                binding=self._binding(session, run), now=now)
                 refs = {'question_id': row.id}
             store.move(session, run, ('RUNNING',), stop['status'], reason=stop['reason'],
                        detail={'stop': stop.get('detail') or {}, **refs}, refs=refs, now=now)
             terminal = stop['status'] in autonomy.TERMINAL
         return {'route': 'end' if terminal else 'hold', 'wait': {'kind': 'owner', 'status': stop['status']}}
 
-    def _binding(self, run_id):
-        """What an owner answer must still match: the authorization revision and the accepted knowledge revision."""
-        with Session(self.managed.engine) as session:
-            run = store.run_by_id(session, run_id)
-            auth = store.authorization(session, run.authorization_id)
-            ident, number, root = auth.id, auth.number, run.root
-        return {'authorization_id': ident, 'authorization_number': number,
-                'revision': self.effects(root).readiness().get('revision')}
+    def _binding(self, session, run):
+        """The authorization and accepted revision observed under the same lock as the answer."""
+        auth = store.authorization(session, run.authorization_id)
+        return {'authorization_id': auth.id, 'authorization_number': auth.number,
+                'revision': self.effects(run.root).accepted_revision(session)}
 
     def _act(self, run_id, effects, view, action, key, perform):
         kind = action['action']
@@ -613,6 +636,10 @@ class AutonomousRoadmap:
                                  .order_by(store.Run.created_at.desc(), store.Run.id).limit(1))
             return None if run is None else self._view(session, run)
 
+    def status_for(self, root, run_id):
+        with Session(self.managed.engine) as session:
+            return self._view(session, self._owned(session, root, run_id))
+
     def status_by_id(self, run_id):
         with Session(self.managed.engine) as session:
             return self._view(session, store.run_by_id(session, run_id))
@@ -639,7 +666,6 @@ class AutonomousRoadmap:
             raise Refusal('answer_invalid')
         clean = {'text': answer['text'].strip(), 'choice': answer.get('choice')}
         now = self.managed._now()
-        binding = self._binding(run_id)
         with self.managed._write() as session:
             run = self._owned(session, root, run_id)
             question = session.get(store.Question, question_id)
@@ -651,13 +677,17 @@ class AutonomousRoadmap:
                 return store.question_view(question)
             if run.status in autonomy.TERMINAL:
                 raise Refusal('run_terminal')
-            if question.status != 'OPEN' or question.version != expected_version:
+            if (run.status != 'WAITING_FOR_OWNER' or question.status != 'OPEN'
+                    or question.version != expected_version):
                 raise Refusal('question_stale')
-            if question.binding != binding:
+            if question.binding != self._binding(session, run):
                 question.status, question.version, question.updated_at = 'SUPERSEDED', question.version + 1, now
                 store.event(session, run, 'question_superseded', {'question_id': question.id},
                             refs={'question_id': question.id}, dedupe=f'question:{question.id}:superseded', now=now)
                 return {'superseded': True, **store.question_view(question)}
+            auth = store.authorization(session, run.authorization_id)
+            if not self._parent_active(session, auth):
+                raise Refusal('authority_inactive')
             question.status, question.version, question.updated_at = 'ANSWERED', question.version + 1, now
             question.answer = {**clean, 'origin': 'owner_confirmed', 'actor': actor(), 'answered_at': now}
             question.answer_key = key
@@ -717,6 +747,13 @@ class AutonomousRoadmap:
                         | {t['contract_run_id'] for t in tasks if t.get('contract') == 'failed' and t.get('contract_run_id')})
         with self.managed._write() as session:
             run = self._owned(session, root, run_id)
+            if run.version != expected_version:
+                raise Refusal('run_version_stale')
+            if store.open_questions(session, run.id):
+                raise Refusal('questions_open')
+            if (not self._parent_active(session, store.authorization(session, run.authorization_id))
+                    or effects.accepted_revision(session) != observation.get('revision')):
+                raise Refusal('resume_revalidation_failed', reasons=['authority_or_revision_changed'])
             seen = sorted(set((run.detail or {}).get('acknowledged_failures') or []) | set(failed))
             store.move(session, run, autonomy.RESUMABLE, 'RUNNING', reason='owner_resumed',
                        detail={'thread_recovery': False, 'acknowledged_failures': seen},
@@ -789,7 +826,7 @@ class AutonomousRoadmap:
                                          actor=actor())
             children = [{**c.subject, 'operation_key': c.operation_key} for c in store.children(session, run.id)]
             store.move(session, run, autonomy.ACTIVE, 'REVOKED', reason='owner_revoked',
-                       detail={'note': reason.strip(), 'writers': self.effects(run.root).writers_settled(children)},
+                       detail={'note': reason.strip(), 'writers': self.effects(run.root).writers_settled(children, session=session)},
                        now=now)
             thread = run.thread_id
         if self._graph_factory is not None:
@@ -801,39 +838,40 @@ class AutonomousRoadmap:
         identities; an uncertain effect is abandoned by the owner, never reissued. Then RECOVERY_REQUIRED → PAUSED."""
         if writer_stopped is not True or not isinstance(reason, str) or not reason.strip():
             raise Refusal('writer_stop_confirmation_required')
-        with Session(self.managed.engine) as session:
+        with self.managed._write() as session:
             run = self._owned(session, root, run_id)
             if run.version != expected_version:
                 raise Refusal('run_version_stale')
             if run.status not in ('RECOVERY_REQUIRED', 'REVOKED'):
                 raise Refusal('run_not_recoverable', status=run.status)
+            thread_id, status = run.thread_id, run.status
+            reconciled_key = f'{run.id}:reconciled:{run.version}'
+            if status == 'REVOKED' and session.scalar(
+                    select(store.Event.id).where(store.Event.dedupe_key == reconciled_key)) is not None:
+                return self._view(session, run)
             children = [{**c.subject, 'operation_key': c.operation_key} for c in store.children(session, run.id)]
-            thread, status = run.thread_id, run.status
-        settled = self.effects(str(root)).writers_settled(children)
-        if not settled.get('settled'):
-            raise Refusal('writer_not_confirmed_stopped', writers=settled.get('active', []))
-        changed = self.journal.recover(thread, writer_stopped=True)
-        abandoned = []
-        with Session(self.managed.engine) as session:
-            from my_harness.storage.models import WorkflowOperationRow as Operation
-            uncertain = list(session.scalars(select(Operation.id).where(Operation.thread_id == thread,
-                                                                        Operation.status == 'UNCERTAIN')))
-        for ident in uncertain:
-            abandoned.append(self.journal.abandon(ident, reason=reason.strip(), actor=actor())['operation_id'])
-        continuable = self._graph_factory is not None and self.graphs().status(thread).status in (
-            'RUNNING', 'RECOVERY_REQUIRED')
-        with self.managed._write() as session:
-            run = self._owned(session, root, run_id)
+            settled = self.effects(run.root).writers_settled(children, session=session)
+            if not settled.get('settled'):
+                raise Refusal('writer_not_confirmed_stopped', writers=settled.get('active', []))
+            stamp, owner = self.managed._now(), actor()
+            changed = self.journal.recover(thread_id, writer_stopped=True, at=stamp, session=session, root=run.root)
+            uncertain = session.scalars(select(WorkflowOperationRow.id).where(
+                WorkflowOperationRow.thread_id == thread_id, WorkflowOperationRow.root == run.root,
+                WorkflowOperationRow.status == 'UNCERTAIN')).all()
+            abandoned = [self.journal.abandon(ident, reason=reason, actor=owner, at=stamp, session=session)['operation_id']
+                         for ident in uncertain]
+            thread = session.get(GraphThreadRow, thread_id)
+            continuable = self._graph_factory is not None and thread.status in ('RUNNING', 'RECOVERY_REQUIRED')
             detail = {'recovered': {'classified': changed, 'abandoned': abandoned}, 'thread_recovery': continuable}
             if status == 'RECOVERY_REQUIRED':
                 store.move(session, run, ('RECOVERY_REQUIRED',), 'PAUSED', reason='recovered', detail=detail,
-                           expected_version=expected_version, now=self.managed._now())
+                           expected_version=expected_version, now=stamp)
+                if continuable and thread.status == 'RECOVERY_REQUIRED':
+                    GraphContinuationRepository.transition_in(session, thread_id, ('RECOVERY_REQUIRED',), 'RUNNING',
+                                                              reason='owner_reconciled')
             else:
                 run.detail = {**(run.detail or {}), **detail}
-                store.event(session, run, 'run_reconciled', detail, dedupe=f'{run.id}:reconciled:{run.version}',
-                            now=self.managed._now())
-        if status == 'RECOVERY_REQUIRED' and continuable:
-            self.graphs().prepare_recovery(thread)
+                store.event(session, run, 'run_reconciled', detail, dedupe=reconciled_key, now=stamp)
         return self.status_by_id(run_id)
 
     def advance_all(self, _repository=None):

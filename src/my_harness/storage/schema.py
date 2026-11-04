@@ -7,12 +7,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0037_task_lineage"
+SCHEMA_REVISION = "0038_autonomous_runs"
 # Protection triggers of 0030 (knowledge), 0031 (domain commands), 0032 (trace events/artifacts) and
-# 0033 (frozen context/receipts), 0034 (judge evidence), 0035 (permissions) and 0036 (document exchange),
-# by name and whitespace-normalized SQL. A database, backup or
+# 0033 (frozen context/receipts), 0034 (judge evidence), 0035 (permissions), 0036 (document exchange) and
+# 0038 (autonomous run evidence), by name and whitespace-normalized SQL. A database, backup or
 # restored copy whose triggers are missing or altered is refused.
-SCHEMA_TRIGGERS_SHA256 = "1a90ef5501a4f684174bbe0253b34e035ec8064f76f6943d3e5e5c6ac5a0ef4f"
+SCHEMA_TRIGGERS_SHA256 = "7e95200c960a71b1ce6bd58d7525452b11948c76840eec90e274ca976825cb3d"
 
 
 def trigger_digest(rows) -> str:
@@ -52,7 +52,10 @@ def require_schema(engine: Engine) -> None:
                           "knowledge_revision_links", "knowledge_identity_map", "domain_commands",
                           "workflow_operations", "trace_events", "trace_artifacts", "context_snapshots",
                           "invocation_contexts", "knowledge_deliveries", "judge_requests", "judge_invocations",
-                          "judge_rulings", "judge_decision_links", "permission_records", "permission_boundaries", "knowledge_exchange_records"):
+                          "judge_rulings", "judge_decision_links", "permission_records", "permission_boundaries", "knowledge_exchange_records",
+                          "autonomous_authorizations", "autonomous_runs", "autonomous_children",
+                          "autonomous_consumption", "autonomous_questions", "autonomous_events",
+                          "autonomous_reviews"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
             rows = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'")).all()
             if not triggers_intact(rows):

@@ -65,7 +65,8 @@ publication and installation remain pending. **P002-T011 is completed and integr
 `feat/p002-t015-phase-lifecycle` from `c707986` (D298). Independent technical re-review passed, including
 published closure recovery, archive history, native planning contracts and the final tag publication guard.
 The full synthetic check passed on the final product source. The owner authorized source commit, merge and push
-of develop. T016 is next. Release 0.2.0, distribution and installation remain pending.
+of develop. Release 0.2.0, distribution and installation remain pending.
+**P002-T016 is complete and integrated into develop**, source `26ccd21` on `feat/p002-t016-autonomous-roadmap` from `91d3a74`. Schema `0038_autonomous_runs` (93 tables); sealed owner-confirmed authorizations with one active run per root; `owner_delegated` children verified at the adoption and closure boundaries; persistent bounds, caps before inference, durable stops, per-project controls and the `autonomous-roadmap@1` graph (D299); G11/G12/G17 accepted with conditions (D300); the production route over T014/T015 with versioned readiness and task-contract prompts, supervisor continuation and judge requests bound to the parent's delegation (D301), verified by a synthetic managed journey; five technical-review findings, three remaining blockers and two third-review blockers (held review resume, T014 transaction boundary) and the final held-review window corrected (record §§8, 10, 12, 14). Independent final re-review passed. T017 is next. Release 0.2.0, distribution and installation remain pending. [Record](phase/P002-T016-autonomous-roadmap.md).
 [Evidence](phase/P002-T015-phase-lifecycle.md#independent-technical-re-review).
 
 Historical starting context:
@@ -118,7 +119,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - **Persistence and recovery.** SQLite schema `0028_usage_accounting` managed by Alembic (released in 0.1.9; the
   operator database is migrated; unreleased develop adds P002-T003's `0029_graph_continuations` and P002-T004's
   `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`;
-  T007's `0033_frozen_context`; T009's `0034_judge_contracts`); idempotent job
+  T007's `0033_frozen_context`; T009's `0034_judge_contracts`; later tasks through T014's `0037_task_lineage`;
+  the unintegrated T016 branch adds `0038_autonomous_runs`); idempotent job
   queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
@@ -237,4 +239,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016–T023 remain planned. The owner accepted the work-map visual direction for T018 and the conversation kinds for T017 (D297, G14/G13 input), as design without implementation ([visual direction](phase/P002-T018-visual-direction.md)). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017–T023 remain planned. The owner accepted the work-map visual direction for T018 and the conversation kinds for T017 (D297, G14/G13 input), as design without implementation ([visual direction](phase/P002-T018-visual-direction.md)). No OpenCode adapter exists, and installed behavior remains 0.1.9.

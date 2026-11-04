@@ -147,6 +147,14 @@ def run_phase_graph(repository, claim, journal, work):
     return execute_phase_job(repository, claim, journal, work)
 
 
+def roadmap_graphs(engine, **options):
+    """P002-T016: factory of the roadmap graph operations for a service (lazy LangGraph import, D280)."""
+    def build(service):
+        from my_harness.orchestration.roadmap import RoadmapGraphs
+        return RoadmapGraphs(engine, service, **options)
+    return build
+
+
 class SupervisorWorker:
     """One job per lane (writer/chat); errors are quarantined, without retry."""
 
@@ -172,7 +180,7 @@ class SupervisorWorker:
     def _loop(self, lane='writer') -> None:
         supervisor = LocalSupervisor(self.supervisor.repository, self.supervisor.ports_factory,
             lease_seconds=self.supervisor.lease_seconds, commit_factory=self.supervisor.commit_factory, lane=lane,
-            task_graph=self.supervisor.task_graph)
+            task_graph=self.supervisor.task_graph, autonomy=self.supervisor.autonomy)
         while not self.stopping.is_set():
             try:
                 prepared = self.preparation.run_once() if lane != 'chat' and getattr(self, 'preparation', None) else None
@@ -315,7 +323,7 @@ class ManagedRuntime:
         commit = ((lambda context, versions: self.config.commit_factory(context, versions))
                   if config.commit_factory is not None else None)
         supervisor = LocalSupervisor(self.repository, ports, lease_seconds=config.lease_seconds, commit_factory=commit,
-                                     task_graph=run_task_graph)
+                                     task_graph=run_task_graph, autonomy=lambda: self.autonomous_roadmap().advance_all())
         self.worker = SupervisorWorker(supervisor, config.poll_seconds)
         self.worker.preparation = self.preparation
         if self.setup is not None:
@@ -539,6 +547,26 @@ class ManagedRuntime:
             project = next((p for p in self.projects.values() if row and str(p.context.root) == row.root), None)
             return project.permission_authority if project else None
         return PermissionLifecycle(self.engine, authority=authority)
+
+    def autonomous_roadmap(self, *, versions=None, git=None):
+        """P002-T016 (D299): autonomous roadmap runs with the product gate policy, in which G11/G12/G17 are
+        pending: readiness and preview work, a productive confirmation is refused before anything is sealed.
+
+        The roadmap graph is imported on first use only, through this composition root (D280)."""
+        from my_harness.services.autonomous_effects import ManagedRoadmapEffects
+        from my_harness.services.autonomous_roadmap import AutonomousRoadmap
+        permissions = self.permission_lifecycle()
+
+        def effects(root):
+            project = next((p for p in self.projects.values() if str(p.context.root) == str(root)), None)
+            if project is None:
+                raise LookupError(root)
+            frozen = project if versions is None else replace(project, versions=versions)
+            writer = git if git is not None else (self.config.commit_factory(project.context, dict(frozen.versions))
+                                                  if self.config.commit_factory else None)
+            return ManagedRoadmapEffects(self.repository, frozen, writer, permissions)
+        return AutonomousRoadmap(self.repository, permissions, effects, journal=self.operation_journal(),
+                                 graphs=roadmap_graphs(self.engine))
 
     def judges(self):
         """T009 explicit consumer interface; productive delegation remains unavailable until T016."""

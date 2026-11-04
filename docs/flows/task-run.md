@@ -270,3 +270,21 @@ correction ceiling remains authoritative when a later run or replacement task re
 an executor invocation, and the fenced attempt transaction checks again before creating the intent.
 Family and consumption events remain queryable after restart. Each run keeps its own immutable history,
 while unrelated task families retain independent correction budgets.
+
+## Autonomous task admission (P002-T016)
+
+An autonomous run first seals a validated task contract proposed by the `roadmap-task-plan` reviewer job, then admits
+the task with the rendered plan section and an `owner_delegated` child whose targets are exactly the contract's files.
+Each inference of the delegated run is admitted at the fenced attempt start within the autonomous caps. After an
+ACCEPT of the run's own delegated admission, the commit of the accepted content is queued under its own child; the
+reference guard and the attempt cancellation poll stop the run when the authority is revoked
+([flow](autonomous-roadmap.md), [D301](../DECISIONS.md#d301--delegated-task-contracts-and-effect-boundary-verification)).
+
+`submit`, `resume` and `submit_commit` take an optional `delegated` check that the autonomous caller supplies; it runs
+inside their writer transaction after the idempotent replay and before any run, job or commit job is created, and
+refuses a stale child, contract digest or contract identity. A refused attempt start records
+`autonomy_admission_refused` with the refused `role`. When an owner pause held the reviewer after the executor, the
+autonomous run continues the same run through `resume` (revalidation, not `retry_executor`), keeping the frozen
+contract and the executor's work. That job request carries `expected_evidence`. The revalidation compares its first
+capture with it before validation or the reviewer, and on a difference stops at stage `continuation` without
+touching the files. Callers that pass no check or binding keep the existing contract.

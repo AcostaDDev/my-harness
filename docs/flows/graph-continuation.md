@@ -67,7 +67,10 @@ sequenceDiagram
   Invocation effects remain fenced by the managed attempt journal. An interrupted job with uncertain inference
   stays in recovery. Commit dispatch reconciles the paired Git and export intents through the managed writer.
   See [task execution](task-run.md) for the acceptance and effect boundaries.
-- **Later tasks.** Phase and roadmap graphs, autonomous bounds and integrated installation recovery remain pending.
+- **Roadmap graph (P002-T016).** `autonomous-roadmap@1` loops one `advance` node and holds in an interrupting
+  `hold` node; the segment limit bounds one durable segment, never the roadmap. A failed thread continues on a
+  new continuation thread only when none of its sealed operations is pending ([flow](autonomous-roadmap.md)).
+  Integrated installation recovery remains pending.
 
 Task gap continuations schedule a new managed job with the exact resolution event ID. The new versioned
 task thread creates fresh invocation identities and binds them to the persisted source gap and resolution.

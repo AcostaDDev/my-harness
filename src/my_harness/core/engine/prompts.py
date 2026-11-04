@@ -17,6 +17,9 @@ VARIABLES = {**{n: ('INPUT_JSON', PROJECT_INSTRUCTIONS) for n in JUDGE_NAMES},
     'bootstrap-project': ('BRIEF',),
     'plan-task': ('INPUT_JSON', PROJECT_INSTRUCTIONS),
     'structured-phase-plan': ('CONTEXT_JSON', PROJECT_INSTRUCTIONS),
+    # P002-T016 (D300): versioned reviewer prompts of autonomous runs (readiness gap report, delegated task contract).
+    'roadmap-readiness': ('CONTEXT_JSON', PROJECT_INSTRUCTIONS),
+    'roadmap-task-plan': ('CONTEXT_JSON', PROJECT_INSTRUCTIONS),
     'executor-routing': ('POLICY_JSON',),
     'execute-task': ('INSTRUCTIONS', 'TASK_JSON', 'PROFILE_INSTRUCTIONS', PROJECT_INSTRUCTIONS),
     'review-task': ('INPUT_JSON', PROJECT_INSTRUCTIONS),
@@ -31,13 +34,13 @@ VARIABLES = {**{n: ('INPUT_JSON', PROJECT_INSTRUCTIONS) for n in JUDGE_NAMES},
     'define-project-profile': ('CONTEXT_JSON', 'MESSAGE'),
     'onboard-project-profile': ('CONTEXT_JSON', 'MESSAGE'),
 }
-ROLES = {'structured-phase-plan': 'planning', **{n: 'judge' for n in JUDGE_NAMES}, 'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
+ROLES = {'structured-phase-plan': 'planning', 'roadmap-readiness': 'planning', 'roadmap-task-plan': 'planning', **{n: 'judge' for n in JUDGE_NAMES}, 'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
          'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning',
          'onboard-project': 'definition', 'define-project-profile': 'definition',
          'onboard-project-profile': 'definition'}
 # H4.1/H6.5/P008-T011: templates added after H3.1. Catalogs frozen in earlier runs do not contain them and
 # remain valid on resume; new catalogs always include them.
-ADDED_LATER = frozenset({'structured-phase-plan', *JUDGE_NAMES, 'chat-turn', 'define-project', 'plan-phase', 'onboard-project',
+ADDED_LATER = frozenset({'structured-phase-plan', 'roadmap-readiness', 'roadmap-task-plan', *JUDGE_NAMES, 'chat-turn', 'define-project', 'plan-phase', 'onboard-project',
                          'define-project-profile', 'onboard-project-profile'})
 RETIRED = {'import-project': ('CONTEXT_JSON', 'MESSAGE')}
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
@@ -237,6 +240,9 @@ def render_attempt(catalog, name, values, context, language=None, *, canonical=N
     if name == 'structured-phase-plan':
         from my_harness.core.engine.intake import phase_plan_schema
         schema = phase_plan_schema()
+    if name in ('roadmap-readiness', 'roadmap-task-plan'):
+        from my_harness.core.engine.autonomy import gap_report_schema, task_plan_schema
+        schema = gap_report_schema() if name == 'roadmap-readiness' else task_plan_schema()
     if name in JUDGE_NAMES:
         from my_harness.core.engine.judge import result_schema
         schema = result_schema(name.removeprefix('judge-').replace('-', '_'))

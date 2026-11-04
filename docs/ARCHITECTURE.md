@@ -520,3 +520,18 @@ client types are regenerated together. [Evidence and delivery](phase/P002-T015-p
 
 The retained documentary planning/closure services remain guarded for database-owned projects. Structured manual
 operations do not imply delegated autonomy, native-provider qualification, global inbox/map or installed conversion.
+
+### P002-T016: autonomous roadmap runs
+
+`core/engine/autonomy.py` is the pure contract (states, bounds, caps, failure classes, readiness predicates, routing
+decision and completion rule) with gate values injected through `GatePolicy`. `storage/autonomous_runs.py` holds the
+SQLite authority in the managed writer transaction (migration `0038_autonomous_runs`, 93 tables).
+`services/autonomous_roadmap.py` drives readiness, sealing, controls and one graph step over a typed
+`RoadmapEffects` port; `services/autonomous_effects.py` is the production port, with the readiness observation,
+usage, writer settlement, the `roadmap_review` reviewer jobs (`storage/autonomous_jobs.py`,
+`services/autonomous_review.py`) and every delegated effect over T014/T015 (D301). Gate values (D300) come from
+`autonomy.product_policy()`; the supervisor's `autonomy` hook continues runs waiting on settled jobs. `orchestration/roadmap.py`
+registers `autonomous-roadmap@1` (loop and hold nodes, deterministic operation keys, per-segment limit) behind the
+lazy `managed_runtime.roadmap_graphs` boundary. T010 supplies the roadmap parent and task children; T014's delegated
+scope check and the existing cancellation poll consume them. `api/autonomous.py` exposes the minimal per-project
+controls; there is no new scheduler, ledger or dependency. [Record](phase/P002-T016-autonomous-roadmap.md).

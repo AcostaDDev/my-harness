@@ -249,6 +249,10 @@ if mode == 'recipe':
             target.write_text(content)
     elif 'coverage' in required:
         role = 'structured_phase_plan'
+    elif 'gaps' in required:
+        role = 'roadmap_readiness'
+    elif 'allowed_paths' in required and 'executor_prompt' not in required:
+        role = 'roadmap_task_plan'
     elif 'drafts' in required:
         role = 'definition'
     elif 'executor_prompt' in required:

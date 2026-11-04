@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0037_task_lineage`, 86 tables, defined in
+SQLite schema of the local service: Alembic head `0038_autonomous_runs`, 93 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -8,6 +8,49 @@ Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uni
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
 context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
 SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## Autonomous roadmap runs
+
+P002-T016 / [D299](DECISIONS.md#d299--autonomous-run-authority-children-and-persistent-bounds),
+[record](phase/P002-T016-autonomous-roadmap.md), [flow](flows/autonomous-roadmap.md). Migration
+`0038_autonomous_runs` adds seven tables without backfill; five are insert-only by triggers (update/delete refused) and
+the downgrade is refused while any row exists.
+
+```mermaid
+erDiagram
+    knowledge_projects ||--o{ autonomous_authorizations : project_id
+    permission_records ||--|| autonomous_authorizations : permission_record_id
+    autonomous_authorizations ||--o| autonomous_authorizations : previous_id
+    autonomous_authorizations ||--o{ autonomous_runs : authorization_id
+    autonomous_runs ||--o{ autonomous_children : run_id
+    autonomous_authorizations ||--o{ autonomous_children : authorization_id
+    judge_rulings ||--o{ autonomous_children : ruling_id
+    permission_records ||--o{ autonomous_children : permission_record_id
+    autonomous_runs ||--o{ autonomous_consumption : run_id
+    autonomous_authorizations ||--o{ autonomous_consumption : authorization_id
+    autonomous_runs ||--o{ autonomous_questions : run_id
+    autonomous_runs ||--o{ autonomous_events : run_id
+    knowledge_projects ||--o{ autonomous_reviews : project_id
+```
+
+`autonomous_authorizations` (insert-only): ID, root, knowledge project FK, lineage ID and revision number (composite
+unique), previous revision FK (null for the first), unique idempotency key, request digest, sealed preview JSON and
+its SHA256, origin (check: `owner_confirmed`), gate-policy stamp, unique T010 parent record FK, actor, reason,
+timestamp. `autonomous_runs`: ID, root, unique lineage ID, current authorization FK, unique graph thread ID, status
+(check: the eight D276 states), reason, detail JSON, version, timestamps; partial unique index on root where status
+is not `REVOKED` or `COMPLETED`. `autonomous_children` (insert-only): ID, run FK, authorization revision FK, kind,
+unique operation key, subject JSON and its SHA256, rule, optional ruling FK and permission record FK, origin (check:
+`owner_delegated`), timestamp. `autonomous_consumption` (insert-only): ID, root, bound (check: the five local bounds),
+identity, unique consumption key, run and authorization FKs, evidence, timestamp; index on root, bound and identity.
+`autonomous_questions`: ID, run FK, dedupe key (unique per run), kind, subject, binding (authorization revision and
+accepted revision), status (check: `OPEN`, `ANSWERED`, `SUPERSEDED`), version, answer, unique answer key, timestamps.
+`autonomous_events` (insert-only): integer sequence, run FK, root, kind, unique dedupe key, references, payload,
+timestamp. `autonomous_reviews` (insert-only): ID, root, knowledge project FK, kind (check: `report` for the sealed
+G12 reviewer gap report of one frozen revision and classifier version, `answer` for an owner answer to one of its
+gaps, `task_plan` for a validated delegated task contract), unique record key, frozen revision ID and SHA256, gap
+SHA256 (answers) or task identity digest (task plans), payload and its SHA256, origin (check: `harness_deterministic`
+for sealed reviewer results, `owner_confirmed` for answers), actor, timestamp; index on root, revision and kind.
+The schema trigger digest covers the new triggers.
 
 ## Permission authority and frozen boundaries
 

@@ -387,12 +387,21 @@ class PhaseKnowledge:
         return members, links
 
     @staticmethod
-    def adopt(session, root, draft_id, expected, *, reason, confirmed):
+    def adopt(session, root, draft_id, expected, *, reason, confirmed, delegated=None):
+        """Owner-confirmed adoption, or `owner_delegated` with the provenance of a child verified by the caller in
+        this same transaction (T016); there is no third path."""
         from my_harness.storage.knowledge import KnowledgeSession
         from my_harness.storage.permissions import actor
-        if confirmed is not True or not isinstance(reason, str) or not reason.strip():
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError('explicit_owner_confirmation_required')
+        if delegated is None and confirmed is not True or delegated is not None and (
+                confirmed is not False or delegated.get('origin') != 'owner_delegated' or not delegated.get('child_id')):
             raise ValueError('explicit_owner_confirmation_required')
         PhaseKnowledge.candidate(session, root, draft_id, expected)
+        if delegated is not None:
+            return KnowledgeSession(session).adopt(draft_id, expected, origin='owner_delegated', reason=reason,
+                actor={'principal': 'harness', 'autonomous_child': delegated['child_id'],
+                       'authorization_id': delegated['authorization_id'], 'rule': delegated['rule']})
         return KnowledgeSession(session).adopt(draft_id, expected, origin='owner_confirmed', actor=actor(), reason=reason)
 
     @staticmethod

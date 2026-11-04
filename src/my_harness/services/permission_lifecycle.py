@@ -393,7 +393,80 @@ class PermissionLifecycle:
                 'policy_version': domain_policy.POLICY_VERSION, 'delegation': delegation}, 'authorization:'+identity, identity=identity)
             return row.id
 
+    def roadmap_parent(self, session, project, *, authorization_id, phases, tiers, delegation, actor):
+        """T016 (D299): the owner-confirmed parent of an autonomous run, in the caller's sealing transaction.
+
+        It grants nothing itself (no targets). It names the authorized phases and delegable tiers so concrete
+        children can be sealed later, when their content exists; ending it ends every child (D291)."""
+        if not phases or set(tiers['delegable']) & set(tiers['owner_only']):
+            invalid()
+        if delegation is not None:
+            required = {'revision', 'policy_version', 'reconsiderations', 'active', 'duties', 'effective_grants',
+                        'compound_safe', 'delegable', 'duration_ceiling', 'permitted_alternatives', 'intent_ids'}
+            if set(delegation) != required:
+                invalid()
+            duration_check(delegation['duration_ceiling'])
+            delegation = {**delegation, 'id': authorization_id}
+        row = self.append(session, project, 'authorization', {'parent': None, 'origin': 'owner_confirmed',
+            'grantee': 'executor', 'targets': [], 'purpose': 'roadmap:' + authorization_id, 'expires_at': None,
+            'policy_version': domain_policy.POLICY_VERSION, 'delegation': delegation, 'actor': actor,
+            'autonomous': {'authorization_id': authorization_id, 'phases': sorted(phases),
+                           'delegable': sorted(tiers['delegable']), 'owner_only': sorted(tiers['owner_only'])}},
+            'authorization:roadmap:' + authorization_id)
+        return row.id
+
+    def task_child(self, session, project, *, parent, phase, task, paths, rule):
+        """Concrete `owner_delegated` executor authority for one adopted task contract of an authorized phase.
+
+        Targets are the exact normalized write paths of the contract; the parent tier must delegate them and no
+        target may be owner-only. T014's admission and execution guards verify this record unchanged."""
+        ancestor = self.get(session, project, parent, 'authorization')
+        scope = ancestor.payload.get('autonomous')
+        if (not scope or not self.active(session, ancestor) or phase not in scope['phases']
+                or 'files.write.task_contract' not in scope['delegable'] or not paths):
+            invalid()
+        root = session.get(Project, project).root
+        values = [targets.normalize('files', {'path': path, 'operation': 'write'}, root) for path in paths]
+        if any(targets.owner_only(value) for value in values):
+            invalid()
+        row = self.append(session, project, 'authorization', {'parent': parent, 'origin': 'owner_delegated',
+            'grantee': 'executor', 'targets': values, 'purpose': f'task:{phase}:{task}', 'expires_at': None,
+            'policy_version': domain_policy.POLICY_VERSION, 'delegation': None, 'rule': rule},
+            f'authorization:{parent}:{rule}:{phase}:{task}:{digest(values)[:16]}')
+        return row.id
+
+    def end_roadmap(self, session, project, record_id, *, reason, actor):
+        """Owner revocation of an autonomous parent: dependent children cease immediately (D291 cascade)."""
+        row = self.get(session, project, record_id, 'authorization')
+        if not (row.payload.get('autonomous') and row.payload['origin'] == 'owner_confirmed'):
+            invalid()
+        ended = next((r for r in self.records(session, project) if r.kind == 'end' and r.payload['record_id'] == row.id), None)
+        if ended is not None:
+            return ended.id  # already ended, e.g. from the standing-permission controls: revocation stays possible
+        return self.append(session, project, 'end', {'record_id': row.id, 'reason': reason, 'cause': 'revoke',
+                                                     'origin': 'owner_confirmed', 'actor': actor}, 'end:' + row.id).id
+
+    def delegated_inactive(self, session, run_id):
+        """True when a delegated task run's sealed authority is no longer active (revoked parent, expiry)."""
+        from my_harness.storage.models import ManagedEventRow, ManagedRunRow, KnowledgeProjectRow as P
+        binding = session.scalar(select(ManagedEventRow.payload).where(
+            ManagedEventRow.run_id == run_id, ManagedEventRow.kind == 'task_delegated'))
+        if binding is None:
+            return False
+        run = session.get(ManagedRunRow, run_id)
+        project = session.scalar(select(P.id).where(P.root == run.root)) if run else None
+        row = session.get(Record, binding['authorization_id'])
+        return row is None or row.project_id != project or not self.active(session, row)
+
     def judge_policy(self, session, project, duty, subject):
+        if isinstance(subject, str) and subject.startswith('roadmap:'):
+            # T016: judge requests of an autonomous run use the delegation contract of its active T010 parent.
+            parent = session.get(Record, subject.split(':')[1])
+            if (parent is None or parent.project_id != project or parent.kind != 'authorization'
+                    or not parent.payload.get('autonomous') or not self.active(session, parent)):
+                return None
+            delegation = parent.payload.get('delegation')
+            return delegation if delegation and duty in delegation['duties'] else None
         request = next((r for r in reversed(self.records(session, project)) if r.kind == 'request' and r.payload['subject'] == subject), None)
         if request is None or not request.payload['parent']:
             return None
@@ -437,6 +510,8 @@ class PermissionLifecycle:
 
     def cancelled(self, session, run_id, *, command_id=None, job_id=None):
         from my_harness.storage.models import ManagedAttemptRow, ManagedEventRow
+        if self.delegated_inactive(session, run_id):
+            return True  # T016: revocation stops the active delegated writer through existing process control
         if command_id is not None:
             started = next((e for e in session.scalars(select(ManagedEventRow).where(
                 ManagedEventRow.run_id == run_id, ManagedEventRow.kind == 'command_started'))

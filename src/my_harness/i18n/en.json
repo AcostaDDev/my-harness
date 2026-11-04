@@ -1259,6 +1259,7 @@
   "work_language.work_language_since_does": "The work language of {root} is {work_language} since {confirmed_at}; it does not change",
   "workflow.additional_notes_non_empty": "Additional notes must be non-empty text for a planned task",
   "workflow.content_changed_during_validation": "Content changed during validation; revalidate",
+  "workflow.continuation_evidence_changed": "Content differs from the executor evidence this continuation was authorized to review; resolve the changes before resuming",
   "workflow.environment_preparation_failed": "Environment preparation failed",
   "workflow.human_decision_required_task": "Human decision required; task scope is frozen",
   "workflow.malformed_denials": "Malformed permission denials",
@@ -1445,5 +1446,8 @@
   "orchestration.phase_graph_failed": "Managed phase graph {thread}: {status} ({reason})",
   "documents.phase_active": "Active phase: {phase}",
   "documents.phase_none": "None",
-  "documents.phase_planning_pending": "Planning pending."
+  "documents.phase_planning_pending": "Planning pending.",
+  "autonomy.refused": "Autonomous roadmap request refused: {reason}.",
+  "autonomy.manual_batch_excluded": "An autonomous roadmap run is active on this checkout; manual batches are excluded until it is revoked or completed.",
+  "autonomy.acknowledgement.autonomy_ack_1": "I authorize My Harness to plan, execute, check, repair and close the phases listed in this preview without asking me at each step, within the delegation, bounds and caps shown. Agents run as local processes with my user's permissions; the harness contains them cooperatively and can stop them, but it cannot guarantee that no action happens before a stop takes effect. Caps are thresholds checked before each new model call, so a call already running may exceed them. The run never pushes, publishes, releases or deploys, never changes objectives, criteria or requirements, and stops for my answer when it needs one. I can pause or revoke it at any time."
 }

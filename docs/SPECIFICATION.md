@@ -467,4 +467,18 @@ reviewed HEAD and renews generated views in one reconciliable commit. The accept
 ACTIVE successor pending planning; the final phase leaves no active phase. Recovery never retries uncertain
 inference or infers a stopped writer from lease expiry. Abandonment, manual task-only batches, answers and
 historical consultation remain available. No Markdown/database drift check or automatic import is introduced.
-T015 is integrated into develop as source `f7c5ce3`. The operator release remains 0.1.9 and T016 autonomy is pending.
+T015 is integrated into develop as source `f7c5ce3`. The operator release remains 0.1.9.
+
+### P002-T016: autonomous roadmap runs (integrated into develop)
+
+[D299](DECISIONS.md#d299--autonomous-run-authority-children-and-persistent-bounds) implements D276's authority in
+SQLite: readiness and a start preview with explicit finite bounds, optional caps and delegation; an
+`owner_confirmed` authorization sealed by exact hash with idempotency and revalidation; one active run per root,
+excluding manual batches; concrete `owner_delegated` children; persistent bounds per stable identity; caps checked
+before each inference; the durable stops of FL02; per-project start, status, questions, answer, pause, resume,
+revoke, recover and revision controls; and the completion rule. G11, G12 and G17 are accepted with conditions
+([D300](DECISIONS.md#d300--g11-g12-and-g17-accepted-with-conditions)): prefilled defaults, canonical budgets,
+sealed reviewer reports validated against the frozen revision, owner-record answers and `autonomy-ack-1`. The
+production route reuses T014/T015 operations with delegated task contracts and child verification at the adoption
+and closure boundaries ([D301](DECISIONS.md#d301--delegated-task-contracts-and-effect-boundary-verification))
+([record](phase/P002-T016-autonomous-roadmap.md)).

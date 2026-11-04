@@ -188,28 +188,47 @@ class StructuredPhases:
                 shown['judge_input'] = candidate
             return {**shown, 'preview_sha256': digest(shown)}
 
-    def adopt(self, context, code, *, preview_sha256, key, reason, confirmed, **kwargs):
-        if confirmed is not True or not isinstance(reason, str) or not reason.strip():
+    def adopt(self, context, code, *, preview_sha256, key, reason, confirmed, delegated=None, **kwargs):
+        """Owner-confirmed adoption by exact preview; or (T016) delegated adoption of a plan revision of an existing
+        phase, whose sealed child is verified inside this writer transaction before anything is adopted."""
+        if not isinstance(reason, str) or not reason.strip():
             refuse('explicit_owner_confirmation_required')
-        marker = digest({'code': code, 'preview_sha256': preview_sha256, 'reason': reason, **kwargs})
+        if delegated is None and confirmed is not True or delegated is not None and (
+                confirmed is not False or not kwargs.get('phase_id')):
+            refuse('explicit_owner_confirmation_required')
+        marker = digest({'code': code, 'preview_sha256': preview_sha256, 'reason': reason, **kwargs,
+                         **({'child_id': delegated['child_id']} if delegated else {})})
         with self.managed._write() as session:
             revision = current(session, context.root)
             if revision is None:
                 refuse('accepted_knowledge_required')
             records = exchange.records(session, revision.project_id, 'phase_adoption')
             existing = next((r for r in records if r.record_key == 'phase:' + key), None)
-            if existing:
+            if existing:  # an idempotent replay performs no new effect
                 if existing.payload['request_sha256'] != marker:
                     refuse('idempotency_conflict')
                 return existing.payload['phase_id']
             shown = self.preview(context, code, **kwargs)
             if shown['preview_sha256'] != preview_sha256:
                 refuse('preview_stale')
+            provenance = None
+            if delegated:
+                # T016 (D301): the child must name exactly this proposal, staged draft, preview and revision.
+                provenance = delegated['verify'](session, adoption={
+                    'preview_sha256': preview_sha256, 'draft_id': kwargs.get('draft_id'),
+                    'coverage': kwargs.get('coverage'), 'revision_id': revision.id,
+                    'expected_version': kwargs.get('expected_version')})
+                op = session.get(Operation, provenance['proposal_operation_id'] or '')
+                if (op is None or op.phase_id != kwargs['phase_id'] or op.kind != 'plan' or op.status != 'PROPOSED'
+                        or not (op.result or {}).get('staged') or op.result.get('draft_id') != kwargs.get('draft_id')
+                        or digest(op.result['result']) != provenance['proposal_sha256']
+                        or op.result['result']['coverage'] != kwargs.get('coverage')):
+                    refuse('delegated_adoption_mismatch')
             phase_id = kwargs.get('phase_id')
             definition = deepcopy(shown['definition'])
             if shown['draft_id']:
                 revision = PhaseKnowledge.adopt(session, context.root, shown['draft_id'], revision.id,
-                                                reason=reason, confirmed=confirmed)
+                                                reason=reason, confirmed=confirmed, delegated=provenance)
                 definition['knowledge']['revision'] = stamp(revision)
             from my_harness.storage.phases import insert_phase, _event, _invalidate_batches, _questions, _open, TERMINAL
             if not phase_id:
@@ -230,14 +249,18 @@ class StructuredPhases:
                 phase.status = 'BLOCKED' if _open(_questions(session, phase.id)) else 'ACTIVE'
                 session.add(Definition(id=str(uuid4()), phase_id=phase.id, number=phase.definition_number,
                     definition=definition, definition_sha256=phase.definition_sha256, documents={},
-                    origin='amended', reason=reason, actor=actor(), created_at=self.managed._now()))
+                    origin='amended', reason=reason,
+                    actor={'principal': 'harness', **provenance} if provenance else actor(),
+                    created_at=self.managed._now()))
                 _invalidate_batches(self.managed, session, phase, reason)
                 _event(self.managed, session, phase, 'phase_plan_adopted', {
-                    'revision_id': revision.id, 'origin': 'owner_confirmed', 'preview_sha256': preview_sha256,
-                    'definition_number': phase.definition_number})
+                    'revision_id': revision.id, 'origin': 'owner_delegated' if provenance else 'owner_confirmed',
+                    'preview_sha256': preview_sha256, 'definition_number': phase.definition_number,
+                    **({'delegation': provenance} if provenance else {})})
             exchange.add(session, revision.project_id, 'phase_adoption', {
                 'request_sha256': marker, 'phase_id': phase_id, 'preview': shown,
-                'accepted_revision': stamp(revision), 'reason': reason}, 'phase:' + key)
+                'accepted_revision': stamp(revision), 'reason': reason,
+                **({'delegation': provenance} if provenance else {})}, 'phase:' + key)
             return phase_id
 
     def propose(self, context, phase_id, expected, *, key, versions):
@@ -398,9 +421,19 @@ def effect_guard(managed, claim):
         op, phase = _operation(session, run)
         auth = session.get(Authorization, op.request['authorization_id'])
         scope = auth.scope if auth else {}
+        delegated = scope.get('origin') == 'owner_delegated'
+        if delegated:  # T016: the sealed child is verified again under the writer fence of each Git effect
+            from my_harness.services.permission_lifecycle import PermissionLifecycle
+            from my_harness.storage.autonomous_runs import verify_child
+            from my_harness.core.engine.autonomy import AutonomyRefusal
+            try:
+                verify_child(session, PermissionLifecycle(managed.engine), scope.get('parent'), kind='phase_closure',
+                             root=phase.root, phase=phase.code, binding=op.request['binding_sha256'])
+            except AutonomyRefusal:
+                delegated = None
         valid = (auth is not None and auth.phase_id == phase.id and auth.kind == 'close'
-            and scope.get('origin') == 'owner_confirmed' and not scope.get('parent')
-            and isinstance(auth.actor, dict) and bool(auth.actor.get('user'))
+            and (delegated or scope.get('origin') == 'owner_confirmed' and not scope.get('parent')
+                 and isinstance(auth.actor, dict) and bool(auth.actor.get('user')))
             and auth.status == 'ACTIVE' and auth.expires_at > managed._now()
             and scope.get('binding_sha256') == op.request['binding_sha256']
             and scope.get('check_operation_id') == op.request['check_operation_id']

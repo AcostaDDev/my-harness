@@ -150,6 +150,17 @@ class AgentResult:
     metadata_json: str | None = None
 
 
+class AdmissionRefused(ContractError):
+    """A new inference refused at its fenced admission (P002-T016 caps or ended authority): no process is launched
+    and the caller stops with this reason instead of failing the job."""
+
+
+@dataclass(frozen=True)
+class AdmissionStop:
+    """Returned instead of an admitted request when the attempt start refused the inference (committed reason)."""
+    stop: dict
+
+
 class AgentAdapter(Protocol):
     def invoke(self, context: ProjectContext, request: AgentRequest) -> AgentResult: ...
 
@@ -220,7 +231,10 @@ def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAda
     request = AgentRequest(str(uuid4()), role, selection, prompt, history.task_json, history.context_json,
                            prompt_snapshot_json=prompt_snapshot_json)
     if journal:
-        request = journal.agent_started(history, request) or request
+        try:
+            request = journal.agent_started(history, request) or request
+        except AdmissionRefused as exc:
+            return stop_history(history, role, str(exc)), None
     try:
         from my_harness.core.engine.permissions import snapshot_payload
         if snapshot_payload(request).get('denials'):

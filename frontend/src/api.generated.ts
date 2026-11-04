@@ -3294,6 +3294,227 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/autonomous/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Readiness */
+        post: operations["autonomous_readiness"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["autonomous_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/gaps/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Gap Answer */
+        post: operations["autonomous_gap_answer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm */
+        post: operations["autonomous_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["autonomous_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events */
+        get: operations["autonomous_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Questions */
+        get: operations["autonomous_questions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/questions/{question_id}/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer */
+        post: operations["autonomous_answer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause */
+        post: operations["autonomous_pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume */
+        post: operations["autonomous_resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke */
+        post: operations["autonomous_revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recover */
+        post: operations["autonomous_recover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/revise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revise */
+        post: operations["autonomous_revise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -4499,6 +4720,362 @@ export interface components {
             recorded_at: string;
             /** Models */
             models: components["schemas"]["ModelUsageRead"][];
+        };
+        /** AutonomousAnswerCreate */
+        AutonomousAnswerCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Text */
+            text: string;
+            /** Choice */
+            choice?: string | null;
+        };
+        /**
+         * AutonomousBounds
+         * @description Every local bound is explicit and finite; G11 owns any default (none is applied).
+         */
+        AutonomousBounds: {
+            /** Task Attempts */
+            task_attempts: number;
+            /** Judge Reconsiderations */
+            judge_reconsiderations: number;
+            /** Replacement Plans */
+            replacement_plans: number;
+            /** Remediation Per Cause */
+            remediation_per_cause: number;
+            /** No Progress */
+            no_progress: number;
+        };
+        /**
+         * AutonomousCaps
+         * @description Optional thresholds checked before each new inference; an in-flight call may exceed them.
+         */
+        AutonomousCaps: {
+            /** Deadline */
+            deadline?: string | null;
+            /** Invocations */
+            invocations?: number | null;
+            /** Observed Tokens */
+            observed_tokens?: number | null;
+            valuation?: components["schemas"]["AutonomousValuationCap"] | null;
+        };
+        /** AutonomousCheckRead */
+        AutonomousCheckRead: {
+            /** Check */
+            check: string;
+            /** Passed */
+            passed: boolean;
+            /** Detail */
+            detail?: string | null;
+        };
+        /** AutonomousConfirmCreate */
+        AutonomousConfirmCreate: {
+            request: components["schemas"]["AutonomousRequest"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Reason */
+            reason: string;
+            /** Confirmed */
+            confirmed: boolean;
+            /** Acknowledgement Version */
+            acknowledgement_version?: string | null;
+        };
+        /** AutonomousDelegation */
+        AutonomousDelegation: {
+            /** Duties */
+            duties: ("permission" | "planning_choice" | "spec_gap" | "blocked_check")[];
+            tiers: components["schemas"]["AutonomousTiers"];
+            duration_ceiling: components["schemas"]["AutonomousDurationCeiling"];
+        };
+        /** AutonomousDurationCeiling */
+        AutonomousDurationCeiling: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "operation" | "time";
+            /** Seconds */
+            seconds?: number | null;
+        };
+        /** AutonomousEventRead */
+        AutonomousEventRead: {
+            /** Sequence */
+            sequence: number;
+            /** Kind */
+            kind: string;
+            /** Dedupe Key */
+            dedupe_key: string;
+            /** Refs */
+            refs: {
+                [key: string]: unknown;
+            };
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at: string;
+        };
+        /**
+         * AutonomousGapAnswerCreate
+         * @description Owner answer to an `owner_answer_required` gap of the sealed report of the current frozen revision.
+         */
+        AutonomousGapAnswerCreate: {
+            /** Gap Sha256 */
+            gap_sha256: string;
+            /** Text */
+            text: string;
+        };
+        /** AutonomousGapAnswerRead */
+        AutonomousGapAnswerRead: {
+            /** Id */
+            id: string;
+            /** Gap Sha256 */
+            gap_sha256: string;
+            /** Revision Id */
+            revision_id: string;
+            /**
+             * Origin
+             * @constant
+             */
+            origin: "owner_confirmed";
+            /** Created At */
+            created_at: string;
+        };
+        /** AutonomousPreviewRead */
+        AutonomousPreviewRead: {
+            /** Format */
+            format: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Root */
+            root: string;
+            /** Lineage Id */
+            lineage_id: string | null;
+            /** Project Id */
+            project_id: string | null;
+            /** Revision */
+            revision: {
+                [key: string]: unknown;
+            } | null;
+            /** Scope */
+            scope: {
+                [key: string]: unknown;
+            };
+            /** Delegation */
+            delegation: {
+                [key: string]: unknown;
+            };
+            /** Bounds */
+            bounds: {
+                [key: string]: unknown;
+            } | null;
+            /** Caps */
+            caps: {
+                [key: string]: unknown;
+            };
+            /** Standing Grants */
+            standing_grants: string[];
+            /** Acknowledgement */
+            acknowledgement: {
+                [key: string]: unknown;
+            };
+            /** Policy */
+            policy: {
+                [key: string]: unknown;
+            };
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Git */
+            git: {
+                [key: string]: unknown;
+            } | null;
+            /** Readiness */
+            readiness: {
+                [key: string]: unknown;
+            };
+            /** Blocking */
+            blocking: string[];
+            /** Pending Gates */
+            pending_gates: string[];
+            /**
+             * Gaps
+             * @default []
+             */
+            gaps: {
+                [key: string]: unknown;
+            }[];
+            /** Default Bounds */
+            default_bounds?: {
+                [key: string]: number;
+            } | null;
+        };
+        /** AutonomousQuestionRead */
+        AutonomousQuestionRead: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "OPEN" | "ANSWERED" | "SUPERSEDED";
+            /** Version */
+            version: number;
+            /** Subject */
+            subject: {
+                [key: string]: unknown;
+            };
+            /** Binding */
+            binding: {
+                [key: string]: unknown;
+            };
+            /** Answer */
+            answer: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+            /** Superseded */
+            superseded?: boolean | null;
+        };
+        /**
+         * AutonomousReadinessRead
+         * @description Deterministic FL01 checks; `PENDING_GATES` while G12 is open, never READY without it.
+         */
+        AutonomousReadinessRead: {
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "READY" | "BLOCKED" | "PENDING_GATES";
+            /** Checks */
+            checks: components["schemas"]["AutonomousCheckRead"][];
+            /**
+             * Blocking
+             * @default []
+             */
+            blocking: string[];
+            /**
+             * Pending Gates
+             * @default []
+             */
+            pending_gates: string[];
+            /** Gates */
+            gates: {
+                [key: string]: unknown;
+            };
+            /** Gap Report Sha256 */
+            gap_report_sha256?: string | null;
+            /**
+             * Owner Answer Required
+             * @default []
+             */
+            owner_answer_required: string[];
+            /**
+             * Advisory
+             * @default []
+             */
+            advisory: string[];
+            /**
+             * Gaps
+             * @default []
+             */
+            gaps: {
+                [key: string]: unknown;
+            }[];
+            /** Default Bounds */
+            default_bounds?: {
+                [key: string]: number;
+            } | null;
+        };
+        /** AutonomousReasoned */
+        AutonomousReasoned: {
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+        };
+        /** AutonomousRecoverCreate */
+        AutonomousRecoverCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+            /** Writer Stopped */
+            writer_stopped: boolean;
+        };
+        /** AutonomousRequest */
+        AutonomousRequest: {
+            bounds?: components["schemas"]["AutonomousBounds"] | null;
+            caps?: components["schemas"]["AutonomousCaps"];
+            delegation: components["schemas"]["AutonomousDelegation"];
+        };
+        /** AutonomousRunRead */
+        AutonomousRunRead: {
+            /** Id */
+            id: string;
+            /** Root */
+            root: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "RUNNING" | "WAITING_FOR_OWNER" | "PAUSED" | "LIMIT_REACHED" | "FAILED" | "RECOVERY_REQUIRED" | "REVOKED" | "COMPLETED";
+            /** Reason */
+            reason: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            };
+            /** Version */
+            version: number;
+            /** Thread Id */
+            thread_id: string;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Authorization */
+            authorization: {
+                [key: string]: unknown;
+            };
+            /** Questions */
+            questions: components["schemas"]["AutonomousQuestionRead"][];
+            /** Children */
+            children: {
+                [key: string]: unknown;
+            }[];
+            /** Consumption */
+            consumption: {
+                [key: string]: {
+                    [key: string]: number;
+                };
+            };
+        };
+        /** AutonomousTiers */
+        AutonomousTiers: {
+            /** Active */
+            active: string[];
+            /** Delegable */
+            delegable: string[];
+            /** Owner Only */
+            owner_only: string[];
+        };
+        /** AutonomousValuationCap */
+        AutonomousValuationCap: {
+            /** Amount */
+            amount: string;
+            /** Basis */
+            basis: string;
+        };
+        /** AutonomousVersioned */
+        AutonomousVersioned: {
+            /** Expected Version */
+            expected_version: number;
         };
         /** BootstrapStatusRead */
         BootstrapStatusRead: {
@@ -22557,6 +23134,859 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TraceArtifactRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_readiness: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousReadinessRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_gap_answer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousGapAnswerCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousGapAnswerRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousConfirmCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_status: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_events: {
+        parameters: {
+            query?: {
+                after?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousEventRead"][];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_questions: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousQuestionRead"][];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_answer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousAnswerCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousQuestionRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_pause: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousReasoned"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_resume: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousVersioned"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_revoke: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousReasoned"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_recover: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousRecoverCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_revise: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousConfirmCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
                 };
             };
             /** @description Forbidden */

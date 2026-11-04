@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016–T023 remain planned. Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. Autonomous roadmap orchestration remains pending T016. Evidence is synthetic only. Read
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017–T023 remain planned. Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 is next. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -86,7 +86,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -513,7 +513,7 @@ and the smallest ceiling even without replacement links, with regression evidenc
 
 **Status:** completed and integrated into develop after independent technical re-review, source `f7c5ce3`
 on `feat/p002-t015-phase-lifecycle` from `c707986`. The final full check and 21 focused re-review tests passed.
-See [evidence](phase/P002-T015-phase-lifecycle.md). T016 is next. Release 0.2.0, distribution and installation remain pending.
+See [evidence](phase/P002-T015-phase-lifecycle.md). T016 is integrated. Release 0.2.0, distribution and installation remain pending.
 
 **Problem:** phase checks and transitions currently bind documentary baselines and separate explicit planning flows.
 **Expected result:** manual and delegated phase operations use accepted knowledge revisions while retaining exact
@@ -537,6 +537,11 @@ READY, archive/tag and successor semantics. **Dependencies:** T004, T005, T007, 
 **Problem:** task/phase operations need a sustained delegated workflow that finishes valid roadmap work safely.
 **Expected result:** an optional admitted run plans/executes/checks/repairs/closes successive phases until completion,
 with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T006, T009, T010, T014, T015.
+
+**Status:** complete and integrated into develop as source `26ccd21` after independent final re-review.
+G11/G12/G17 are accepted with conditions (D300); the production route over T014/T015 was verified synthetically
+(D301). T017 is next. Release 0.2.0, distribution and installation remain pending
+([record](phase/P002-T016-autonomous-roadmap.md)).
 
 **Subtasks:**
 
@@ -735,4 +740,7 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
     [Evidence](phase/P002-T011-db-intake.md#independent-technical-re-review-and-authorized-delivery-2026-10-31).
     **P002-T012** is completed and integrated as source `6643ada` after independent technical re-review ([evidence](phase/P002-T012-knowledge-editing.md)); the owner authorized its source commit, merge and push of develop. **P002-T013** is completed and integrated as source `2c54fa9` after independent technical re-review; the owner authorized its source commit, merge and push of develop. **P002-T014 is completed and integrated as source `624631e` after independent technical re-review** ([record](phase/P002-T014-task-execution.md)). The owner authorized its commit, merge and push of develop. Release/publication/installation remain pending.
 
-11. **P002-T015** is complete and integrated as source `f7c5ce3`. Next: **P002-T016**.
+11. **P002-T015** is complete and integrated as source `f7c5ce3`.
+12. **P002-T016** is complete and integrated as source `26ccd21` after independent final re-review
+    ([evidence](phase/P002-T016-autonomous-roadmap.md#15-independent-final-re-review)).
+    Next: **P002-T017**. Release 0.2.0, distribution and installation remain pending.

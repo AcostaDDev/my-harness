@@ -153,3 +153,13 @@ A new structured closure tag requires the sealed checkout fingerprint immediatel
 Git verifies HEAD in the same reference transaction that creates the tag. A stale checkout stops closure
 before archive publication. Recovery of an exact existing tag and validation of sealed partial archive bytes
 remain separate from new tag publication.
+
+While an autonomous roadmap run is active on a root, manual batch authorization is refused, and an autonomous
+confirmation is refused while a manual batch is active (P002-T016,
+[autonomous roadmap runs](autonomous-roadmap.md)). Other manual confirmations keep their paths.
+
+Delegated autonomous effects reuse the structured lane: plan adoption of an existing phase and closure of a READY
+phase accept an `owner_delegated` child instead of the owner confirmation, verified inside the effect's writer
+transaction (and, for closure, under the writer fence of each Git reference effect). Activation, abandonment,
+recovery renewal and the exact READY binding keep their owner paths
+([D301](../DECISIONS.md#d301--delegated-task-contracts-and-effect-boundary-verification)).

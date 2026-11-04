@@ -141,7 +141,7 @@ The existing phase journal and exchange records own effects and recovery. Partia
 or an unrecorded result reconcile the same sealed inputs after explicit stopped-writer confirmation. A manual batch
 only queues/commits tasks; it cannot check/close a phase and is invalidated by plan adoption or stale knowledge.
 History and query-only archives expose evidence without mutation. Events correlate phase, operation, run and job
-identities for T017/T018; those interfaces and T016's delegated loop are outside T015.
+identities for T017 and the work map (T018–T024); those interfaces and T016's delegated loop are outside T015.
 
 On structured closure recovery, Git first checks the sealed commit. A reachable exact commit and its sealed tag
 provide evidence for recording the original closure even after a later knowledge adoption. Archive and export

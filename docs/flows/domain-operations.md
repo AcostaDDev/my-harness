@@ -79,7 +79,7 @@ sequenceDiagram
    No READY association is asserted when absent; T014–T016 own final operational readiness. Operational rulings
    remain separately labelled audit records, never implicitly adopted product decisions.
 
-T013 owns renderer/export/import and portable format; T017/T018 own global inbox and graph layout; T020 owns
+T013 owns renderer/export/import and portable format; T017 owns the global inbox and T018–T024 the work map; T026 owns
 installed conversion. No new migration or agent authority is part of this flow.
 
 T012 review corrections keep the project editor available with either null or READY configuration mode; archives

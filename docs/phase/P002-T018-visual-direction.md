@@ -4,7 +4,9 @@
 §§3–7 was **accepted by the owner on 2026-11-03** with the answers in §8
 ([D297](../DECISIONS.md#d297--work-map-visual-direction-and-agent-conversation-entry-points)). Design input only: no
 source, schema, API or dependency change; T018 and T017 are not started and the implementation order is unchanged
-(T015 next). Gates: resolves the owner direction of **G14** (graph visual direction, T018) and supplies the
+(T015 next). **Plan v0.4 (2026-11-04):** the owner later split T018 by responsibility into T018–T024, superseding
+the single-task split of §7 ([D303](../DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered));
+the task numbers below are those of plan v0.3. Gates: resolves the owner direction of **G14** (graph visual direction, T018) and supplies the
 conversation kinds of **G13** (inbox taxonomy and shortcuts, T017). Constraints already
 fixed: [D277](../DECISIONS.md#d277--correlated-traces-operations-and-knowledge-access-receipts),
 [D278](../DECISIONS.md#d278--global-inbox-and-task-instance-graph), B19/B20 of the

@@ -58,7 +58,7 @@ delivered knowledge are traced; a global inbox and a task-instance graph serve b
 **Status:** active since the P001 closure (2026-10-29). The owner adopted plan v0.2 and the
 [design basis](phase/P002-design-basis.md) as the evolving baseline; **P002-T001 completed the contracts, flows,
 threat model and coverage as accepted design (D268–D279)**, refining the plan to **v0.3** with 23 tasks
-([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)). T001 and T002 (feasibility, D280–D281)
+([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)); plan **v0.4** splits T018 by responsibility, for 29 tasks ([D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)). T001 and T002 (feasibility, D280–D281)
 are integrated into develop. **P002-T003** (LangGraph runtime and continuation foundation, D282–D283) is completed and
 integrated into develop; it is exercised by synthetic graphs only and no product behavior
 uses it. **P002-T004** (structured knowledge and revision model, D284–D285) is completed and integrated into develop; it is
@@ -84,7 +84,7 @@ P002-T011 is completed and integrated into develop as source `616846d`; independ
 ([evidence](phase/P002-T011-db-intake.md), D292): structured definition/onboarding, exact owner knowledge
 adoption, independent profile confirmation, conversation-scoped sources and preserved original instructions.
 All four findings are corrected; the owner authorized source commit, merge into develop and push of develop.
-Export/commit (T013), final readiness (T016), installed conversion (T020) and operational
+Export/commit (T013), final readiness (T016), installed conversion (T026) and operational
 delivery remain pending. No native provider or browser qualification is claimed.
 
 P002-T012 is completed and integrated into develop as source `6643ada`; independent technical re-review passed
@@ -104,7 +104,7 @@ P002-T014 is completed and integrated as source `624631e` after independent tech
 correction-budget finding. The managed task graph, frozen scoped attempts, owner gap continuation and
 recoverable task/document commit have synthetic evidence. Schema `0037_task_lineage` retains 86 tables.
 The final complete check passed. The owner authorized source commit, the accompanying merge and push of develop; phase
-release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015 is completed and integrated as source `f7c5ce3` after independent technical re-review ([record](phase/P002-T015-phase-lifecycle.md)). T016 is completed and integrated as source `26ccd21` after independent final re-review ([record](phase/P002-T016-autonomous-roadmap.md)). T017 is completed and integrated as source `9ebb800` after owner technical review ([record](phase/P002-T017-global-inbox.md)). T018–T023 and the 0.2.0 release remain pending.
+release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015 is completed and integrated as source `f7c5ce3` after independent technical re-review ([record](phase/P002-T015-phase-lifecycle.md)). T016 is completed and integrated as source `26ccd21` after independent final re-review ([record](phase/P002-T016-autonomous-roadmap.md)). T017 is completed and integrated as source `9ebb800` after owner technical review ([record](phase/P002-T017-global-inbox.md)). T018–T029 (plan v0.4, D303) and the 0.2.0 release remain pending.
 
 **Exit criteria (adopted with D268):**
 

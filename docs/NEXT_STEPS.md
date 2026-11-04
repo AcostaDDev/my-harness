@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. T018 is next. Evidence is synthetic only. Read
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T018 is complete (design; D304–D309 accepted)** on `docs/p002-t018-work-map-contract`, not yet committed. T019 is next. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -86,7 +86,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018–T029 are **planned** (plan v0.4, D303). Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted)**. T019–T029 are **planned** (plan v0.4, D303). Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -108,7 +108,7 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T015 | Refactor phase checks, planning, closure/archive and manual lifecycle | T004, T005, T007, T009, T013, T014 |
 | P002-T016 | Deliver autonomous roadmap execution, local bounds and durable human waits | T003, T006, T009, T010, T014, T015 |
 | P002-T017 | Deliver the global inbox and guarded actions for both modes | T005, T006, T015, T016 |
-| P002-T018 | Agree the work-map contract and rendering dependency decision (design) | T006, T007, T012, T015, T016, T017; D297 |
+| P002-T018 | Agree the work-map contract and rendering dependency decision (design; **completed; D304–D309 accepted**) | T006, T007, T012, T015, T016, T017; D297 |
 | P002-T019 | Derive the durable observed-step projection from sealed native streams (backend) | T006, T008, T014, T018 |
 | P002-T020 | Provide bounded work-map and trace read projections and API (backend) | T007, T009, T010, T015–T019 |
 | P002-T021 | Build the hand-drawn rendering foundation and adopt its dependency (frontend) | T018 |
@@ -596,6 +596,11 @@ backend and frontend tasks can implement and review separately.
 **Expected result:** an owner-accepted design record that binds T019–T024, without source, schema, API or
 dependency changes. **Dependencies:** T006, T007, T012, T015, T016, T017; D297.
 
+**Status (2026-11-04):** completed (design) on `docs/p002-t018-work-map-contract` from `eb5bb74`. The owner explicitly
+accepted the [contract](phase/P002-T018-work-map-contract.md) and D304–D309 after answering Q1–Q20 (four document/code
+inconsistencies included), with one addition at acceptance: source-record links per observed step (contract §6.4).
+G14 is resolved. Nothing is implemented; commit and merge wait for the owner's request.
+
 **Responsibility:** design (documentation only). Plan v0.4 split the former T018 by responsibility
 ([D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)); this task keeps its ID
 and the owner gate.
@@ -630,7 +635,7 @@ implemented, and `scripts/check-docs`.
 **Review:** explicit owner review and acceptance of the contract and decisions before T019 starts.
 **Basis:** B05, B10–B11, B17, B19–B20, B23.
 
-**Gates:** G14 (owner: cards, information and navigation; D297 settled the visual direction). **Threats:** designs
+**Gates:** G14 (owner: cards, information and navigation; D297 settled the visual direction; resolved by D304–D309). **Threats:** designs
 the controls for TM13, TM14, TM15, TM17, TM18 and TM19.
 ## P002-T019 — Observed-step projection
 
@@ -949,3 +954,7 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 14. **Plan v0.4 (2026-11-04, D303).** The former T018 is split by responsibility into T018–T024 and the former
     T019–T023 are T025–T029. Next: **P002-T018** (work-map contract and rendering decision), a design task on its
     own `docs/` topic branch from develop.
+15. **P002-T018 (2026-11-04).** Complete (design) on `docs/p002-t018-work-map-contract` from `eb5bb74`; the owner
+    accepted the [contract](phase/P002-T018-work-map-contract.md) and D304–D309 with the source-record addition.
+    Not committed; commit/merge only when the owner asks. Next: **P002-T019** (observed-step projection) on its own
+    topic branch from develop.

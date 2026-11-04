@@ -536,6 +536,21 @@ lazy `managed_runtime.roadmap_graphs` boundary. T010 supplies the roadmap parent
 scope check and the existing cancellation poll consume them. `api/autonomous.py` exposes the minimal per-project
 controls; there is no new scheduler, ledger or dependency. [Record](phase/P002-T016-autonomous-roadmap.md).
 
+### P002-T018: work-map design (designed; not implemented)
+
+Accepted by the owner in D304–D309 (2026-11-04); no component below exists yet
+([contract](phase/P002-T018-work-map-contract.md)). T019 adds a deterministic projector that turns each settled managed
+attempt's sealed evidence into `invocation.step` and `invocation.steps_sealed` events in `trace_events`. Its inputs
+are `agent_event` rows, `stream_bytes` chunks and verified stdout bytes. It runs as an idempotent effect after a
+pending marker written at settlement, and explicit retention is guarded until the projection is sealed. Steps keep
+references to their source `agent_event` rows, which the existing run event and attempt-log routes serve. T020 adds
+versioned read-only projections and `GET` routes under `/api/managed/map/`, built over the existing ledgers, T017's
+inbox projection and T019's steps. They offer keyset cursors, version tokens and an activity summary for polling,
+and the same routes serve query-only archives from SQLite alone. T021 adds an in-house SVG map engine with rough.js
+4.6.6 and the packaged Excalifont subsets; T022–T023 render L0–L4 and the drawer through the existing router.
+T024 seals chat turns that carry element context through T007's boundary, using a single-node chat graph thread
+over the existing scheduler. No second scheduler, workflow editor or executable graph authority is introduced.
+
 ## Global inbox projection
 
 P002-T017 derives bounded list and item views in SQLite from committed managed, phase, autonomous and trace

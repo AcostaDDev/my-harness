@@ -72,7 +72,7 @@ of develop. Release 0.2.0, distribution and installation remain pending.
 **P002-T017 is complete and integrated into develop**, source `9ebb800` on `feat/p002-t017-global-inbox` from `9e8995b`.
 The owner accepted G13 (D302) and deferred a direct response to judge rulings. The global and per-project inbox,
 read receipts, reusable conversation panel and guarded shortcuts are implemented with synthetic evidence; owner technical review passed after one judge-resolution correction.
-Schema `0039_inbox_read_marks` (94 tables). T018 (work-map contract, plan v0.4) is next. Release 0.2.0 via protected `main`,
+Schema `0039_inbox_read_marks` (94 tables). **P002-T018 is complete (design)** on `docs/p002-t018-work-map-contract` from `eb5bb74`: the owner explicitly accepted the [work-map contract](phase/P002-T018-work-map-contract.md) and D304–D309 on 2026-11-04, with the source-record links added. G14 is resolved. Documentation only, nothing implemented and not committed. Next: **P002-T019**. Release 0.2.0 via protected `main`,
 distribution/publication and installation are pending. The operator installation remains 0.1.9.
 See the [T017 record](phase/P002-T017-global-inbox.md).
 

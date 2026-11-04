@@ -736,7 +736,7 @@ class PhaseRepository:
             return job
 
     def submit_close(self, context, phase_id, expected, *, key, versions, binding_sha256, reason, ttl_seconds,
-                     tag_kind='lightweight', git=None, terminal='CLOSED'):
+                     tag_kind='lightweight', git=None, terminal='CLOSED', delegated=None):
         """Closure authorization bound to the shown READY + closure job, in one transaction.
 
         `tag_kind` is fixed by the project on the server (H3.4) and stays frozen in the authorization."""
@@ -827,6 +827,11 @@ class PhaseRepository:
                          'documents': shown.get('required_documents', phase.documents)}
                 binding_sha256 = digest(bound)
                 ready = SimpleNamespace(id=None, result={'binding': bound, 'binding_sha256': binding_sha256})
+            provenance = None
+            if delegated is not None:  # T016: a verified sealed child, never for abandonment or documentary phases
+                if terminal != 'CLOSED' or not phase.definition.get('knowledge'):
+                    raise Conflict(tr('domain.permission_invalid'))
+                provenance = delegated['verify'](session)
             stale = stale_reasons(parts, ready.result['binding'])
             if terminal == 'CLOSED' and shown is not None:
                 stale += [tr('phases.part_changed_ready', part=name) for name in ('head', 'fingerprint')
@@ -839,10 +844,14 @@ class PhaseRepository:
             expires = (datetime.fromisoformat(now) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
             scope = {'check_operation_id': ready.id, 'binding_sha256': binding_sha256, 'tag': phase.definition['tag'],
                      'tag_kind': tag_kind,
-                     **({'origin': 'owner_confirmed'} if phase.definition.get('knowledge') else {})}
+                     **({'origin': 'owner_confirmed'} if phase.definition.get('knowledge') and not provenance else {}),
+                     **({'origin': 'owner_delegated', 'parent': provenance['child_id'],
+                         'autonomous_authorization': provenance['authorization_id'], 'rule': provenance['rule']}
+                        if provenance else {})}
             auth = Authorization(id=str(uuid4()), phase_id=phase.id, kind='close', status='ACTIVE', scope=scope,
                                  fingerprint=digest({'phase_id': phase.id, 'scope': scope, 'expires_at': expires}),
-                                 actor=actor(), reason=reason.strip(), expires_at=expires, created_at=now,
+                                 actor={'principal': 'harness', **provenance} if provenance else actor(),
+                                 reason=reason.strip(), expires_at=expires, created_at=now,
                                  closed=None, version=1)
             session.add(auth)
             job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-CLOSE',
@@ -888,6 +897,9 @@ class PhaseRepository:
                 raise ValueError(tr('phases.batch_tasks_belong_frozen'))
             if phase.status != 'ACTIVE' or _open(_questions(session, phase.id)):
                 raise Conflict(tr('phases.batch_authorization_requires_active'))
+            from my_harness.storage.autonomous_runs import active_run
+            if active_run(session, phase.root) is not None:
+                raise Conflict(tr('autonomy.manual_batch_excluded'))  # T016: one autonomous writer per root
             now = self.managed._now()
             live = session.scalars(select(Authorization).where(Authorization.phase_id == phase.id,
                                    Authorization.kind == 'batch', Authorization.status == 'ACTIVE')).all()

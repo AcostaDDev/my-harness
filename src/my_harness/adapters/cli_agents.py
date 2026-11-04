@@ -482,7 +482,8 @@ class CLIProcessAdapter:
             request.role == "planning" and parts
             and parts[0].get("version", {}).get("name") == "structured-phase-plan"
             and snapshot.get("output_schema", {}).get("properties", {}).get("plan") == {"type": "null"}
-        )
+        ) or (request.role == "planning" and parts
+              and parts[0].get("version", {}).get("name") in ("roadmap-readiness", "roadmap-task-plan"))
         shape = reader_schema(request) if request.role == "judge" or structured_plan else SHAPES[request.role]
         prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(shape)
         if config.provider == "codex" and request.role == "executor":

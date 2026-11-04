@@ -223,8 +223,12 @@ class JudgeService:
         history = managed.get_run(claim.run_id).history
         request = replace(request, task_json=history.task_json)
         row = json.loads(request.prompt_snapshot_json)['judge']
-        return managed.agent_started(claim, history, request,
+        started = managed.agent_started(claim, history, request,
             InvocationOperation(thread_id, key, {'judge_request_id': row['request_id']}), judge=self)
+        from my_harness.core.engine.contracts import AdmissionRefused, AdmissionStop
+        if isinstance(started, AdmissionStop):  # T016: refused at the attempt start, nothing launched
+            raise AdmissionRefused(tr('autonomy.refused', reason=started.stop['reason']))
+        return started
 
     def record_result(self, managed, claim, request, result):
         history = managed.get_run(claim.run_id).history

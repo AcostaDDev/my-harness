@@ -214,9 +214,13 @@ class OfflineEngine:
         return self._execute(context, history, executor_selection(context, task["executor_selection"]),
                              task["executor_prompt"])
 
-    def resume(self, context: ProjectContext, history: RunHistory, *, retry_executor: bool = False) -> RunHistory:
-        """Revalidation keeps the work; an explicit retry consumes the previous budget."""
+    def resume(self, context: ProjectContext, history: RunHistory, *, retry_executor: bool = False,
+               expected_evidence: dict | None = None) -> RunHistory:
+        """Revalidation keeps the work; an explicit retry consumes the previous budget. `expected_evidence`
+        (P002-T016 continuation of a held review): the only content this revalidation may validate and review."""
         self.resuming = True
+        if expected_evidence is not None and retry_executor:
+            raise ContractError(tr('workflow.continuation_evidence_changed'))
         if context_snapshot(context) != history.context_json:
             raise ContractError("Resume requires the original frozen context/policy")
         if history.status not in {"stopped", "blocked", "revision_limit"} or history.task_json is None:
@@ -249,7 +253,7 @@ class OfflineEngine:
             latest_review = history.cycles[-1].review_json if history.cycles else None
             prompt += "\nHistorical review (does not change scope):\n" + (latest_review or "No review recorded")
             return self._execute(context, history, selection, prompt)
-        return self._review_loop(context, history, None, [], allow_revision=False)
+        return self._review_loop(context, history, None, [], allow_revision=False, expected=expected_evidence)
 
     def _format(self, context: ProjectContext, task: dict) -> tuple[str | None, str | None]:
         """P009-T019 (D133): formats the files the executor may touch under the contract, before capturing the
@@ -291,7 +295,8 @@ class OfflineEngine:
         return self._review_loop(context, history, before, payload.get("permission_denials", []))
 
     def _review_loop(self, context: ProjectContext, history: RunHistory,
-                     before: ContentEvidence | None, denials: list, *, allow_revision: bool = True) -> RunHistory:
+                     before: ContentEvidence | None, denials: list, *, allow_revision: bool = True,
+                     expected: dict | None = None) -> RunHistory:
         task = json.loads(history.task_json)
         while True:
             self._checkpoint(history, "validation")
@@ -302,6 +307,13 @@ class OfflineEngine:
                     if failure:
                         return stopped(history, "formatter", failure)
                 evidence = self.evidence.capture(context)
+                if expected is not None and (evidence.base_revision, evidence.fingerprint,
+                                             list(evidence.changed_paths)) != (
+                        expected["base_revision"], expected["fingerprint"], list(expected["changed_paths"])):
+                    # The capture that would be validated and reviewed is not the authorized executor work: stop
+                    # durably before validation or the reviewer, leaving the files for the owner.
+                    return stopped(history, "continuation", tr('workflow.continuation_evidence_changed'))
+                expected = None  # binds the first capture only; T014's own checks follow as before
                 policy = check_paths(context, task, evidence)
                 source = next((a.request.id for a in reversed(history.attempts) if a.request.role == 'executor'), None)
                 validation = run_validations(context, task, evidence, self.commands, self.journal,

@@ -112,6 +112,9 @@ def _operation_module(run):
     if run.purpose == "project_import":
         from my_harness.storage import retired_work
         return retired_work
+    if run.purpose == "autonomy":
+        from my_harness.storage import autonomous_jobs
+        return autonomous_jobs
     if run.purpose == "bootstrap_discovery":
         from my_harness.storage import bootstrap_discovery
         return bootstrap_discovery
@@ -300,7 +303,10 @@ class SQLiteManagedRepository:
 
     def submit(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
                versions: dict, *, key: str, notes: str | None = None,
-               delegated_authorization: str | None = None) -> JobRecord:
+               delegated_authorization: str | None = None, delegated=None) -> JobRecord:
+        """`delegated`: optional effect-boundary check of an autonomous caller (P002-T016), run inside this
+        transaction after the idempotent replay and before anything is created; it receives the session and the
+        submitted request and raises to refuse. Manual and T010-delegated submissions pass none."""
         for value, name in ((task_id, "task identity"), (phase_id, "phase identity"), (text, "plan text")):
             _nonempty(value, name)
         if notes is not None:
@@ -322,12 +328,16 @@ class SQLiteManagedRepository:
             request["delegated_authorization"] = delegated_authorization
             if notes is not None:
                 raise Conflict(tr('domain.permission_invalid'))
+        elif delegated is not None:
+            raise Conflict(tr('domain.permission_invalid'))
         request = freeze(request)
         assessment = self.guard.assess(context.root)
         with self._write() as session:
             existing = self._existing(session, key, request)
             if existing:
                 return _job(existing)
+            if delegated is not None:
+                delegated(session, json.loads(request))
             return self._queue_new_run(session, assessment, context, versions, task_id, phase_id, key, request)
 
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
@@ -599,11 +609,27 @@ class SQLiteManagedRepository:
                                                     PhaseRow.status.in_(("CLOSED", "CLOSING", "ABANDONED")))):
             raise Conflict(tr('managed.phase_closed_closing_abandoned'))
 
-    def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False, gap_resolution_id: int | None = None) -> JobRecord:
+    def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False, gap_resolution_id: int | None = None,
+               delegated=None, expected_evidence: dict | None = None) -> JobRecord:
+        """`delegated`: optional check of an autonomous continuation (P002-T016), run in this transaction with the
+        session and the run after the idempotent replay and version checks; it raises to refuse.
+        `expected_evidence`: the executor evidence an autonomous continuation was authorized for (base, fingerprint and
+        changed paths); persisted in the job request so the revalidation reviews exactly that content, also after a
+        restart. Manual revalidation passes none."""
         if type(expected_version) is not int or type(retry_executor) is not bool:
             raise ValueError(tr('managed.explicit_resource_version_boolean'))
         request = {"action": "retry" if retry_executor else "revalidate", "run_id": run_id,
                    "expected_version": expected_version}
+        if expected_evidence is not None:
+            if (retry_executor or not isinstance(expected_evidence, dict)
+                    or set(expected_evidence) != {"base_revision", "fingerprint", "changed_paths"}
+                    or not all(isinstance(expected_evidence[k], str) and expected_evidence[k]
+                               for k in ("base_revision", "fingerprint"))
+                    or not isinstance(expected_evidence["changed_paths"], list)
+                    or not all(isinstance(path, str) for path in expected_evidence["changed_paths"])):
+                raise ValueError(tr('workflow.continuation_evidence_changed'))
+            request["expected_evidence"] = {**expected_evidence,
+                                            "changed_paths": list(expected_evidence["changed_paths"])}
         if gap_resolution_id is not None:
             if type(gap_resolution_id) is not int or gap_resolution_id < 1:
                 raise ValueError(tr('managed.gap_resolution_invalid'))
@@ -624,6 +650,8 @@ class SQLiteManagedRepository:
             history = load_history(run.history_json)
             if run.version != expected_version:
                 raise Conflict(tr('managed.run_changed_reload_before'))
+            if delegated is not None:
+                delegated(session, run)
             if session.scalar(select(Job.id).where(Job.run_id == run_id,
                     Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:
                 raise Conflict(tr('managed.run_already_has_unfinished'))
@@ -792,6 +820,16 @@ class SQLiteManagedRepository:
         self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
+            # P002-T016: a delegated inference is admitted in this same transaction that seals the attempt and its
+            # ledger intent: current child authority, live T010 parent, a RUNNING autonomous run and its caps. A
+            # refusal commits only its reason; no launchable attempt exists and the caller stops without a process.
+            from my_harness.storage.autonomous_runs import admission_check
+            stop = admission_check(session, self, run)
+            if stop is not None:
+                self._event(session, run, 'autonomy_admission_refused', {'stop': dict(stop), 'job_id': job.id,
+                                                                        'role': request.role})
+                from my_harness.core.engine.contracts import AdmissionStop
+                return AdmissionStop(stop)
             self._history(session, run, history)
             if request.context_json != run.context_json or request.task_json != history.task_json or not request.fresh_session:
                 raise Conflict("Attempt must use frozen context/task and a fresh session")
@@ -986,8 +1024,10 @@ class SQLiteManagedRepository:
         return session.scalar(select(Commit).where(Commit.run_id == run_id, Commit.status.in_(statuses)))
 
     def submit_commit(self, run_id: str, *, key: str, expected_version: int,
-                      mechanical: tuple[MechanicalUpdate, ...] = ()) -> JobRecord:
-        """Queues the commit as a writing action; a pending intent is reconciled, not repeated."""
+                      mechanical: tuple[MechanicalUpdate, ...] = (), delegated=None) -> JobRecord:
+        """Queues the commit as a writing action; a pending intent is reconciled, not repeated. `delegated`: optional
+        check of an autonomous caller (P002-T016), run in this transaction with the session and the run after the
+        idempotent replay and version checks; it raises to refuse before the commit job exists."""
         if type(expected_version) is not int:
             raise ValueError(tr('managed.explicit_resource_version_required'))
         updates = tuple(mechanical)
@@ -1004,6 +1044,8 @@ class SQLiteManagedRepository:
                 raise LookupError(tr('managed.unknown_managed_run'))
             if run.version != expected_version:
                 raise Conflict(tr('managed.run_changed_reload_before_3'))
+            if delegated is not None:
+                delegated(session, run)
             return self._queue_commit(session, run, key, request, updates, assessment)
 
     def _queue_commit(self, session, run, key, request, updates, assessment) -> JobRecord:

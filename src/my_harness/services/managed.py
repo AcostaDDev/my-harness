@@ -8,16 +8,19 @@ uses a thread and it never holds an SQL session during engine calls.
 from dataclasses import asdict, replace
 from functools import partial
 import json
+import logging
 from threading import Event, Thread
 from uuid import uuid4
 
 from my_harness.core.engine.commit import MechanicalUpdate, commit_accepted
-from my_harness.core.engine.contracts import stop_history
+from my_harness.core.engine.contracts import AdmissionRefused, stop_history
 from my_harness.core.engine.journal import JournalError
 from my_harness.core.engine.serialization import restore_context
 from my_harness.core.engine.workflow import OfflineEngine
 from my_harness.i18n import emission, tr
 from my_harness.storage.managed import OwnershipLost, TaskDocumentsChanged
+
+logger = logging.getLogger(__name__)
 
 
 class _Journal:
@@ -52,12 +55,19 @@ class _Journal:
         if self.heartbeat_failed.is_set():
             raise JournalError(self._renewal_error())
         try:
-            return operation(self.claim, *args)
+            result = operation(self.claim, *args)
+        except AdmissionRefused:
+            raise  # a refused inference admission is a typed stop, not a persistence failure
         except Exception as exc:
             if isinstance(exc, OwnershipLost) and (self.renewal['failures'] or self.renewal['lost']):
                 self.renewal['lost'] = True
                 raise JournalError(self._renewal_error()) from exc
             raise JournalError(tr('supervisor.managed_persistence_failed', exc=exc)) from exc
+        from my_harness.core.engine.contracts import AdmissionStop
+        if isinstance(result, AdmissionStop):
+            raise AdmissionRefused(tr('autonomy.refused', reason=result.stop['reason']))
+        return result
+
 
     def checkpoint(self, history, stage):
         self._call(self.repository.checkpoint, history, stage)
@@ -192,7 +202,8 @@ def guarded_writer(factory, guard):
 
 
 class LocalSupervisor:
-    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None, task_graph=None):
+    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None, task_graph=None,
+                 autonomy=None):
         """factory(context, frozen_versions) returns agents, commands and evidence.
 
         The H2.3 CLI ports are connected only by explicit injection. The selection/versions are explicit;
@@ -203,6 +214,8 @@ class LocalSupervisor:
         self.lane = lane
         self.repository = repository
         self.task_graph = task_graph
+        # P002-T016: continues RUNNING autonomous runs whose graph waits on settled harness jobs (never owner stops).
+        self.autonomy = autonomy
         def ports(context, versions):
             from my_harness.storage.managed_mode import bind_git_mode
             agents, commands, evidence = ports_factory(context, versions)
@@ -217,6 +230,11 @@ class LocalSupervisor:
         from my_harness.storage.phases import advance_batches
         if self.lane != "chat":
             advance_batches(self.repository)
+            if self.autonomy is not None:
+                try:
+                    self.autonomy()
+                except Exception:  # the run keeps its durable state; nothing is retried on its behalf
+                    logger.exception("Autonomous roadmap advancement failed; the run state is unchanged.")
         claim = self.repository.claim(lease_seconds=self.lease_seconds, lane=self.lane)
         if claim is None:
             return None
@@ -418,6 +436,18 @@ class LocalSupervisor:
                     from my_harness.services.profile_proposal import validate as validate_profile
                     history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
                                                      catalog, language, profile_validator=validate_profile)
+            elif request["action"] == "roadmap_review":
+                # P002-T016: read-only reviewer jobs of autonomous runs (gap report, delegated task contract).
+                from my_harness.services.autonomous_review import execute
+                from my_harness.services.managed_runtime import run_phase_graph
+                from my_harness.storage.prompts import PromptRepository
+                agents, _, evidence = self.ports_factory(context, versions)
+                if hasattr(agents, "bind_process_journal"):
+                    agents.bind_process_journal(journal)
+                catalog = PromptRepository(self.repository.engine).catalog(context)
+                work = lambda: execute(self.repository, context, record.history, request, agents, evidence, journal,
+                                       catalog, versions, language)
+                history, outcome = run_phase_graph(self.repository, claim, journal, work)
             elif request["action"] in ("phase_check", "phase_close"):
                 # D088: check and closure under the lock; the closure includes the documentary archive.
                 if self.commit_factory is None:
@@ -507,7 +537,8 @@ class LocalSupervisor:
                         return engine.start(context, request["task_id"], request["phase_id"], request["text"],
                                             history=record.history, contract=request.get("contract_json"),
                                             notes=request.get("notes"))
-                    return engine.resume(context, record.history, retry_executor=request["action"] == "retry")
+                    return engine.resume(context, record.history, retry_executor=request["action"] == "retry",
+                                         expected_evidence=request.get("expected_evidence"))
 
                 if self.task_graph is not None and owned_documents:
                     history = self.task_graph(self.repository, claim, journal, work)

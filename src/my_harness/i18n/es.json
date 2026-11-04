@@ -1259,6 +1259,7 @@
   "work_language.work_language_since_does": "El idioma de trabajo de {root} es {work_language} desde {confirmed_at}; no cambia",
   "workflow.additional_notes_non_empty": "Las notas adicionales deben ser texto no vacío para una tarea planificada",
   "workflow.content_changed_during_validation": "El contenido cambió durante la validación; revalida",
+  "workflow.continuation_evidence_changed": "El contenido difiere de la evidencia del executor que esta continuación podía revisar; resuelve los cambios antes de reanudar",
   "workflow.environment_preparation_failed": "Falló la preparación del entorno",
   "workflow.human_decision_required_task": "Se requiere una decisión humana; el alcance de la tarea está congelado",
   "workflow.malformed_denials": "Denegaciones de permisos mal formadas",
@@ -1445,5 +1446,8 @@
   "orchestration.phase_graph_failed": "Grafo de fase gestionada {thread}: {status} ({reason})",
   "documents.phase_active": "Fase activa: {phase}",
   "documents.phase_none": "Ninguna",
-  "documents.phase_planning_pending": "Planificación pendiente."
+  "documents.phase_planning_pending": "Planificación pendiente.",
+  "autonomy.refused": "Solicitud de ejecución autónoma del roadmap rechazada: {reason}.",
+  "autonomy.manual_batch_excluded": "Hay una ejecución autónoma del roadmap activa en este checkout; los lotes manuales quedan excluidos hasta que se revoque o se complete.",
+  "autonomy.acknowledgement.autonomy_ack_1": "Autorizo a My Harness a planificar, ejecutar, comprobar, reparar y cerrar las fases indicadas en esta vista previa sin preguntarme en cada paso, dentro de la delegación, los límites y los topes mostrados. Los agentes se ejecutan como procesos locales con los permisos de mi usuario; el harness los contiene de forma cooperativa y puede detenerlos, pero no puede garantizar que no ocurra ninguna acción antes de que la detención surta efecto. Los topes son umbrales que se comprueban antes de cada nueva llamada a un modelo, por lo que una llamada ya en curso puede superarlos. La ejecución nunca hace push, publica, lanza versiones ni despliega, nunca cambia objetivos, criterios ni requisitos, y se detiene para pedirme una respuesta cuando la necesita. Puedo pausarla o revocarla en cualquier momento."
 }

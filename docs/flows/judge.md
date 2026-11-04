@@ -71,3 +71,8 @@ An explicit owner `judge.decision.link` command links an existing canonical deci
 DomainOperations, idempotency, membership validation and trace. It cannot create or adopt a decision. Read-only
 request/list routes under `/api/managed/knowledge/projects/{id}/judge/requests` also serve query-only archives,
 without runtime registration or checkout. Backups preserve and verify all four immutable evidence tables.
+
+Autonomous runs (P002-T016) create requests with subject `roadmap:<parent>:<canonical subject>`; the permission
+lifecycle answers their policy with the delegation contract of the active roadmap parent. Without native judge
+qualification the request escalates and the run waits for the owner; a validated ruling is linked to the resulting
+step's child and never adopts, closes or replaces READY ([flow](autonomous-roadmap.md)).

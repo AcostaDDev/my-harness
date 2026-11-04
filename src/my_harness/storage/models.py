@@ -1564,3 +1564,137 @@ class KnowledgeExchangeRow(Base):
     payload: Mapped[dict] = mapped_column(JSON)
     sha256: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousAuthorizationRow(Base):
+    """P002-T016 (D299): owner-confirmed autonomous authorization revisions, insert-only, bound to a preview hash."""
+    __tablename__ = 'autonomous_authorizations'
+    __table_args__ = (UniqueConstraint('lineage_id', 'number'),
+                      CheckConstraint("origin = 'owner_confirmed'", name='ck_autonomous_authorization_origin'),
+                      CheckConstraint('number >= 1', name='ck_autonomous_authorization_number'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    lineage_id: Mapped[str] = mapped_column(String(36))
+    number: Mapped[int] = mapped_column(Integer)
+    previous_id: Mapped[str | None] = mapped_column(ForeignKey('autonomous_authorizations.id'), nullable=True)
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    preview: Mapped[dict] = mapped_column(JSON)
+    preview_sha256: Mapped[str] = mapped_column(String(64))
+    origin: Mapped[str] = mapped_column(String(30))
+    policy: Mapped[dict] = mapped_column(JSON)
+    permission_record_id: Mapped[str] = mapped_column(ForeignKey('permission_records.id'), unique=True)
+    actor: Mapped[dict] = mapped_column(JSON)
+    reason: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousRunRow(Base):
+    """One run per authorization lineage; at most one non-terminal run per root (partial unique index)."""
+    __tablename__ = 'autonomous_runs'
+    __table_args__ = (Index('ux_autonomous_runs_active_root', 'root', unique=True,
+                            sqlite_where=text("status NOT IN ('REVOKED', 'COMPLETED')")),
+                      CheckConstraint("status IN ('RUNNING', 'WAITING_FOR_OWNER', 'PAUSED', 'LIMIT_REACHED', "
+                                      "'FAILED', 'RECOVERY_REQUIRED', 'REVOKED', 'COMPLETED')",
+                                      name='ck_autonomous_run_status'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    lineage_id: Mapped[str] = mapped_column(String(36), unique=True)
+    authorization_id: Mapped[str] = mapped_column(ForeignKey('autonomous_authorizations.id'))
+    thread_id: Mapped[str] = mapped_column(String(80), unique=True)
+    status: Mapped[str] = mapped_column(String(30))
+    reason: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    detail: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousChildRow(Base):
+    """Concrete `owner_delegated` child of one authorization revision, sealed when its content exists."""
+    __tablename__ = 'autonomous_children'
+    __table_args__ = (CheckConstraint("origin = 'owner_delegated'", name='ck_autonomous_child_origin'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('autonomous_runs.id'))
+    authorization_id: Mapped[str] = mapped_column(ForeignKey('autonomous_authorizations.id'))
+    kind: Mapped[str] = mapped_column(String(40))
+    operation_key: Mapped[str] = mapped_column(String(80), unique=True)
+    subject: Mapped[dict] = mapped_column(JSON)
+    preview_sha256: Mapped[str] = mapped_column(String(64))
+    rule: Mapped[str] = mapped_column(String(80))
+    ruling_id: Mapped[str | None] = mapped_column(ForeignKey('judge_rulings.id'), nullable=True)
+    permission_record_id: Mapped[str | None] = mapped_column(ForeignKey('permission_records.id'), nullable=True)
+    origin: Mapped[str] = mapped_column(String(30))
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousConsumptionRow(Base):
+    """Insert-only local-bound consumption keyed by root and stable identity; never reset by a run or revision."""
+    __tablename__ = 'autonomous_consumption'
+    __table_args__ = (Index('ix_autonomous_consumption_identity', 'root', 'bound', 'identity'),
+                      CheckConstraint("bound IN ('task_attempts', 'judge_reconsiderations', 'replacement_plans', "
+                                      "'remediation_per_cause', 'no_progress')", name='ck_autonomous_consumption_bound'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    bound: Mapped[str] = mapped_column(String(40))
+    identity: Mapped[str] = mapped_column(String(240))
+    consumption_key: Mapped[str] = mapped_column(String(240), unique=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('autonomous_runs.id'))
+    authorization_id: Mapped[str] = mapped_column(ForeignKey('autonomous_authorizations.id'))
+    evidence: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousQuestionRow(Base):
+    """Durable owner question with a version; an answer binds the question version, revision and authority."""
+    __tablename__ = 'autonomous_questions'
+    __table_args__ = (UniqueConstraint('run_id', 'dedupe_key'),
+                      CheckConstraint("status IN ('OPEN', 'ANSWERED', 'SUPERSEDED')", name='ck_autonomous_question_status'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('autonomous_runs.id'))
+    dedupe_key: Mapped[str] = mapped_column(String(240))
+    kind: Mapped[str] = mapped_column(String(40))
+    subject: Mapped[dict] = mapped_column(JSON)
+    binding: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(20))
+    version: Mapped[int] = mapped_column(Integer)
+    answer: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    answer_key: Mapped[str | None] = mapped_column(String(200), unique=True, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousEventRow(Base):
+    """Ordered, deduplicated run events with bounded references for T017 derivation; insert-only."""
+    __tablename__ = 'autonomous_events'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('autonomous_runs.id'))
+    root: Mapped[str] = mapped_column(String)
+    kind: Mapped[str] = mapped_column(String(60))
+    dedupe_key: Mapped[str] = mapped_column(String(240), unique=True)
+    refs: Mapped[dict] = mapped_column(JSON)
+    payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class AutonomousReviewRow(Base):
+    """Sealed reviewer outputs of autonomous runs (G12 gap reports, delegated task contracts) and owner gap answers."""
+    __tablename__ = 'autonomous_reviews'
+    __table_args__ = (Index('ix_autonomous_reviews_revision', 'root', 'revision_id', 'kind'),
+                      CheckConstraint("kind IN ('report', 'answer', 'task_plan')", name='ck_autonomous_review_kind'),
+                      CheckConstraint("origin IN ('owner_confirmed', 'harness_deterministic')",
+                                      name='ck_autonomous_review_origin'))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    project_id: Mapped[str] = mapped_column(ForeignKey('knowledge_projects.id'))
+    kind: Mapped[str] = mapped_column(String(20))
+    record_key: Mapped[str] = mapped_column(String(240), unique=True)
+    revision_id: Mapped[str] = mapped_column(String(80))
+    revision_sha256: Mapped[str] = mapped_column(String(64))
+    gap_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+    sha256: Mapped[str] = mapped_column(String(64))
+    origin: Mapped[str] = mapped_column(String(30))
+    actor: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))

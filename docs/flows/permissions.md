@@ -72,3 +72,10 @@ A continuation checks the linked clarification's scope, validity and revocation 
 Only the owner-facing managed endpoint can record a clarification. Judge proposals continue to require their
 existing duty contract and service validation before any adoption or permission effect. See
 [task execution](task-run.md#owner-clarification-of-a-task-gap).
+
+Autonomous roadmap runs (P002-T016, [D299](../DECISIONS.md#d299--autonomous-run-authority-children-and-persistent-bounds))
+add an owner-confirmed parent without targets that names the authorized phases and delegable tiers. A task child is
+sealed only for an adopted contract: exact normalized write paths, purpose `task:{phase}:{task}`, origin
+`owner_delegated`, and the same delegated-scope check as above. Ending the parent ends its children, and the
+attempt cancellation poll also stops a delegated run whose authorization is no longer active. Manual runs keep
+their behavior. See [autonomous roadmap runs](autonomous-roadmap.md).

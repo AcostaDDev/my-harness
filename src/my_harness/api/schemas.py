@@ -2928,3 +2928,182 @@ class PhaseProposalStageCreate(PhaseVersioned):
 class PhaseProposalStageRead(BaseModel):
     draft_id: str | None
     coverage: dict[str, list[str]]
+
+
+# --- P002-T016 autonomous roadmap runs (D276, D299) -------------------------------------------------------------
+
+class AutonomousBounds(BaseModel):
+    """Every local bound is explicit and finite; G11 owns any default (none is applied)."""
+    model_config = ConfigDict(extra='forbid')
+    task_attempts: int = Field(ge=1, le=1000)
+    judge_reconsiderations: int = Field(ge=1, le=1000)
+    replacement_plans: int = Field(ge=1, le=1000)
+    remediation_per_cause: int = Field(ge=1, le=1000)
+    no_progress: int = Field(ge=1, le=1000)
+
+
+class AutonomousValuationCap(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    amount: str = Field(min_length=1, max_length=40)
+    basis: str = Field(min_length=1, max_length=120)
+
+
+class AutonomousCaps(BaseModel):
+    """Optional thresholds checked before each new inference; an in-flight call may exceed them."""
+    model_config = ConfigDict(extra='forbid')
+    deadline: str | None = None
+    invocations: int | None = Field(default=None, ge=1)
+    observed_tokens: int | None = Field(default=None, ge=1)
+    valuation: AutonomousValuationCap | None = None
+
+
+class AutonomousTiers(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    active: list[str]
+    delegable: list[str]
+    owner_only: list[str]
+
+
+class AutonomousDurationCeiling(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    kind: Literal['operation', 'time']
+    seconds: int | None = Field(default=None, ge=1)
+
+
+class AutonomousDelegation(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    duties: list[Literal['permission', 'planning_choice', 'spec_gap', 'blocked_check']]
+    tiers: AutonomousTiers
+    duration_ceiling: AutonomousDurationCeiling
+
+
+class AutonomousRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    bounds: AutonomousBounds | None = None
+    caps: AutonomousCaps = Field(default_factory=AutonomousCaps)
+    delegation: AutonomousDelegation
+
+
+class AutonomousConfirmCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    request: AutonomousRequest
+    preview_sha256: str = Field(pattern='^[0-9a-f]{64}$')
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: bool
+    acknowledgement_version: str | None = None
+
+
+class AutonomousCheckRead(BaseModel):
+    check: str
+    passed: bool
+    detail: str | None = None
+
+
+class AutonomousReadinessRead(BaseModel):
+    """Deterministic FL01 checks; `PENDING_GATES` while G12 is open, never READY without it."""
+    verdict: Literal['READY', 'BLOCKED', 'PENDING_GATES']
+    checks: list[AutonomousCheckRead]
+    blocking: list[str] = []
+    pending_gates: list[str] = []
+    gates: dict[str, Any]
+    gap_report_sha256: str | None = None
+    owner_answer_required: list[str] = []
+    advisory: list[str] = []
+    gaps: list[dict[str, Any]] = []
+    default_bounds: dict[str, int] | None = None
+
+
+class AutonomousGapAnswerCreate(BaseModel):
+    """Owner answer to an `owner_answer_required` gap of the sealed report of the current frozen revision."""
+    model_config = ConfigDict(extra='forbid')
+    gap_sha256: str = Field(pattern='^[0-9a-f]{64}$')
+    text: str = Field(min_length=1, max_length=8000)
+
+
+class AutonomousGapAnswerRead(BaseModel):
+    id: str
+    gap_sha256: str
+    revision_id: str
+    origin: Literal['owner_confirmed']
+    created_at: str
+
+
+class AutonomousPreviewRead(BaseModel):
+    format: str
+    preview_sha256: str
+    root: str
+    lineage_id: str | None
+    project_id: str | None
+    revision: dict[str, Any] | None
+    scope: dict[str, Any]
+    delegation: dict[str, Any]
+    bounds: dict[str, Any] | None
+    caps: dict[str, Any]
+    standing_grants: list[str]
+    acknowledgement: dict[str, Any]
+    policy: dict[str, Any]
+    configuration: dict[str, Any]
+    git: dict[str, Any] | None
+    readiness: dict[str, Any]
+    blocking: list[str]
+    pending_gates: list[str]
+    gaps: list[dict[str, Any]] = []
+    default_bounds: dict[str, int] | None = None
+
+
+class AutonomousQuestionRead(BaseModel):
+    id: str
+    kind: str
+    status: Literal['OPEN', 'ANSWERED', 'SUPERSEDED']
+    version: int
+    subject: dict[str, Any]
+    binding: dict[str, Any]
+    answer: dict[str, Any] | None
+    created_at: str
+    superseded: bool | None = None
+
+
+class AutonomousRunRead(BaseModel):
+    id: str
+    root: str
+    status: Literal['RUNNING', 'WAITING_FOR_OWNER', 'PAUSED', 'LIMIT_REACHED', 'FAILED', 'RECOVERY_REQUIRED',
+                    'REVOKED', 'COMPLETED']
+    reason: str | None
+    detail: dict[str, Any]
+    version: int
+    thread_id: str
+    created_at: str
+    updated_at: str
+    authorization: dict[str, Any]
+    questions: list[AutonomousQuestionRead]
+    children: list[dict[str, Any]]
+    consumption: dict[str, dict[str, int]]
+
+
+class AutonomousEventRead(BaseModel):
+    sequence: int
+    kind: str
+    dedupe_key: str
+    refs: dict[str, Any]
+    payload: dict[str, Any]
+    created_at: str
+
+
+class AutonomousVersioned(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    expected_version: int = Field(ge=0)
+
+
+class AutonomousReasoned(AutonomousVersioned):
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class AutonomousRecoverCreate(AutonomousReasoned):
+    writer_stopped: bool
+
+
+class AutonomousAnswerCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    expected_version: int = Field(ge=1)
+    text: str = Field(min_length=1, max_length=8000)
+    choice: str | None = Field(default=None, max_length=200)

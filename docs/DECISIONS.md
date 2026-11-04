@@ -2520,3 +2520,100 @@ operational phase/plan/archive status beside canonical generated fields. Explici
 reports this decoration as `operational_view_not_imported`, and never adopts its execution/approval claims.
 Owned targets are replaced from sealed inputs and committed prior bytes, with per-target recovery receipts;
 there is no comparison of Markdown with SQLite and no automatic import. No schema or dependency change.
+
+## D299 — Autonomous run authority, children and persistent bounds
+
+Status: implementation refinement within the owner-authorized P002-T016 contract (2026-11-03). The owner accepted
+revocation from `RECOVERY_REQUIRED` and root-scoped consumption with the gate decisions of
+[D300](#d300--g11-g12-and-g17-accepted-with-conditions); the remaining representation awaits technical review.
+
+Migration `0038_autonomous_runs` (93 tables) holds the authority of D276 runs: insert-only owner-confirmed
+authorization revisions per lineage (exact preview, idempotency key and request digest, gate-policy stamp, T010
+parent record), one run row per lineage with a partial unique index for one non-terminal run per root, insert-only
+`owner_delegated` children per effect (operation key, subject digest, rule, optional ruling and permission record),
+insert-only bound consumption keyed by root and stable identity, versioned owner questions bound to the
+authorization and accepted revision, insert-only deduplicated events with references for T017, and insert-only
+sealed reviews (`autonomous_reviews`: one G12 reviewer report per frozen revision and classifier version, owner
+answers bound to that revision, and validated delegated task contracts, D301).
+
+The T010 parent of a run is an owner-confirmed authorization with no targets that names the authorized phases and
+delegable tiers. A task child is sealed only when its adopted contract exists, with the exact normalized write
+paths of that contract, purpose `task:{phase}:{task}` and the parent; T014's existing delegated-scope check accepts
+it unchanged. Ending the parent ends every child (D291), and the existing cancellation poll stops a delegated writer
+whose authority is no longer active. Revocation is available from every non-terminal state, including
+`RECOVERY_REQUIRED`; it ends authority, while uncertain effects still need stopped-writer evidence. Bound
+consumption is never deleted and is scoped to the root, so no resume, revision, phase change, rename or split
+refills it; a revision may raise bounds, never lower them. Scope is the digest of phases, criteria and
+requirements; any other change than delegated task planning stops for a new authorization revision.
+
+The roadmap graph `autonomous-roadmap@1` keeps only the run identity and a cycle in its state. One loop node
+decides deterministically from SQLite observations and performs one effect through `run_operation`; a hold node
+interrupts for owner stops and harness waits. Gate-owned values arrive through an explicit `GatePolicy`; the product
+policy has none, so readiness never returns READY and confirmation is refused before anything is sealed.
+
+## D300 — G11, G12 and G17 accepted with conditions
+
+Status: accepted by the owner on 2026-11-03 for P002-T016, resolving G11, G12 and G17 of D276 with the conditions
+below; the conditions are implemented in the [T016 record](phase/P002-T016-autonomous-roadmap.md#3-joint-gate-proposal-g11-g12-g17).
+
+- **G11.** Defaults `task_attempts` 3, `judge_reconsiderations` 1, `replacement_plans` 2, `remediation_per_cause` 2 and
+  `no_progress` 3 only prefill the preview and are confirmed by hash. Consumption persists for the same identity or
+  cause across runs of the same project. The progress fingerprint (`g11-1`) uses canonical, deduplicated D296
+  families, so a split without real progress does not change it; judge reconsiderations are counted per canonical
+  stable subject (duty, phase identity and cause), never per operation.
+- **G12.** The twelve structural predicates and the three gap classes (`blocking`, `owner_answer_required`,
+  `advisory`) are accepted (`g12-1`). The reviewer is invoked only after every structural check passes. Its report is
+  validated against the frozen revision the service holds: citations must name items that exist in it. Answers come
+  only from current owner records bound to that revision, never from the report. The report is sealed once per frozen
+  revision; confirmation reuses the sealed report of the preview, revalidates its bindings and never generates another.
+- **G17.** Version `autonomy-ack-1` with the accepted English and Spanish texts; the sealed authorization binds the
+  version and the digest of both texts, and a change of text disables it until a new version is accepted.
+- Revocation from `RECOVERY_REQUIRED` is accepted: it ends authority at once, while recovering uncertain effects
+  still requires evidence that the writer stopped.
+
+## D301 — Delegated task contracts and effect-boundary verification
+
+Status: implementation refinement within the owner-authorized P002-T016 route (2026-11-03); pending technical
+review. Evidence in the [T016 record](phase/P002-T016-autonomous-roadmap.md#6-integral-production-route).
+
+Accepted D284 task content carries no write-path contract, while D291/D299 require exact write targets for a
+delegated task child and T014 derives a delegated contract only from a deterministic plan text. Delegated task
+planning (contracts §10) therefore proposes the contract through the versioned `roadmap-task-plan` reviewer prompt
+in an ordinary accounted job. The objective is the accepted task content; the harness validates exact canonical
+repository files (no directory, glob, alias, `.`/`..`, protected or harness-owned pattern), every accepted
+criterion as its own exact item with no rewording, single-line text that cannot add fields, and validation commands
+within the profile prefixes. It renders the plan section, compares T014's parsed contract field by field and seals
+its digest in `autonomous_reviews`; admission re-parses and refuses on any difference. Only then is the task child
+sealed with those exact paths; a refused contract stops for the owner. The G12 report uses `roadmap-readiness` the
+same way.
+
+Delegated plan adoption and closure reuse T015's operations with an explicit `delegated` argument. An adoption child
+is sealed after preparation (staging and exact preview) and binds the proposal, draft, coverage, preview, accepted
+revision and phase version, which the adoption transaction compares. Every delegated inference is admitted inside
+the transaction that seals its attempt and ledger intent: current child authority, active T010 parent, a RUNNING
+run and the caps from the existing ledger; a refusal persists its reason and launches nothing. Task contracts are
+identified by the accepted task, criteria and relations, and are reused, admitted and committed only under that
+identity; a failed contract job is a durable stop. Only runs admitted by this run's task
+children for the current phase and task version are committed; failed delegated runs are durable stops readmitted
+only after an explicit owner resume. Completion uses the READY check sealed by each closure and requires coverage of
+every active requirement of the accepted revision. The sealed child is verified inside the effect's own writer
+transaction (and, for closure, again under the writer fence of every Git
+reference effect): its kind and untampered subject, a live run of the root under the latest authorization revision
+with an active T010 parent, the phase inside the sealed scope and, for closure, the exact READY binding. Delegated
+knowledge adoption is `owner_delegated` with the child as actor; activation and abandonment are never delegated.
+A plan, a reviewer output or a ruling alone never passes. Commit of reviewed accepted content is
+harness-deterministic under its child, and T014's reference guard rechecks the delegated authority. Judge requests
+use the parent's T009 delegation contract through a `roadmap:` subject; a validated ruling is linked to the
+resulting step's child. The supervisor continues runs whose graph waits on settled harness jobs; owner stops are
+never continued automatically.
+
+Third review (2026-11-04): the authoritative check of a delegated task admission, review continuation and commit
+runs inside T014's own queue transaction (an optional `delegated` check after the idempotent replay), comparing the
+sealed child, live authority, the digest of the contract T014 freezes and the contract identity read from accepted
+knowledge in that transaction; checks made by the caller beforehand are only early refusals. A pause that held the
+reviewer after the executor is identified by persisted evidence (state admission refusal of the reviewer, settled
+attempts, the executor's evidence in the last review cycle). The explicit owner resume accepts exactly that
+evidence instead of a clean checkout and continues the same T014 run once by revalidation, with no new child or
+task-attempt consumption; any other change, stale evidence or writer doubt still refuses. The continuation job
+persists that evidence, and the revalidation's first effective capture must equal it before validation or review;
+otherwise the run stops durably with the files left for the owner (final review).

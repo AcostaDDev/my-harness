@@ -8,6 +8,8 @@ adoption and closure verify the sealed `owner_delegated` child again inside the 
 Native judge inference is not qualified (D290), so a judge request is created under the parent's delegation and
 escalated to the owner.
 """
+from contextlib import nullcontext
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -83,6 +85,11 @@ class ManagedRoadmapEffects:
                 return False
         return True
 
+    def accepted_revision(self, session):
+        from my_harness.services.knowledge_exchange import PhaseKnowledge
+        revision = PhaseKnowledge.accepted(session, self.root)
+        return {'id': revision.id, 'number': revision.number, 'sha256': revision.revision_sha256} if revision else None
+
     def readiness(self):
         from my_harness.services.knowledge_exchange import PhaseKnowledge
         from my_harness.storage.documents import unresolved
@@ -152,8 +159,8 @@ class ManagedRoadmapEffects:
             return []
         return sorted(accepted.members)
 
-    def writers_settled(self, children):
-        with Session(self.repository.engine) as session:
+    def writers_settled(self, children, *, session=None):
+        with (Session(self.repository.engine) if session is None else nullcontext(session)) as session:
             runs = store.delegated_runs(session, children)
             active = list(session.scalars(select(ManagedJobRow.id).where(
                 ManagedJobRow.run_id.in_(runs), ManagedJobRow.status.in_(('ACTIVE', 'RECOVERY_REQUIRED'))))) if runs else []

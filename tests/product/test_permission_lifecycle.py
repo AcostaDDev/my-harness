@@ -472,3 +472,44 @@ def test_catalogue_version_is_typed_and_missing_identities_deny(permissions,cont
     with Session(p.repo.engine) as s:
         with pytest.raises(DomainRefusal):p.service.get(s,p.w['project'],None)
         with pytest.raises(DomainRefusal):p.service.inspect(s,None)
+
+
+def test_inbox_standing_permission_uses_scoped_preview_and_idempotent_confirmation(permissions, context, migrated_database, tmp_path):
+    from test_managed_api import client, config
+    p = permissions
+    req = request(p)
+    assert request(p) == req  # equivalent requests share one immutable origin
+    with client(migrated_database[0], tmp_path, config(context, supervisor=False)) as http:
+        http.app.state.runtime._domain_operations = p.ops
+        inbox = '/api/managed/inbox'
+        [item] = http.get(inbox, params={'kind': 'permission'}).json()['items']
+        assert item['topic'] == 'standing_permission' and item['request_id'] == req and not item['resolved']
+        identity = f"{inbox}/{item['id']}"
+        read = http.post(f'{identity}/read', json={'project_id': p.w['project']}).json()
+        assert read['read_at'] and not read['resolved']
+        route = '/api/managed/projects/synthetic/permissions'
+        shown = http.get(identity, params={'project': p.w['project']}).json()['standing_permission']
+        assert len(shown['targets']) == 1 and 'knowledge.head' in shown['targets'][0]
+        args = {'action': 'deny', 'response': {'request_id': req, 'duration': ONCE, 'reason': 'Synthetic denial.'},
+                'expected_revision': shown['revision']}
+        preview = http.post(f'{route}/preview', json=args)
+        assert preview.status_code == 200, preview.text
+        body = {**args, 'preview_sha256': preview.json()['preview_sha256'], 'confirmed': True}
+        assert http.post(f'{route}/responses', json={**body, 'expected_revision': 0},
+                         headers={'Idempotency-Key': 'stale-preview'}).status_code == 409
+        def lost_readiness(session):
+            assert session.in_transaction()
+            raise DomainRefusal('configuration_not_ready')
+
+        p.service.response_guard = lost_readiness
+        denied = http.post(f'{route}/responses', json=body, headers={'Idempotency-Key': 'ready-changed'})
+        assert denied.status_code == 409 and denied.json()['detail']['code'] == 'configuration_not_ready'
+        assert not http.get(identity, params={'project': p.w['project']}).json()['resolved']
+        p.service.response_guard = None
+        header = {'Idempotency-Key': 'same-permission-response'}
+        saved = http.post(f'{route}/responses', json=body, headers=header)
+        assert saved.status_code == 200, saved.text
+        repeat = http.post(f'{route}/responses', json=body, headers=header)
+        assert repeat.status_code == 200 and repeat.json() == saved.json()
+        resolved = http.get(identity, params={'project': p.w['project']}).json()
+        assert resolved['resolved'] and resolved['read_at'] == read['read_at']

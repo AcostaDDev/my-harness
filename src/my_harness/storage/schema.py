@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0038_autonomous_runs"
+SCHEMA_REVISION = "0039_inbox_read_marks"
 # Protection triggers of 0030 (knowledge), 0031 (domain commands), 0032 (trace events/artifacts) and
 # 0033 (frozen context/receipts), 0034 (judge evidence), 0035 (permissions), 0036 (document exchange) and
 # 0038 (autonomous run evidence), by name and whitespace-normalized SQL. A database, backup or
@@ -55,7 +55,7 @@ def require_schema(engine: Engine) -> None:
                           "judge_rulings", "judge_decision_links", "permission_records", "permission_boundaries", "knowledge_exchange_records",
                           "autonomous_authorizations", "autonomous_runs", "autonomous_children",
                           "autonomous_consumption", "autonomous_questions", "autonomous_events",
-                          "autonomous_reviews"):
+                          "autonomous_reviews", "inbox_read_marks"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
             rows = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger'")).all()
             if not triggers_intact(rows):

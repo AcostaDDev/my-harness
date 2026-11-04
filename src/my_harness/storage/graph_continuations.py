@@ -46,16 +46,24 @@ class GraphContinuationRepository:
                    segments: int = 0) -> GraphThreadRow:
         """Moves the thread from one of `expected` to `status`; any other current status is refused unchanged."""
         with Session(self.engine) as session, session.begin():
-            result = session.execute(
-                update(GraphThreadRow)
-                .where(GraphThreadRow.id == thread_id, GraphThreadRow.status.in_(expected))
-                .values(status=status, reason=reason, detail=detail, segments=GraphThreadRow.segments + segments,
-                        updated_at=now()))
+            self.transition_in(session, thread_id, expected, status, reason=reason, detail=detail, segments=segments)
+        return self.get(thread_id)
+
+    @staticmethod
+    def transition_in(session, thread_id: str, expected: tuple[str, ...], status: str, *, reason=None,
+                      detail=None, segments: int = 0):
+        """Share a compare-and-set with a domain writer that owns the transaction."""
+        result = session.execute(
+            update(GraphThreadRow)
+            .where(GraphThreadRow.id == thread_id, GraphThreadRow.status.in_(expected))
+            .values(status=status, reason=reason, detail=detail, segments=GraphThreadRow.segments + segments,
+                    updated_at=now()))
         if result.rowcount != 1:
-            current = self.get(thread_id)
+            current = session.get(GraphThreadRow, thread_id)
+            if current is None:
+                raise LookupError(tr('orchestration.thread_unknown', thread=thread_id))
             raise ValueError(tr('orchestration.thread_state', thread=thread_id, status=current.status,
                                 expected=', '.join(expected)))
-        return self.get(thread_id)
 
     def add_segment(self, thread_id: str) -> None:
         with Session(self.engine) as session, session.begin():

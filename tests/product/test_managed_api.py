@@ -691,6 +691,13 @@ def test_http_gap_clarification_is_bound_and_applied_once(tmp_path, url, engine,
         assert blocked["status"] == "STOPPED"
         initial_requests = tuple(ports.agents.requests)
         gap = next(e for e in all_events(http, run_id) if e["kind"] == "task_decision_requested")
+        inbox = "/api/managed/inbox"
+        [item] = http.get(inbox, params={"kind": "question", "project": project}).json()["items"]
+        read_path = f"{inbox}/{item['id']}"
+        detail = http.get(read_path, params={"project": project}).json()
+        assert item["topic"] == "task_gap" and item["request_id"] == str(gap["id"])
+        assert detail["response"]["proof"] == gap["payload"]["request_sha256"]
+        assert detail["context"] == ["Which output should be preserved?"] and not detail["resolved"]
         path = f"/api/managed/runs/{run_id}/gap-resolutions"
         body = {"expected_version": blocked["version"], "gap_event_id": gap["id"],
                 "request_sha256": gap["payload"]["request_sha256"],
@@ -710,7 +717,11 @@ def test_http_gap_clarification_is_bound_and_applied_once(tmp_path, url, engine,
         answer = response.json()
         repeat = http.post(path, json=body, headers={"Idempotency-Key": "answer"})
         assert repeat.json() == answer
+        assert http.get(read_path, params={"project": project}).json()["resolved"]
+        continuation = http.get(read_path, params={"project": project}).json()["continuation"]
+        assert continuation["target_id"] == run_id and continuation["resolution_id"] == answer["event_id"]
         current = http.get(f"/api/managed/runs/{run_id}").json()
+        assert continuation["version"] == current["version"]
         duplicate_body = {**body, "expected_version": current["version"]}
         assert http.post(path, json=duplicate_body, headers={"Idempotency-Key": "another-answer"}).status_code == 409
         assert http.post(path, json={**body, "origin": "owner_delegated"},

@@ -104,7 +104,7 @@ P002-T014 is completed and integrated as source `624631e` after independent tech
 correction-budget finding. The managed task graph, frozen scoped attempts, owner gap continuation and
 recoverable task/document commit have synthetic evidence. Schema `0037_task_lineage` retains 86 tables.
 The final complete check passed. The owner authorized source commit, the accompanying merge and push of develop; phase
-release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015 is completed and integrated as source `f7c5ce3` after independent technical re-review ([record](phase/P002-T015-phase-lifecycle.md)). T016 is completed and integrated as source `26ccd21` after independent final re-review ([record](phase/P002-T016-autonomous-roadmap.md)). T017 is next. T017–T023 and the 0.2.0 release remain pending.
+release/publication/installation remain pending. [Evidence](phase/P002-T014-task-execution.md). T015 is completed and integrated as source `f7c5ce3` after independent technical re-review ([record](phase/P002-T015-phase-lifecycle.md)). T016 is completed and integrated as source `26ccd21` after independent final re-review ([record](phase/P002-T016-autonomous-roadmap.md)). T017 source is ready for owner review ([record](phase/P002-T017-global-inbox.md)). T017 integration, T018–T023 and the 0.2.0 release remain pending.
 
 **Exit criteria (adopted with D268):**
 

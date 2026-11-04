@@ -15,7 +15,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017–T023 remain planned. Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 is next. Evidence is synthetic only. Read
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 source is ready for owner review. T018–T023 remain planned. Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 integration is pending. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -86,7 +86,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017–T023 are **planned**. Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **implemented locally, pending owner review and integration**. T018–T023 are **planned**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -540,7 +540,7 @@ with no phase-count cap and inspectable durable stops. **Dependencies:** T003, T
 
 **Status:** complete and integrated into develop as source `26ccd21` after independent final re-review.
 G11/G12/G17 are accepted with conditions (D300); the production route over T014/T015 was verified synthetically
-(D301). T017 is next. Release 0.2.0, distribution and installation remain pending
+(D301). T017 follows in the task record below. Release 0.2.0, distribution and installation remain pending
 ([record](phase/P002-T016-autonomous-roadmap.md)).
 
 **Subtasks:**
@@ -567,21 +567,21 @@ G11/G12/G17 are accepted with conditions (D300); the production route over T014/
 request, blocking question, judge escalation, lifecycle confirmation; notifications without a bubble. Free
 conversation is the reviewer's chat from a separate talk button, with the viewed element's context included behind a
 removable tag ([visual direction §6](phase/P002-T018-visual-direction.md#6-conversation-bubbles-and-owner-input-to-g13-t017)).
-Notification types and remaining shortcuts complete G13 here.
+**Status:** local source is ready for owner diff review, with synthetic verification in the
+[T017 record](phase/P002-T017-global-inbox.md). The owner accepted notifications and shortcuts as
+[D302](DECISIONS.md#d302--g13-inbox-notifications-and-guarded-shortcuts). Direct judge responses are deferred until
+a command has authority over the blocker. The conversation panel supports consultation of the request and ruling.
 
-**Subtasks:**
+Implemented: bounded global/project inbox with stable source and evidence references, persistent read timestamps
+and independently derived resolution, deduplication across committed events, and existing guarded commands or
+controls for responses and lifecycle actions. Restored files use the same query-only projection.
+[Flow](flows/global-inbox.md).
 
-- Agree taxonomy and shortcuts with the owner; implement project/phase/task/run links, unread vs unresolved states
-  and bounded global/project filtering. Provide the conversation panel per kind that T018's bubbles open.
-- Derive deduplicated inbox items from committed events, including normal-mode task/phase events and autonomous
-  questions; persist across browser closure/restart and keep optional OS delivery secondary.
-- Route answers/shortcuts through ordinary guarded commands with current revisions/READY, idempotency and archive
-  restrictions; a notification never serves as evergreen approval.
+**Delivery:** source remains uncommitted for review. Integration in develop, release 0.2.0 via protected main,
+distribution/publication and installation remain pending. The recorded installation is 0.1.9.
 
-**Evidence:** both-mode event/response journeys, duplicate delivery, stale actions and query-only controls.
-**Basis:** B10, B12–B13, B17–B19, B23.
+**Basis:** B10, B12–B13, B17–B19, B23. **Gate:** G13 accepted for this scope. **Threats:** TM13, TM17, TM18.
 
-**Gates:** G13 (owner). **Threats:** TM13, TM17, TM18.
 ## P002-T018 — Task graph and correlated trace views
 
 **Problem:** users need to inspect actual task instances and agent work without reading raw workflow storage.
@@ -743,4 +743,7 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 11. **P002-T015** is complete and integrated as source `f7c5ce3`.
 12. **P002-T016** is complete and integrated as source `26ccd21` after independent final re-review
     ([evidence](phase/P002-T016-autonomous-roadmap.md#15-independent-final-re-review)).
-    Next: **P002-T017**. Release 0.2.0, distribution and installation remain pending.
+    Next at that point: **P002-T017**.
+13. **T017 source (2026-11-04).** G13 accepted for the inbox scope (D302), with direct judge responses deferred.
+    Local implementation and synthetic verification are ready for owner review. Integration, release 0.2.0,
+    distribution/publication and installation remain pending.

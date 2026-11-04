@@ -3379,6 +3379,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Run Status */
+        get: operations["autonomous_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/revision-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revision Preview */
+        post: operations["autonomous_revision_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/autonomous/runs/{run_id}/events": {
         parameters: {
             query?: never;
@@ -3509,6 +3543,57 @@ export interface paths {
         put?: never;
         /** Revise */
         post: operations["autonomous_revise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page */
+        get: operations["inbox_page"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/inbox/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Item */
+        get: operations["inbox_item"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/inbox/{item_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["inbox_mark_read"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4852,6 +4937,8 @@ export interface components {
             root: string;
             /** Lineage Id */
             lineage_id: string | null;
+            /** Run Version */
+            run_version?: number | null;
             /** Project Id */
             project_id: string | null;
             /** Revision */
@@ -5013,6 +5100,12 @@ export interface components {
             bounds?: components["schemas"]["AutonomousBounds"] | null;
             caps?: components["schemas"]["AutonomousCaps"];
             delegation: components["schemas"]["AutonomousDelegation"];
+        };
+        /** AutonomousRevisionPreviewCreate */
+        AutonomousRevisionPreviewCreate: {
+            request: components["schemas"]["AutonomousRequest"];
+            /** Expected Version */
+            expected_version: number;
         };
         /** AutonomousRunRead */
         AutonomousRunRead: {
@@ -6678,6 +6771,174 @@ export interface components {
             } | null;
             /** Profile Proposal Sha256 */
             profile_proposal_sha256?: string | null;
+        };
+        /** InboxContinuationRead */
+        InboxContinuationRead: {
+            /** Target Id */
+            target_id: string;
+            /** Version */
+            version: number;
+            /** Resolution Id */
+            resolution_id: number;
+        };
+        /** InboxItemDetail */
+        InboxItemDetail: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "permission" | "question" | "judge" | "lifecycle" | "notification";
+            /**
+             * Topic
+             * @enum {string}
+             */
+            topic: "run_permission" | "standing_permission" | "task_gap" | "phase_question" | "autonomous_question" | "judge_escalation" | "phase_ready" | "limit_reached" | "recovery_required" | "failed" | "task_completed" | "phase_closed";
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "manual" | "autonomous";
+            /** Project Id */
+            project_id: string;
+            /** Registered Project Id */
+            registered_project_id: string | null;
+            /** Knowledge Project Id */
+            knowledge_project_id: string | null;
+            /** At */
+            at: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "managed" | "phase" | "trace" | "autonomous";
+            /** Event Id */
+            event_id: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /** Phase Instance Id */
+            phase_instance_id: string | null;
+            /** Task Id */
+            task_id: string | null;
+            /** Run Id */
+            run_id: string | null;
+            /** Autonomous Run Id */
+            autonomous_run_id: string | null;
+            /** Operation Id */
+            operation_id: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Evidence Id */
+            evidence_id: string | null;
+            /** Thread Id */
+            thread_id: string | null;
+            /** Read At */
+            read_at: string | null;
+            /** Resolved */
+            resolved: boolean;
+            /** Current State */
+            current_state: string | null;
+            response: components["schemas"]["InboxResponseRead"] | null;
+            standing_permission: components["schemas"]["InboxStandingPermissionRead"] | null;
+            continuation: components["schemas"]["InboxContinuationRead"] | null;
+            /** Context */
+            context: string[];
+        };
+        /** InboxItemRead */
+        InboxItemRead: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "permission" | "question" | "judge" | "lifecycle" | "notification";
+            /**
+             * Topic
+             * @enum {string}
+             */
+            topic: "run_permission" | "standing_permission" | "task_gap" | "phase_question" | "autonomous_question" | "judge_escalation" | "phase_ready" | "limit_reached" | "recovery_required" | "failed" | "task_completed" | "phase_closed";
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "manual" | "autonomous";
+            /** Project Id */
+            project_id: string;
+            /** Registered Project Id */
+            registered_project_id: string | null;
+            /** Knowledge Project Id */
+            knowledge_project_id: string | null;
+            /** At */
+            at: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "managed" | "phase" | "trace" | "autonomous";
+            /** Event Id */
+            event_id: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /** Phase Instance Id */
+            phase_instance_id: string | null;
+            /** Task Id */
+            task_id: string | null;
+            /** Run Id */
+            run_id: string | null;
+            /** Autonomous Run Id */
+            autonomous_run_id: string | null;
+            /** Operation Id */
+            operation_id: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Evidence Id */
+            evidence_id: string | null;
+            /** Thread Id */
+            thread_id: string | null;
+            /** Read At */
+            read_at: string | null;
+            /** Resolved */
+            resolved: boolean;
+            /** Current State */
+            current_state: string | null;
+        };
+        /** InboxMarkRead */
+        InboxMarkRead: {
+            /** Project Id */
+            project_id: string;
+        };
+        /** InboxPageRead */
+        InboxPageRead: {
+            /** Items */
+            items: components["schemas"]["InboxItemRead"][];
+            /** Next Before */
+            next_before: string | null;
+        };
+        /** InboxResponseRead */
+        InboxResponseRead: {
+            /** Target Id */
+            target_id: string;
+            /** Version */
+            version: number;
+            /** Request Version */
+            request_version: number;
+            /** Proof */
+            proof?: string | null;
+            /** Prompts */
+            prompts: string[];
+        };
+        /** InboxStandingPermissionRead */
+        InboxStandingPermissionRead: {
+            /** Revision */
+            revision: number;
+            /** Duration */
+            duration: {
+                [key: string]: unknown;
+            };
+            /** Targets */
+            targets: string[];
         };
         /** IntakeAdoptCreate */
         IntakeAdoptCreate: {
@@ -23499,6 +23760,134 @@ export interface operations {
             };
         };
     };
+    autonomous_run: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    autonomous_revision_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutonomousRevisionPreviewCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomousPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
     autonomous_events: {
         parameters: {
             query?: {
@@ -23987,6 +24376,200 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AutonomousRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    inbox_page: {
+        parameters: {
+            query?: {
+                project?: string | null;
+                kind?: ("permission" | "question" | "judge" | "lifecycle" | "notification") | null;
+                state?: ("unread" | "unresolved" | "resolved") | null;
+                mode?: ("manual" | "autonomous") | null;
+                before?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxPageRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    inbox_item: {
+        parameters: {
+            query: {
+                project: string;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    inbox_mark_read: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxMarkRead"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItemRead"];
                 };
             };
             /** @description Forbidden */

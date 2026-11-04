@@ -1,4 +1,6 @@
 {
+  "inbox.not_found": "The inbox item, project or page is unavailable.",
+  "domain.configuration_not_ready": "The service configuration must be ready to confirm this response.",
   "acceptance.content_changed_since_evidence": "Content changed since evidence capture",
   "acceptance.data_model_without_diagram": "Data model changed without {diagram} (D088): {paths}",
   "acceptance.deterministic_validation_failed": "Deterministic validation failed",

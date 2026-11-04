@@ -5,6 +5,9 @@ import type { Translate } from "./i18n.ts";
 export type Route =
   | { name: "home" }
   | { name: "knowledge" }
+  | { name: "inbox" }
+  | { name: "project-inbox"; project: string; item?: string }
+  | { name: "project-autonomous"; project: string; run: string }
   | { name: "project-knowledge"; project: string }
   | { name: "stats" }
   | { name: "accounting" }
@@ -14,7 +17,7 @@ export type Route =
   | { name: "project-new" }
   | { name: "project"; project: string }
   | { name: "phases"; project: string }
-  | { name: "phase"; project: string; phase: string }
+  | { name: "phase"; project: string; phase: string; section?: "check" }
   | { name: "task"; project: string; phase: string; task: string }
   | { name: "run"; project: string; phase: string; task: string; run: string }
   | { name: "chat"; project: string; conversation?: string }
@@ -45,6 +48,7 @@ export function parse(pathname: string): Route {
   const [a, b, c, d, f, g, h, i] = parts as string[];
   const n = parts.length;
   if (n === 0) return { name: "home" };
+  if (a === "inbox" && n === 1) return { name: "inbox" };
   if (a === "knowledge" && n === 1) return { name: "knowledge" };
   if (a === "stats" && n === 1) return { name: "stats" };
   if (a === "accounting" && n === 1) return { name: "accounting" };
@@ -56,6 +60,8 @@ export function parse(pathname: string): Route {
   const project = b;
   // `new` is reserved: the server never registers a project with that id (D076).
   if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
+  if (c === "inbox" && n <= 4) return n === 3 ? { name: "project-inbox", project } : { name: "project-inbox", project, item: d };
+  if (c === "autonomous" && n === 4) return { name: "project-autonomous", project, run: d };
   if (c === "knowledge" && n === 3) return { name: "project-knowledge", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
   if (c === "stats" && n === 3) return { name: "project-stats", project };
@@ -81,6 +87,7 @@ export function parse(pathname: string): Route {
   if (c !== "phases") return { name: "not-found", path: pathname };
   if (n === 3) return { name: "phases", project };
   if (n === 4) return { name: "phase", project, phase: d };
+  if (f === "check" && n === 5) return { name: "phase", project, phase: d, section: "check" };
   if (f === "plan" && n <= 6) return n === 5 ? { name: "plan", project, phase: d } : { name: "plan", project, phase: d, conversation: g };
   if (f === "tasks" && n === 6) return { name: "task", project, phase: d, task: g };
   if (f === "tasks" && h === "runs" && n === 8) return { name: "run", project, phase: d, task: g, run: i };
@@ -91,6 +98,9 @@ export function parse(pathname: string): Route {
 export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
+    case "inbox": return "/inbox";
+    case "project-inbox": return `/projects/${e(route.project)}/inbox${route.item ? `/${e(route.item)}` : ""}`;
+    case "project-autonomous": return `/projects/${e(route.project)}/autonomous/${e(route.run)}`;
     case "knowledge": return "/knowledge";
     case "project-knowledge": return `/projects/${e(route.project)}/knowledge`;
     case "stats": return "/stats";
@@ -101,7 +111,7 @@ export function href(route: Route): string {
     case "project-new": return "/projects/new";
     case "project": return `/projects/${e(route.project)}`;
     case "phases": return `/projects/${e(route.project)}/phases`;
-    case "phase": return `/projects/${e(route.project)}/phases/${e(route.phase)}`;
+    case "phase": return `/projects/${e(route.project)}/phases/${e(route.phase)}${route.section ? "/check" : ""}`;
     case "task": return `/projects/${e(route.project)}/phases/${e(route.phase)}/tasks/${e(route.task)}`;
     case "run": return `/projects/${e(route.project)}/phases/${e(route.phase)}/tasks/${e(route.task)}/runs/${e(route.run)}`;
     case "chat": return `/projects/${e(route.project)}/chat${route.conversation ? `/${e(route.conversation)}` : ""}`;
@@ -130,6 +140,12 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 /** Breadcrumb: each level of the route with its target. The last entry is the current page. */
 export function trail(route: Route, t: Translate): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: t("nav.projects"), to: { name: "home" } }];
+  if (route.name === "inbox" || route.name === "project-inbox") {
+    items.push({ label: t("inbox.title"), to: { name: "inbox" } });
+    if (route.name === "project-inbox") items.push({ label: t("inbox.project_scope"), to: { name: "project-inbox", project: route.project } });
+    if (route.name === "project-inbox" && route.item) items.push({ label: t("inbox.item"), to: route });
+    return items;
+  }
   if (route.name === "knowledge") items.push({ label: t("knowledge.title"), to: route });
   if (route.name === "stats") items.push({ label: t("nav.stats"), to: route });
   if (route.name === "accounting") items.push({ label: t("nav.accounting"), to: route });
@@ -141,6 +157,7 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
   if (!("project" in route)) return items;
   const { project } = route;
   items.push({ label: project, to: { name: "project", project } });
+  if (route.name === "project-autonomous") items.push({ label: t("autonomy.title"), to: route });
   if (route.name === "project-knowledge") items.push({ label: t("knowledge.title"), to: route });
   if (route.name === "settings") items.push({ label: t("nav.settings"), to: route });
   if (route.name === "project-stats") items.push({ label: t("nav.stats"), to: route });
@@ -160,6 +177,7 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
   }
   if (route.name === "phases" || "phase" in route) items.push({ label: t("nav.phases"), to: { name: "phases", project } });
   if ("phase" in route) items.push({ label: route.phase, to: { name: "phase", project, phase: route.phase } });
+  if (route.name === "phase" && route.section) items.push({ label: t("phase.check.title"), to: route });
   if ("task" in route) items.push({ label: route.task, to: { name: "task", project, phase: route.phase, task: route.task } });
   if (route.name === "plan") {
     items.push({ label: t("trail.planning"), to: { name: "plan", project, phase: route.phase } });

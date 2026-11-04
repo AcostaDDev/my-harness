@@ -35,13 +35,13 @@ export function PhaseListPage() {
   </>;
 }
 
-export function PhasePage({ code }: { code: string }) {
+export function PhasePage({ code, checkOnly = false }: { code: string; checkOnly?: boolean }) {
   const { t, rich } = useI18n();
   const { project, refresh } = useWorkspace();
   const [offset, setOffset] = useState(0);
   const base = `/projects/${project}/phases/${encodeURIComponent(code)}`;
   const phase = usePoll<S["PhaseRead"]>(base, 1500, refresh);
-  const tasks = usePoll<S["Page_PhaseTaskRead_"]>(`${base}/tasks?offset=${offset}`, 2000, refresh);
+  const tasks = usePoll<S["Page_PhaseTaskRead_"]>(checkOnly ? null : `${base}/tasks?offset=${offset}`, 2000, refresh);
   const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 0);
   const phases = usePoll<S["PhaseSummaryRead"][]>(`/projects/${project}/phases`, 5000, refresh);
   const data = phase.data;
@@ -51,6 +51,12 @@ export function PhasePage({ code }: { code: string }) {
   const following = phases.data && index >= 0 ? phases.data[index + 1]?.code ?? null : undefined;
   const undefinedPhase = phase.missing && !!tasks.data;
   const open = data && !["CLOSED", "ABANDONED"].includes(data.status);
+  if (checkOnly) return <>
+    <PageHeader title={t("phase.check.title")}><Link to={{ name: "phase", project, phase: code }}>{code}</Link></PageHeader>
+    <Stale error={phase.error} />
+    {data ? <PhaseDetail phase={data} stale={!!phase.error} section="phase-check" />
+      : !phase.error && <Loading />}
+  </>;
   if (phase.missing && tasks.data && !tasks.data.items.length && !offset) return <>
     <PageHeader code title={code} />
     <Empty title={t("phases.missing.title", { phase: code })}>

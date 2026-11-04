@@ -177,7 +177,8 @@ class ManagedAttemptRow(Base):
 
 class ManagedEventRow(Base):
     __tablename__ = "managed_events"
-    __table_args__ = (UniqueConstraint("run_id", "sequence"), {"sqlite_autoincrement": True})
+    __table_args__ = (UniqueConstraint("run_id", "sequence"),
+                      Index("ix_managed_events_inbox", "kind", "run_id", "sequence"), {"sqlite_autoincrement": True})
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     run_id: Mapped[str] = mapped_column(ForeignKey("managed_runs.id"))
@@ -446,7 +447,8 @@ class PhaseAuthorizationRow(Base):
 
 class PhaseEventRow(Base):
     __tablename__ = 'phase_events'
-    __table_args__ = (UniqueConstraint('phase_id', 'sequence'), {'sqlite_autoincrement': True})
+    __table_args__ = (UniqueConstraint('phase_id', 'sequence'),
+                      Index('ix_phase_events_inbox', 'kind', 'phase_id', 'sequence'), {'sqlite_autoincrement': True})
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
     sequence: Mapped[int] = mapped_column(Integer)
@@ -1415,6 +1417,7 @@ class TraceEventRow(Base):
         Index('ix_trace_events_thread', 'thread_id', 'id'),
         Index('ix_trace_events_operation', 'operation_id', 'id'),
         Index('ix_trace_events_root', 'root', 'id'),
+        Index('ix_trace_events_inbox', 'kind', 'root'),
         {'sqlite_autoincrement': True})
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     event_id: Mapped[str] = mapped_column(String(36), unique=True)
@@ -1668,6 +1671,7 @@ class AutonomousQuestionRow(Base):
 class AutonomousEventRow(Base):
     """Ordered, deduplicated run events with bounded references for T017 derivation; insert-only."""
     __tablename__ = 'autonomous_events'
+    __table_args__ = (Index('ix_autonomous_events_inbox', 'kind', 'run_id', 'id'),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     run_id: Mapped[str] = mapped_column(ForeignKey('autonomous_runs.id'))
     root: Mapped[str] = mapped_column(String)
@@ -1698,3 +1702,10 @@ class AutonomousReviewRow(Base):
     origin: Mapped[str] = mapped_column(String(30))
     actor: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class InboxReadMarkRow(Base):
+    """An owner read receipt. The projected item and its resolution live in the originating ledger."""
+    __tablename__ = 'inbox_read_marks'
+    item_id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    read_at: Mapped[str] = mapped_column(String(40))

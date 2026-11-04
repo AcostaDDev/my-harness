@@ -9,6 +9,7 @@ import pytest
 
 from my_harness.api.app import create_app
 from my_harness.storage.database import make_engine
+from my_harness.storage.schema import SCHEMA_REVISION
 
 
 LOCAL = {"base_url": "http://127.0.0.1:8013", "headers": {"X-My-Harness": "1"}}  # D033 local guard
@@ -21,7 +22,7 @@ def test_migration_wal_and_round_trip(migrated_database):
         with engine.connect() as connection:
             assert connection.scalar(text("PRAGMA journal_mode")) == "wal"
             assert connection.scalar(text("PRAGMA foreign_keys")) == 1
-            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0038_autonomous_runs"
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == SCHEMA_REVISION
         command.check(config)
         command.downgrade(config, "base")
         assert "simulations" not in inspect(engine).get_table_names()

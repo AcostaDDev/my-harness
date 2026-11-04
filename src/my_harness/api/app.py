@@ -76,6 +76,8 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     app.include_router(trace_router(runtime))
     from my_harness.api.autonomous import autonomous_router
     app.include_router(autonomous_router(runtime))
+    from my_harness.api.inbox import inbox_router
+    app.include_router(inbox_router(runtime))
     app.state.runtime = runtime
 
     @app.middleware('http')

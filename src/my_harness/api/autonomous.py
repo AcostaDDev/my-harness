@@ -2,7 +2,7 @@
 
 Start (readiness, owner answers to readiness gaps, preview, owner confirmation by exact hash), status, events and questions, answer, pause, resume,
 revoke, recover and a new authorization revision. Every mutation is an ordinary guarded command with fresh checks
-and the local-request guard; refusals are 409 with the stable refusal code. There is no global inbox here (T017).
+and the local-request guard; refusals are 409 with the stable refusal code. The inbox links to these controls.
 """
 from fastapi import APIRouter, Depends
 
@@ -10,7 +10,7 @@ from my_harness.api.managed import ERRORS, IdempotencyKey, Limit, Offset, call
 from my_harness.api.schemas import (
     AutonomousAnswerCreate, AutonomousConfirmCreate, AutonomousGapAnswerCreate, AutonomousGapAnswerRead, AutonomousEventRead, AutonomousPreviewRead,
     AutonomousQuestionRead, AutonomousReadinessRead, AutonomousReasoned, AutonomousRecoverCreate, AutonomousRequest,
-    AutonomousRunRead, AutonomousVersioned,
+    AutonomousRevisionPreviewCreate, AutonomousRunRead, AutonomousVersioned,
 )
 from my_harness.api.security import local_request, problem
 from my_harness.core.engine.autonomy import AutonomyRefusal
@@ -76,6 +76,18 @@ def autonomous_router(runtime: ManagedRuntime) -> APIRouter:
             raise problem(404, 'not_found', message('autonomy.refused', language(runtime.engine), reason='no_run'))
         return found
 
+    @router.get('/runs/{run_id}', response_model=AutonomousRunRead, operation_id='autonomous_run')
+    def run_status(project_id: str, run_id: str):
+        project, service = scoped(project_id)
+        return guarded(service.status_for, project.context.root, run_id)
+
+    @router.post('/runs/{run_id}/revision-preview', response_model=AutonomousPreviewRead,
+                 operation_id='autonomous_revision_preview')
+    def revision_preview(project_id: str, run_id: str, body: AutonomousRevisionPreviewCreate):
+        project, service = scoped(project_id)
+        return guarded(service.revision_preview, project.context.root, run_id, plain(body.request),
+                       expected_version=body.expected_version)
+
     @router.get('/runs/{run_id}/events', response_model=list[AutonomousEventRead], operation_id='autonomous_events')
     def events(project_id: str, run_id: str, after: Offset = 0, limit: Limit = 100):
         project, service = scoped(project_id)
@@ -85,9 +97,7 @@ def autonomous_router(runtime: ManagedRuntime) -> APIRouter:
                 operation_id='autonomous_questions')
     def questions(project_id: str, run_id: str):
         project, service = scoped(project_id)
-        run = guarded(service.status_by_id, run_id)
-        if run['root'] != str(project.context.root):
-            raise problem(404, 'not_found', message('autonomy.refused', language(runtime.engine), reason='no_run'))
+        run = guarded(service.status_for, project.context.root, run_id)
         return run['questions']
 
     @router.post('/runs/{run_id}/questions/{question_id}/answer', response_model=AutonomousQuestionRead,

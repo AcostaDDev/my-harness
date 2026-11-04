@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0038_autonomous_runs`, 93 tables, defined in
+SQLite schema of the local service: Alembic head `0039_inbox_read_marks`, 94 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -8,6 +8,26 @@ Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uni
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
 context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
 SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## Global inbox
+
+P002-T017 / [D302](DECISIONS.md#d302--g13-inbox-notifications-and-guarded-shortcuts),
+[flow](flows/global-inbox.md). Migration `0039_inbox_read_marks` creates an empty table and indexes source events
+by kind with their scope and sequence. The stored read receipt has no domain authority. A read-only projection
+rederives the inbox identities and resolution from committed records.
+
+```mermaid
+erDiagram
+    inbox_read_marks {
+        string item_id PK "stable projected item identity"
+        string read_at "first read timestamp"
+    }
+```
+
+The item ID references a projected fact and has no physical foreign key. It is scoped through its source record on
+every read or update. The migration adds indexes to `managed_events` (kind, run, sequence), `phase_events` (kind,
+phase, sequence), `trace_events` (kind, root), and `autonomous_events` (kind, run, ID). Existing rows and trigger
+definitions are retained.
 
 ## Autonomous roadmap runs
 

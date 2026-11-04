@@ -117,7 +117,7 @@ inference; unknown usage stops only when its cap is set.
 | Pause | RUNNING, expected version | PAUSED; the graph holds at the next node |
 | Resume | Resumable state, expected version, no open question, clean Git (or exactly the evidence of one verified `held_review`), no uncertain writer, current authority/scope/policy/versions, caps | RUNNING; the graph resumes, continues a recovered thread, or starts a continuation thread when the old one failed without pending operations; a held review continues in its own T014 run once |
 | Revoke | Non-terminal, expected version, reason | T010 parent ended (children cease), delegated writers cancelled by the existing poll, thread revoked, REVOKED |
-| Recover | RECOVERY_REQUIRED or REVOKED, explicit stopped-writer confirmation, settled writers | Journal classification; uncertain sealed effects abandoned under their identity; RECOVERY_REQUIRED → PAUSED |
+| Recover | RECOVERY_REQUIRED or REVOKED, current version, explicit stopped-writer confirmation, settled writers | Journal classification and abandonment, graph continuation stamp and RECOVERY_REQUIRED → PAUSED commit together |
 | Revise | Stopped run of the lineage, current preview, bounds not lowered | New authorization revision and parent; previous parent superseded; open questions superseded; RUNNING |
 
 ## Source

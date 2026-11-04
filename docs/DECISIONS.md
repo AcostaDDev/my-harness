@@ -2469,7 +2469,7 @@ Implementation and synthetic evidence are recorded in
 
 Status: accepted explicitly by the owner on 2026-11-03 as the G14 visual direction (T018) and the G13 conversation
 kinds (T017). T017 implements the inbox under D302. Plan v0.4 assigns the remaining visual work to
-T018–T024 after T017 ([D303](#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)).
+T018–T024 after T017 ([D303](#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)). T018 completes G14 and binds T019–T024 through D304–D309 (accepted 2026-11-04).
 
 The task-instance graph of D278 becomes a hand-drawn, zoomable work map and the home page, with the existing list
 pages one toggle away as the accessible alternative. Clicking a node or zooming past a threshold enters it: projects →
@@ -2684,3 +2684,112 @@ G14's remaining owner input (cards, information, navigation) belongs to T018. D2
 and installed in T021 with separate explicit network authorization. Dependencies follow the split: T025 adds T023,
 T026 adds T019 and T024, and T027 adds T019, T020 and T024. No acceptance, requirement, gate, threat or pending
 delivery is dropped, and T018 still follows T017.
+
+## D304 — Work-map levels, cards, navigation and status classes
+
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q5–Q15 and Q20); completes G14's remaining input
+(cards, information, navigation) on D297's visual direction. Not implemented. Contract:
+[T018 §§3–5](phase/P002-T018-work-map-contract.md#3-levels-cards-and-inspector-g14).
+
+The map keeps D278's read-only projection. Compact cards per level carry code, title, status, circles, one primary
+counter (L0 phases closed/total, L1 tasks committed/total, L2 attempt/revision limit, L3 duration), an error mark and
+bubbles. A side inspector holds the full fields, with sources and "not observed" labels. L1 cards show Plan · Check ·
+Close slots with the actors that actually took part. L3 shows agent invocations and the Harness validate, format and
+commit stages. Existing routes keep their meaning, and `/projects/:p` stays the project page. L4 is the new
+`/projects/:p/invocations/:i` for every lane, with the breadcrumb derived from the owner. The same path renders map
+or list (`?view=list|map`), with the last choice remembered per browser and the map as default. Six status classes
+(done green, progress orange, waiting violet, failed red, pending neutral, inactive grey) plus `unknown` each carry
+an icon and a label. The shared list `Status` component adopts them. A parity test fails on any unmapped persisted
+value. R covers reviewer-agent roles, E executor and preparation, J judge (shown with a judge profile or where a
+judge actually ran) and H Harness deterministic work. Rays mark every active invocation, including the chat lane on
+its conversation scope. Bubbles sit on the circle of the actor that raised the T017 item (lifecycle confirmations on
+H; unresolvable origins on H, labelled). The archive home becomes the read-only map beside the run-id entry, with
+no actions or polling. The drawer reads the DB rendering for knowledge projects and the read-only checkout view for
+legacy projects in ordinary mode.
+
+## D305 — Observed-step projection from sealed native evidence
+
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q1–Q2); binds T019. Not implemented. Additive to
+D287; does not reopen T006. Contract: [T018 §6](phase/P002-T018-work-map-contract.md#6-observed-step-projection-t019).
+
+Corrected premise: parsed native records of 16 KiB or less already persist verbatim and unsanitized as `agent_event`
+rows that retention does not remove. Larger records exist only as references into `stdout.bin`, whose bytes
+retention can remove. The visual direction's statement that the sequence exists only in retained bytes is therefore
+inaccurate; the records written before keep their text. Each settled managed attempt, with or without a workflow
+operation, receives `invocation.step` events (`observed-step-1`, source `measured`) and one `invocation.steps_sealed`
+marker in `trace_events`. Steps are client-neutral turns (labelled `claude_message` or `codex_turn`), tool calls,
+messages, reasoning and `not_observed` gaps. They carry order, parent turn, call id, tool and origin, masked
+256-character argument summaries with digests, outcomes (completed, error, denied, cancelled in flight, not
+observed, unclassified), chunk-receipt timing and parallel groups; result and message content is excluded.
+Each step keeps `source_record` references to its original `agent_event` rows. These are read through the existing run event and
+attempt-log routes, only in the authenticated UI, and an oversize record whose bytes retention removed shows "unavailable
+after retention" (owner addition at acceptance). The
+settlement transaction records a pending marker. A deterministic projector derives the steps idempotently from
+`agent_event` rows, `stream_bytes` and verified stdout bytes, without inference. Retention refuses streams whose
+projection is pending. Limits: 10,000 steps and 4 MiB per invocation, plus `trace-payload-1`. Runs settled earlier
+are not backfilled. They show counters, an explicit "steps not projected" label and the run evidence link. Steps
+survive retention, backups and query-only restore.
+
+## D306 — Work-map read projections, polling refresh and archive map
+
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q5 and Q16); binds T020 and T022. Not
+implemented. Refines D278's "polling remains the default" and keeps D029. Contract:
+[T018 §§7–8](phase/P002-T018-work-map-contract.md#7-read-projections-and-api-t020).
+
+Versioned read-only `GET` projections under `/api/managed/map/` serve L0–L4, related records and an activity
+summary, with OpenAPI and client parity. Step pages resolve source records to existing routes with their
+availability. They have no mutation routes and no execution through edges. Pages use
+opaque keyset cursors bound to project, level, scope and version. Per-level caps apply (100 projects, 200 phases,
+300 task nodes, 50 runs, 200 steps). Earlier runs, older steps and related records load lazily. Responses carry a
+version token. The activity poll (≤ 8 KiB idle) runs every 2 s while work is active and every 10 s when idle; it
+pauses in hidden tabs and is off in archives. Changed tokens reload level snapshots, and a stale cursor returns
+`409 cursor_stale` for snapshot recovery. Streaming is not adopted without measured need. Queries are filtered by
+project root, and foreign identifiers return 404. Bubbles aggregate T017's unresolved items by identity and count.
+Query-only archives serve the same projections from SQLite alone, and the archive home renders the read-only map.
+
+## D307 — Contextual reviewer conversation on the canonical chat boundary
+
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answer Q3); binds T024. Not implemented. Refines D297's
+"recorded as a knowledge delivery" for chat, which today has no T007 boundary. Contract:
+[T018 §9](phase/P002-T018-work-map-contract.md#9-contextual-reviewer-conversation-t024).
+
+In knowledge projects, the reviewer's separate talk button carries a removable tag naming the phase, task, run or
+step in view. Its reference is a stable ID with the current accepted revision, or a run/step evidence digest.
+Foreign or stale references are refused, and removing the tag sends no element context. A chat turn carrying element
+context is sealed through T007: a single-node chat graph thread, an agent invocation operation and an invocation
+context over the accepted snapshot. It keeps the read-only HEAD snapshot without the checkout lock, and `managed_jobs`
+stays the scheduler. The bounded context is framed as evidence and delivered on `initial_context` with one receipt
+per reference. Knowledge kinds use existing entity types. Run and step evidence uses an additive
+`knowledge-delivery-3` envelope with entity type `run_evidence`; earlier formats are unchanged. Turns without
+element context keep today's path. Legacy projects offer no tag. Executor and judge panels have no free composer.
+Guards, confirmations and the archive refusal remain.
+
+## D308 — rough.js 4.6.6 and Excalifont v0.18.1 for the hand-drawn map
+
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q17–Q18); dependency decision required by D297
+before adding. Installation belongs to T021 with its own explicit network authorization. Contract and evidence:
+[T018 §10](phase/P002-T018-work-map-contract.md#10-rendering-dependency-decision-installation-in-t021).
+
+`roughjs` 4.6.6 (MIT) becomes a direct frontend dependency pinned exactly. It and its four MIT dependencies are
+already locked as mermaid dependencies with the same integrity, its notice is already recorded and its built chunk
+already ships (27,109 B; 8,789 B gzip), so no download is needed and the bundle delta is about zero. The map label
+font is Excalifont from `excalidraw/excalidraw` tag v0.18.1, SIL OFL 1.1 ("Copyright (c) 2024 by Excalidraw",
+derived from Virgil), shipped unmodified as two subsets selected by `unicode-range`: Latin (24,956 B, sha256
+`e4423b31…1c48`) and Latin Extended-A (12,220 B, sha256 `4fb8ad69…cc93`). The Latin subset alone covers the en/es
+character set. Other scripts fall back to the UI font. An OFL licence text with copyright and attribution ships beside
+the fonts and in `NOTICE-THIRD-PARTY.md`. Serving is offline from the package with no CDN, and wheel and sdist
+members are verified. Virgil (OFL 1.1 with Reserved Font Name "Virgil", 61,248 B) is the rejected alternative.
+
+## D309 — Accessibility and realistic-size budgets for the work map
+
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q19–Q20); binds T019–T024. Not implemented.
+Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
+
+The map and trace meet WCAG 2.2 AA. Every SVG node is focusable with an accessible name (kind, code, title, status
+text, actors, bubble count), and keyboard operation is complete. Status is never shown by colour alone, and label
+contrast is ≥ 4.5:1 in both themes. There is no motion under reduced motion. Equivalent list views exist, a throttled
+polite live region announces changes, and en/es parity holds. Evidence uses one deep synthetic path of per-level
+maxima (25 projects; 40 phases; 80 tasks; 30 runs; 40 invocations; 5,000 observed steps; 300 open inbox items), with
+leaf siblings, not a Cartesian product. Budgets: projection page p95 ≤ 150 ms, idle poll ≤ 8 KiB, first 80-node L2
+render ≤ 500 ms, pan and zoom ≥ 50 fps at 200 visible nodes, and the 5,000-step trace usable through lazy pages of
+≤ 200. Each owning task measures its budget; a miss is a finding, never a silent relaxation.

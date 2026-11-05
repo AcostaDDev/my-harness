@@ -77,6 +77,7 @@ queue; closing the browser does not cancel work.
 | `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used through shared domain commands by structured intake and the T012 owner editor ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
 | `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`, `storage/operation_journal.py`, `api/traces.py` | P002-T006 operation journal behind `OperationPort` with fenced invocation operations and evidence-based recovery, ordered insert-only trace events, `trace-observation-1` counters, bounded sanitized payloads, T007/T008 envelopes and read-only trace routes ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract)) |
 | `core/engine/observed_steps.py`, `storage/observed_steps.py`, `services/observed_steps.py` | P002-T019 (source, corrected after two reviews; final re-review passed, integration pending): `observed-step-1` derivation per client (pure), pending marker at settlement, idempotent projector with integrity failure, oversize-record verification, retention guard and keyset reads; background projector started with the supervisor ([D305](DECISIONS.md#d305--observed-step-projection-from-sealed-native-evidence), [D310](DECISIONS.md#d310--observed-step-pending-marker-projector-and-reads)) |
+| `core/engine/work_map.py`, `storage/work_map.py`, `api/work_map.py` | P002-T020 (source complete, independent final re-review passed): read-only work-map projections L0–L4, related records and the activity summary under `/api/managed/map/`; status classes with `unknown` fallback, R/E/J/H attribution, T017 bubbles, opaque scope/version/cursor tokens, source-record resolution to the existing routes, archive parity ([D311](DECISIONS.md#d311--work-map-read-projections-tokens-and-indexes)) |
 | `core/engine/frozen_context.py`, `storage/frozen_context.py` | P002-T007: bounded accepted context, actual frozen profile and explicit Git/code captures, D285 prompt rendering, fenced invocation boundaries and exact query/tool/input receipts, with scoped archive readers ([D288](DECISIONS.md#d288--frozen-invocation-context-and-exact-exposure-evidence)) |
 | `core/engine/tool_bridge.py`, `services/tool_bridge.py`, `adapters/tool_bridge_transport.py`, `adapters/tool_bridge_stdio.py` | T008 (integrated into develop): three-tool MCP surface, frozen scope/capability cells, persisted caller resolver, supervisor broker and independently controlled stdio relay; no product graph or production permission provider ([D289](DECISIONS.md#d289--invocation-scoped-broker-binding-transactional-exposure-and-independent-relay-control)) |
 | `migrations/versions/0001…0033` | Alembic schema |
@@ -551,11 +552,14 @@ the supervisor; that thread's first pass recovers markers left pending, and the 
 in progress between batches and before its seal. A divergent replay records
 `invocation.steps_failed`. Explicit retention is guarded until the projection is sealed. Steps keep references to
 their source `agent_event` rows, which the existing run event and attempt-log routes serve; `ObservedSteps` gives
-internal keyset pages over `ix_trace_events_invocation` (migration 0040). The components below from T020 onwards
-do not exist yet. T020 adds
-versioned read-only projections and `GET` routes under `/api/managed/map/`, built over the existing ledgers, T017's
-inbox projection and T019's steps. They offer keyset cursors, version tokens and an activity summary for polling,
-and the same routes serve query-only archives from SQLite alone. T021 adds an in-house SVG map engine with rough.js
+internal keyset pages over `ix_trace_events_invocation` (migration 0040). **T020 is source complete after independent final re-review;
+integration is pending** (D311, [record](phase/P002-T020-work-map-api.md), [flow](flows/work-map.md)):
+`storage/work_map.py` builds versioned read-only projections from the existing ledgers, T017's inbox projection
+(`FACTS`, reused unchanged) and T019's `ObservedSteps`, with the pure status classes, circles and opaque scope,
+version and cursor tokens of `core/engine/work_map.py`; `api/work_map.py` serves them as `GET` routes under
+`/api/managed/map/` behind the session and Host/Origin guards. Every query is root-scoped and bounded, selects no
+`history_json`, and runs unchanged on query-only archives from SQLite alone; migration 0041 adds seven read indexes.
+The components below from T021 onwards do not exist yet. T021 adds an in-house SVG map engine with rough.js
 4.6.6 and the packaged Excalifont subsets; T022–T023 render L0–L4 and the drawer through the existing router.
 T024 seals chat turns that carry element context through T007's boundary, using a single-node chat graph thread
 over the existing scheduler. No second scheduler, workflow editor or executable graph authority is introduced.

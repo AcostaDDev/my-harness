@@ -3184,3 +3184,523 @@ class InboxPageRead(BaseModel):
 class InboxMarkRead(BaseModel):
     model_config = ConfigDict(extra='forbid')
     project_id: str = Field(min_length=1, max_length=160)
+
+
+# P002-T020 (D304, D306, D311): read-only work-map projections (`work-map-1`). Codes and identities only; native
+# content, questions and answers never cross. Counters keep value and source; absence is never a zero.
+MapClass = Literal['done', 'progress', 'waiting', 'failed', 'pending', 'inactive', 'unknown']
+MapCircle = Literal['R', 'E', 'J', 'H']
+
+
+class MapStatus(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    code: str | None = Field(description='Persisted status code (raw); null when no record exists.')
+    class_: MapClass = Field(alias='class', description='One of the six classes, or unknown for an unmapped code.')
+
+
+class MapCounter(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    value: Any = Field(description='Null when absent; never replaced by zero.')
+    source: TraceSource
+    reason: str | None = None
+
+
+class MapBubbleItem(BaseModel):
+    id: str = Field(description='T017 inbox item id; the panel re-reads the item.')
+    kind: InboxKind
+    topic: InboxTopic
+    circle: MapCircle
+    attributed: bool
+
+
+class MapBubbles(BaseModel):
+    total: int
+    source: TraceSource
+    by_kind: dict[str, int]
+    by_circle: dict[str, int]
+    unattributed: int
+    items: list[MapBubbleItem] | None = None
+    items_truncated: bool | None = None
+
+
+class MapActiveScope(BaseModel):
+    phase: str | None
+    task: str | None
+    run_id: str | None
+
+
+class MapActiveInvocation(BaseModel):
+    source_kind: Literal['managed_attempt', 'preparation_step', 'configuration_assistance'] = Field(
+        description='Ledger source of the invocation; preparation and assistance have no managed attempt.')
+    invocation_id: str | None
+    attempt_id: str | None
+    run_id: str | None
+    number: int | None
+    role: str | None
+    circle: MapCircle | None
+    agent: str | None
+    lane: str
+    chat: bool
+    scope: MapActiveScope
+    process: Literal['PENDING', 'RUNNING']
+    started_at: str
+    project_id: str | None = None
+
+
+class MapHarnessWork(BaseModel):
+    reason: Literal['stage', 'autonomous_supervisor', 'preparation_command']
+    run_id: str | None
+    phase: str | None
+    task: str | None
+    stage: str | None
+    status: str | None
+
+
+class MapCircleTarget(BaseModel):
+    invocation_id: str
+    role: str
+    lane: Literal['managed_attempt', 'preparation_step', 'configuration_assistance']
+    started_at: str
+
+
+class MapCircleState(BaseModel):
+    circle: MapCircle
+    shown: Literal['always', 'judge_profile', 'judge_history'] = Field(
+        description='Why the circle is shown; J only with a judge profile or where a judge took part.')
+    active: bool
+    active_invocations: int
+    chat: bool
+    harness: list[MapHarnessWork]
+    bubbles: int
+    waiting: bool = Field(description='Unresolved owner items wait on this circle (with or without a running '
+                                      'invocation).')
+    latest_invocation: MapCircleTarget | None = Field(
+        description="The circle's most recent persisted invocation in the element: the L4 navigation target.")
+    inert: bool = Field(description='No invocation in scope: the circle is labelled and opens nothing.')
+
+
+class MapProjectHead(BaseModel):
+    key: str = Field(description='Map project id (T017 project identity); every map route also accepts its aliases.')
+    name: str
+    knowledge_project_id: str | None
+    registered_project_id: str | None
+
+
+class MapError(BaseModel):
+    kind: str
+    id: str
+    status: MapStatus
+
+
+class MapPage(BaseModel):
+    format: Literal['work-map-1']
+    level: str
+    scope: str = Field(description='Opaque scope id; echo it to the activity poll.')
+    version: str = Field(description='Version token of the scope; a changed token reloads the first page.')
+    read_only_archive: bool
+    next_cursor: str | None = Field(default=None, description='Opaque keyset cursor bound to scope and version.')
+
+
+class MapAutonomousRun(BaseModel):
+    id: str
+    status: MapStatus
+    reason: str | None
+    bounds: Any
+    updated_at: str
+
+
+class MapMode(BaseModel):
+    kind: Literal['manual', 'autonomous']
+    autonomous_run: MapAutonomousRun | None
+
+
+class MapActivePhase(BaseModel):
+    code: str
+    title: str | None
+    status: MapStatus
+
+
+class MapProjectCard(BaseModel):
+    id: str
+    name: str
+    name_source: Literal['registered', 'registry', 'root_basename']
+    knowledge_project_id: str | None
+    registered_project_id: str | None
+    status: MapStatus
+    mode: MapMode
+    active_phase: MapActivePhase | None
+    phases: MapCounter
+    circles: list[MapCircleState]
+    active_invocations: list[MapActiveInvocation]
+    last_activity: MapCounter
+    errors: list[MapError]
+    bubbles: MapBubbles
+    configuration: dict[str, Any] | None = Field(description='Configured agents per role (ordinary mode only).')
+    configuration_source: Literal['supplied', 'absent']
+
+
+class MapProjectsRead(MapPage):
+    items: list[MapProjectCard]
+
+
+class MapIdentity(BaseModel):
+    item_id: str
+    status: MapStatus
+
+
+class MapPhaseInstance(BaseModel):
+    id: str
+    status: str
+    version: int
+    created_at: str
+    updated_at: str
+
+
+class MapSlotActor(BaseModel):
+    circle: MapCircle
+    status: MapStatus | None
+    invocation_id: str | None = Field(description='The actor\'s invocation in the operation (L4 target).')
+
+
+class MapSlot(BaseModel):
+    operation_id: str
+    run_id: str | None
+    status: MapStatus
+    created_at: str
+    finished_at: str | None
+    history: int
+    actors: list[MapSlotActor]
+
+
+class MapEdge(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    kind: Literal['roadmap_order', 'depends_on', 'replaces', 'step_order']
+    source: str
+    target: str
+
+
+class MapPhaseNode(BaseModel):
+    code: str
+    title: str | None
+    origin: Literal['roadmap', 'instance', 'runs']
+    identity: MapIdentity | None
+    instance: MapPhaseInstance | None
+    status: MapStatus
+    objective: str | None
+    tag: str | None
+    criteria: MapCounter
+    slots: dict[Literal['plan', 'check', 'close'], MapSlot | None]
+    ready: bool
+    last_check: MapSlot | None
+    tasks: MapCounter
+    active: bool
+    circles: list[MapCircleState]
+    active_invocations: list[MapActiveInvocation]
+    errors: list[MapError]
+    bubbles: MapBubbles
+
+
+class MapPhasesRead(MapPage):
+    project: MapProjectHead
+    items: list[MapPhaseNode]
+    edges: list[MapEdge]
+
+
+class MapCommit(BaseModel):
+    status: MapStatus
+    commit: str | None
+    finished_at: str | None
+
+
+class MapAcceptance(BaseModel):
+    state: Literal['absent', 'rejected', 'eligible', 'unknown'] = Field(
+        description='The run projection acceptance decision; eligibility is not a commit.')
+    eligible: bool | None
+    reasons: list[str]
+    source: TraceSource
+    reason: str | None
+
+
+class MapLatestRun(BaseModel):
+    run_id: str
+    status: MapStatus
+    stage: str
+    revisions: int
+    created_at: str
+    updated_at: str
+    attempts: MapCounter
+    cycles: int | None
+    acceptance: MapAcceptance
+    commit: MapCommit | None
+
+
+class MapText(BaseModel):
+    value: str | None
+    source: TraceSource
+    reason: str | None
+    truncated: bool
+
+
+class MapTaskNode(BaseModel):
+    code: str
+    title: str | None
+    in_plan: bool
+    identity: MapIdentity | None
+    problem: MapText = Field(description='Accepted task identity text, bounded; absent for tasks without one.')
+    expected_result: MapText
+    status: MapStatus
+    runs: int
+    latest: MapLatestRun | None
+    replaces: list[str]
+    replaced_by: list[str]
+    depends_on: list[str]
+    circles: list[MapCircleState]
+    active_invocations: list[MapActiveInvocation]
+    errors: list[MapError]
+    bubbles: MapBubbles
+
+
+class MapPhaseHead(BaseModel):
+    code: str
+    title: str | None
+    status: MapStatus
+    instance: MapPhaseInstance | None
+
+
+class MapTasksRead(MapPage):
+    project: MapProjectHead
+    phase: MapPhaseHead
+    items: list[MapTaskNode]
+    edges: list[MapEdge]
+
+
+class MapRunItem(BaseModel):
+    run_id: str
+    status: MapStatus
+    stage: str
+    revisions: int
+    revision_limit: int
+    attempts: MapCounter
+    cycles: int | None
+    acceptance: MapAcceptance
+    commit: MapStatus | None
+    created_at: str
+    updated_at: str
+
+
+class MapRunsRead(MapPage):
+    project: MapProjectHead
+    phase: str
+    task: str
+    latest_run_id: str | None
+    items: list[MapRunItem]
+
+
+class MapRunHead(BaseModel):
+    run_id: str
+    purpose: str
+    phase: str
+    task: str
+    status: MapStatus
+    stage: str
+    revisions: int
+    revision_limit: int
+    created_at: str
+    updated_at: str
+
+
+class MapStep(BaseModel):
+    """An agent invocation (`kind = invocation`) or a deterministic Harness stage (`kind = harness`)."""
+    model_config = ConfigDict(extra='allow')
+    key: str | None = Field(default=None, description='Stable order key in the run (L3); null in the L4 header.')
+    kind: Literal['invocation', 'harness']
+    circle: MapCircle | None
+    status: MapStatus
+    duration_ms: MapCounter
+    stage: Literal['format', 'validate', 'commit'] | None = None
+    invocation_id: str | None = None
+    role: str | None = None
+    label: dict[str, Any] | None = None
+    harness_attempt: MapCounter | None = None
+    revision_round: MapCounter | None = None
+    identity: dict[str, Any] | None = Field(default=None, description='Frozen identity and requested selection.')
+    reported_model: MapCounter | None = Field(default=None, description='Client-reported model, never inferred.')
+    observation: dict[str, Any] | None = None
+    records: dict[str, MapCounter] | None = None
+    steps: dict[str, Any] | None = None
+    bubbles: MapBubbles | None = None
+
+
+class MapStepsRead(MapPage):
+    project: MapProjectHead
+    run: MapRunHead
+    items: list[MapStep]
+    bubbles: MapBubbles
+    edges: list[MapEdge]
+
+
+class MapCrumb(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    level: str
+    id: str | None
+
+
+class MapOwner(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    lane: str
+    run_id: str | None
+    phase: str | None
+    task: str | None
+    breadcrumb: list[MapCrumb]
+
+
+class MapInvocationHead(BaseModel):
+    invocation_id: str
+    lane: Literal['managed_attempt', 'preparation_step', 'configuration_assistance']
+    purpose: str
+    role: str
+    circle: MapCircle | None
+    started_at: str
+    finished_at: str | None
+    launch: MapStatus
+    outcome: str | None
+    process: str | None = Field(description='Process state of a lane without a managed attempt.')
+
+
+class MapStepsState(BaseModel):
+    state: Literal['sealed', 'pending', 'integrity_failed', 'not_settled', 'not_projected', 'lane_excluded']
+    reason: str | None
+    summary: dict[str, Any] | None
+    observation: dict[str, Any] | None = Field(description='Earlier runs: counters kept, steps not projected.')
+    failure: dict[str, Any] | None
+    scope: str
+
+
+class MapEvidence(BaseModel):
+    run: str
+    run_events: str
+    attempt_logs: str | None
+
+
+class MapInvocationRead(BaseModel):
+    format: Literal['work-map-1']
+    level: Literal['invocation']
+    scope: str
+    version: str
+    read_only_archive: bool
+    project: MapProjectHead
+    invocation: MapInvocationHead
+    owner: MapOwner
+    step: MapStep | None
+    steps: MapStepsState
+    related_scopes: dict[Literal['records', 'permissions'], str]
+    evidence: MapEvidence | None
+
+
+class MapRoute(BaseModel):
+    operation_id: str
+    path: str
+    query: dict[str, int] | None = None
+    stream: str | None = None
+    offset: int | None = None
+    size: int | None = None
+    sha256: str | None = None
+
+
+class MapSourceRecord(BaseModel):
+    run_id: str
+    attempt_id: str
+    sequence: int
+    record: int | None
+    oversize: bool
+    event: MapRoute = Field(description='Existing run-event route; its page holds the original record.')
+    log: MapRoute | None = Field(description='Oversize records: the existing bounded attempt-log view.')
+    availability: Literal['available', 'unavailable_after_retention']
+    availability_source: TraceSource
+
+
+class MapTraceStep(BaseModel):
+    """One `observed-step-1` step (T019) with its source records resolved; no native content."""
+    model_config = ConfigDict(extra='allow')
+    seq: int
+    kind: Literal['turn', 'tool_call', 'message', 'reasoning', 'not_observed']
+    source_records: list[MapSourceRecord]
+
+
+class MapTraceRead(MapPage):
+    project: MapProjectHead
+    invocation_id: str
+    state: Literal['sealed', 'pending', 'integrity_failed', 'not_settled', 'not_projected', 'lane_excluded']
+    reason: str | None
+    items: list[MapTraceStep]
+
+
+class MapArtifactLink(BaseModel):
+    sha256: str
+    size: int
+    media: str
+    path: str | None = Field(description='Existing trace artifact route of the event thread, when it has one.')
+
+
+class MapRelatedRecord(BaseModel):
+    sequence: int
+    event_id: str
+    kind: str
+    category: Literal['receipt', 'discovery', 'broker', 'tool', 'ruling', 'context', 'observation']
+    source: TraceSource
+    operation_id: str | None
+    thread_id: str | None
+    parent_event_id: str | None
+    causation_id: str | None
+    recorded_at: str
+    truncated: bool
+    redactions: int
+    fields: dict[str, Any] = Field(description='Allowlisted identities, codes and digests of the event.')
+    artifacts: list[MapArtifactLink]
+
+
+class MapPermissionRecord(BaseModel):
+    source: Literal['run_permission', 'standing_permission']
+    id: str
+    status: MapStatus
+    response: Literal['grant', 'deny'] | None = Field(description='The historical answer, if any.')
+    authority: Literal['effective', 'expired', 'ended', 'invalid'] | None = Field(
+        description='What a grant currently confers (T010 validity of the grant and its ancestry).')
+    answerable: bool = Field(description='Still pending and valid: no expiry or end in its ancestry.')
+    created_at: str
+    expires_at: str | None
+    inbox_item_id: str
+
+
+class MapRelatedRead(MapPage):
+    project: MapProjectHead
+    invocation_id: str
+    group: Literal['records', 'permissions']
+    items: list[MapRelatedRecord | MapPermissionRecord]
+
+
+class MapScopeVersion(BaseModel):
+    scope: str
+    version: str | None
+    error: Literal['not_found'] | None = None
+
+
+class MapPolling(BaseModel):
+    active_interval_ms: int
+    idle_interval_ms: int
+    pause_when_hidden: bool
+    enabled: bool = Field(description='False in restored archives: no polling.')
+
+
+class MapActivityRead(BaseModel):
+    format: Literal['work-map-1']
+    read_only_archive: bool
+    polling: MapPolling
+    active: bool
+    scopes: list[MapScopeVersion]
+    active_invocations: list[MapActiveInvocation]
+    active_invocations_truncated: bool
+    unscoped_invocations: list[dict[str, Any]] = Field(
+        description='Active global configuration assistance: no project scope to attribute it to.')
+    harness: list[str] = Field(description='Map project ids with deterministic Harness work in progress.')
+    bubbles: MapBubbles

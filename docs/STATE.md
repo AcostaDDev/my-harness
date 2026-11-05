@@ -81,9 +81,20 @@ corrections. The owner authorized source commit, merge and push of develop: ever
 settlement transaction and a background projector derives bounded, sanitized `observed-step-1` steps with source-record
 references, a retention guard while pending, recovery after restart, integrity failure on divergent replay and keyset
 reads that survive retention and query-only restore (D305, D310). Schema `0040_observed_step_reads` (index only,
-94 tables). The map API and source-record resolution (T020) and all rendering (T021–T024) remain planned.
-[Record](phase/P002-T019-observed-steps.md). Next: **P002-T020**. Release 0.2.0 via protected `main`,
+94 tables). All rendering (T021–T024) remains planned.
+[Record](phase/P002-T019-observed-steps.md). Release 0.2.0 via protected `main`,
 distribution/publication and installation are pending. The operator installation remains 0.1.9.
+**P002-T020 (work-map and trace read projections) is source complete after independent final re-review** on
+`feat/p002-t020-work-map-api` from `c993564`. All review corrections passed, including historical assistance after
+logical registry retirement; 20 focal tests and all 124 exact recovery cases independently passed in series
+([final review](phase/P002-T020-work-map-api.md#10-independent-final-re-review--2026-11-05)). The owner authorized
+source commit, merge and push of develop; source commit and integration are pending (D311): read-only
+`GET /api/managed/map/` projections for L0–L4, related records and the activity summary, with status classes and
+`unknown` fallback, R/E/J/H attribution, T017 bubbles, opaque scope/version/cursor tokens with `409 cursor_stale`,
+source-record resolution with availability, root isolation and query-only archive parity; schema
+`0041_work_map_reads` (seven read indexes, 94 tables); OpenAPI and client types regenerated. Synthetic evidence only.
+Integration into develop, release 0.2.0, distribution/publication and installation are pending.
+[Record](phase/P002-T020-work-map-api.md).
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
 Historical starting context:
@@ -138,7 +149,7 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`;
   T007's `0033_frozen_context`; T009's `0034_judge_contracts`; later tasks through T014's `0037_task_lineage`;
   T016 adds `0038_autonomous_runs`; T017 adds `0039_inbox_read_marks`; the T019 topic adds the index-only
-  `0040_observed_step_reads`); idempotent job
+  `0040_observed_step_reads`; the T020 topic, not yet integrated, adds the index-only `0041_work_map_reads`); idempotent job
   queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with

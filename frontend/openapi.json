@@ -23109,6 +23109,1123 @@
         }
       }
     },
+    "/api/managed/map/projects": {
+      "get": {
+        "summary": "Projects",
+        "description": "L0: project cards (status class, mode, circles, active invocations, counters, bubbles).",
+        "operationId": "map_projects",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapProjectsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/phases": {
+      "get": {
+        "summary": "Phases",
+        "description": "L1: roadmap phases with their instances, Plan · Check · Close slots and roadmap order edges.",
+        "operationId": "map_phases",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapPhasesRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/phases/{code}/tasks": {
+      "get": {
+        "summary": "Tasks",
+        "description": "L2: task nodes of one phase with `depends_on` and `replaces` edges.",
+        "operationId": "map_tasks",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Code"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 1,
+              "default": 300,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapTasksRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/phases/{code}/tasks/{task}/runs": {
+      "get": {
+        "summary": "Runs",
+        "description": "Run selector of one task, latest first.",
+        "operationId": "map_task_runs",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Code"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Task"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapRunsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/runs/{run_id}/steps": {
+      "get": {
+        "summary": "Steps",
+        "description": "L3: agent invocations and Harness validate, format and commit stages of one run, in order.",
+        "operationId": "map_run_steps",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapStepsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/invocations/{invocation_id}": {
+      "get": {
+        "summary": "Invocation",
+        "description": "L4 header: identity, owning context for navigation, counters and the observed-step state.",
+        "operationId": "map_invocation",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Invocation Id"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapInvocationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/invocations/{invocation_id}/steps": {
+      "get": {
+        "summary": "Trace",
+        "description": "L4: observed steps (T019) with source records resolved to the existing event and log routes.",
+        "operationId": "map_invocation_steps",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Invocation Id"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapTraceRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/projects/{project_id}/invocations/{invocation_id}/related": {
+      "get": {
+        "summary": "Related",
+        "description": "L4 related records: receipts, discovery and schema loads, broker and tool events, rulings and\nartifacts (`records`), or the permission requests the attempt raised (`permissions`).",
+        "operationId": "map_invocation_related",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Invocation Id"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "records",
+                "permissions"
+              ],
+              "type": "string",
+              "title": "Group"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapRelatedRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/map/activity": {
+      "get": {
+        "summary": "Activity",
+        "description": "Polling summary: version token per requested scope, active invocations and bubble counters.",
+        "operationId": "map_activity",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Scope ids returned by the level responses (at most 10).",
+              "default": [],
+              "title": "Scope"
+            },
+            "description": "Scope ids returned by the level responses (at most 10)."
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapActivityRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -36653,6 +37770,3422 @@
           "purpose"
         ],
         "title": "ManagedRunSummaryRead"
+      },
+      "MapAcceptance": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "absent",
+              "rejected",
+              "eligible",
+              "unknown"
+            ],
+            "title": "State",
+            "description": "The run projection acceptance decision; eligibility is not a commit."
+          },
+          "eligible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eligible"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "eligible",
+          "reasons",
+          "source",
+          "reason"
+        ],
+        "title": "MapAcceptance"
+      },
+      "MapActiveInvocation": {
+        "properties": {
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "managed_attempt",
+              "preparation_step",
+              "configuration_assistance"
+            ],
+            "title": "Source Kind",
+            "description": "Ledger source of the invocation; preparation and assistance have no managed attempt."
+          },
+          "invocation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Id"
+          },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "circle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "R",
+                  "E",
+                  "J",
+                  "H"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Circle"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "lane": {
+            "type": "string",
+            "title": "Lane"
+          },
+          "chat": {
+            "type": "boolean",
+            "title": "Chat"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/MapActiveScope"
+          },
+          "process": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING"
+            ],
+            "title": "Process"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_kind",
+          "invocation_id",
+          "attempt_id",
+          "run_id",
+          "number",
+          "role",
+          "circle",
+          "agent",
+          "lane",
+          "chat",
+          "scope",
+          "process",
+          "started_at"
+        ],
+        "title": "MapActiveInvocation"
+      },
+      "MapActivePhase": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "status"
+        ],
+        "title": "MapActivePhase"
+      },
+      "MapActiveScope": {
+        "properties": {
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase",
+          "task",
+          "run_id"
+        ],
+        "title": "MapActiveScope"
+      },
+      "MapActivityRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "polling": {
+            "$ref": "#/components/schemas/MapPolling"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "scopes": {
+            "items": {
+              "$ref": "#/components/schemas/MapScopeVersion"
+            },
+            "type": "array",
+            "title": "Scopes"
+          },
+          "active_invocations": {
+            "items": {
+              "$ref": "#/components/schemas/MapActiveInvocation"
+            },
+            "type": "array",
+            "title": "Active Invocations"
+          },
+          "active_invocations_truncated": {
+            "type": "boolean",
+            "title": "Active Invocations Truncated"
+          },
+          "unscoped_invocations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Unscoped Invocations",
+            "description": "Active global configuration assistance: no project scope to attribute it to."
+          },
+          "harness": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Harness",
+            "description": "Map project ids with deterministic Harness work in progress."
+          },
+          "bubbles": {
+            "$ref": "#/components/schemas/MapBubbles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "read_only_archive",
+          "polling",
+          "active",
+          "scopes",
+          "active_invocations",
+          "active_invocations_truncated",
+          "unscoped_invocations",
+          "harness",
+          "bubbles"
+        ],
+        "title": "MapActivityRead"
+      },
+      "MapArtifactLink": {
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "media": {
+            "type": "string",
+            "title": "Media"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path",
+            "description": "Existing trace artifact route of the event thread, when it has one."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sha256",
+          "size",
+          "media",
+          "path"
+        ],
+        "title": "MapArtifactLink"
+      },
+      "MapAutonomousRun": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "bounds": {
+            "title": "Bounds"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "reason",
+          "bounds",
+          "updated_at"
+        ],
+        "title": "MapAutonomousRun"
+      },
+      "MapBubbleItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "T017 inbox item id; the panel re-reads the item."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "permission",
+              "question",
+              "judge",
+              "lifecycle",
+              "notification"
+            ],
+            "title": "Kind"
+          },
+          "topic": {
+            "type": "string",
+            "enum": [
+              "run_permission",
+              "standing_permission",
+              "task_gap",
+              "phase_question",
+              "autonomous_question",
+              "judge_escalation",
+              "phase_ready",
+              "limit_reached",
+              "recovery_required",
+              "failed",
+              "task_completed",
+              "phase_closed"
+            ],
+            "title": "Topic"
+          },
+          "circle": {
+            "type": "string",
+            "enum": [
+              "R",
+              "E",
+              "J",
+              "H"
+            ],
+            "title": "Circle"
+          },
+          "attributed": {
+            "type": "boolean",
+            "title": "Attributed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "topic",
+          "circle",
+          "attributed"
+        ],
+        "title": "MapBubbleItem"
+      },
+      "MapBubbles": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "by_kind": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Kind"
+          },
+          "by_circle": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Circle"
+          },
+          "unattributed": {
+            "type": "integer",
+            "title": "Unattributed"
+          },
+          "items": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/MapBubbleItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items"
+          },
+          "items_truncated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items Truncated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "source",
+          "by_kind",
+          "by_circle",
+          "unattributed"
+        ],
+        "title": "MapBubbles"
+      },
+      "MapCircleState": {
+        "properties": {
+          "circle": {
+            "type": "string",
+            "enum": [
+              "R",
+              "E",
+              "J",
+              "H"
+            ],
+            "title": "Circle"
+          },
+          "shown": {
+            "type": "string",
+            "enum": [
+              "always",
+              "judge_profile",
+              "judge_history"
+            ],
+            "title": "Shown",
+            "description": "Why the circle is shown; J only with a judge profile or where a judge took part."
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "active_invocations": {
+            "type": "integer",
+            "title": "Active Invocations"
+          },
+          "chat": {
+            "type": "boolean",
+            "title": "Chat"
+          },
+          "harness": {
+            "items": {
+              "$ref": "#/components/schemas/MapHarnessWork"
+            },
+            "type": "array",
+            "title": "Harness"
+          },
+          "bubbles": {
+            "type": "integer",
+            "title": "Bubbles"
+          },
+          "waiting": {
+            "type": "boolean",
+            "title": "Waiting",
+            "description": "Unresolved owner items wait on this circle (with or without a running invocation)."
+          },
+          "latest_invocation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapCircleTarget"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The circle's most recent persisted invocation in the element: the L4 navigation target."
+          },
+          "inert": {
+            "type": "boolean",
+            "title": "Inert",
+            "description": "No invocation in scope: the circle is labelled and opens nothing."
+          }
+        },
+        "type": "object",
+        "required": [
+          "circle",
+          "shown",
+          "active",
+          "active_invocations",
+          "chat",
+          "harness",
+          "bubbles",
+          "waiting",
+          "latest_invocation",
+          "inert"
+        ],
+        "title": "MapCircleState"
+      },
+      "MapCircleTarget": {
+        "properties": {
+          "invocation_id": {
+            "type": "string",
+            "title": "Invocation Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "lane": {
+            "type": "string",
+            "enum": [
+              "managed_attempt",
+              "preparation_step",
+              "configuration_assistance"
+            ],
+            "title": "Lane"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invocation_id",
+          "role",
+          "lane",
+          "started_at"
+        ],
+        "title": "MapCircleTarget"
+      },
+      "MapCommit": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "commit",
+          "finished_at"
+        ],
+        "title": "MapCommit"
+      },
+      "MapCounter": {
+        "properties": {
+          "value": {
+            "title": "Value",
+            "description": "Null when absent; never replaced by zero."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "value",
+          "source"
+        ],
+        "title": "MapCounter"
+      },
+      "MapCrumb": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "level",
+          "id"
+        ],
+        "title": "MapCrumb"
+      },
+      "MapEdge": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "roadmap_order",
+              "depends_on",
+              "replaces",
+              "step_order"
+            ],
+            "title": "Kind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "kind",
+          "source",
+          "target"
+        ],
+        "title": "MapEdge"
+      },
+      "MapError": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "status"
+        ],
+        "title": "MapError"
+      },
+      "MapEvidence": {
+        "properties": {
+          "run": {
+            "type": "string",
+            "title": "Run"
+          },
+          "run_events": {
+            "type": "string",
+            "title": "Run Events"
+          },
+          "attempt_logs": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Logs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run",
+          "run_events",
+          "attempt_logs"
+        ],
+        "title": "MapEvidence"
+      },
+      "MapHarnessWork": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "stage",
+              "autonomous_supervisor",
+              "preparation_command"
+            ],
+            "title": "Reason"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason",
+          "run_id",
+          "phase",
+          "task",
+          "stage",
+          "status"
+        ],
+        "title": "MapHarnessWork"
+      },
+      "MapIdentity": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "status"
+        ],
+        "title": "MapIdentity"
+      },
+      "MapInvocationHead": {
+        "properties": {
+          "invocation_id": {
+            "type": "string",
+            "title": "Invocation Id"
+          },
+          "lane": {
+            "type": "string",
+            "enum": [
+              "managed_attempt",
+              "preparation_step",
+              "configuration_assistance"
+            ],
+            "title": "Lane"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "circle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "R",
+                  "E",
+                  "J",
+                  "H"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Circle"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "launch": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "process": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Process",
+            "description": "Process state of a lane without a managed attempt."
+          }
+        },
+        "type": "object",
+        "required": [
+          "invocation_id",
+          "lane",
+          "purpose",
+          "role",
+          "circle",
+          "started_at",
+          "finished_at",
+          "launch",
+          "outcome",
+          "process"
+        ],
+        "title": "MapInvocationHead"
+      },
+      "MapInvocationRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "const": "invocation",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "invocation": {
+            "$ref": "#/components/schemas/MapInvocationHead"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/MapOwner"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapStep"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "steps": {
+            "$ref": "#/components/schemas/MapStepsState"
+          },
+          "related_scopes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "records",
+                "permissions"
+              ]
+            },
+            "type": "object",
+            "title": "Related Scopes"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "invocation",
+          "owner",
+          "step",
+          "steps",
+          "related_scopes",
+          "evidence"
+        ],
+        "title": "MapInvocationRead"
+      },
+      "MapLatestRun": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "revisions": {
+            "type": "integer",
+            "title": "Revisions"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "attempts": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "cycles": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycles"
+          },
+          "acceptance": {
+            "$ref": "#/components/schemas/MapAcceptance"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapCommit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "stage",
+          "revisions",
+          "created_at",
+          "updated_at",
+          "attempts",
+          "cycles",
+          "acceptance",
+          "commit"
+        ],
+        "title": "MapLatestRun"
+      },
+      "MapMode": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "autonomous"
+            ],
+            "title": "Kind"
+          },
+          "autonomous_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapAutonomousRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "autonomous_run"
+        ],
+        "title": "MapMode"
+      },
+      "MapOwner": {
+        "properties": {
+          "lane": {
+            "type": "string",
+            "title": "Lane"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "breadcrumb": {
+            "items": {
+              "$ref": "#/components/schemas/MapCrumb"
+            },
+            "type": "array",
+            "title": "Breadcrumb"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "lane",
+          "run_id",
+          "phase",
+          "task",
+          "breadcrumb"
+        ],
+        "title": "MapOwner"
+      },
+      "MapPermissionRecord": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "run_permission",
+              "standing_permission"
+            ],
+            "title": "Source"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "response": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grant",
+                  "deny"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response",
+            "description": "The historical answer, if any."
+          },
+          "authority": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "effective",
+                  "expired",
+                  "ended",
+                  "invalid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authority",
+            "description": "What a grant currently confers (T010 validity of the grant and its ancestry)."
+          },
+          "answerable": {
+            "type": "boolean",
+            "title": "Answerable",
+            "description": "Still pending and valid: no expiry or end in its ancestry."
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "inbox_item_id": {
+            "type": "string",
+            "title": "Inbox Item Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "id",
+          "status",
+          "response",
+          "authority",
+          "answerable",
+          "created_at",
+          "expires_at",
+          "inbox_item_id"
+        ],
+        "title": "MapPermissionRecord"
+      },
+      "MapPhaseHead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "instance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapPhaseInstance"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "status",
+          "instance"
+        ],
+        "title": "MapPhaseHead"
+      },
+      "MapPhaseInstance": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MapPhaseInstance"
+      },
+      "MapPhaseNode": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "roadmap",
+              "instance",
+              "runs"
+            ],
+            "title": "Origin"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "instance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapPhaseInstance"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "objective": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Objective"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag"
+          },
+          "criteria": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "slots": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/MapSlot"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "propertyNames": {
+              "enum": [
+                "plan",
+                "check",
+                "close"
+              ]
+            },
+            "type": "object",
+            "title": "Slots"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "last_check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapSlot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tasks": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "circles": {
+            "items": {
+              "$ref": "#/components/schemas/MapCircleState"
+            },
+            "type": "array",
+            "title": "Circles"
+          },
+          "active_invocations": {
+            "items": {
+              "$ref": "#/components/schemas/MapActiveInvocation"
+            },
+            "type": "array",
+            "title": "Active Invocations"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/MapError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "bubbles": {
+            "$ref": "#/components/schemas/MapBubbles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "origin",
+          "identity",
+          "instance",
+          "status",
+          "objective",
+          "tag",
+          "criteria",
+          "slots",
+          "ready",
+          "last_check",
+          "tasks",
+          "active",
+          "circles",
+          "active_invocations",
+          "errors",
+          "bubbles"
+        ],
+        "title": "MapPhaseNode"
+      },
+      "MapPhasesRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapPhaseNode"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/MapEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "items",
+          "edges"
+        ],
+        "title": "MapPhasesRead"
+      },
+      "MapPolling": {
+        "properties": {
+          "active_interval_ms": {
+            "type": "integer",
+            "title": "Active Interval Ms"
+          },
+          "idle_interval_ms": {
+            "type": "integer",
+            "title": "Idle Interval Ms"
+          },
+          "pause_when_hidden": {
+            "type": "boolean",
+            "title": "Pause When Hidden"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "False in restored archives: no polling."
+          }
+        },
+        "type": "object",
+        "required": [
+          "active_interval_ms",
+          "idle_interval_ms",
+          "pause_when_hidden",
+          "enabled"
+        ],
+        "title": "MapPolling"
+      },
+      "MapProjectCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "name_source": {
+            "type": "string",
+            "enum": [
+              "registered",
+              "registry",
+              "root_basename"
+            ],
+            "title": "Name Source"
+          },
+          "knowledge_project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knowledge Project Id"
+          },
+          "registered_project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registered Project Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/MapMode"
+          },
+          "active_phase": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapActivePhase"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phases": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "circles": {
+            "items": {
+              "$ref": "#/components/schemas/MapCircleState"
+            },
+            "type": "array",
+            "title": "Circles"
+          },
+          "active_invocations": {
+            "items": {
+              "$ref": "#/components/schemas/MapActiveInvocation"
+            },
+            "type": "array",
+            "title": "Active Invocations"
+          },
+          "last_activity": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/MapError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "bubbles": {
+            "$ref": "#/components/schemas/MapBubbles"
+          },
+          "configuration": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration",
+            "description": "Configured agents per role (ordinary mode only)."
+          },
+          "configuration_source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "absent"
+            ],
+            "title": "Configuration Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "name_source",
+          "knowledge_project_id",
+          "registered_project_id",
+          "status",
+          "mode",
+          "active_phase",
+          "phases",
+          "circles",
+          "active_invocations",
+          "last_activity",
+          "errors",
+          "bubbles",
+          "configuration",
+          "configuration_source"
+        ],
+        "title": "MapProjectCard"
+      },
+      "MapProjectHead": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Map project id (T017 project identity); every map route also accepts its aliases."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "knowledge_project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knowledge Project Id"
+          },
+          "registered_project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registered Project Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "knowledge_project_id",
+          "registered_project_id"
+        ],
+        "title": "MapProjectHead"
+      },
+      "MapProjectsRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapProjectCard"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "items"
+        ],
+        "title": "MapProjectsRead"
+      },
+      "MapRelatedRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "invocation_id": {
+            "type": "string",
+            "title": "Invocation Id"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "records",
+              "permissions"
+            ],
+            "title": "Group"
+          },
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/MapRelatedRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/MapPermissionRecord"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "invocation_id",
+          "group",
+          "items"
+        ],
+        "title": "MapRelatedRead"
+      },
+      "MapRelatedRecord": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "receipt",
+              "discovery",
+              "broker",
+              "tool",
+              "ruling",
+              "context",
+              "observation"
+            ],
+            "title": "Category"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operation Id"
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          },
+          "parent_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Event Id"
+          },
+          "causation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Causation Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "redactions": {
+            "type": "integer",
+            "title": "Redactions"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Fields",
+            "description": "Allowlisted identities, codes and digests of the event."
+          },
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/MapArtifactLink"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sequence",
+          "event_id",
+          "kind",
+          "category",
+          "source",
+          "operation_id",
+          "thread_id",
+          "parent_event_id",
+          "causation_id",
+          "recorded_at",
+          "truncated",
+          "redactions",
+          "fields",
+          "artifacts"
+        ],
+        "title": "MapRelatedRecord"
+      },
+      "MapRoute": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "query": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query"
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream"
+          },
+          "offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offset"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "path"
+        ],
+        "title": "MapRoute"
+      },
+      "MapRunHead": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "phase": {
+            "type": "string",
+            "title": "Phase"
+          },
+          "task": {
+            "type": "string",
+            "title": "Task"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "revisions": {
+            "type": "integer",
+            "title": "Revisions"
+          },
+          "revision_limit": {
+            "type": "integer",
+            "title": "Revision Limit"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "purpose",
+          "phase",
+          "task",
+          "status",
+          "stage",
+          "revisions",
+          "revision_limit",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MapRunHead"
+      },
+      "MapRunItem": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "revisions": {
+            "type": "integer",
+            "title": "Revisions"
+          },
+          "revision_limit": {
+            "type": "integer",
+            "title": "Revision Limit"
+          },
+          "attempts": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "cycles": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycles"
+          },
+          "acceptance": {
+            "$ref": "#/components/schemas/MapAcceptance"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "stage",
+          "revisions",
+          "revision_limit",
+          "attempts",
+          "cycles",
+          "acceptance",
+          "commit",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MapRunItem"
+      },
+      "MapRunsRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "phase": {
+            "type": "string",
+            "title": "Phase"
+          },
+          "task": {
+            "type": "string",
+            "title": "Task"
+          },
+          "latest_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Run Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapRunItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "phase",
+          "task",
+          "latest_run_id",
+          "items"
+        ],
+        "title": "MapRunsRead"
+      },
+      "MapScopeVersion": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "not_found"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scope",
+          "version"
+        ],
+        "title": "MapScopeVersion"
+      },
+      "MapSlot": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "history": {
+            "type": "integer",
+            "title": "History"
+          },
+          "actors": {
+            "items": {
+              "$ref": "#/components/schemas/MapSlotActor"
+            },
+            "type": "array",
+            "title": "Actors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "run_id",
+          "status",
+          "created_at",
+          "finished_at",
+          "history",
+          "actors"
+        ],
+        "title": "MapSlot"
+      },
+      "MapSlotActor": {
+        "properties": {
+          "circle": {
+            "type": "string",
+            "enum": [
+              "R",
+              "E",
+              "J",
+              "H"
+            ],
+            "title": "Circle"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "invocation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Id",
+            "description": "The actor's invocation in the operation (L4 target)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "circle",
+          "status",
+          "invocation_id"
+        ],
+        "title": "MapSlotActor"
+      },
+      "MapSourceRecord": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "attempt_id": {
+            "type": "string",
+            "title": "Attempt Id"
+          },
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "record": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record"
+          },
+          "oversize": {
+            "type": "boolean",
+            "title": "Oversize"
+          },
+          "event": {
+            "$ref": "#/components/schemas/MapRoute",
+            "description": "Existing run-event route; its page holds the original record."
+          },
+          "log": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapRoute"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Oversize records: the existing bounded attempt-log view."
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable_after_retention"
+            ],
+            "title": "Availability"
+          },
+          "availability_source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Availability Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "attempt_id",
+          "sequence",
+          "record",
+          "oversize",
+          "event",
+          "log",
+          "availability",
+          "availability_source"
+        ],
+        "title": "MapSourceRecord"
+      },
+      "MapStatus": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code",
+            "description": "Persisted status code (raw); null when no record exists."
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "done",
+              "progress",
+              "waiting",
+              "failed",
+              "pending",
+              "inactive",
+              "unknown"
+            ],
+            "title": "Class",
+            "description": "One of the six classes, or unknown for an unmapped code."
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "code",
+          "class"
+        ],
+        "title": "MapStatus"
+      },
+      "MapStep": {
+        "properties": {
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key",
+            "description": "Stable order key in the run (L3); null in the L4 header."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "invocation",
+              "harness"
+            ],
+            "title": "Kind"
+          },
+          "circle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "R",
+                  "E",
+                  "J",
+                  "H"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Circle"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "duration_ms": {
+            "$ref": "#/components/schemas/MapCounter"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "format",
+                  "validate",
+                  "commit"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "invocation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invocation Id"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "harness_attempt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapCounter"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revision_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapCounter"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identity",
+            "description": "Frozen identity and requested selection."
+          },
+          "reported_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapCounter"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client-reported model, never inferred."
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation"
+          },
+          "records": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/MapCounter"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records"
+          },
+          "steps": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Steps"
+          },
+          "bubbles": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapBubbles"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "kind",
+          "circle",
+          "status",
+          "duration_ms"
+        ],
+        "title": "MapStep",
+        "description": "An agent invocation (`kind = invocation`) or a deterministic Harness stage (`kind = harness`)."
+      },
+      "MapStepsRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "run": {
+            "$ref": "#/components/schemas/MapRunHead"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapStep"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "bubbles": {
+            "$ref": "#/components/schemas/MapBubbles"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/MapEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "run",
+          "items",
+          "bubbles",
+          "edges"
+        ],
+        "title": "MapStepsRead"
+      },
+      "MapStepsState": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "sealed",
+              "pending",
+              "integrity_failed",
+              "not_settled",
+              "not_projected",
+              "lane_excluded"
+            ],
+            "title": "State"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation",
+            "description": "Earlier runs: counters kept, steps not projected."
+          },
+          "failure": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "reason",
+          "summary",
+          "observation",
+          "failure",
+          "scope"
+        ],
+        "title": "MapStepsState"
+      },
+      "MapTaskNode": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "in_plan": {
+            "type": "boolean",
+            "title": "In Plan"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "problem": {
+            "$ref": "#/components/schemas/MapText",
+            "description": "Accepted task identity text, bounded; absent for tasks without one."
+          },
+          "expected_result": {
+            "$ref": "#/components/schemas/MapText"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapLatestRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replaces": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Replaces"
+          },
+          "replaced_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Replaced By"
+          },
+          "depends_on": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Depends On"
+          },
+          "circles": {
+            "items": {
+              "$ref": "#/components/schemas/MapCircleState"
+            },
+            "type": "array",
+            "title": "Circles"
+          },
+          "active_invocations": {
+            "items": {
+              "$ref": "#/components/schemas/MapActiveInvocation"
+            },
+            "type": "array",
+            "title": "Active Invocations"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/MapError"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "bubbles": {
+            "$ref": "#/components/schemas/MapBubbles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "in_plan",
+          "identity",
+          "problem",
+          "expected_result",
+          "status",
+          "runs",
+          "latest",
+          "replaces",
+          "replaced_by",
+          "depends_on",
+          "circles",
+          "active_invocations",
+          "errors",
+          "bubbles"
+        ],
+        "title": "MapTaskNode"
+      },
+      "MapTasksRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/MapPhaseHead"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapTaskNode"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/MapEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "phase",
+          "items",
+          "edges"
+        ],
+        "title": "MapTasksRead"
+      },
+      "MapText": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "supplied",
+              "reported",
+              "derived",
+              "measured",
+              "absent"
+            ],
+            "title": "Source"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "source",
+          "reason",
+          "truncated"
+        ],
+        "title": "MapText"
+      },
+      "MapTraceRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "invocation_id": {
+            "type": "string",
+            "title": "Invocation Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "sealed",
+              "pending",
+              "integrity_failed",
+              "not_settled",
+              "not_projected",
+              "lane_excluded"
+            ],
+            "title": "State"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapTraceStep"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "invocation_id",
+          "state",
+          "reason",
+          "items"
+        ],
+        "title": "MapTraceRead"
+      },
+      "MapTraceStep": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "turn",
+              "tool_call",
+              "message",
+              "reasoning",
+              "not_observed"
+            ],
+            "title": "Kind"
+          },
+          "source_records": {
+            "items": {
+              "$ref": "#/components/schemas/MapSourceRecord"
+            },
+            "type": "array",
+            "title": "Source Records"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "seq",
+          "kind",
+          "source_records"
+        ],
+        "title": "MapTraceStep",
+        "description": "One `observed-step-1` step (T019) with its source records resolved; no native content."
       },
       "MetricAccountingRead": {
         "properties": {

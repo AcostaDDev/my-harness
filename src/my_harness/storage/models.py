@@ -67,6 +67,8 @@ class LegacyEventRow(Base):
 
 class ManagedRunRow(Base):
     __tablename__ = "managed_runs"
+    # 0041: root-scoped work-map reads (latest run per task, run selector, watermarks).
+    __table_args__ = (Index("ix_managed_runs_scope", "root", "purpose", "phase_id", "task_id", "created_at"),)
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String)
@@ -160,7 +162,9 @@ class CheckoutLockRow(Base):
 
 class ManagedAttemptRow(Base):
     __tablename__ = "managed_attempts"
-    __table_args__ = (UniqueConstraint("run_id", "number"),)
+    __table_args__ = (UniqueConstraint("run_id", "number"),
+                      # 0041: attempts in flight (the work-map activity poll).
+                      Index("ix_managed_attempts_open", "run_id", sqlite_where=text("result_json IS NULL")))
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     run_id: Mapped[str] = mapped_column(ForeignKey("managed_runs.id"))
@@ -416,6 +420,7 @@ class PhaseQuestionRow(Base):
 class PhaseOperationRow(Base):
     """Check, closure or reconciliation; an earlier result is never overwritten."""
     __tablename__ = 'phase_operations'
+    __table_args__ = (Index('ix_phase_operations_phase', 'phase_id', 'kind', 'created_at'),)  # 0041: map slots
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
     kind: Mapped[str] = mapped_column(String(20))
@@ -946,7 +951,12 @@ class UsageInvocationRow(Base):
                         "(source_kind = 'configuration_assistance' AND operation_id = source_id "
                         "AND attempt_id IS NULL AND preparation_step_id IS NULL)", name='ck_usage_invocation_link'),
         Index('ix_usage_invocations_scope', 'root', 'phase_code', 'task_id'),
-        Index('ix_usage_invocations_started', 'started_at'))
+        Index('ix_usage_invocations_started', 'started_at'),
+        # 0041: a circle's latest invocation in a project, phase or task (work map), one seek per role.
+        Index('ix_usage_invocations_circle_project', 'project_id', 'role', 'started_at', 'id'),
+        Index('ix_usage_invocations_circle_root', 'root', 'role', 'started_at', 'id'),
+        Index('ix_usage_invocations_circle_phase', 'root', 'phase_code', 'role', 'started_at', 'id'),
+        Index('ix_usage_invocations_circle_task', 'root', 'phase_code', 'task_id', 'role', 'started_at', 'id'))
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     source_kind: Mapped[str] = mapped_column(String(40))
     source_id: Mapped[str] = mapped_column(String(36))

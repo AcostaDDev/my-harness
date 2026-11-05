@@ -483,11 +483,14 @@ production route reuses T014/T015 operations with delegated task contracts and c
 and closure boundaries ([D301](DECISIONS.md#d301--delegated-task-contracts-and-effect-boundary-verification))
 ([record](phase/P002-T016-autonomous-roadmap.md)).
 
-### P002-T018: work map (designed; observed-step backend integrated)
+### P002-T018: work map (designed; observed-step backend integrated; read API reviewed)
 
 The design below is accepted by the owner in D304–D309 (2026-11-04) and integrated as design
 ([contract](phase/P002-T018-work-map-contract.md)). Its observed-step backend is implemented and integrated by T019 after
-independent final re-review ([record](phase/P002-T019-observed-steps.md)); the map, its API and every view are not implemented yet. The home page becomes a hand-drawn, zoomable, read-only work map:
+independent final re-review ([record](phase/P002-T019-observed-steps.md)). T020's read-only projections and
+`GET /api/managed/map/` routes (L0–L4, related records and the activity summary) are source complete after
+independent final re-review, with integration pending (D311, [record](phase/P002-T020-work-map-api.md),
+[flow](flows/work-map.md)); the rendering, navigation and every view are not implemented yet. The home page becomes a hand-drawn, zoomable, read-only work map:
 projects (L0) → phases (L1) → task instances (L2) → steps of a run (L3) → the trace of one invocation (L4, new route
 `/projects/:p/invocations/:i`). Each level keeps its URL and breadcrumb, and `?view=list` switches to the existing
 list page. Cards are compact, with a side inspector. Six status classes (done, progress, waiting, failed, pending,

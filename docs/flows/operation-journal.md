@@ -148,8 +148,9 @@ sequenceDiagram
 - **Reads.** `ObservedSteps.page` serves one invocation in `seq` order, keyset by step position, at most 200 per
   page, through `ix_trace_events_invocation`; states `sealed`, `pending`, `integrity_failed`, `not_settled`,
   `not_projected` (settled before T019: persisted or derived `trace-observation-1` counters and the run evidence,
-  no backfill) and `lane_excluded` (preparation and configuration assistance). It is internal; T020 adds the API and
-  resolves source records. The thread trace queries above never serve `invocation.step` rows (complete or not), so
+  no backfill) and `lane_excluded` (preparation and configuration assistance). P002-T020 serves it over HTTP through
+  `GET /api/managed/map/projects/{p}/invocations/{i}/steps`, with source records resolved to the existing event and
+  log routes ([work-map reads](work-map.md#evidence-resolution)). The thread trace queries above never serve `invocation.step` rows (complete or not), so
   their cursors stay gap-free; the sealed and failed markers remain visible there.
 
 ## Source

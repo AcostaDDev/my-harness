@@ -3600,6 +3600,187 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/map/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Projects
+         * @description L0: project cards (status class, mode, circles, active invocations, counters, bubbles).
+         */
+        get: operations["map_projects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/phases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Phases
+         * @description L1: roadmap phases with their instances, Plan · Check · Close slots and roadmap order edges.
+         */
+        get: operations["map_phases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/phases/{code}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tasks
+         * @description L2: task nodes of one phase with `depends_on` and `replaces` edges.
+         */
+        get: operations["map_tasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/phases/{code}/tasks/{task}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Runs
+         * @description Run selector of one task, latest first.
+         */
+        get: operations["map_task_runs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/runs/{run_id}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Steps
+         * @description L3: agent invocations and Harness validate, format and commit stages of one run, in order.
+         */
+        get: operations["map_run_steps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/invocations/{invocation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Invocation
+         * @description L4 header: identity, owning context for navigation, counters and the observed-step state.
+         */
+        get: operations["map_invocation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/invocations/{invocation_id}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Trace
+         * @description L4: observed steps (T019) with source records resolved to the existing event and log routes.
+         */
+        get: operations["map_invocation_steps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/projects/{project_id}/invocations/{invocation_id}/related": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Related
+         * @description L4 related records: receipts, discovery and schema loads, broker and tool events, rulings and
+         *     artifacts (`records`), or the permission requests the attempt raised (`permissions`).
+         */
+        get: operations["map_invocation_related"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/map/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Activity
+         * @description Polling summary: version token per requested scope, active invocations and bubble counters.
+         */
+        get: operations["map_activity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -8050,6 +8231,1155 @@ export interface components {
              * @enum {string}
              */
             purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "onboarding" | "import_commit" | "document_edit" | "phase_transition";
+        };
+        /** MapAcceptance */
+        MapAcceptance: {
+            /**
+             * State
+             * @description The run projection acceptance decision; eligibility is not a commit.
+             * @enum {string}
+             */
+            state: "absent" | "rejected" | "eligible" | "unknown";
+            /** Eligible */
+            eligible: boolean | null;
+            /** Reasons */
+            reasons: string[];
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "supplied" | "reported" | "derived" | "measured" | "absent";
+            /** Reason */
+            reason: string | null;
+        };
+        /** MapActiveInvocation */
+        MapActiveInvocation: {
+            /**
+             * Source Kind
+             * @description Ledger source of the invocation; preparation and assistance have no managed attempt.
+             * @enum {string}
+             */
+            source_kind: "managed_attempt" | "preparation_step" | "configuration_assistance";
+            /** Invocation Id */
+            invocation_id: string | null;
+            /** Attempt Id */
+            attempt_id: string | null;
+            /** Run Id */
+            run_id: string | null;
+            /** Number */
+            number: number | null;
+            /** Role */
+            role: string | null;
+            /** Circle */
+            circle: ("R" | "E" | "J" | "H") | null;
+            /** Agent */
+            agent: string | null;
+            /** Lane */
+            lane: string;
+            /** Chat */
+            chat: boolean;
+            scope: components["schemas"]["MapActiveScope"];
+            /**
+             * Process
+             * @enum {string}
+             */
+            process: "PENDING" | "RUNNING";
+            /** Started At */
+            started_at: string;
+            /** Project Id */
+            project_id?: string | null;
+        };
+        /** MapActivePhase */
+        MapActivePhase: {
+            /** Code */
+            code: string;
+            /** Title */
+            title: string | null;
+            status: components["schemas"]["MapStatus"];
+        };
+        /** MapActiveScope */
+        MapActiveScope: {
+            /** Phase */
+            phase: string | null;
+            /** Task */
+            task: string | null;
+            /** Run Id */
+            run_id: string | null;
+        };
+        /** MapActivityRead */
+        MapActivityRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            polling: components["schemas"]["MapPolling"];
+            /** Active */
+            active: boolean;
+            /** Scopes */
+            scopes: components["schemas"]["MapScopeVersion"][];
+            /** Active Invocations */
+            active_invocations: components["schemas"]["MapActiveInvocation"][];
+            /** Active Invocations Truncated */
+            active_invocations_truncated: boolean;
+            /**
+             * Unscoped Invocations
+             * @description Active global configuration assistance: no project scope to attribute it to.
+             */
+            unscoped_invocations: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Harness
+             * @description Map project ids with deterministic Harness work in progress.
+             */
+            harness: string[];
+            bubbles: components["schemas"]["MapBubbles"];
+        };
+        /** MapArtifactLink */
+        MapArtifactLink: {
+            /** Sha256 */
+            sha256: string;
+            /** Size */
+            size: number;
+            /** Media */
+            media: string;
+            /**
+             * Path
+             * @description Existing trace artifact route of the event thread, when it has one.
+             */
+            path: string | null;
+        };
+        /** MapAutonomousRun */
+        MapAutonomousRun: {
+            /** Id */
+            id: string;
+            status: components["schemas"]["MapStatus"];
+            /** Reason */
+            reason: string | null;
+            /** Bounds */
+            bounds: unknown;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** MapBubbleItem */
+        MapBubbleItem: {
+            /**
+             * Id
+             * @description T017 inbox item id; the panel re-reads the item.
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "permission" | "question" | "judge" | "lifecycle" | "notification";
+            /**
+             * Topic
+             * @enum {string}
+             */
+            topic: "run_permission" | "standing_permission" | "task_gap" | "phase_question" | "autonomous_question" | "judge_escalation" | "phase_ready" | "limit_reached" | "recovery_required" | "failed" | "task_completed" | "phase_closed";
+            /**
+             * Circle
+             * @enum {string}
+             */
+            circle: "R" | "E" | "J" | "H";
+            /** Attributed */
+            attributed: boolean;
+        };
+        /** MapBubbles */
+        MapBubbles: {
+            /** Total */
+            total: number;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "supplied" | "reported" | "derived" | "measured" | "absent";
+            /** By Kind */
+            by_kind: {
+                [key: string]: number;
+            };
+            /** By Circle */
+            by_circle: {
+                [key: string]: number;
+            };
+            /** Unattributed */
+            unattributed: number;
+            /** Items */
+            items?: components["schemas"]["MapBubbleItem"][] | null;
+            /** Items Truncated */
+            items_truncated?: boolean | null;
+        };
+        /** MapCircleState */
+        MapCircleState: {
+            /**
+             * Circle
+             * @enum {string}
+             */
+            circle: "R" | "E" | "J" | "H";
+            /**
+             * Shown
+             * @description Why the circle is shown; J only with a judge profile or where a judge took part.
+             * @enum {string}
+             */
+            shown: "always" | "judge_profile" | "judge_history";
+            /** Active */
+            active: boolean;
+            /** Active Invocations */
+            active_invocations: number;
+            /** Chat */
+            chat: boolean;
+            /** Harness */
+            harness: components["schemas"]["MapHarnessWork"][];
+            /** Bubbles */
+            bubbles: number;
+            /**
+             * Waiting
+             * @description Unresolved owner items wait on this circle (with or without a running invocation).
+             */
+            waiting: boolean;
+            /** @description The circle's most recent persisted invocation in the element: the L4 navigation target. */
+            latest_invocation: components["schemas"]["MapCircleTarget"] | null;
+            /**
+             * Inert
+             * @description No invocation in scope: the circle is labelled and opens nothing.
+             */
+            inert: boolean;
+        };
+        /** MapCircleTarget */
+        MapCircleTarget: {
+            /** Invocation Id */
+            invocation_id: string;
+            /** Role */
+            role: string;
+            /**
+             * Lane
+             * @enum {string}
+             */
+            lane: "managed_attempt" | "preparation_step" | "configuration_assistance";
+            /** Started At */
+            started_at: string;
+        };
+        /** MapCommit */
+        MapCommit: {
+            status: components["schemas"]["MapStatus"];
+            /** Commit */
+            commit: string | null;
+            /** Finished At */
+            finished_at: string | null;
+        };
+        /** MapCounter */
+        MapCounter: {
+            /**
+             * Value
+             * @description Null when absent; never replaced by zero.
+             */
+            value: unknown;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "supplied" | "reported" | "derived" | "measured" | "absent";
+            /** Reason */
+            reason?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** MapCrumb */
+        MapCrumb: {
+            /** Level */
+            level: string;
+            /** Id */
+            id: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** MapEdge */
+        MapEdge: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "roadmap_order" | "depends_on" | "replaces" | "step_order";
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** MapError */
+        MapError: {
+            /** Kind */
+            kind: string;
+            /** Id */
+            id: string;
+            status: components["schemas"]["MapStatus"];
+        };
+        /** MapEvidence */
+        MapEvidence: {
+            /** Run */
+            run: string;
+            /** Run Events */
+            run_events: string;
+            /** Attempt Logs */
+            attempt_logs: string | null;
+        };
+        /** MapHarnessWork */
+        MapHarnessWork: {
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "stage" | "autonomous_supervisor" | "preparation_command";
+            /** Run Id */
+            run_id: string | null;
+            /** Phase */
+            phase: string | null;
+            /** Task */
+            task: string | null;
+            /** Stage */
+            stage: string | null;
+            /** Status */
+            status: string | null;
+        };
+        /** MapIdentity */
+        MapIdentity: {
+            /** Item Id */
+            item_id: string;
+            status: components["schemas"]["MapStatus"];
+        };
+        /** MapInvocationHead */
+        MapInvocationHead: {
+            /** Invocation Id */
+            invocation_id: string;
+            /**
+             * Lane
+             * @enum {string}
+             */
+            lane: "managed_attempt" | "preparation_step" | "configuration_assistance";
+            /** Purpose */
+            purpose: string;
+            /** Role */
+            role: string;
+            /** Circle */
+            circle: ("R" | "E" | "J" | "H") | null;
+            /** Started At */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            launch: components["schemas"]["MapStatus"];
+            /** Outcome */
+            outcome: string | null;
+            /**
+             * Process
+             * @description Process state of a lane without a managed attempt.
+             */
+            process: string | null;
+        };
+        /** MapInvocationRead */
+        MapInvocationRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /**
+             * Level
+             * @constant
+             */
+            level: "invocation";
+            /** Scope */
+            scope: string;
+            /** Version */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            project: components["schemas"]["MapProjectHead"];
+            invocation: components["schemas"]["MapInvocationHead"];
+            owner: components["schemas"]["MapOwner"];
+            step: components["schemas"]["MapStep"] | null;
+            steps: components["schemas"]["MapStepsState"];
+            /** Related Scopes */
+            related_scopes: {
+                [key: string]: string;
+            };
+            evidence: components["schemas"]["MapEvidence"] | null;
+        };
+        /** MapLatestRun */
+        MapLatestRun: {
+            /** Run Id */
+            run_id: string;
+            status: components["schemas"]["MapStatus"];
+            /** Stage */
+            stage: string;
+            /** Revisions */
+            revisions: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            attempts: components["schemas"]["MapCounter"];
+            /** Cycles */
+            cycles: number | null;
+            acceptance: components["schemas"]["MapAcceptance"];
+            commit: components["schemas"]["MapCommit"] | null;
+        };
+        /** MapMode */
+        MapMode: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "manual" | "autonomous";
+            autonomous_run: components["schemas"]["MapAutonomousRun"] | null;
+        };
+        /** MapOwner */
+        MapOwner: {
+            /** Lane */
+            lane: string;
+            /** Run Id */
+            run_id: string | null;
+            /** Phase */
+            phase: string | null;
+            /** Task */
+            task: string | null;
+            /** Breadcrumb */
+            breadcrumb: components["schemas"]["MapCrumb"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** MapPermissionRecord */
+        MapPermissionRecord: {
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "run_permission" | "standing_permission";
+            /** Id */
+            id: string;
+            status: components["schemas"]["MapStatus"];
+            /**
+             * Response
+             * @description The historical answer, if any.
+             */
+            response: ("grant" | "deny") | null;
+            /**
+             * Authority
+             * @description What a grant currently confers (T010 validity of the grant and its ancestry).
+             */
+            authority: ("effective" | "expired" | "ended" | "invalid") | null;
+            /**
+             * Answerable
+             * @description Still pending and valid: no expiry or end in its ancestry.
+             */
+            answerable: boolean;
+            /** Created At */
+            created_at: string;
+            /** Expires At */
+            expires_at: string | null;
+            /** Inbox Item Id */
+            inbox_item_id: string;
+        };
+        /** MapPhaseHead */
+        MapPhaseHead: {
+            /** Code */
+            code: string;
+            /** Title */
+            title: string | null;
+            status: components["schemas"]["MapStatus"];
+            instance: components["schemas"]["MapPhaseInstance"] | null;
+        };
+        /** MapPhaseInstance */
+        MapPhaseInstance: {
+            /** Id */
+            id: string;
+            /** Status */
+            status: string;
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** MapPhaseNode */
+        MapPhaseNode: {
+            /** Code */
+            code: string;
+            /** Title */
+            title: string | null;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "roadmap" | "instance" | "runs";
+            identity: components["schemas"]["MapIdentity"] | null;
+            instance: components["schemas"]["MapPhaseInstance"] | null;
+            status: components["schemas"]["MapStatus"];
+            /** Objective */
+            objective: string | null;
+            /** Tag */
+            tag: string | null;
+            criteria: components["schemas"]["MapCounter"];
+            /** Slots */
+            slots: {
+                [key: string]: components["schemas"]["MapSlot"] | null;
+            };
+            /** Ready */
+            ready: boolean;
+            last_check: components["schemas"]["MapSlot"] | null;
+            tasks: components["schemas"]["MapCounter"];
+            /** Active */
+            active: boolean;
+            /** Circles */
+            circles: components["schemas"]["MapCircleState"][];
+            /** Active Invocations */
+            active_invocations: components["schemas"]["MapActiveInvocation"][];
+            /** Errors */
+            errors: components["schemas"]["MapError"][];
+            bubbles: components["schemas"]["MapBubbles"];
+        };
+        /** MapPhasesRead */
+        MapPhasesRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            /** Items */
+            items: components["schemas"]["MapPhaseNode"][];
+            /** Edges */
+            edges: components["schemas"]["MapEdge"][];
+        };
+        /** MapPolling */
+        MapPolling: {
+            /** Active Interval Ms */
+            active_interval_ms: number;
+            /** Idle Interval Ms */
+            idle_interval_ms: number;
+            /** Pause When Hidden */
+            pause_when_hidden: boolean;
+            /**
+             * Enabled
+             * @description False in restored archives: no polling.
+             */
+            enabled: boolean;
+        };
+        /** MapProjectCard */
+        MapProjectCard: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Name Source
+             * @enum {string}
+             */
+            name_source: "registered" | "registry" | "root_basename";
+            /** Knowledge Project Id */
+            knowledge_project_id: string | null;
+            /** Registered Project Id */
+            registered_project_id: string | null;
+            status: components["schemas"]["MapStatus"];
+            mode: components["schemas"]["MapMode"];
+            active_phase: components["schemas"]["MapActivePhase"] | null;
+            phases: components["schemas"]["MapCounter"];
+            /** Circles */
+            circles: components["schemas"]["MapCircleState"][];
+            /** Active Invocations */
+            active_invocations: components["schemas"]["MapActiveInvocation"][];
+            last_activity: components["schemas"]["MapCounter"];
+            /** Errors */
+            errors: components["schemas"]["MapError"][];
+            bubbles: components["schemas"]["MapBubbles"];
+            /**
+             * Configuration
+             * @description Configured agents per role (ordinary mode only).
+             */
+            configuration: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Configuration Source
+             * @enum {string}
+             */
+            configuration_source: "supplied" | "absent";
+        };
+        /** MapProjectHead */
+        MapProjectHead: {
+            /**
+             * Key
+             * @description Map project id (T017 project identity); every map route also accepts its aliases.
+             */
+            key: string;
+            /** Name */
+            name: string;
+            /** Knowledge Project Id */
+            knowledge_project_id: string | null;
+            /** Registered Project Id */
+            registered_project_id: string | null;
+        };
+        /** MapProjectsRead */
+        MapProjectsRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            /** Items */
+            items: components["schemas"]["MapProjectCard"][];
+        };
+        /** MapRelatedRead */
+        MapRelatedRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            /** Invocation Id */
+            invocation_id: string;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "records" | "permissions";
+            /** Items */
+            items: (components["schemas"]["MapRelatedRecord"] | components["schemas"]["MapPermissionRecord"])[];
+        };
+        /** MapRelatedRecord */
+        MapRelatedRecord: {
+            /** Sequence */
+            sequence: number;
+            /** Event Id */
+            event_id: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "receipt" | "discovery" | "broker" | "tool" | "ruling" | "context" | "observation";
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "supplied" | "reported" | "derived" | "measured" | "absent";
+            /** Operation Id */
+            operation_id: string | null;
+            /** Thread Id */
+            thread_id: string | null;
+            /** Parent Event Id */
+            parent_event_id: string | null;
+            /** Causation Id */
+            causation_id: string | null;
+            /** Recorded At */
+            recorded_at: string;
+            /** Truncated */
+            truncated: boolean;
+            /** Redactions */
+            redactions: number;
+            /**
+             * Fields
+             * @description Allowlisted identities, codes and digests of the event.
+             */
+            fields: {
+                [key: string]: unknown;
+            };
+            /** Artifacts */
+            artifacts: components["schemas"]["MapArtifactLink"][];
+        };
+        /** MapRoute */
+        MapRoute: {
+            /** Operation Id */
+            operation_id: string;
+            /** Path */
+            path: string;
+            /** Query */
+            query?: {
+                [key: string]: number;
+            } | null;
+            /** Stream */
+            stream?: string | null;
+            /** Offset */
+            offset?: number | null;
+            /** Size */
+            size?: number | null;
+            /** Sha256 */
+            sha256?: string | null;
+        };
+        /** MapRunHead */
+        MapRunHead: {
+            /** Run Id */
+            run_id: string;
+            /** Purpose */
+            purpose: string;
+            /** Phase */
+            phase: string;
+            /** Task */
+            task: string;
+            status: components["schemas"]["MapStatus"];
+            /** Stage */
+            stage: string;
+            /** Revisions */
+            revisions: number;
+            /** Revision Limit */
+            revision_limit: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** MapRunItem */
+        MapRunItem: {
+            /** Run Id */
+            run_id: string;
+            status: components["schemas"]["MapStatus"];
+            /** Stage */
+            stage: string;
+            /** Revisions */
+            revisions: number;
+            /** Revision Limit */
+            revision_limit: number;
+            attempts: components["schemas"]["MapCounter"];
+            /** Cycles */
+            cycles: number | null;
+            acceptance: components["schemas"]["MapAcceptance"];
+            commit: components["schemas"]["MapStatus"] | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** MapRunsRead */
+        MapRunsRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            /** Phase */
+            phase: string;
+            /** Task */
+            task: string;
+            /** Latest Run Id */
+            latest_run_id: string | null;
+            /** Items */
+            items: components["schemas"]["MapRunItem"][];
+        };
+        /** MapScopeVersion */
+        MapScopeVersion: {
+            /** Scope */
+            scope: string;
+            /** Version */
+            version: string | null;
+            /** Error */
+            error?: "not_found" | null;
+        };
+        /** MapSlot */
+        MapSlot: {
+            /** Operation Id */
+            operation_id: string;
+            /** Run Id */
+            run_id: string | null;
+            status: components["schemas"]["MapStatus"];
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** History */
+            history: number;
+            /** Actors */
+            actors: components["schemas"]["MapSlotActor"][];
+        };
+        /** MapSlotActor */
+        MapSlotActor: {
+            /**
+             * Circle
+             * @enum {string}
+             */
+            circle: "R" | "E" | "J" | "H";
+            status: components["schemas"]["MapStatus"] | null;
+            /**
+             * Invocation Id
+             * @description The actor's invocation in the operation (L4 target).
+             */
+            invocation_id: string | null;
+        };
+        /** MapSourceRecord */
+        MapSourceRecord: {
+            /** Run Id */
+            run_id: string;
+            /** Attempt Id */
+            attempt_id: string;
+            /** Sequence */
+            sequence: number;
+            /** Record */
+            record: number | null;
+            /** Oversize */
+            oversize: boolean;
+            /** @description Existing run-event route; its page holds the original record. */
+            event: components["schemas"]["MapRoute"];
+            /** @description Oversize records: the existing bounded attempt-log view. */
+            log: components["schemas"]["MapRoute"] | null;
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "available" | "unavailable_after_retention";
+            /**
+             * Availability Source
+             * @enum {string}
+             */
+            availability_source: "supplied" | "reported" | "derived" | "measured" | "absent";
+        };
+        /** MapStatus */
+        MapStatus: {
+            /**
+             * Code
+             * @description Persisted status code (raw); null when no record exists.
+             */
+            code: string | null;
+            /**
+             * Class
+             * @description One of the six classes, or unknown for an unmapped code.
+             * @enum {string}
+             */
+            class: "done" | "progress" | "waiting" | "failed" | "pending" | "inactive" | "unknown";
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * MapStep
+         * @description An agent invocation (`kind = invocation`) or a deterministic Harness stage (`kind = harness`).
+         */
+        MapStep: {
+            /**
+             * Key
+             * @description Stable order key in the run (L3); null in the L4 header.
+             */
+            key?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "invocation" | "harness";
+            /** Circle */
+            circle: ("R" | "E" | "J" | "H") | null;
+            status: components["schemas"]["MapStatus"];
+            duration_ms: components["schemas"]["MapCounter"];
+            /** Stage */
+            stage?: ("format" | "validate" | "commit") | null;
+            /** Invocation Id */
+            invocation_id?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Label */
+            label?: {
+                [key: string]: unknown;
+            } | null;
+            harness_attempt?: components["schemas"]["MapCounter"] | null;
+            revision_round?: components["schemas"]["MapCounter"] | null;
+            /**
+             * Identity
+             * @description Frozen identity and requested selection.
+             */
+            identity?: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Client-reported model, never inferred. */
+            reported_model?: components["schemas"]["MapCounter"] | null;
+            /** Observation */
+            observation?: {
+                [key: string]: unknown;
+            } | null;
+            /** Records */
+            records?: {
+                [key: string]: components["schemas"]["MapCounter"];
+            } | null;
+            /** Steps */
+            steps?: {
+                [key: string]: unknown;
+            } | null;
+            bubbles?: components["schemas"]["MapBubbles"] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** MapStepsRead */
+        MapStepsRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            run: components["schemas"]["MapRunHead"];
+            /** Items */
+            items: components["schemas"]["MapStep"][];
+            bubbles: components["schemas"]["MapBubbles"];
+            /** Edges */
+            edges: components["schemas"]["MapEdge"][];
+        };
+        /** MapStepsState */
+        MapStepsState: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "sealed" | "pending" | "integrity_failed" | "not_settled" | "not_projected" | "lane_excluded";
+            /** Reason */
+            reason: string | null;
+            /** Summary */
+            summary: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Observation
+             * @description Earlier runs: counters kept, steps not projected.
+             */
+            observation: {
+                [key: string]: unknown;
+            } | null;
+            /** Failure */
+            failure: {
+                [key: string]: unknown;
+            } | null;
+            /** Scope */
+            scope: string;
+        };
+        /** MapTaskNode */
+        MapTaskNode: {
+            /** Code */
+            code: string;
+            /** Title */
+            title: string | null;
+            /** In Plan */
+            in_plan: boolean;
+            identity: components["schemas"]["MapIdentity"] | null;
+            /** @description Accepted task identity text, bounded; absent for tasks without one. */
+            problem: components["schemas"]["MapText"];
+            expected_result: components["schemas"]["MapText"];
+            status: components["schemas"]["MapStatus"];
+            /** Runs */
+            runs: number;
+            latest: components["schemas"]["MapLatestRun"] | null;
+            /** Replaces */
+            replaces: string[];
+            /** Replaced By */
+            replaced_by: string[];
+            /** Depends On */
+            depends_on: string[];
+            /** Circles */
+            circles: components["schemas"]["MapCircleState"][];
+            /** Active Invocations */
+            active_invocations: components["schemas"]["MapActiveInvocation"][];
+            /** Errors */
+            errors: components["schemas"]["MapError"][];
+            bubbles: components["schemas"]["MapBubbles"];
+        };
+        /** MapTasksRead */
+        MapTasksRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            phase: components["schemas"]["MapPhaseHead"];
+            /** Items */
+            items: components["schemas"]["MapTaskNode"][];
+            /** Edges */
+            edges: components["schemas"]["MapEdge"][];
+        };
+        /** MapText */
+        MapText: {
+            /** Value */
+            value: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "supplied" | "reported" | "derived" | "measured" | "absent";
+            /** Reason */
+            reason: string | null;
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** MapTraceRead */
+        MapTraceRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            /** Invocation Id */
+            invocation_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "sealed" | "pending" | "integrity_failed" | "not_settled" | "not_projected" | "lane_excluded";
+            /** Reason */
+            reason: string | null;
+            /** Items */
+            items: components["schemas"]["MapTraceStep"][];
+        };
+        /**
+         * MapTraceStep
+         * @description One `observed-step-1` step (T019) with its source records resolved; no native content.
+         */
+        MapTraceStep: {
+            /** Seq */
+            seq: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "turn" | "tool_call" | "message" | "reasoning" | "not_observed";
+            /** Source Records */
+            source_records: components["schemas"]["MapSourceRecord"][];
+        } & {
+            [key: string]: unknown;
         };
         /** MetricAccountingRead */
         MetricAccountingRead: {
@@ -24570,6 +25900,590 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InboxItemRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_projects: {
+        parameters: {
+            query?: {
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapProjectsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_phases: {
+        parameters: {
+            query?: {
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapPhasesRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_tasks: {
+        parameters: {
+            query?: {
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapTasksRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_task_runs: {
+        parameters: {
+            query?: {
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                code: string;
+                task: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapRunsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_run_steps: {
+        parameters: {
+            query?: {
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapStepsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_invocation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                invocation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapInvocationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_invocation_steps: {
+        parameters: {
+            query?: {
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                invocation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapTraceRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_invocation_related: {
+        parameters: {
+            query: {
+                group: "records" | "permissions";
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+                invocation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapRelatedRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_activity: {
+        parameters: {
+            query?: {
+                /** @description Scope ids returned by the level responses (at most 10). */
+                scope?: string[];
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapActivityRead"];
                 };
             };
             /** @description Forbidden */

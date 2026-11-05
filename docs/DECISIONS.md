@@ -2734,8 +2734,10 @@ survive retention, backups and query-only restore.
 
 ## D306 — Work-map read projections, polling refresh and archive map
 
-Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q5 and Q16); binds T020 and T022. Not
-implemented. Refines D278's "polling remains the default" and keeps D029. Contract:
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q5 and Q16); binds T020 and T022. The
+API side is source complete in P002-T020 after independent final re-review; integration is pending
+([D311](#d311--work-map-read-projections-tokens-and-indexes)); T022's polling client is not implemented. Refines D278's
+"polling remains the default" and keeps D029. Contract:
 [T018 §§7–8](phase/P002-T018-work-map-contract.md#7-read-projections-and-api-t020).
 
 Versioned read-only `GET` projections under `/api/managed/map/` serve L0–L4, related records and an activity
@@ -2785,8 +2787,9 @@ members are verified. Virgil (OFL 1.1 with Reserved Font Name "Virgil", 61,248 B
 ## D309 — Accessibility and realistic-size budgets for the work map
 
 Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q19–Q20); binds T019–T024. T019 measured its
-step-page budget (p95 3.1 ms over a synthetic 5,000-step trace, [evidence](phase/P002-T019-observed-steps.md)); the
-other budgets are not implemented. Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
+step-page budget (p95 3.1 ms over a synthetic 5,000-step trace, [evidence](phase/P002-T019-observed-steps.md)); T020
+measured the projection-page and idle-poll budgets on the §12 fixture (source complete, final re-review passed;
+[evidence](phase/P002-T020-work-map-api.md)); the rendering budgets are not implemented. Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
 
 The map and trace meet WCAG 2.2 AA. Every SVG node is focusable with an accessible name (kind, code, title, status
 text, actors, bubble count), and keyboard operation is complete. Status is never shown by colour alone, and label
@@ -2869,3 +2872,95 @@ pagination, transactions and recovery); implemented and integrated as source `e1
   trace rows, D287's rule that downgrades below 0032 are refused while journal rows exist also covers databases with
   only ordinary (non-graph) runs. Tests of older revisions remove their synthetic step rows, as they already did for
   accounting rows.
+
+## D311 — Work-map read projections, tokens and indexes
+
+Status: accepted within the latitude the owner delegated for P002-T020 (endpoint and type names, module organization,
+response representation, cursors, queries and justified indexes); source complete after corrections to the
+first technical review (six findings), three re-review remnants and historical assistance ownership after registry
+retirement. Independent final re-review passed on 2026-11-05; integration is pending. Implements [D306](#d306--work-map-read-projections-polling-refresh-and-archive-map) under
+[T018 §§5, 7–8](phase/P002-T018-work-map-contract.md#7-read-projections-and-api-t020), D304 and D309;
+[evidence](phase/P002-T020-work-map-api.md), [flow](flows/work-map.md).
+
+- **Routes and modules.** Nine `GET` routes under `/api/managed/map/`: `projects`, `projects/{p}/phases`,
+  `…/phases/{code}/tasks`, `…/tasks/{task}/runs`, `projects/{p}/runs/{run}/steps`, `projects/{p}/invocations/{i}`
+  with `…/steps` and `…/related?group=records|permissions`, and `activity?scope=`. Response types `Map*`, format
+  `work-map-1`. Pure tables and tokens in `core/engine/work_map.py`; queries in `storage/work_map.py`; routes in
+  `api/work_map.py`. No mutation route.
+- **Project identity.** T017's project identity (knowledge project, else registered, else the first run or phase of
+  the root) is the map key; every route also accepts its aliases. Registered (configured) id and knowledge id are
+  separate fields; in archives nothing is configured. L0 is ordered by checkout root (stable and indexed); the root
+  never appears in responses or cursors, which carry the last project key.
+- **Statuses.** T018 §5.2 plus the persisted values it omitted: attempt `REPETITIVE` (output-guard stop) is failed;
+  legacy permission `DENIED_CONSUMED` is inactive; legacy permissions show their effective `EXPIRED` as the existing
+  permission view does. A T010 request shows its historical answer (GRANTED, DENIED) apart from the authority a grant
+  confers now (`effective`, `expired`, `ended`, `invalid`, from `PermissionLifecycle.active` over the grant and its
+  ancestry); an unanswered request whose own expiry or ancestry expired or ended is EXPIRED or REVOKED, no longer
+  `answerable`, exactly when T017 resolves it. The acceptance decision is `absent`, `rejected` (with its deterministic
+  reasons) or `eligible` from the run projection; eligibility is never a commit. Phase operations:
+  READY, CLOSED, ADOPTED, RECORDED done; QUEUED, INTENT progress; PROPOSED, STALE waiting; BLOCKED, REVISE,
+  NOT_READY, INTERRUPTED, FAILED, REFUSED failed (the raw verdict stays visible); ABANDONED inactive. A phase code that
+  only has task runs is `unknown` with reason `no_phase_record`; a task a successor replaces (D296) is inactive and keeps
+  its run status. Totals (phases closed/total, tasks committed/total) exclude inactive nodes. The project class follows
+  §5.2's order (failed, waiting, progress, done, pending), the failure coming from the autonomous run, the open phase or
+  a latest task run of the open phase. A phase question raised outside a check attaches to H, not attributed.
+- **Harness steps.** Per review cycle (0-based, after its executor round): format (`passed` when a formatting record
+  exists, else `not_recorded`; a formatter stop is failed; duration absent, `not_measured_separately`) and validate
+  (from the projection's command and case counts; duration from the validation checkpoint to the next checkpoint,
+  `includes: format`); then every commit record with its own times.
+- **Tokens.** A scope id is the level and its arguments, opaque, validated for type, level and arity before use
+  (422 `scope_invalid`). A version is a digest of the sources the scope's responses show. L0: the whole database's
+  latest insert-only sequences (run, phase, trace and autonomous events, permission records), accepted revisions,
+  registry and preparation versions, assistance in progress, configured agents and the registered map. L1/L2: the
+  root's run, phase and autonomous counts and version sums, its latest trace event, accepted revision, permission
+  sequence and registry versions, plus bubble ids, every active lane with its process state, deterministic work and the
+  root's configured agents. Runs: the task's run counts and versions. L3: the run's version, open processes, the latest
+  step marker, observation and related trace event per invocation, delivery counts, the root's permission sequence and
+  bubbles. L4 header: the same for one invocation plus its ledger state. Trace: its step markers and whether retention
+  removed its own attempt's streams (source-record availability), so other attempts never supersede it. Related:
+  the latest event per related kind, or the attempt's permission requests with their versions, latest T010 sequence
+  and how many requests, answer grants or their respective ancestors have expired by now (time alone changes validity). Cursors carry scope, version
+  and a keyset key over stable values with a digest check: the last project key (L0), phase code (L1), plan position
+  or task code within its group (L2: plan, accepted identities of the phase, run-only tasks), creation time and id
+  (runs, permissions), attempt number and sub-step (L3: invocation, format, validate, then the tail), trace event id
+  (L4). Malformed, tampered or other-scope cursors answer 422 `cursor_invalid`, superseded versions 409 `cursor_stale`.
+- **Bounded reads.** A page selects only its rows (skip scans for distinct roots, phase codes and run-only tasks;
+  indexed ranges with `LIMIT` elsewhere; L2 run-only exclusion uses a SQL anti-existence test against accepted
+  phase membership, and identity selection returns codes only) and enriches only its items; whole-scope counters (phases closed/total, tasks
+  committed/total, per-phase failures) are SQL aggregates. T017's unresolved items are read per request, bounded by
+  open owner items, not by history.
+- **Related records and evidence.** `records`: trace events of the invocation with allowlisted identity, code and
+  digest fields per kind and links to the existing thread artifact route. `permissions`: the attempt's legacy and T010
+  requests with their T017 item ids. Source records link to the existing run-event and attempt-log routes;
+  availability is `unavailable_after_retention` when the retention audit records the attempt's stdout as removed,
+  else `available`, labelled `derived` (the log route verifies bytes on read).
+- **Lanes and circles.** Active invocations come from every attributable ledger: managed attempts (chat included),
+  executor steps of a reserved preparation (E; command steps are H work) and configuration assistance scoped to a
+  registered project (R or E); a global assistance has no project and is listed as `unscoped_invocations`. Their L4
+  is `lane_excluded`; no managed attempt is manufactured. Each circle carries why it is shown (`always`,
+  `judge_profile`, `judge_history`), its latest persisted invocation in the element (project, phase or task) as the L4
+  target or `inert` without one, and `waiting` when unresolved owner items sit on it, with or without a running
+  invocation. Slot actors name their invocation. Tasks carry their accepted `problem` and `expected_result`, bounded,
+  or `absent`.
+  Chat ownership comes from its persisted conversation: the phase instance code or the associated task run's
+  phase and task, consistently with activity and L4. Project assistance resolves through its registered project and
+  persisted ASSIST operation, including completed operations and logically retired registrations; global assistance
+  stays unscoped. Historical resolution never requires operational ACTIVE status and does not reactivate or compose
+  a project; admission of new operations remains unchanged. Candidate branches
+  select at most one invocation per role and owner by `(started_at, id)`, then merge chronologically.
+- **Activity.** At most 10 scopes per poll and 50 active invocations listed (with a truncation flag); polling metadata
+  2 s / 10 s, paused when hidden, disabled in archives.
+- **Latency evidence.** The 150 ms budget is asserted in a serial run (`scripts/check tests/product/test_work_map.py
+  -- -n 0`), part of every closing; under parallel test workers the latency assertion is skipped with its reason
+  while sizes, totals, statuses, poll size and paging are still asserted.
+- **Indexes.** `0041_work_map_reads` adds `ix_managed_runs_scope` (root, purpose, phase_id, task_id, created_at),
+  `ix_managed_attempts_open` (run_id) where `result_json IS NULL`, `ix_phase_operations_phase` (phase_id, kind,
+  created_at) and, for the circle targets added in the review corrections, `ix_usage_invocations_circle_root`
+  (root, role, started_at, id), `…_circle_phase` (root, phase_code, role, started_at, id) and `…_circle_task` (root,
+  phase_code, task_id, role, started_at, id): without them the latest invocation per role reads and sorts the
+  element's ledger range. On the §12 fixture alone the indexes change little; beside 20,000 other runs and attempts the L0 page
+  p95 is 340 ms and the activity poll 199 ms without them (over budget) and 52 ms and 24 ms with them. Downgrade to
+  0040 drops the seven indexes only. The re-review correction adds `ix_usage_invocations_circle_project`
+  (project_id, role, started_at, id) for root-NULL assistance. Chat candidates seek the root/role time index and test
+  conversation membership without loading candidate histories; regular lanes retain phase/task seeks. The plan
+  regression checks ordered seeks without branch sorts; assistance adds a primary-key fetch of its chosen row.

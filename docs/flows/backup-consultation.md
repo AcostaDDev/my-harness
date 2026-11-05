@@ -53,6 +53,12 @@ flowchart TD
   Steps remain readable after retention removed the stream bytes they were derived from
   ([operation journal](operation-journal.md#observed-steps-p002-t019)).
 
+- P002-T020 serves the read-only work-map projections (`GET /api/managed/map/...`, L0–L4 and the activity summary)
+  on a restored copy from SQLite alone, with `read_only_archive: true`, no configured agents, polling disabled
+  (`polling.enabled = false`) and no writes; the reads need neither the checkout nor project composition. Source
+  record availability comes from the persisted retention audit; the existing log route verifies restored bytes on read
+  ([work-map reads](work-map.md#archives)).
+
 ## Source
 
 - `storage/backup.py`, `storage/database.py`, `services/managed_runtime.py`, `api/schemas.py`.

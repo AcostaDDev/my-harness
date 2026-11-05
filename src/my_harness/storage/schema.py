@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from my_harness.i18n import tr
 
 
-SCHEMA_REVISION = "0040_observed_step_reads"
+SCHEMA_REVISION = "0041_work_map_reads"
 # Protection triggers of 0030 (knowledge), 0031 (domain commands), 0032 (trace events/artifacts) and
 # 0033 (frozen context/receipts), 0034 (judge evidence), 0035 (permissions), 0036 (document exchange) and
 # 0038 (autonomous run evidence), by name and whitespace-normalized SQL. A database, backup or

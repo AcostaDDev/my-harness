@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0040_observed_step_reads`, 94 tables, defined in
+SQLite schema of the local service: Alembic head `0041_work_map_reads`, 94 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -8,6 +8,26 @@ Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uni
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
 context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
 SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## Work-map reads
+
+P002-T020 / [D311](DECISIONS.md#d311--work-map-read-projections-tokens-and-indexes),
+[flow](flows/work-map.md). The work-map projections are read-only and stored nowhere: every response is rebuilt from
+the tables below, filtered by checkout root. Migration `0041_work_map_reads` adds only seven indexes; there is no new
+table, column, trigger or row and no backfill (still 94 tables):
+
+| Index | Table (columns) | Read |
+|---|---|---|
+| `ix_managed_runs_scope` | `managed_runs` (root, purpose, phase_id, task_id, created_at) | Root-scoped map reads: project roots, latest run per task, the run selector and the per-root watermarks |
+| `ix_managed_attempts_open` | `managed_attempts` (run_id) where `result_json IS NULL` | Attempts in flight for the activity poll and the active circles |
+| `ix_phase_operations_phase` | `phase_operations` (phase_id, kind, created_at) | Latest plan, check and close operation per phase (Plan · Check · Close slots) |
+| `ix_usage_invocations_circle_root` | `usage_invocations` (root, role, started_at, id) | A circle's latest invocation in a project: one seek per role |
+| `ix_usage_invocations_circle_phase` | `usage_invocations` (root, phase_code, role, started_at, id) | The same within a phase |
+| `ix_usage_invocations_circle_project` | `usage_invocations` (project_id, role, started_at, id) | Latest project configuration assistance, including settled operations with ledger root NULL |
+| `ix_usage_invocations_circle_task` | `usage_invocations` (root, phase_code, task_id, role, started_at, id) | The same within a task |
+
+Before 0041, `managed_runs` had no index on its root, so every root-scoped query scanned all runs, and a circle's
+latest invocation sorted the element's whole ledger range. Downgrading to 0040 drops the seven indexes only.
 
 ## Observed steps
 
@@ -382,6 +402,8 @@ erDiagram
     managed_jobs ||--o{ managed_commits : "job_id"
 ```
 
+Indexes (0041, [work-map reads](#work-map-reads)): `ix_managed_runs_scope` on `managed_runs` (root, purpose, phase_id, task_id, created_at); `ix_managed_attempts_open` on `managed_attempts` (run_id) where `result_json IS NULL`.
+
 Uniqueness: `managed_attempts` (run_id, number); `managed_events` (run_id, sequence); `uq_managed_commits_live` on `managed_commits` (run_id) where status IN ('INTENT', 'COMMITTED'); `uq_managed_activations_live_root` on `managed_activations` (root) where status IN ('PREPARING', 'ACTIVE', 'REVERTING'); `uq_managed_activations_live_repository` on `managed_activations` (repository_key) where status IN ('PREPARING', 'ACTIVE', 'REVERTING').
 
 ## Prompts and permissions
@@ -545,6 +567,8 @@ erDiagram
     managed_runs ||--o{ project_bootstraps : "run_id"
     managed_phases |o--o{ project_bootstraps : "phase_id"
 ```
+
+Index (0041): `ix_phase_operations_phase` on `phase_operations` (phase_id, kind, created_at).
 
 Uniqueness: `managed_phases` (root, code); `uq_managed_phases_open_root` on `managed_phases` (root) where status NOT IN ('CLOSED', 'ABANDONED'); `phase_definitions` (phase_id, number); `phase_events` (phase_id, sequence).
 
@@ -1339,8 +1363,9 @@ erDiagram
 
 Uniqueness: `usage_invocations` (source_kind, source_id); `usage_captures` (invocation_id, version, digest);
 `usage_valuations` (invocation_id, capture_id, normalization, calculator, profile_digest, reference_set_digest,
-basis, scenario_digest). Indexes: `ix_usage_invocations_scope` (root, phase_code, task_id) and
-`ix_usage_invocations_started` (started_at). Checks: source kind and launch vocabularies; the native link must match
+basis, scenario_digest). Indexes: `ix_usage_invocations_scope` (root, phase_code, task_id),
+`ix_usage_invocations_started` (started_at) and, for the work map (0041), `ix_usage_invocations_circle_root`,
+`ix_usage_invocations_circle_phase`, `ix_usage_invocations_circle_task` and `ix_usage_invocations_circle_project`. Checks: source kind and launch vocabularies; the native link must match
 the source kind (`attempt_id = source_id` with a run, `preparation_step_id = source_id` with its operation, or
 `operation_id = source_id`); valuation status/origin; cohort kind/status; a member has exactly one of a valuation or
 an explicit reason.

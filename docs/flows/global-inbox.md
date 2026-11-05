@@ -57,4 +57,7 @@ unconsumed. That retry calls the ordinary run command with the current run versi
   from their own persisted data, with no write controls. Mutations return HTTP 409. Reads perform no replay
   writes, source reconstruction or checkout access.
 
+P002-T020's work-map bubbles reuse this projection unchanged (unresolved, non-notification items) and only attach each
+item to an actor circle; they carry item identities and counts ([work-map reads](work-map.md#statuses-actors-and-counters)).
+
 The [task record](../phase/P002-T017-global-inbox.md) contains the evidence and delivery state.

@@ -1483,5 +1483,10 @@
   "documents.phase_planning_pending": "Planning pending.",
   "autonomy.refused": "Autonomous roadmap request refused: {reason}.",
   "autonomy.manual_batch_excluded": "An autonomous roadmap run is active on this checkout; manual batches are excluded until it is revoked or completed.",
-  "autonomy.acknowledgement.autonomy_ack_1": "I authorize My Harness to plan, execute, check, repair and close the phases listed in this preview without asking me at each step, within the delegation, bounds and caps shown. Agents run as local processes with my user's permissions; the harness contains them cooperatively and can stop them, but it cannot guarantee that no action happens before a stop takes effect. Caps are thresholds checked before each new model call, so a call already running may exceed them. The run never pushes, publishes, releases or deploys, never changes objectives, criteria or requirements, and stops for my answer when it needs one. I can pause or revoke it at any time."
+  "autonomy.acknowledgement.autonomy_ack_1": "I authorize My Harness to plan, execute, check, repair and close the phases listed in this preview without asking me at each step, within the delegation, bounds and caps shown. Agents run as local processes with my user's permissions; the harness contains them cooperatively and can stop them, but it cannot guarantee that no action happens before a stop takes effect. Caps are thresholds checked before each new model call, so a call already running may exceed them. The run never pushes, publishes, releases or deploys, never changes objectives, criteria or requirements, and stops for my answer when it needs one. I can pause or revoke it at any time.",
+  "work_map.not_found": "The map project, phase, task, run or invocation is unavailable.",
+  "work_map.cursor_invalid": "Invalid map cursor or scope for this view.",
+  "work_map.cursor_stale": "The map changed since this page was read; reload the first page.",
+  "work_map.group_invalid": "Unknown related-record group.",
+  "work_map.scope_invalid": "Invalid map scope: it must be a scope id a map response returned."
 }

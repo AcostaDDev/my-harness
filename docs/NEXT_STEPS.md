@@ -15,7 +15,9 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018 is complete and integrated into develop as design (`559487b`); T019 is complete and integrated as source `e19cea3` after independent final re-review; T020–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T019 is complete and integrated (D305, D310)** after independent final re-review; the owner authorized commit, merge and push of develop. T020 is next. Evidence is synthetic only. Read
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018 is complete and integrated into develop as design (`559487b`); T019 is complete and integrated as source `e19cea3` after independent final re-review; T021–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T019 is complete and integrated (D305, D310)** after independent final re-review; the owner authorized commit, merge and push of develop. **T020 is complete and integrated as source `b30a00c` after independent final re-review**, including all corrections
+(D311, [record](phase/P002-T020-work-map-api.md#10-independent-final-re-review--2026-11-05)); the owner authorized
+source commit, merge and push of develop. **T021 is next.** Release 0.2.0, distribution/publication and installation are pending. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -86,7 +88,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020–T029 are **planned** (plan v0.4, D303). Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021–T029 are **planned** (plan v0.4, D303). Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -672,6 +674,11 @@ crash/replay idempotency.
 **Gates:** —. **Threats:** TM12, TM14, TM15, TM17.
 ## P002-T020 — Work-map and trace read projections
 
+**Status:** complete and integrated into develop as source `b30a00c` on `feat/p002-t020-work-map-api` from `c993564`;
+**independent final re-review passed** on 2026-11-05, including all corrections. The owner authorized source commit,
+merge and push of develop. Release 0.2.0, distribution and installation remain pending (D242).
+Choices delegated to the task: D311; [record](phase/P002-T020-work-map-api.md#10-independent-final-re-review--2026-11-05).
+
 **Problem:** the map and trace views need bounded, attributable data per level, which the existing list and trace
 routes do not provide.
 **Expected result:** versioned read-only projections and API for the five map levels with honest attribution, refresh
@@ -983,3 +990,13 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
     and 192 independently repeated focused tests. Reviewed source `e19cea3` is integrated by the accompanying
     merge. The owner authorized source commit, merge into develop and push of develop. Next: **P002-T020**.
     Release 0.2.0, distribution/publication and installation remain pending.
+
+21. **P002-T020 final review (2026-11-05).** Independent final re-review passed, including all corrections,
+    20 focal tests and the 124 exact failed/error cases recovered serially with local-socket permission.
+    The original general-run result remains separately recorded. The owner authorized source commit, merge and
+    push of develop. Integration is pending; then **P002-T021**. Release 0.2.0, distribution and installation remain pending.
+
+22. **P002-T020 integration (2026-11-05).** Reviewed source `b30a00c` is integrated into develop by the accompanying
+    authorized merge. The merge records source identity and delivery status only; product source matches the
+    reviewed commit. Push of develop is authorized. Next: **P002-T021**. Release 0.2.0, distribution/publication and
+    installation remain pending.

@@ -76,6 +76,7 @@ queue; closing the browser does not cancel work.
 | `orchestration/`, `storage/graph_continuations.py` | P002-T003 graph runtime: harness checkpoint saver, versioned graph registry, segment runner with quarantine and cancellation, operation port; the only LangGraph importer, used through `ManagedRuntime.graph_runner` ([D282](DECISIONS.md#d282--harness-checkpoint-saver-and-continuationjournal-consistency-contract), [D283](DECISIONS.md#d283--durable-segments-graph-version-stamping-and-quarantine)) |
 | `core/engine/knowledge.py`, `storage/knowledge.py` | P002-T004 structured knowledge: content and relationship rules, canonical hashes, historical decision-status mapping and verbatim instruction staging (pure core); drafts, compare-and-set adoption, verified retrieval and legacy identity map (storage); accepted state protected by the triggers of 0030. Used through shared domain commands by structured intake and the T012 owner editor ([D284](DECISIONS.md#d284--structured-knowledge-entities-revisions-and-immutability), [D285](DECISIONS.md#d285--canonical-database-instructions-and-generated-instruction-files)) |
 | `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`, `storage/operation_journal.py`, `api/traces.py` | P002-T006 operation journal behind `OperationPort` with fenced invocation operations and evidence-based recovery, ordered insert-only trace events, `trace-observation-1` counters, bounded sanitized payloads, T007/T008 envelopes and read-only trace routes ([D287](DECISIONS.md#d287--operation-journal-granularity-and-recovery-contract)) |
+| `core/engine/observed_steps.py`, `storage/observed_steps.py`, `services/observed_steps.py` | P002-T019 (source, corrected after two reviews; final re-review passed, integration pending): `observed-step-1` derivation per client (pure), pending marker at settlement, idempotent projector with integrity failure, oversize-record verification, retention guard and keyset reads; background projector started with the supervisor ([D305](DECISIONS.md#d305--observed-step-projection-from-sealed-native-evidence), [D310](DECISIONS.md#d310--observed-step-pending-marker-projector-and-reads)) |
 | `core/engine/frozen_context.py`, `storage/frozen_context.py` | P002-T007: bounded accepted context, actual frozen profile and explicit Git/code captures, D285 prompt rendering, fenced invocation boundaries and exact query/tool/input receipts, with scoped archive readers ([D288](DECISIONS.md#d288--frozen-invocation-context-and-exact-exposure-evidence)) |
 | `core/engine/tool_bridge.py`, `services/tool_bridge.py`, `adapters/tool_bridge_transport.py`, `adapters/tool_bridge_stdio.py` | T008 (integrated into develop): three-tool MCP surface, frozen scope/capability cells, persisted caller resolver, supervisor broker and independently controlled stdio relay; no product graph or production permission provider ([D289](DECISIONS.md#d289--invocation-scoped-broker-binding-transactional-exposure-and-independent-relay-control)) |
 | `migrations/versions/0001…0033` | Alembic schema |
@@ -536,14 +537,22 @@ lazy `managed_runtime.roadmap_graphs` boundary. T010 supplies the roadmap parent
 scope check and the existing cancellation poll consume them. `api/autonomous.py` exposes the minimal per-project
 controls; there is no new scheduler, ledger or dependency. [Record](phase/P002-T016-autonomous-roadmap.md).
 
-### P002-T018: work-map design (designed; not implemented)
+### P002-T018: work-map design (designed; T019 integrated)
 
-Accepted by the owner in D304–D309 (2026-11-04); no component below exists yet
-([contract](phase/P002-T018-work-map-contract.md)). T019 adds a deterministic projector that turns each settled managed
-attempt's sealed evidence into `invocation.step` and `invocation.steps_sealed` events in `trace_events`. Its inputs
-are `agent_event` rows, `stream_bytes` chunks and verified stdout bytes. It runs as an idempotent effect after a
-pending marker written at settlement, and explicit retention is guarded until the projection is sealed. Steps keep
-references to their source `agent_event` rows, which the existing run event and attempt-log routes serve. T020 adds
+Accepted by the owner in D304–D309 (2026-11-04) and integrated as design
+([contract](phase/P002-T018-work-map-contract.md)). **T019 is implemented and integrated as source `e19cea3` after
+independent final re-review** (D310, [record](phase/P002-T019-observed-steps.md)): the settlement transaction (attempt result or
+`confirm_stopped`) writes an `invocation.steps_pending` marker; `storage/observed_steps.py` is the deterministic
+projector that turns each settled managed attempt's sealed evidence into `invocation.step` and
+`invocation.steps_sealed` events in `trace_events`, using the pure derivation in `core/engine/observed_steps.py`. Its
+inputs are `agent_event` rows, `stream_bytes` chunks and verified stdout bytes. It runs after the commit, woken
+through the repository's post-commit hook by the `observed-steps` thread that `services/observed_steps.py` starts with
+the supervisor; that thread's first pass recovers markers left pending, and the runtime's stop reaches a projection
+in progress between batches and before its seal. A divergent replay records
+`invocation.steps_failed`. Explicit retention is guarded until the projection is sealed. Steps keep references to
+their source `agent_event` rows, which the existing run event and attempt-log routes serve; `ObservedSteps` gives
+internal keyset pages over `ix_trace_events_invocation` (migration 0040). The components below from T020 onwards
+do not exist yet. T020 adds
 versioned read-only projections and `GET` routes under `/api/managed/map/`, built over the existing ledgers, T017's
 inbox projection and T019's steps. They offer keyset cursors, version tokens and an activity summary for polling,
 and the same routes serve query-only archives from SQLite alone. T021 adds an in-house SVG map engine with rough.js

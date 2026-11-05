@@ -491,7 +491,10 @@ class OperationJournal:
         limit = max(1, min(int(limit), MAX_PAGE))
         with Session(self.engine) as session:
             self._thread(session, root, thread_id)
-            query = select(Event).where(Event.thread_id == thread_id, Event.root == root, Event.id > after)
+            # P002-T019 (D310): observed steps are served by their own sealed reader, never here, so a projection in
+            # progress never shows its internal rows and cursors never pass over rows that appear later.
+            query = select(Event).where(Event.thread_id == thread_id, Event.root == root, Event.id > after,
+                                        Event.kind != 'invocation.step')
             if operation_id is not None:
                 query = query.where(Event.operation_id == operation_id)
             rows = session.scalars(query.order_by(Event.id).limit(limit + 1)).all()
@@ -507,7 +510,8 @@ class OperationJournal:
         with Session(self.engine) as session:
             self._thread(session, root, thread_id)
             row = session.scalar(select(Artifact).join(Event, Event.event_id == Artifact.event_id).where(
-                Artifact.sha256 == sha256, Event.thread_id == thread_id, Event.root == root).limit(1))
+                Artifact.sha256 == sha256, Event.thread_id == thread_id, Event.root == root,
+                Event.kind != 'invocation.step').limit(1))
             if row is None:
                 raise LookupError(tr('journal.trace_unknown'))
             if hashlib.sha256(row.content).hexdigest() != row.sha256 or len(row.content) != row.size:

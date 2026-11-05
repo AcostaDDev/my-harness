@@ -1,7 +1,7 @@
 """H5.2: verified local bundles; no execution port or checkout write."""
 
 import base64
-from contextlib import closing
+from contextlib import closing, contextmanager
 import hashlib
 import json
 import os
@@ -55,8 +55,10 @@ def _historical_path(path):
     return Path(path)
 
 
-def _read(path, limit=MAX_FILE_BYTES):
-    """Each component is opened without following links; special files never block."""
+@contextmanager
+def opened(path, limit=MAX_FILE_BYTES):
+    """A read-only descriptor and its initial stat: each component is opened without following links, the file must
+    be regular with one link and within `limit`; special files never block. Callers enforce `limit` while reading."""
     path = _absolute(path)
     descriptors = []
     try:
@@ -72,19 +74,29 @@ def _read(path, limit=MAX_FILE_BYTES):
             raise BackupError(tr('backup.not_regular', path=path))
         if before.st_size > limit:
             raise BackupError(tr('backup.size_limit', path=path))
+        yield fd, before
+    finally:
+        for fd in reversed(descriptors):
+            os.close(fd)
+
+
+def unchanged(before, after) -> bool:
+    return ((before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+            == (after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns))
+
+
+def _read(path, limit=MAX_FILE_BYTES):
+    """Each component is opened without following links; special files never block."""
+    with opened(path, limit) as (fd, before):
         chunks, size = [], 0
         while chunk := os.read(fd, 65536):
             size += len(chunk)
             if size > limit:
-                raise BackupError(tr('backup.size_limit', path=path))
+                raise BackupError(tr('backup.size_limit', path=_absolute(path)))
             chunks.append(chunk)
-        after = os.fstat(fd)
-        if (before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
-            raise BackupError(tr('backup.changed_reading', path=path))
+        if not unchanged(before, os.fstat(fd)):
+            raise BackupError(tr('backup.changed_reading', path=_absolute(path)))
         return b''.join(chunks)
-    finally:
-        for fd in reversed(descriptors):
-            os.close(fd)
 
 
 def _write(path, data):

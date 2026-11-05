@@ -14,9 +14,23 @@ ACCOUNTING_TABLES = ('valuation_cohort_members', 'valuation_cohorts', 'usage_val
 
 
 def clear_accounting(database):
-    """0028 refuses a downgrade while accounting rows exist; tests of older revisions remove their synthetic rows."""
+    """0028 refuses a downgrade while accounting rows exist; tests of older revisions remove their synthetic rows.
+
+    P002-T019: every settled attempt also has observed-step trace rows, which make 0032 refuse first (D287) and
+    reference the ledger rows. Those synthetic rows are removed with their artifacts, lifting the insert-only trace
+    triggers for this test-only cleanup and restoring them unchanged."""
     path = str(database).removeprefix('sqlite:///')
     with closing(sqlite3.connect(path)) as db:
+        triggers = db.execute("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' "
+                              "AND tbl_name IN ('trace_events', 'trace_artifacts') ORDER BY name").fetchall()
+        steps = "SELECT event_id FROM trace_events WHERE kind LIKE 'invocation.step%'"
+        if triggers and db.execute(steps).fetchone():
+            for name, _sql in triggers:
+                db.execute(f'DROP TRIGGER "{name}"')
+            db.execute(f'DELETE FROM trace_artifacts WHERE event_id IN ({steps})')
+            db.execute("DELETE FROM trace_events WHERE kind LIKE 'invocation.step%'")
+            for _name, sql in triggers:
+                db.execute(sql)
         for table in ACCOUNTING_TABLES:
             db.execute(f'DELETE FROM {table}')
         db.commit()

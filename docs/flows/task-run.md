@@ -159,6 +159,16 @@ explicit confirm-stopped interruption) also appends its allowlisted `usage-captu
 profile, the admission-bound valuation. A fenced owner cannot write either. Accounting never retries inference,
 settles a process or certifies that a writer stopped ([accounting flow](metrics-accounting.md)).
 
+P002-T019 ([D305](../DECISIONS.md#d305--observed-step-projection-from-sealed-native-evidence),
+[D310](../DECISIONS.md#d310--observed-step-pending-marker-projector-and-reads)): that same settlement transaction (attempt
+result or confirm-stopped interruption) records an `invocation.steps_pending` marker, for every lane and with or
+without a workflow operation. After the commit, the observed-step projector derives the attempt's ordered, bounded
+and content-free steps from these chunk journals and parsed records, outside the job's lease and lock. A
+malformed record never interrupts the capture: it is journaled with its chunk and becomes an `invalid_record` step
+([operation journal](operation-journal.md#observed-steps-p002-t019)). Explicit stream retention keeps the attempt's
+`stdout.bin`/`stderr.bin` while the projection is not sealed and names the attempt; afterwards the steps survive the
+removal of those bytes.
+
 ## Reading a run
 
 - `GET /runs/{id}` returns the summary, the stops, `history.cycle_count` and `history.latest_cycle`; cycles are read

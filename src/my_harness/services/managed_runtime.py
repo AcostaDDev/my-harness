@@ -225,6 +225,7 @@ class ManagedRuntime:
         self.setup = None
         self.config: ManagedConfig | None = None
         self.repository = self.views = self.worker = self.registry = self.preferences = None
+        self.steps = None  # P002-T019: observed-step projector, started with the supervisor
         self.database: Path | None = None
         self.migrations_dir: Path | None = None
         self.projects: dict[str, ManagedProject] = {}
@@ -326,6 +327,12 @@ class ManagedRuntime:
                                      task_graph=run_task_graph, autonomy=lambda: self.autonomous_roadmap().advance_all())
         self.worker = SupervisorWorker(supervisor, config.poll_seconds)
         self.worker.preparation = self.preparation
+        if self.steps is None:
+            # P002-T019 (D310): settlements wake it; its first pass recovers markers left pending by a restart.
+            from my_harness.services.observed_steps import ObservedStepWorker
+            self.steps = ObservedStepWorker(self.engine)
+            self.repository.steps_notify = self.steps.notify
+            self.steps.start()
         if self.setup is not None:
             self.worker.idle = self.apply_pending
         self.worker.start()
@@ -505,6 +512,8 @@ class ManagedRuntime:
     def stop(self) -> None:
         if self.worker is not None:
             self.worker.stop(timeout=self.config.lease_seconds)
+        if self.steps is not None:
+            self.steps.stop(timeout=self.config.lease_seconds)
 
     def ready(self) -> None:
         if self.repository is None:

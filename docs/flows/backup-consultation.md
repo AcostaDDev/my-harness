@@ -47,6 +47,12 @@ flowchart TD
   prompt. Backup verifies the explicit refusal boundary and rejects contradictory observed output or missing
   artifacts of launched processes; a stopped group alone grants no exemption.
 
+- P002-T019 observed steps live in `trace_events`, which backups already copy and verify. A restored copy reads
+  sealed steps, pending or failed states and earlier-run counters through the same internal reader, from SQLite
+  only; the projector refuses to write there, so a projection pending at backup time stays pending in the archive.
+  Steps remain readable after retention removed the stream bytes they were derived from
+  ([operation journal](operation-journal.md#observed-steps-p002-t019)).
+
 ## Source
 
 - `storage/backup.py`, `storage/database.py`, `services/managed_runtime.py`, `api/schemas.py`.

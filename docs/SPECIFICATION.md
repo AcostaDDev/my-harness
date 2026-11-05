@@ -483,17 +483,18 @@ production route reuses T014/T015 operations with delegated task contracts and c
 and closure boundaries ([D301](DECISIONS.md#d301--delegated-task-contracts-and-effect-boundary-verification))
 ([record](phase/P002-T016-autonomous-roadmap.md)).
 
-### P002-T018: work map (designed; not implemented)
+### P002-T018: work map (designed; observed-step backend integrated)
 
-The design below is accepted by the owner in D304–D309 (2026-11-04); nothing of it is implemented yet
-([contract](phase/P002-T018-work-map-contract.md)). The home page becomes a hand-drawn, zoomable, read-only work map:
+The design below is accepted by the owner in D304–D309 (2026-11-04) and integrated as design
+([contract](phase/P002-T018-work-map-contract.md)). Its observed-step backend is implemented and integrated by T019 after
+independent final re-review ([record](phase/P002-T019-observed-steps.md)); the map, its API and every view are not implemented yet. The home page becomes a hand-drawn, zoomable, read-only work map:
 projects (L0) → phases (L1) → task instances (L2) → steps of a run (L3) → the trace of one invocation (L4, new route
 `/projects/:p/invocations/:i`). Each level keeps its URL and breadcrumb, and `?view=list` switches to the existing
 list page. Cards are compact, with a side inspector. Six status classes (done, progress, waiting, failed, pending,
 inactive) each carry an icon and a label. R/E/J/H circles mark actual involvement, rays mark every active invocation
 including the chat lane, and bubbles open T017's conversation panel. Polling refreshes the map; there is no
 streaming. Observed steps are derived once from sealed native evidence, without backfill of earlier runs, and keep
-"not observed" gaps explicit. The reviewer's talk button can include the element in view behind a removable tag,
+"not observed" gaps explicit (backend implemented and integrated by T019 after independent final re-review; D305, D310). The reviewer's talk button can include the element in view behind a removable tag,
 with an exact delivery receipt. Each observed step links to its original native records, readable where they still exist. A drawer shows project documents read-only. Query-only archives render the same map
 read-only. The style uses rough.js and the Excalifont font, served offline. The map and trace meet WCAG 2.2 AA
 within recorded size budgets.

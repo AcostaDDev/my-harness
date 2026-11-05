@@ -91,6 +91,10 @@ def _eligible(db, row):
             row['attempt_status'] not in TERMINAL_ATTEMPTS or not row['result_json'] or not row['finished_at'] or
             row['job_status'] != 'DONE'):
         return tr('retention.active')
+    from my_harness.storage.observed_steps import unsealed_attempt
+    if unsealed_attempt(db, row['attempt_id']):
+        # P002-T019 (D305): the projector still needs these sealed bytes; named so the owner can act on it.
+        return tr('retention.steps_pending', attempt=row['attempt_id'])
     if db.execute('SELECT 1 FROM checkout_locks WHERE root=?', (row['root'],)).fetchone():
         return tr('retention.locked')
     if db.execute("SELECT 1 FROM managed_jobs j JOIN managed_runs r ON r.id=j.run_id WHERE r.root=? AND j.status IN ('QUEUED','ACTIVE','RECOVERY_REQUIRED')", (row['root'],)).fetchone():

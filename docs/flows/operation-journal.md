@@ -86,11 +86,80 @@ flowchart TD
   belong to another project answers 404 `trace_unknown`. They read persisted rows only, so a restored query-only copy
   serves them without checkout, registry or providers; every journal write there is refused.
 
+## Observed steps (P002-T019)
+
+Every settled managed attempt, with or without a workflow operation, gets an `observed-step-1` projection
+([D305](../DECISIONS.md#d305--observed-step-projection-from-sealed-native-evidence),
+[D310](../DECISIONS.md#d310--observed-step-pending-marker-projector-and-reads),
+[evidence](../phase/P002-T019-observed-steps.md)). It is additive: `invocation.observed`, `trace-observation-1`,
+`metrics-1`, the ledger and the operation semantics above are unchanged. Rows in
+[DDBB-DIAGRAM](../DDBB-DIAGRAM.md#observed-steps).
+
+```mermaid
+sequenceDiagram
+    participant M as Managed repository (settlement)
+    participant P as Observed-step projector
+    participant DB as SQLite
+    participant FS as Sealed stdout.bin
+    M->>DB: Attempt result (or confirm_stopped) + invocation.steps_pending, one transaction
+    M-->>P: After commit: wake (ordinary path); restart or failure: next recovery pass
+    P->>DB: Read agent_event, stream_diagnostic and stream_bytes rows in run order (no write lock)
+    P->>FS: Oversize records only, sealed capture required: no-follow open, every chunk and capture digest, then each range
+    P->>P: Validate each record, derive per client; at most 10,000 steps materialized, 4 MiB; mask, digest, no content
+    loop Batches of 250, each under the writer lock
+        P->>DB: Stop if a terminal marker exists; invocation.step (step:{invocation}:{seq}); identical replay is a no-op
+    end
+    alt No terminal marker, same content and persisted step keys equal the derived sequence
+        P->>DB: invocation.steps_sealed, last
+    else A key exists with other content, or extra persisted steps
+        P->>DB: invocation.steps_failed (unless a terminal marker already stands); nothing overwritten, not retried
+    end
+```
+
+- **Settlement stays bounded.** The settlement transaction stores only the pending marker. Parsing and verifying bytes
+  happen afterwards, outside any write transaction; writes are short batches under the writer lock.
+- **Recovery.** A crash leaves the marker pending; the projector's next pass (the runtime starts it with the
+  supervisor, and its first pass runs at start) derives again from `seq` 0 and converges through the dedupe keys.
+  Each pass walks every pending marker once in marker order, past persistent failures, and checks the stop flag
+  before each invocation and, inside a projection, before each batch and the seal; a stopped projection stays
+  pending and the next pass converges. A different payload under an existing key, or persisted steps beyond the derived sequence,
+  is an integrity failure, recorded once and never overwritten or retried in a loop. The first terminal marker
+  stands: two projectors never leave both sealed and failed markers.
+- **Derivation.** Each record is validated against the shape it is read with first. Claude Code: one turn per
+  assistant message id (`claude_message`), `tool_use`/`tool_result` correlated by id, `is_error` as `error` and
+  terminal `permission_denials` as `denied`, thinking as reasoning and the successful terminal result as the final
+  message. Codex: `turn.started` … `turn.completed`/`turn.failed` (`codex_turn`); supported items (command, MCP call,
+  file change, web search) by id with `completed`/`failed` status (other statuses `unclassified` with the raw code)
+  and explicit argument fields only; reasoning and agent messages, the last one final only when its own turn is
+  observed to complete and only when it carries text; call fields first carried by a later record are incorporated;
+  denials and per-request turns are absent with a reason. Harness broker calls link their `broker.*`/`tool.*` events
+  only when name and argument digest single out one native call in the whole invocation (calls past the step bound
+  included) and one broker call, else `link_absent`, and a discovery event only when one broker call was open. Overlapping calls of one turn are `parallel` with the turn's
+  maximum concurrency. Timing is the receipt of the stdout chunk that carried the record's newline
+  (`chunk_receipt`); a step observed only at its end, or a call first seen at `item.updated`, has start and
+  duration absent.
+- **Gaps and coverage.** Malformed records, partial tails, unsupported events, item types or clients, missing
+  streams, unverifiable oversize records and supervisor cuts become `not_observed` steps at their position; later
+  records are still derived. Open turns and calls end `cancelled_in_flight` after a supervisor stop, `not_observed`
+  otherwise; nothing is closed as completed. Coverage is `complete` only when nothing is missing, and otherwise
+  `partial` with its `coverage_reasons` (gaps, open turns or calls, no terminal, missing final answer, uncorrelated
+  results, denials or broker events, ambiguous broker calls, bound). `source_record` points only at `agent_event`
+  rows; a parser diagnostic keeps its `stream_record` number and no reference.
+- **Reads.** `ObservedSteps.page` serves one invocation in `seq` order, keyset by step position, at most 200 per
+  page, through `ix_trace_events_invocation`; states `sealed`, `pending`, `integrity_failed`, `not_settled`,
+  `not_projected` (settled before T019: persisted or derived `trace-observation-1` counters and the run evidence,
+  no backfill) and `lane_excluded` (preparation and configuration assistance). It is internal; T020 adds the API and
+  resolves source records. The thread trace queries above never serve `invocation.step` rows (complete or not), so
+  their cursors stay gap-free; the sealed and failed markers remain visible there.
+
 ## Source
 
-- `core/engine/observation.py`, `core/engine/trace_payload.py`, `core/engine/trace_envelopes.py`.
-- `storage/operation_journal.py`, `orchestration/operations.py` (`JournalPort`, `run_operation`),
+- `core/engine/observation.py`, `core/engine/observed_steps.py`, `core/engine/trace_payload.py`,
+  `core/engine/trace_envelopes.py`.
+- `storage/operation_journal.py`, `storage/observed_steps.py`, `services/observed_steps.py`,
+  `orchestration/operations.py` (`JournalPort`, `run_operation`),
   `storage/managed.py` (`agent_started`, `_history`, `confirm_stopped`), `services/domain_operations.py`,
-  `services/managed_runtime.py`, `api/traces.py`, `migrations/versions/0032_operation_journal.py`.
+  `services/managed_runtime.py`, `api/traces.py`, `migrations/versions/0032_operation_journal.py`,
+  `migrations/versions/0040_observed_step_reads.py`.
 - [Graph continuation](graph-continuation.md), [domain operations](domain-operations.md),
   [accounting](metrics-accounting.md), [archive consultation](backup-consultation.md).

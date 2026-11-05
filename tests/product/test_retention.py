@@ -14,6 +14,7 @@ from my_harness.api.app import create_app
 from my_harness.cli import main
 from my_harness.core.engine.contracts import Attempt, stop_history
 from my_harness.storage.backup import BackupError, create_backup, restore_backup, verify_bundle
+from my_harness.storage.observed_steps import ObservedStepProjector
 from my_harness.storage.retention import apply_retention, preview_retention, inspect_logs
 from test_backup import db_path, dump_rows, reseal_database, seal, LOCAL
 from test_cli_agents import adapter, setup_invocation
@@ -29,6 +30,8 @@ def sealed(context, repository, migrated_database, tmp_path):
     history = repository.get_run(job.run_id).history
     history = stop_history(replace(history, attempts=(Attempt(request, result),)), 'executor', 'Synthetic stop')
     repository.finish(claim, history)
+    # P002-T019: the runtime projects the settled attempt before its streams become eligible for retention.
+    assert [r['state'] for r in ObservedStepProjector(repository.engine).run_pending()] == ['sealed']
     return db_path(migrated_database), port, job, request
 
 

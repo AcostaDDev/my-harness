@@ -696,6 +696,13 @@ class CLIProcessAdapter:
                                status=status, metadata_json=freeze(metadata))
         except BaseException as exc:
             # Persistence/parse errors never allow an untracked live writer to continue.
+            if pending:
+                # P002-T019 (D305): bytes already written and fsynced to the capture keep their chunk and the
+                # records read from it in the journal, best effort; the original failure is never masked.
+                try:
+                    flush()
+                except Exception:
+                    pass
             if process is not None:
                 group_state = stop_group(process).group_state
                 self._interrupted(directory, exc, parser, process, started, started_at, sizes, hashes, group_state)

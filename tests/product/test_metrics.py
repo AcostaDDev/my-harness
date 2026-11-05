@@ -410,7 +410,8 @@ def test_backfill_of_old_captures_reads_only_verified_streams(tmp_path, context,
     assert verified[2]['diagnostics'] == ['stream_hash_mismatch'] and verified[2]['total_tokens'] == 1050
     # What was read from a verified stream would not be rebuilt if that stream is retired: the downgrade refuses.
     config = migrated_database[1]
-    with pytest.raises(RuntimeError, match='Accounting records'):
+    # P002-T019: observed-step rows of the settled attempts make 0032 refuse first (D287), before 0028.
+    with pytest.raises(RuntimeError, match='Operation journal records'):
         command.downgrade(config, '0013_bootstrap')
     clear_accounting(path)
     with pytest.raises(RuntimeError, match='Stream-derived'):
@@ -424,8 +425,10 @@ def _result(path, number):
 
 
 def test_retention_keeps_metrics_and_retired_streams_are_never_read(tmp_path, context, repository, migrated_database):
+    from my_harness.storage.observed_steps import ObservedStepProjector
     port, job, supervisor = flow(tmp_path, context, repository)
     supervisor.run_once()
+    ObservedStepProjector(repository.engine).run_pending()  # P002-T019: the runtime seals steps before retention
     path = db_path(migrated_database)
     before = dump_rows(path)
     options = dict(artifact_roots=[port.artifact_root], before='2100-01-01T00:00:00Z', min_bytes=1)

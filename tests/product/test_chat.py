@@ -371,7 +371,8 @@ def test_migration_roundtrip_and_downgrade_refused_with_chat_runs(migrated_datab
     world.script(answer())
     chat.say(cid)
     world.run()
-    with pytest.raises(RuntimeError, match='Accounting records'):
+    # P002-T019: the settled turn's observed-step rows make 0032 refuse first (D287), before 0028's accounting.
+    with pytest.raises(RuntimeError, match='Operation journal records'):
         command.downgrade(migrated_database[1], '0011_phase_amendments')
     clear_accounting(migrated_database[0])
     with pytest.raises(RuntimeError, match='0012'):

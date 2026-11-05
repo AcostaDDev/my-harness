@@ -64,6 +64,8 @@ def test_capture_valuation_api_retention_backup_and_query_only_restore(tmp_path,
     live = ManagedConfig((ManagedProject('synthetic', context, VERSIONS),))
     port, job, supervisor = flow(tmp_path, context, repository)
     supervisor.run_once()  # Codex planner and reviewer, Claude executor: three native invocations
+    from my_harness.storage.observed_steps import ObservedStepProjector
+    ObservedStepProjector(repository.engine).run_pending()  # P002-T019: the runtime seals steps before retention
     with client(str(repository.engine.url), tmp_path, live) as http:
         legacy = legacy_reads(http, job.run_id)
     legacy_rows = {table: rows for table, rows in dump_rows(path).items() if table in LEGACY_TABLES}

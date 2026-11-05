@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0039_inbox_read_marks`, 94 tables, defined in
+SQLite schema of the local service: Alembic head `0040_observed_step_reads`, 94 tables, defined in
 `src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -8,6 +8,30 @@ Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uni
 columns. Composite uniqueness and partial unique indexes are listed under each diagram. Entities from another
 context appear only with the columns that relate them. Process streams, captures and checkout copies live outside
 SQLite and are referenced by path and hash; bounded context evidence and trace artifacts are stored in SQLite.
+
+## Observed steps
+
+P002-T019 / [D305](DECISIONS.md#d305--observed-step-projection-from-sealed-native-evidence),
+[D310](DECISIONS.md#d310--observed-step-pending-marker-projector-and-reads), flows
+[operation journal](flows/operation-journal.md#observed-steps-p002-t019), [task run](flows/task-run.md) and
+[backup consultation](flows/backup-consultation.md). Migration `0040_observed_step_reads` adds only the index
+`ix_trace_events_invocation` (invocation_id, kind, id) for keyset pages of one invocation's steps; there is no new
+table, column or trigger and no backfill (still 94 tables). Steps are `trace_events` rows of four kinds, all with
+`invocation_id` set and, when the attempt has a workflow operation, `thread_id` and `operation_id`:
+
+| Kind | Dedupe key | Source | Written |
+|---|---|---|---|
+| `invocation.steps_pending` | `steps_pending:{invocation_id}` | derived | In the settlement transaction (attempt result or `confirm_stopped`); no thread or operation link |
+| `invocation.step` | `step:{invocation_id}:{seq}` | measured | By the projector, in bounded writer transactions, after the settlement committed |
+| `invocation.steps_sealed` | `steps:{invocation_id}` | measured | Last; the completion marker with counts, coverage, bound, client, stdout digest and last record |
+| `invocation.steps_failed` | `steps_failed:{invocation_id}` | derived | Once, when a replay derives a different payload under an existing step key (`integrity_conflict`) or finds persisted steps beyond the derived sequence (`integrity_step_set`); never beside a sealed marker; nothing is overwritten |
+
+Payloads follow `observed-step-1` within `trace-payload-1`: codes, digests, sizes, chunk-receipt times and masked
+argument summaries of at most 256 characters; no message, reasoning or result content. Each step keeps up to four
+`source_record` references `{run_id, attempt_id, sequence, record, oversize}` into `managed_events`. At most 10,000
+step events and 4 MiB of payload per invocation. The T006 thread queries do not serve `invocation.step` rows. Retention refuses an attempt's streams while it has a pending marker
+without a sealed one (pending or integrity failure). Attempts settled before 0040 have no marker and are not
+backfilled.
 
 ## Global inbox
 
@@ -1625,7 +1649,8 @@ erDiagram
 Uniqueness: (`thread_id`, `key`); `uq_workflow_operations_attempt` (attempt_id) where not null; `event_id`;
 `dedupe_key`. Indexes `ix_workflow_operations_root` (root, thread_id), `ix_workflow_operations_status` (status),
 `ix_trace_events_thread` (thread_id, id), `ix_trace_events_operation` (operation_id, id), `ix_trace_events_root`
-(root, id).
+(root, id), `ix_trace_events_inbox` (kind, root; 0039) and `ix_trace_events_invocation` (invocation_id, kind, id;
+0040, [observed steps](#observed-steps)).
 
 Checks: `status` in `INTENDED`, `COMPLETED`, `FAILED`, `UNCERTAIN`, `ABANDONED`; an `agent_invocation` has attempt,
 invocation, job and owner token; a `domain_command` has its command and is `COMPLETED`; `source` in `supplied`,

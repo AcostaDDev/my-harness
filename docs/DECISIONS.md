@@ -2709,8 +2709,10 @@ legacy projects in ordinary mode.
 
 ## D305 — Observed-step projection from sealed native evidence
 
-Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q1–Q2); binds T019. Not implemented. Additive to
-D287; does not reopen T006. Contract: [T018 §6](phase/P002-T018-work-map-contract.md#6-observed-step-projection-t019).
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q1–Q2); binds T019. Implemented in P002-T019
+as source on its topic branch after independent final re-review on 2026-11-05; integration pending
+([evidence](phase/P002-T019-observed-steps.md); details in
+[D310](#d310--observed-step-pending-marker-projector-and-reads)). Additive to D287; does not reopen T006. Contract: [T018 §6](phase/P002-T018-work-map-contract.md#6-observed-step-projection-t019).
 
 Corrected premise: parsed native records of 16 KiB or less already persist verbatim and unsanitized as `agent_event`
 rows that retention does not remove. Larger records exist only as references into `stdout.bin`, whose bytes
@@ -2782,8 +2784,9 @@ members are verified. Virgil (OFL 1.1 with Reserved Font Name "Virgil", 61,248 B
 
 ## D309 — Accessibility and realistic-size budgets for the work map
 
-Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q19–Q20); binds T019–T024. Not implemented.
-Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q19–Q20); binds T019–T024. T019 measured its
+step-page budget (p95 3.1 ms over a synthetic 5,000-step trace, [evidence](phase/P002-T019-observed-steps.md)); the
+other budgets are not implemented. Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
 
 The map and trace meet WCAG 2.2 AA. Every SVG node is focusable with an accessible name (kind, code, title, status
 text, actors, bubble count), and keyboard operation is complete. Status is never shown by colour alone, and label
@@ -2793,3 +2796,76 @@ maxima (25 projects; 40 phases; 80 tasks; 30 runs; 40 invocations; 5,000 observe
 leaf siblings, not a Cartesian product. Budgets: projection page p95 ≤ 150 ms, idle poll ≤ 8 KiB, first 80-node L2
 render ≤ 500 ms, pan and zoom ≥ 50 fps at 200 visible nodes, and the 5,000-step trace usable through lazy pages of
 ≤ 200. Each owning task measures its budget; a miss is a finding, never a silent relaxation.
+
+## D310 — Observed-step pending marker, projector and reads
+
+Status: accepted within the latitude the owner delegated for P002-T019 (marker representation, code organization,
+pagination, transactions and recovery); implemented as source on the topic branch and corrected after the first
+(2026-11-04) and second (2026-11-05) independent technical reviews; final re-review passed on 2026-11-05, integration pending. Implements [D305](#d305--observed-step-projection-from-sealed-native-evidence) within
+[T018 §6](phase/P002-T018-work-map-contract.md#6-observed-step-projection-t019) and D309;
+[evidence](phase/P002-T019-observed-steps.md).
+
+- **Pending marker.** An insert-only `trace_events` row `invocation.steps_pending` (`steps_pending:{invocation_id}`,
+  source `derived`, without thread or operation link, so thread traces keep their T006 shape) is written in the
+  settlement transaction of the attempt result or `confirm_stopped`. No table or column is added. Pending means a
+  marker without `invocation.steps_sealed`; attempts without a ledger row get none.
+- **Projector.** `storage/observed_steps.py` reads the sealed evidence in plain read sessions, derives with the pure
+  `core/engine/observed_steps.py` (derivation 3) and writes `invocation.step` events in batches of 250 per writer
+  transaction, then the sealed marker. The repository calls a post-commit hook with the invocation ids it marked;
+  the runtime starts a background `observed-steps` thread with the supervisor that is woken by that hook. Each pass
+  walks every pending marker once in marker order (a keyset over marker ids, so persistent failures never hide later
+  markers), checks the stop flag before each invocation and then waits up to 10 s. Inside a projection the same
+  flag is checked before each batch and before the seal: a stopped projection writes nothing more and stays pending,
+  and the next pass replays its written batches as no-ops and seals once. Restored archives compose no
+  supervisor, and the projector refuses writes under `query_only`.
+- **Derivation.** Every native record is validated against the shape it is read with before any step changes; a
+  malformed record becomes an `invalid_record` gap and an unknown Codex item type an `unsupported_event` gap
+  (`item:<type>`, one per item), and later records are still derived. Codex tool items read explicit fields only
+  (command, MCP arguments, file-change path and kind, search query). A Codex message is final only when its own turn
+  is observed to complete; a Claude final is the successful terminal result. Steps observed only at their end
+  (Codex items seen only at completion, messages, reasoning, gaps) record that end with start and duration absent.
+  Coverage is `complete` only without gaps, open turns or calls, missing final answer, uncorrelated results, denials
+  or broker events, ambiguous broker calls or a bound; otherwise `partial` with `coverage_reasons`. A harness call is
+  linked to broker events only when name and argument digest single out one native call in the whole invocation
+  (calls past the bound included) and one broker call; an ambiguous call keeps no link and records
+  `link_absent: ambiguous_broker_calls`; discovery only when one broker call was open. Codex call fields that a
+  call's first records do not carry (MCP server, tool, arguments; a file-change list, null while in progress) come
+  from the first later record that carries them and are never replaced; a call first seen at `item.updated` has no
+  start or duration; the last message of a completed turn without text is not a final answer
+  (`message_text_absent`). At most 10,000 steps are materialized; later ones are counted by kind, and their calls
+  still absorb their results and keep only their tool and argument digest for broker attribution. Overlap is an O(n log n) sweep; broker and range matching are
+  linear.
+- **Integrity.** Under the writer lock, every batch and the seal first check that no terminal marker exists, so two
+  projectors never leave both a sealed and a failed marker; the first terminal marker stands. The seal also requires
+  the persisted step keys to equal the derived sequence: extra rows from an earlier, longer derivation are a
+  divergence (`integrity_step_set`). A different payload under an existing key is `integrity_conflict`. Either
+  writes one `invocation.steps_failed` event (`steps_failed:{invocation_id}`); it is not retried and nothing is
+  overwritten. Retention treats it like pending (the evidence stays for investigation; any manual intervention is
+  outside T019).
+- **Oversize records.** Read only when present, from the sealed capture's `stdout.bin` only: without a capture
+  artifact (path, size, digest) every range is `capture_absent`. The file is opened through the backup module's
+  no-follow walk (no link in any component, regular, one link, size bound), read once against every chunk digest and
+  the capture's digest and size, then each range is read at its offset, one at a time, against its own digest
+  (≤ 4 MiB + 1 byte). Any failure makes the record an `oversize_record_unavailable` gap with its code, size and
+  digest. `source_record` references only `agent_event` rows; a parser diagnostic keeps its position and its
+  `stream_record` number with no reference.
+- **Capture boundary.** The projection's evidence must reach the journal (D305): the live `metrics-1` counters read
+  a non-list Claude `content` as no blocks instead of raising, so the chunk and the record are journaled and the
+  projector marks the record `invalid_record`; every other record counts as before. If an unforeseen failure still
+  interrupts the read, the chunk already written and the records read from it are flushed to the journal, best
+  effort and without masking the failure, before the interrupted capture is written.
+- **Thread traces.** The T006 thread event and artifact queries never serve `invocation.step` rows; steps are read
+  only through their sealed reader, so a projection in progress is invisible there and thread cursors never pass over
+  rows that appear later. The sealed and failed markers remain visible.
+- **Reads.** `ObservedSteps.page(invocation_id, root=None, after=None, limit≤200)`: keyset by the step event id (step
+  order equals `seq` order because steps are written in order), only below the sealed marker. Pending, failed,
+  not settled, earlier (`not_projected`, with persisted or pure `trace-observation-1` counters and the run evidence
+  link) and excluded-lane states return no items. Internal only; T020 owns the HTTP API.
+- **Index.** `0040_observed_step_reads` adds `ix_trace_events_invocation` (invocation_id, kind, id). On the
+  §12 trace alone pages took p95 3.1 ms without it. With 150,000 and 600,000 other step events the existing
+  `(kind, root)` index and a sort gave 7.3 and 20.7 ms, linear in the installation's projected history. With the
+  index the time stays at 1.6 ms; after the corrections the 5,000-step pages measure p95 1.8–1.9 ms.
+- **Downgrades.** 0040 downgrades by dropping the index only; steps stay. Because every settled attempt now writes
+  trace rows, D287's rule that downgrades below 0032 are refused while journal rows exist also covers databases with
+  only ordinary (non-graph) runs. Tests of older revisions remove their synthetic step rows, as they already did for
+  accounting rows.

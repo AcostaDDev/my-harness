@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 import json
+import logging
 import math
 from pathlib import Path
 from uuid import uuid4
@@ -31,7 +32,7 @@ from my_harness.storage.models import (
 from my_harness.storage.managed_mode import ModeConflict, ModeGuard
 from my_harness.storage.metrics import executor_round, record as record_metrics
 from my_harness.storage.accounting import intend_attempt as intend_usage, settle_attempt as settle_usage
-from my_harness.storage import operation_journal
+from my_harness.storage import observed_steps, operation_journal
 from my_harness.storage import run_projection
 from my_harness.storage.schema import require_schema
 from my_harness.i18n import tr
@@ -156,6 +157,8 @@ class SQLiteManagedRepository:
         self.clock = clock or (lambda: datetime.now(timezone.utc))
         # H2.5: legacy/managed exclusion. Checkouts without legacy state do not change behavior.
         self.guard = ModeGuard(engine, mode_probe)
+        # P002-T019: called after a commit that recorded pending observed steps, with their invocation ids.
+        self.steps_notify = None
 
     def _now(self) -> str:
         value = self.clock()
@@ -165,12 +168,21 @@ class SQLiteManagedRepository:
 
     @contextmanager
     def _write(self):
-        with Session(self.engine) as session, session.begin():
-            # First DML operation: acquires the SQLite lock before querying.
-            session.execute(text("UPDATE managed_runs SET version = version WHERE 0"))
-            if self.write_guard is not None:
-                self.write_guard(session)
-            yield session
+        with Session(self.engine) as session:
+            with session.begin():
+                # First DML operation: acquires the SQLite lock before querying.
+                session.execute(text("UPDATE managed_runs SET version = version WHERE 0"))
+                if self.write_guard is not None:
+                    self.write_guard(session)
+                yield session
+            pending = session.info.pop(observed_steps.SESSION_KEY, None)
+        if pending and self.steps_notify is not None:
+            # P002-T019: projection runs after the settlement committed, never under its writer lock; a failure
+            # leaves the marker pending for the recovery pass.
+            try:
+                self.steps_notify(tuple(pending))
+            except Exception:
+                logging.getLogger(__name__).exception('Observed-step projection stays pending.')
 
     def _event(self, session, run, kind, payload):
         run.version += 1
@@ -795,6 +807,8 @@ class SQLiteManagedRepository:
                 # P002-T006 (D287): the invocation's operation settles with the fenced result, if a graph sealed one.
                 operation_journal.settle_attempt(session, row, revision_round=executor_round(roles, number),
                                                  at=row.finished_at)
+                # P002-T019 (D305): every settled attempt owes its observed steps, with or without an operation.
+                observed_steps.mark_pending(session, run, row, at=row.finished_at)
                 if attempt.request.role == 'judge':
                     if judge is None:
                         raise Conflict(tr('judge.service_required'))
@@ -1002,6 +1016,7 @@ class SQLiteManagedRepository:
                 record_metrics(session, run, row, recorded_at=row.finished_at, executor_round=round_)
                 settle_usage(session, run, row)
                 operation_journal.settle_attempt(session, row, revision_round=round_, at=row.finished_at)
+                observed_steps.mark_pending(session, run, row, at=row.finished_at)
             commit = self._live_commit(session, run.id) if run.purpose == "task" else None
             # A stopped commit worker interrupts delivery. Its sealed input remains eligible for reconciliation.
             if commit is None or pending:

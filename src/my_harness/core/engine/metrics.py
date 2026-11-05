@@ -167,7 +167,10 @@ class StreamMetrics:
                     update = raw_usage('claude', inner.get('usage')) or {}
                     request['usage'] = {**(request['usage'] or {}), **update}
         elif kind == 'assistant' and isinstance(event.get('message'), dict):
-            for block in event['message'].get('content') or ():
+            # P002-T019 (D305): a malformed `content` (not a list) counts nothing and never interrupts the
+            # capture; the record is still journaled and the projection marks it `invalid_record`.
+            content = event['message'].get('content')
+            for block in content if isinstance(content, list) else ():
                 if isinstance(block, dict) and block.get('type') == 'tool_use':
                     self._tool(block.get('name'), block.get('id'))
         if terminal:

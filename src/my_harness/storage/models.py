@@ -1418,6 +1418,7 @@ class TraceEventRow(Base):
         Index('ix_trace_events_operation', 'operation_id', 'id'),
         Index('ix_trace_events_root', 'root', 'id'),
         Index('ix_trace_events_inbox', 'kind', 'root'),
+        Index('ix_trace_events_invocation', 'invocation_id', 'kind', 'id'),  # 0040: observed-step keyset pages
         {'sqlite_autoincrement': True})
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     event_id: Mapped[str] = mapped_column(String(36), unique=True)

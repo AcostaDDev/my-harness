@@ -72,7 +72,17 @@ of develop. Release 0.2.0, distribution and installation remain pending.
 **P002-T017 is complete and integrated into develop**, source `9ebb800` on `feat/p002-t017-global-inbox` from `9e8995b`.
 The owner accepted G13 (D302) and deferred a direct response to judge rulings. The global and per-project inbox,
 read receipts, reusable conversation panel and guarded shortcuts are implemented with synthetic evidence; owner technical review passed after one judge-resolution correction.
-Schema `0039_inbox_read_marks` (94 tables). **P002-T018 is complete (design)** on `docs/p002-t018-work-map-contract` from `eb5bb74`: the owner explicitly accepted the [work-map contract](phase/P002-T018-work-map-contract.md) and D304–D309 on 2026-11-04, with the source-record links added. G14 is resolved. Documentation only, nothing implemented and not committed. Next: **P002-T019**. Release 0.2.0 via protected `main`,
+Schema `0039_inbox_read_marks` (94 tables) on develop. **P002-T018 is complete and integrated into develop as design**
+(`559487b`): the owner explicitly accepted the [work-map contract](phase/P002-T018-work-map-contract.md) and D304–D309 on
+2026-11-04, with the source-record links added. G14 is resolved; T018 implemented nothing.
+**P002-T019 (observed-step projection) is implemented as source** on `feat/p002-t019-observed-steps` from `ce244e4`,
+independent final re-review passed on 2026-11-05 after both rounds of corrections. Source commit, merge and push
+of develop are authorized by the owner: every settled managed attempt records a pending marker in its
+settlement transaction and a background projector derives bounded, sanitized `observed-step-1` steps with source-record
+references, a retention guard while pending, recovery after restart, integrity failure on divergent replay and keyset
+reads that survive retention and query-only restore (D305, D310). Topic schema `0040_observed_step_reads` (index only,
+94 tables). The map API and source-record resolution (T020) and all rendering (T021–T024) remain planned.
+[Record](phase/P002-T019-observed-steps.md). Integration into develop, release 0.2.0 via protected `main`,
 distribution/publication and installation are pending. The operator installation remains 0.1.9.
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
@@ -127,7 +137,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   operator database is migrated; unreleased develop adds P002-T003's `0029_graph_continuations` and P002-T004's
   `0030_structured_knowledge`; P002-T005's `0031_domain_commands`; P002-T006's `0032_operation_journal`;
   T007's `0033_frozen_context`; T009's `0034_judge_contracts`; later tasks through T014's `0037_task_lineage`;
-  T016 adds `0038_autonomous_runs`; the T017 topic adds `0039_inbox_read_marks`); idempotent job
+  T016 adds `0038_autonomous_runs`; T017 adds `0039_inbox_read_marks`; the T019 topic adds the index-only
+  `0040_observed_step_reads`); idempotent job
   queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
@@ -246,4 +257,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018–T029 remain planned (plan v0.4, D303). The owner accepted the T018 work-map visual direction as design (D297, [visual direction](phase/P002-T018-visual-direction.md)). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is implemented as source on its topic branch after independent final re-review; integration is pending (D305, D310). T020–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.

@@ -162,6 +162,20 @@ if writer and os.environ.get('PROBE_STREAM_SECONDS'):
         number += 1
         time.sleep(.02)
 
+if mode == 'scripted':
+    # P002-T019: a synthetic native stream scripted by the test (records, raw bytes, pauses, a final hang).
+    signal.signal(signal.SIGTERM, lambda signum, frame: os._exit(int(os.environ.get('PROBE_TERM_EXIT', '143'))))
+    for entry in json.loads(Path(os.environ['PROBE_STREAM']).read_text()):
+        if 'line' in entry:
+            sys.stdout.buffer.write((json.dumps(entry['line'], ensure_ascii=False) + '\n').encode())
+        elif 'raw' in entry:
+            sys.stdout.buffer.write(entry['raw'].encode())
+        sys.stdout.buffer.flush()
+        if 'sleep' in entry:
+            time.sleep(entry['sleep'])
+        if entry.get('hang'):
+            time.sleep(60)
+    sys.exit(int(os.environ.get('PROBE_EXIT', '0')))
 if mode == 'invalid':
     print('invalid JSONL', flush=True)
 elif mode == 'utf8':

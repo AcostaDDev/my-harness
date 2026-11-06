@@ -2771,7 +2771,12 @@ Guards, confirmations and the archive refusal remain.
 ## D308 — rough.js 4.6.6 and Excalifont v0.18.1 for the hand-drawn map
 
 Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q17–Q18); dependency decision required by D297
-before adding. Installation belongs to T021 with its own explicit network authorization. Contract and evidence:
+before adding. Installation belongs to T021 with its own explicit network authorization. T021 adopted both locally on
+2026-11-06 (independent final re-review passed; integration authorized and pending; [record](phase/P002-T021-rendering-foundation.md)): the font files match
+the recorded hashes. Their `name` tables keep only the copyright; the OFL 1.1 statement, licence text, designers and
+trademark are preserved for the same two files under `Origin File Name Table` in the font's `index.ts` at tag v0.18.1
+(clarification of T018's wording in the [T021 record](phase/P002-T021-rendering-foundation.md#123-licence-provenance-and-lock-description);
+no owner decision pending), and the shipped notice carries them. Contract and evidence:
 [T018 §10](phase/P002-T018-work-map-contract.md#10-rendering-dependency-decision-installation-in-t021).
 
 `roughjs` 4.6.6 (MIT) becomes a direct frontend dependency pinned exactly. It and its four MIT dependencies are
@@ -2789,7 +2794,11 @@ members are verified. Virgil (OFL 1.1 with Reserved Font Name "Virgil", 61,248 B
 Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q19–Q20); binds T019–T024. T019 measured its
 step-page budget (p95 3.1 ms over a synthetic 5,000-step trace, [evidence](phase/P002-T019-observed-steps.md)); T020
 measured the projection-page and idle-poll budgets on the §12 fixture (integrated source, final re-review passed;
-[evidence](phase/P002-T020-work-map-api.md)); the rendering budgets are not implemented. Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
+[evidence](phase/P002-T020-work-map-api.md)); T021 measured the rendering budgets on its synthetic fixture in the browser
+(80-node first render median 77 ms, pan and zoom 60 fps at 200 visible nodes) and again on the code corrected after
+review (median 71.6 ms; 60 fps; independent final re-review passed,
+[evidence](phase/P002-T021-rendering-foundation.md#127-browser-re-verification-of-the-corrected-code)); T022 re-measures
+them on the product map. Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
 
 The map and trace meet WCAG 2.2 AA. Every SVG node is focusable with an accessible name (kind, code, title, status
 text, actors, bubble count), and keyboard operation is complete. Status is never shown by colour alone, and label
@@ -2964,3 +2973,61 @@ retirement. Independent final re-review passed on 2026-11-05; source `b30a00c` i
   (project_id, role, started_at, id) for root-NULL assistance. Chat candidates seek the root/role time index and test
   conversation membership without loading candidate histories; regular lanes retain phase/task seeks. The plan
   regression checks ordered seeks without branch sorts; assistance adds a primary-key fetch of its chosen row.
+
+## D312 — Work-map engine, interaction conventions and development fixture
+
+Status: accepted within the latitude the owner delegated for P002-T021 (names, module organization, internal
+interfaces and reversible details, including the arrow-key convention); refined by the corrections of the first
+independent review rounds (zoom range, gesture guard and delayed keyboard repeats); independent final re-review passed
+and the owner accepted T021 on 2026-11-06. Integration is authorized and pending; personal visual review is explicitly
+deferred to T022 under D313. Implements [D297](#d297--work-map-visual-direction-and-agent-conversation-entry-points),
+[D304](#d304--work-map-levels-cards-navigation-and-status-classes), [D308](#d308--roughjs-466-and-excalifont-v0181-for-the-hand-drawn-map)
+and [D309](#d309--accessibility-and-realistic-size-budgets-for-the-work-map) under
+[T018 §§4, 5.1, 10–12](phase/P002-T018-work-map-contract.md#4-navigation); [evidence](phase/P002-T021-rendering-foundation.md).
+
+- **Structure.** `frontend/src/map/` holds pure modules (seeds, status classes, layered layout, camera, interaction
+  controller, labels, router binding, motion) and a thin SVG view, `MapView`. rough.js is used only through its
+  generator: path data is rendered as React SVG paths whose colours come from CSS tokens, so a theme switch redraws
+  nothing. Seeds derive from identities (`card:<node id>`, `edge:<from>-><to>:<kind>` and similar); geometry is in world
+  coordinates and the camera is one transform. No canvas, editor, layout or zoom library.
+- **Navigation.** Enterable nodes are SVG links to the existing routes and navigate through the shared `navigate`
+  (`pushState`). Levels: home L0, phases L1, phase L2, task and run L3; the parent of task and run is the phase (both
+  are L3). The zoom range is half the fitted scale (never an absolute floor, so every accepted level fits) up to 4×.
+  A zoom-in enters an enterable node once it covers half of the viewport; leaving needs an accumulated
+  zoom-out of ln 0.7 beyond the minimum within 600 ms windows, Escape or "Up one level". With motion allowed a 220 ms
+  camera transition finishes the zoom before navigating; under reduced motion navigation is immediate. After
+  reporting a navigation the controller ignores further ones for 1.5 s or until the new level arrives, and a
+  page-wide gesture guard, which survives the level change and a remounted view, ignores the rest of the gesture that
+  navigated, so one gesture navigates once: wheel or Safari pinch events less than 300 ms apart (a pause or a new pinch
+  ends them), and every auto-repeat of the key press that navigated, however late, until a fresh key press (no timeout
+  for keys). Any pointer press also starts a new gesture. Drags start at
+  5 px (mouse) or 10 px (touch), capture the pointer only once started, and cancel the click that ends them. Camera and
+  focused node are remembered per path in a bounded in-memory map (64), never as authority; returning to a parent
+  focuses the entered node and pulls a remembered camera back below the enter threshold.
+- **Keyboard.** One node is tabbable (roving tabindex). Arrows move the focus to the nearest node in that direction
+  and the camera follows, which satisfies both "arrows move between nodes" and "arrow keys pan" of T018 §§4 and 11;
+  Shift+arrows pan without moving the focus. + and − zoom about the focused node, 0 fits, Home/End go to the first and
+  last node in reading order, Escape leaves, Enter is the link's native activation; modified keys are left to the
+  browser.
+- **Fonts and tokens.** Excalifont is declared globally with `unicode-range` equal to each subset's cmap, but named only
+  in the `.map` scope and used only by `.map-label`; the build emits the OFL text as `assets/Excalifont-OFL-1.1.txt`.
+  New token pairs `--progress`/`--progress-soft` (orange) and `--waiting`/`--waiting-soft` (violet) exist in light and
+  both dark declarations; inactive uses `--muted` with a dashed outline.
+- **Development fixture.** `map-fixture.html` and `src/map/fixture/` are served by the Vite development server for every
+  path under `/__map-fixture/` (a `serve`-only plugin) and are never built or packaged. The fixture drives the real view,
+  router and history under that base with deterministic synthetic data and needs no API or session.
+  `I18nProvider` accepts `fixed` to pin a language without reading or writing preferences, for this fixture only.
+
+## D313 — T021 acceptance with owner visual review deferred to the real-data map
+
+Status: accepted explicitly by the owner on 2026-11-06 after T021's independent final technical re-review.
+
+The owner accepts P002-T021 and authorizes its source commit, merge into `develop` and push of `develop`. For T021
+only, the personal visual review required before integration by D303 is deferred until T022 connects the map to real
+data. T021's synthetic browser checks and corrected-code performance measurements remain evidence, not a substitute
+claim that the owner reviewed the fixture. T022 must retain this pending visual review in addition to its own
+acceptance; other tasks' review gates are unchanged. The T018 contract and historical review records are preserved.
+
+This acceptance does not authorize T022 implementation, release/publication, installation, database migration or
+real agents/providers. Source completion, develop integration and operational delivery remain separate under D242.
+Evidence: [T021 final review and acceptance](phase/P002-T021-rendering-foundation.md#13-independent-final-re-review-and-owner-acceptance--2026-11-06).

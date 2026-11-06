@@ -54,9 +54,13 @@ export function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/** Visual language of every window of this service; before the first read, the cached value or English. */
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(cached);
+/**
+ * Visual language of every window of this service; before the first read, the cached value or English.
+ * `fixed` pins the language without reading or writing preferences (the synthetic map fixture, T021).
+ */
+export function I18nProvider({ children, fixed }: { children: ReactNode; fixed?: Language }) {
+  const [chosen, setLanguage] = useState<Language>(cached);
+  const language = fixed ?? chosen;
   const [preferences, setPreferences] = useState<S["PreferencesRead"]>();
   const [unavailable, setUnavailable] = useState(false);
   active = language;

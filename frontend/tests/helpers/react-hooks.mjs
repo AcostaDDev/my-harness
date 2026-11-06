@@ -23,3 +23,22 @@ export function useEffect(effect, dependencies) {
     });
   }
 }
+
+// Opt-in lifecycle (host.lifecycle = true): layout effects run like effects and memoized values survive re-renders,
+// so a view that measures and resets in a layout effect can be driven across commits. Off by default.
+export function useLayoutEffect(effect, dependencies) {
+  return globalThis.__tsxHookHarness?.lifecycle ? useEffect(effect, dependencies) : React.useLayoutEffect(effect, dependencies);
+}
+export function useMemo(factory, dependencies) {
+  const host = globalThis.__tsxHookHarness;
+  if (!host?.lifecycle) return React.useMemo(factory, dependencies);
+  const id = React.useId();
+  host.memos ??= new Map();
+  const previous = host.memos.get(id);
+  if (previous && dependencies && dependencies.length === previous.dependencies.length
+    && dependencies.every((value, i) => Object.is(value, previous.dependencies[i]))) return previous.value;
+  const value = factory();
+  host.memos.set(id, { value, dependencies });
+  return value;
+}
+export function useCallback(callback, dependencies) { return useMemo(() => callback, dependencies); }

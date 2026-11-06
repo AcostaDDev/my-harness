@@ -15,7 +15,8 @@
     "markdown-it": "15.0.2",
     "mermaid": "11.17.2",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "roughjs": "4.6.6"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

@@ -483,14 +483,20 @@ production route reuses T014/T015 operations with delegated task contracts and c
 and closure boundaries ([D301](DECISIONS.md#d301--delegated-task-contracts-and-effect-boundary-verification))
 ([record](phase/P002-T016-autonomous-roadmap.md)).
 
-### P002-T018: work map (designed; observed-step backend and read API integrated)
+### P002-T018: work map (designed; observed-step backend, read API and rendering foundation integrated)
 
 The design below is accepted by the owner in D304–D309 (2026-11-04) and integrated as design
 ([contract](phase/P002-T018-work-map-contract.md)). Its observed-step backend is implemented and integrated by T019 after
 independent final re-review ([record](phase/P002-T019-observed-steps.md)). T020's read-only projections and
 `GET /api/managed/map/` routes (L0–L4, related records and the activity summary) are complete and integrated as
 source `b30a00c` after independent final re-review (D311, [record](phase/P002-T020-work-map-api.md),
-[flow](flows/work-map.md)); the rendering, navigation and every view are not implemented yet. The home page becomes a hand-drawn, zoomable, read-only work map:
+[flow](flows/work-map.md)). T021's rendering foundation is complete and integrated as source `6b6a0ee` after independent
+final re-review and owner acceptance (D312, D313, [record](phase/P002-T021-rendering-foundation.md)),
+and personal visual review is explicitly deferred to T022's real-data map. rough.js and the
+Excalifont subsets are adopted and served offline, and an SVG engine with seeded shapes, layered layout, camera,
+zoom-enter through the existing routes and history, keyboard operation and reduced motion runs on a development-only
+synthetic fixture. The map views, the home replacement, the list toggle and polling are not implemented yet
+(T022–T024). The home page becomes a hand-drawn, zoomable, read-only work map:
 projects (L0) → phases (L1) → task instances (L2) → steps of a run (L3) → the trace of one invocation (L4, new route
 `/projects/:p/invocations/:i`). Each level keeps its URL and breadcrumb, and `?view=list` switches to the existing
 list page. Cards are compact, with a side inspector. Six status classes (done, progress, waiting, failed, pending,

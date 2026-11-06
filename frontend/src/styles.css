@@ -24,6 +24,11 @@
   --active-soft: #dce9f3;
   --neutral: #4c5a56;
   --neutral-soft: #e2e7e5;
+  /* Work map status pairs (T018 §5.1, T021): progress orange and waiting violet, ≥ 4.5:1 on --surface. */
+  --progress: #ad4c00;
+  --progress-soft: #fae6d4;
+  --waiting: #6a3db0;
+  --waiting-soft: #ece3f8;
   --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --radius: 8px;
@@ -43,6 +48,7 @@
     --ok: #74d0a0; --ok-soft: #173429; --danger: #f2908a; --danger-soft: #3d1e1c;
     --active: #82bde9; --active-soft: #172f47; --neutral: #b5c1bc; --neutral-soft: #25302c;
     --chart-ok: #45a676; --chart-ko: #b8403a;
+    --progress: #f2a65e; --progress-soft: #3a2716; --waiting: #c2a5f7; --waiting-soft: #2c2342;
   }
 }
 :root[data-theme="dark"] {
@@ -54,6 +60,7 @@
   --ok: #74d0a0; --ok-soft: #173429; --danger: #f2908a; --danger-soft: #3d1e1c;
   --active: #82bde9; --active-soft: #172f47; --neutral: #b5c1bc; --neutral-soft: #25302c;
   --chart-ok: #45a676; --chart-ko: #b8403a;
+  --progress: #f2a65e; --progress-soft: #3a2716; --waiting: #c2a5f7; --waiting-soft: #2c2342;
 }
 
 * { box-sizing: border-box; }
@@ -627,3 +634,80 @@ pre.diff span { display: block; }
 @media (max-width: 560px) { .key-value { grid-template-columns: minmax(0, 1fr); } }
 .profile-fields [readonly], .commands-fields [readonly], .agent-fields [readonly], .project-configuration input[readonly] {
   background: var(--surface); border-style: dashed; }
+
+/* Work map (P002-T021): hand-drawn SVG map. Excalifont v0.18.1 (SIL OFL 1.1, notice in assets/Excalifont-OFL-1.1.txt
+   and NOTICE-THIRD-PARTY.md) is used for map labels only; the unicode-range values are the code points each
+   unmodified subset maps, and any other character falls back to the interface font. Served from the package. */
+@font-face {
+  font-family: "Excalifont";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./map/fonts/Excalifont-Regular-a88b72a24fb54c9f94e3b5fdaa7481c9.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0-00A3, U+00A5-00A6, U+00A8-00AB, U+00AD-00B1, U+00B4, U+00B6-00B8, U+00BA-00FF,
+    U+0131, U+0152-0153, U+02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+2013-2014, U+2018-201A, U+201C-201E,
+    U+2020, U+2022, U+2024-2026, U+2030, U+2039-203A, U+20AC, U+2122, U+2212;
+}
+@font-face {
+  font-family: "Excalifont";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./map/fonts/Excalifont-Regular-be310b9bcd4f1a43f571c46df7809174.woff2") format("woff2");
+  unicode-range: U+0100-0130, U+0132-0137, U+0139-0149, U+014C-0151, U+0154-017E, U+0192, U+01FC-01FF, U+0218-021B,
+    U+0237, U+1E80-1E85, U+1EF2-1EF3, U+2113;
+}
+.map { --font-map: "Excalifont", var(--font-ui); position: relative; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.map-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.map-toolbar button { min-width: 36px; padding: 6px 10px; }
+.map-zoom { min-width: 84px; text-align: center; font-size: 13px; }
+.map-help { margin: 0; font-size: 13px; }
+.map-viewport { position: relative; flex: 1; min-height: 360px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--paper); overflow: hidden; }
+.map-empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; pointer-events: none; }
+.map-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.map-canvas:active { cursor: grabbing; }
+.map-node { color: var(--neutral); cursor: pointer; outline: none; -webkit-user-drag: none; }
+g.map-node { cursor: default; }
+.map-status-done { color: var(--ok); }
+.map-status-progress { color: var(--progress); }
+.map-status-waiting { color: var(--waiting); }
+.map-status-failed { color: var(--danger); }
+.map-status-pending { color: var(--neutral); }
+.map-status-inactive { color: var(--muted); }
+.map-status-unknown { color: var(--neutral); }
+.map-card-fill { fill: var(--surface); stroke: none; }
+.map-card { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.map-status-inactive .map-card { stroke-dasharray: 6 5; }
+.map-icon-stroke { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.map-icon-stroke-fill { fill: none; }
+.map-label { font-family: var(--font-map); fill: var(--ink); }
+.map-code { font-size: 15px; fill: currentColor; }
+.map-title { font-size: 16px; }
+.map-status-text { font-size: 14px; fill: currentColor; }
+.map-node .map-label { pointer-events: none; }
+.map-focus-ring { fill: none; stroke: transparent; stroke-width: 3; }
+.map-node:focus-visible .map-focus-ring { stroke: var(--accent); }
+.map-node:hover .map-card { stroke-width: 2.4; }
+.map-edge-line, .map-edge-head { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linecap: round; }
+.map-edge-replaces .map-edge-line { stroke-dasharray: 7 6; }
+.map-edge-replaces .map-edge-line, .map-edge-replaces .map-edge-head { stroke: var(--neutral); }
+.map-actor-circle-fill { fill: var(--surface); }
+.map-actor-circle { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+.map-actor-active .map-actor-circle { stroke: currentColor; stroke-width: 2; }
+.map-actor-letter { font-size: 13px; }
+.map-ray { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.map[data-motion="allow"] .map-rays { animation: map-rays 1.6s ease-in-out infinite; }
+@keyframes map-rays { 50% { opacity: 0.35; } }
+.map-bubble-shape-fill { fill: var(--waiting-soft); }
+.map-bubble-shape { fill: none; stroke: var(--waiting); stroke-width: 1.4; }
+.map-bubble-count { font-size: 13px; fill: var(--waiting); }
+.map[data-motion="allow"] .map-nodes { animation: map-appear 160ms ease-out; }
+@keyframes map-appear { from { opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) {
+  .map .map-rays, .map .map-nodes { animation: none; }
+}
+@media (max-width: 720px) {
+  .map-help { display: none; }
+  .map-viewport { min-height: 60vh; }
+}

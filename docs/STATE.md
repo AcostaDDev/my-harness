@@ -81,7 +81,7 @@ corrections. The owner authorized source commit, merge and push of develop: ever
 settlement transaction and a background projector derives bounded, sanitized `observed-step-1` steps with source-record
 references, a retention guard while pending, recovery after restart, integrity failure on divergent replay and keyset
 reads that survive retention and query-only restore (D305, D310). Schema `0040_observed_step_reads` (index only,
-94 tables). All rendering (T021–T024) remains planned.
+94 tables). Rendering is T021–T024 (T021 below).
 [Record](phase/P002-T019-observed-steps.md). Release 0.2.0 via protected `main`,
 distribution/publication and installation are pending. The operator installation remains 0.1.9.
 **P002-T020 (work-map and trace read projections) is complete and integrated into develop**, source `b30a00c` on
@@ -93,8 +93,23 @@ source commit, merge and push of develop (D311): read-only
 `unknown` fallback, R/E/J/H attribution, T017 bubbles, opaque scope/version/cursor tokens with `409 cursor_stale`,
 source-record resolution with availability, root isolation and query-only archive parity; schema
 `0041_work_map_reads` (seven read indexes, 94 tables); OpenAPI and client types regenerated. Synthetic evidence only.
-Release 0.2.0, distribution/publication and installation are pending. Next: **P002-T021**.
+Release 0.2.0, distribution/publication and installation are pending.
 [Record](phase/P002-T020-work-map-api.md).
+**P002-T021 (hand-drawn rendering foundation) is complete and integrated into develop after independent final
+re-review and owner acceptance**, source `6b6a0ee` on `feat/p002-t021-map-rendering` from `6ba19eb` (D312, D313): rough.js 4.6.6 as a direct exact
+dependency sharing mermaid's locked copy; the two Excalifont v0.18.1 subsets unmodified (hashes verified), with the
+OFL 1.1 notice, packaged in wheel and sdist and served offline; orange/violet status tokens; an in-house SVG engine
+(seeded rough.js shapes, layered layout, camera with wheel/pinch/drag/keyboard, zoom-enter and leave through the
+existing router and history, focusable labelled nodes, reduced motion) exercised by a development-only synthetic
+fixture at `/__map-fixture/`. The first-round browser measurements met D309 (80-node first render median 77 ms;
+60 fps at 200 visible nodes); the corrected code (fit on large levels and phones, one navigation per gesture across
+levels, held keys) was re-verified in the browser with Vite authorized (median 71.6 ms; 60 fps; 40/40 cards fitted on
+a phone; one history entry per gesture). The font licence provenance is documented from the font's `index.ts` at the
+same tag; no owner decision is pending for it. Not wired into the product (T022). The owner accepted T021 and
+authorized commit, merge and push of develop, with personal visual review explicitly deferred until T022 connects
+the map to real data (D313). The accompanying merge integrates reviewed source `6b6a0ee`; push of develop is authorized.
+Next: **P002-T022**. Release 0.2.0, distribution/publication and installation remain pending.
+[Record](phase/P002-T021-rendering-foundation.md#14-source-integration--2026-11-06).
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
 Historical starting context:

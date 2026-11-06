@@ -15,9 +15,13 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018 is complete and integrated into develop as design (`559487b`); T019 is complete and integrated as source `e19cea3` after independent final re-review; T021–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T019 is complete and integrated (D305, D310)** after independent final re-review; the owner authorized commit, merge and push of develop. **T020 is complete and integrated as source `b30a00c` after independent final re-review**, including all corrections
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018 is complete and integrated into develop as design (`559487b`); T019 is complete and integrated as source `e19cea3` after independent final re-review; T022–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T019 is complete and integrated (D305, D310)** after independent final re-review; the owner authorized commit, merge and push of develop. **T020 is complete and integrated as source `b30a00c` after independent final re-review**, including all corrections
 (D311, [record](phase/P002-T020-work-map-api.md#10-independent-final-re-review--2026-11-05)); the owner authorized
-source commit, merge and push of develop. **T021 is next.** Release 0.2.0, distribution/publication and installation are pending. Evidence is synthetic only. Read
+source commit, merge and push of develop. **T021 is complete and integrated as source `6b6a0ee` after independent
+final re-review and owner acceptance** (D312, D313, [record](phase/P002-T021-rendering-foundation.md#14-source-integration--2026-11-06));
+the owner authorized commit, merge and push of develop and explicitly deferred personal visual review until T022
+connects the map to real data. **T022 is next** and retains that visual review. Release 0.2.0,
+distribution/publication and installation are pending. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
 **Objective:** deliver optional complete-roadmap autonomy with LangGraph orchestration, structured database-owned
@@ -88,7 +92,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021–T029 are **planned** (plan v0.4, D303). Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021 is **complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance; owner visual review deferred to T022 (D313)**. T022–T029 are **planned** (plan v0.4, D303). Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -734,6 +738,16 @@ synthetic fixture visually in the browser (`scripts/dev`, light/dark, desktop/mo
 **Basis:** B20, B23.
 
 **Gates:** —. **Threats:** TM15, TM19.
+
+**Status (2026-11-06):** complete and integrated as source `6b6a0ee` from `feat/p002-t021-map-rendering` after independent
+final re-review and owner acceptance (D312, D313); the owner authorized source commit, merge and push of develop. Evidence:
+[record](phase/P002-T021-rendering-foundation.md) (Node, packaging and serving tests; offline wheel/sdist inspection;
+bundle delta; browser measurements within D309 on the first-round code). The first independent review round's two P2
+findings (fit clipped large levels on phones; one gesture could navigate several levels) are corrected with regressions,
+and the font licence provenance is documented from the font's `index.ts` (record §12); a second-round keyboard
+defect is corrected and the corrected code is re-verified in the browser (record §§12.6–12.7). No relevant review
+finding remains. The owner explicitly defers personal visual review until T022 connects the map to real data (D313).
+Next: T022.
 ## P002-T022 — Work-map levels and home page
 
 **Problem:** users need the map as their entry point to follow manual and autonomous work across projects, phases,
@@ -759,6 +773,7 @@ one toggle away. **Dependencies:** T017, T020, T021.
 stale-item refresh, refresh gaps, archive render, i18n parity, keyboard navigation and the frontend build.
 **Review:** independent technical review with re-review of the corrections. Before integration, the owner reviews the
 synthetic project visually in the browser (`scripts/dev`, light/dark, desktop/mobile, en/es).
+This review also carries T021's personal visual review, explicitly deferred to the real-data map by the owner (D313).
 **Basis:** B17, B19–B20, B23.
 
 **Gates:** —. **Threats:** TM13, TM14, TM17.
@@ -1000,3 +1015,14 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
     authorized merge. The merge records source identity and delivery status only; product source matches the
     reviewed commit. Push of develop is authorized. Next: **P002-T021**. Release 0.2.0, distribution/publication and
     installation remain pending.
+
+23. **P002-T021 accepted (2026-11-06).** Independent final re-review passed, including all corrections and the
+    corrected-code browser evidence. The owner accepted T021 and authorized its source commit, merge into develop
+    and push of develop. Personal visual review is explicitly deferred to T022's map with real data (D313), not
+    recorded as performed. Integration is pending; then **P002-T022**. Release 0.2.0, distribution/publication and
+    installation remain pending.
+
+24. **P002-T021 integration (2026-11-06).** Reviewed source `6b6a0ee` is integrated into develop by the accompanying
+    authorized merge. Product source matches the reviewed commit; the merge adds source identity and delivery status
+    only. Push of develop is authorized. Next: **P002-T022**, including the owner's deferred visual review of the map
+    with real data (D313). Release 0.2.0, distribution/publication and installation remain pending.

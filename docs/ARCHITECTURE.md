@@ -85,7 +85,8 @@ queue; closing the browser does not cancel work.
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
 Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
 provider), `markdown.ts` and `mermaid-view.ts` (isolated rendering), `managed-api.ts` (idempotent submissions),
-`api.generated.ts` (generated, never edited). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`,
+`api.generated.ts` (generated, never edited), `map/` (P002-T021 work-map engine, fonts and development-only fixture,
+D312). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`,
 `check_distribution.py`, `smoke_cli.py`. `examples/`: the `local_config.example.toml` template, the minimal
 one-provider example, v2 recipe fragments and a synthetic demo.
 
@@ -538,7 +539,7 @@ lazy `managed_runtime.roadmap_graphs` boundary. T010 supplies the roadmap parent
 scope check and the existing cancellation poll consume them. `api/autonomous.py` exposes the minimal per-project
 controls; there is no new scheduler, ledger or dependency. [Record](phase/P002-T016-autonomous-roadmap.md).
 
-### P002-T018: work-map design (designed; T019 integrated)
+### P002-T018: work-map design (designed; T019, T020 and T021 integrated)
 
 Accepted by the owner in D304–D309 (2026-11-04) and integrated as design
 ([contract](phase/P002-T018-work-map-contract.md)). **T019 is implemented and integrated as source `e19cea3` after
@@ -559,8 +560,18 @@ independent final re-review** (D311, [record](phase/P002-T020-work-map-api.md), 
 version and cursor tokens of `core/engine/work_map.py`; `api/work_map.py` serves them as `GET` routes under
 `/api/managed/map/` behind the session and Host/Origin guards. Every query is root-scoped and bounded, selects no
 `history_json`, and runs unchanged on query-only archives from SQLite alone; migration 0041 adds seven read indexes.
-The components below from T021 onwards do not exist yet. T021 adds an in-house SVG map engine with rough.js
-4.6.6 and the packaged Excalifont subsets; T022–T023 render L0–L4 and the drawer through the existing router.
+**T021 is complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance;
+personal visual review is explicitly deferred to T022's real-data map** (D312, D313,
+[record](phase/P002-T021-rendering-foundation.md)). `frontend/src/map/` holds pure modules — stable seeds, status
+classes, a layered layout with dummy points and barycentric ordering, camera maths, `MapController` (pointer, pinch,
+wheel and keyboard input, zoom-enter and zoom-out-leave thresholds, navigation lock and a page-wide gesture guard so
+one gesture navigates once across level changes) and the binding of levels to the
+existing `Route`/`href`/`parse` and `navigate` — plus `MapView`, which renders rough.js 4.6.6 generator paths as SVG
+coloured by theme tokens. The Excalifont subsets are global `@font-face` assets used only by map labels, emitted with
+`assets/Excalifont-OFL-1.1.txt` and served by the existing static handler. A development-only fixture
+(`map-fixture.html`, Vite dev server under `/__map-fixture/`) drives it with synthetic data; nothing in the product
+imports the engine yet. The components below from T022 onwards do not exist yet: T022–T023 render L0–L4 and the
+drawer with that engine through the existing router.
 T024 seals chat turns that carry element context through T007's boundary, using a single-node chat graph thread
 over the existing scheduler. No second scheduler, workflow editor or executable graph authority is introduced.
 

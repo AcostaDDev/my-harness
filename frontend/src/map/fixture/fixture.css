@@ -1,0 +1,18 @@
+/* Development-only layout of the map fixture (P002-T021); not part of the product stylesheet. */
+.map-fixture { display: flex; flex-direction: column; gap: 12px; min-height: 100vh; padding: 16px; }
+.map-fixture h1 { font-size: 20px; }
+.map-fixture-header p { margin: 4px 0; }
+.map-fixture-controls { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.map-fixture-controls label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.map-fixture-controls select { font: inherit; font-size: 14px; padding: 4px 6px; }
+.map-fixture-trail { font-size: 14px; }
+.map-fixture-results { min-height: 1.5em; font-size: 13px; }
+.map-fixture .map { flex: 1; }
+.map-fixture .map-viewport { flex: none; height: 68vh; }
+.map-fixture-legend h2 { font-size: 15px; }
+.map-fixture-legend ul { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0; margin: 6px 0 0; list-style: none; font-size: 13px; }
+.map-fixture-legend li { display: flex; align-items: center; gap: 6px; }
+.map-fixture-swatch { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; }
+.map-fixture-line { width: 26px; border-top: 2px solid var(--muted); }
+.map-fixture-dashed { border-top-style: dashed; border-top-color: var(--neutral); }
+@media (max-width: 720px) { .map-fixture { padding: 12px; } .map-fixture .map-viewport { height: 62vh; } }

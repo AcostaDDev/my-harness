@@ -1,4 +1,6 @@
 """H6.2 E1 (D076): UI routes served by the wheel and code reads for their URLs."""
+from pathlib import Path
+
 import pytest
 
 from test_managed_api import PLAN, Ports, client
@@ -41,6 +43,38 @@ def test_api_and_assets_keep_their_404(migrated_database, ui):
         assert missing.status_code == 404 and missing.headers['content-type'].startswith('application/json')
         assert http.get('/api/managed/not-a-route').status_code == 404
         assert http.post('/projects/demo', json={}).status_code != 200
+
+
+
+MAP_FONTS = Path(__file__).resolve().parents[2] / 'frontend/src/map/fonts'
+
+
+def test_map_fonts_and_licence_are_served_from_the_package(migrated_database, tmp_path):
+    """P002-T021 (D308): the Excalifont assets and their OFL notice come from the local UI directory, typed."""
+    from session_client import TestClient
+    from my_harness.api.app import create_app
+    assets = tmp_path / 'web'
+    (assets / 'assets').mkdir(parents=True)
+    (assets / 'index.html').write_text('<html>shell</html>')
+    fonts = {}
+    for font in sorted(MAP_FONTS.glob('*.woff2')):
+        name = f'{font.stem}-AbCd1234.woff2'  # Vite's hashed asset name
+        fonts[name] = font.read_bytes()
+        (assets / 'assets' / name).write_bytes(fonts[name])
+    licence = (MAP_FONTS / 'OFL-1.1.txt').read_bytes()
+    (assets / 'assets/Excalifont-OFL-1.1.txt').write_bytes(licence)
+    assert len(fonts) == 2
+    with TestClient(create_app(migrated_database[0], ui_dir=assets)) as http:
+        for name, body in fonts.items():
+            response = http.get(f'/assets/{name}')
+            assert response.status_code == 200 and response.content == body
+            assert response.headers['content-type'] == 'font/woff2'
+        response = http.get('/assets/Excalifont-OFL-1.1.txt')
+        assert response.status_code == 200 and response.content == licence
+        assert response.headers['content-type'].startswith('text/plain')
+        # A missing font is a 404, never the HTML shell in its place.
+        missing = http.get('/assets/Excalifont-Regular-missing.woff2')
+        assert missing.status_code == 404 and missing.text != '<html>shell</html>'
 
 
 def test_phase_by_code_tasks_and_filtered_runs(tmp_path, migrated_database, checkout, monkeypatch):  # noqa: F811

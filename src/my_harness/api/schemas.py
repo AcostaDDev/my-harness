@@ -427,6 +427,22 @@ class ManagedLogRead(BaseModel):
     authorization: dict[str, Any] | None
 
 
+class ManagedOriginalRead(BaseModel):
+    """An explicitly requested persisted agent record, with exact UTF-8 text only after stream/range verification."""
+    run_id: str
+    attempt_id: str
+    sequence: int
+    stream: Literal['stdout']
+    offset: int
+    size_bytes: int
+    sha256: str
+    encoding: Literal['utf-8']
+    limit_bytes: Literal[4194305]
+    state: Literal['retained', 'purged', 'pending', 'missing', 'unverified']
+    diagnostic: str | None
+    content: str | None = Field(max_length=4194305, description='Exact decoded record including its JSONL newline; null unless retained and verified.')
+
+
 class ManagedEventsRead(BaseModel):
     items: list[ManagedEventRead]
     cursor: int
@@ -898,6 +914,15 @@ class DocumentTreeRead(BaseModel):
     files: list[DocumentTreeEntryRead]
     truncated: bool
     skipped: list[str] = Field(description='Symbolic links or non-regular objects that are not listed.')
+
+
+class MapDocumentsRead(BaseModel):
+    """Read-only canonical documentation; no transfer metadata or operational composition."""
+    source: Literal['canonical', 'checkout', 'unavailable']
+    revision_id: str | None
+    tree: DocumentTreeRead
+    path: str | None
+    content: str | None
 
 
 class DocumentOperationPreview(BaseModel):

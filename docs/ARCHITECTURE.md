@@ -593,3 +593,21 @@ A separate first-read receipt survives restart and archive restore. Resolution i
 outcomes, independently of the receipt. The reusable conversation panel calls the ordinary command routes,
 with version, fingerprint, preview and confirmation guards as applicable. See the
 [flow](flows/global-inbox.md) and [task record](phase/P002-T017-global-inbox.md).
+
+
+### P002-T023 trace and drawer
+
+L4 now uses the shared map SVG, inspector, LevelLoader, router/list preference and D306 activity client, with a
+200-node render window over bounded batches of independently paged evidence groups. Native steps keep `seq`;
+persisted event links associate evidence with steps in a batch, and other evidence stays in a separate
+position-undetermined section rather than acquiring a position from receipt time or cursor boundaries.
+The L1–L4 read-only drawer reuses the safe Docs tree
+and Markdown/Mermaid renderer. `GET /api/managed/map/projects/{p}/documents[?path=…]` resolves persisted map root
+identities and verifies/renders accepted knowledge from SQLite via `services/knowledge_exchange`, without project
+composition or transfer metadata. Checkout fallback is limited to legacy ordinary mode. Schema `0041_work_map_reads`
+and 94 tables are unchanged. Prior source passed independent technical re-review; the owner accepted the visual review.
+D316 adds optional `sequence` consultation on the existing attempt-logs GET, retaining its ordinary metadata
+response. The server returns exact UTF-8 only after verifying the sealed stream/chunks and record digest
+through `StdoutRanges.read`, bounded at 4 MiB plus newline. Restored reads use the verified bundle copy.
+The inspector renders text escaped; missing/pending/purged/unverified states have no content.
+The new original-read addition was self-reviewed and verified here; source `4a09d5d` is integrated into develop. [Evidence](phase/P002-T023-trace-docs.md), [flow](flows/work-map.md#l4-trace-and-documentation-client-p002-t023), D315.

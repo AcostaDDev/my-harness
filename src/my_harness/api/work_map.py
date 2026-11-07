@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from my_harness.api.managed import ERRORS
 from my_harness.api.schemas import (
     MapActivityRead, MapBubblesRead, MapInvocationRead, MapPhasesRead, MapProjectsRead, MapRelatedRead, MapRunsRead,
-    MapStepsRead, MapTasksRead, MapTraceRead,
+    MapStepsRead, MapTasksRead, MapTraceRead, MapDocumentsRead,
 )
 from my_harness.api.security import local_request, problem
 from my_harness.core.engine import work_map as wm
@@ -65,6 +65,38 @@ def work_map_router(runtime: ManagedRuntime) -> APIRouter:
     def phases(project_id: Ident, cursor: Cursor = None, limit: _limit('phases') = wm.LIMITS['phases']):
         """L1: roadmap phases with their instances, Plan · Check · Close slots and roadmap order edges."""
         return call(work_map().phases, project_id, cursor=cursor, limit=limit)
+
+    @router.get('/projects/{project_id}/documents', response_model=MapDocumentsRead, operation_id='map_documents')
+    def documents(project_id: Ident, path: Annotated[str | None, Query(min_length=1, max_length=400)] = None):
+        """Canonical accepted Markdown from SQLite. Optional exact path loads one document on demand.
+
+        Legacy checkout consultation is signalled only in ordinary mode; it uses the existing guarded viewer.
+        This read never composes a runtime project, renders a transfer payload or grants document ownership.
+        """
+        from sqlalchemy.orm import Session
+        from my_harness.services.knowledge_exchange import rendered_documents
+        from my_harness.storage.knowledge import KnowledgeIntegrityError
+        projection = work_map()
+        with runtime.engine.connect() as db:
+            identity = call(projection._project, db, project_id)
+            archive = projection._archive(db)
+        empty = {'docs': 'docs', 'files': [], 'truncated': False, 'skipped': []}
+        knowledge_id = identity['knowledge_project_id']
+        if not knowledge_id:
+            return {'source': 'checkout' if not archive and identity['registered_project_id'] else 'unavailable', 'revision_id': None,
+                    'tree': empty, 'path': None, 'content': None}
+        try:
+            with Session(runtime.engine) as session:
+                revision, files = rendered_documents(session, knowledge_id)
+        except (ValueError, LookupError, KnowledgeIntegrityError) as exc:
+            raise problem(409, 'document_exchange_refused', str(exc)) from None
+        files = {p: content for p, content in files.items() if p.endswith('.md')}
+        if path is not None and path not in files:
+            raise problem(404, 'map_not_found', say('work_map.not_found'))
+        return {'source': 'canonical', 'revision_id': revision.id, 'path': path,
+                'content': files.get(path), 'tree': {**empty, 'files': [
+                    {'path': p, 'kind': 'other', 'editable': False, 'archived': False,
+                     'bytes': len(content.encode('utf-8'))} for p, content in sorted(files.items())]}}
 
     @router.get('/projects/{project_id}/phases/{code}/tasks', response_model=MapTasksRead, operation_id='map_tasks')
     def tasks(project_id: Ident, code: Ident, cursor: Cursor = None, limit: _limit('tasks') = wm.LIMITS['tasks']):

@@ -388,7 +388,7 @@ const EdgeView = memo(function EdgeView({ id, kind, points }: { id: string; kind
   const { line, head } = edgeShape(id, points);
   return <g className={`map-edge map-edge-${kind}`}>
     <Paths paths={line} className="map-edge-line" />
-    <Paths paths={head} className="map-edge-head" />
+    {kind !== "correlation" && <Paths paths={head} className="map-edge-head" />}
   </g>;
 });
 

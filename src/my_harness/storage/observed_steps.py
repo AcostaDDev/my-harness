@@ -175,7 +175,13 @@ class StdoutRanges:
             raise _Failed('stdout_changed')
         self.fd, self.before = fd, before
 
-    def get(self, reference):
+    def read(self, reference):
+        """Exact verified record bytes, bounded before reading or allocating the range."""
+        offset, size, sha256 = (reference.get(k) for k in ('offset', 'size', 'sha256'))
+        if type(offset) is not int or type(size) is not int or offset < 0 or size <= 0 or not isinstance(sha256, str):
+            return Unavailable('reference_invalid')
+        if size > MAX_RECORD:
+            return Unavailable('record_too_large')
         if self.state is None:
             try:
                 self._verify()
@@ -184,11 +190,6 @@ class StdoutRanges:
                 self.state = failure.code
         if self.state != 'verified':
             return Unavailable(self.state)
-        offset, size, sha256 = (reference.get(k) for k in ('offset', 'size', 'sha256'))
-        if type(offset) is not int or type(size) is not int or offset < 0 or size <= 0 or not isinstance(sha256, str):
-            return Unavailable('reference_invalid')
-        if size > MAX_RECORD:
-            return Unavailable('record_too_large')
         if offset + size > self.artifact['size']:
             return Unavailable('chunks_incomplete')
         parts, read = [], 0
@@ -203,6 +204,12 @@ class StdoutRanges:
             return Unavailable('stdout_changed')
         if hashlib.sha256(data).hexdigest() != sha256:
             return Unavailable('record_digest_mismatch')
+        return data
+
+    def get(self, reference):
+        data = self.read(reference)
+        if isinstance(data, Unavailable):
+            return data
         try:
             event = strict_json(data.rstrip(b'\n').decode('utf-8'))
         except (UnicodeDecodeError, ValueError):

@@ -8,6 +8,7 @@
 // Shared by the Node tests and the development fixture page (a fetch shim; D312), and versioned so that refresh can
 // be exercised.
 import type { S } from "../../managed-api";
+import { tracePage, fixtureDocuments, originalFixture } from "./trace.ts";
 
 type Status = S["MapStatus"];
 type Counter = S["MapCounter"];
@@ -445,6 +446,8 @@ export function respond(map: SyntheticMap, path: string): { status: number; body
   const found = (value: unknown) => value === undefined ? { status: 404, body: { detail: { code: "map_not_found" } } }
     : value && typeof value === "object" && "stale" in value && (value as { stale: boolean }).stale ? { status: 409, body: { detail: { code: "cursor_stale" } } }
     : { status: 200, body: value };
+  const original = originalFixture(parts, url);
+  if (original) return found(original);
   if (parts[0] === "inbox") return parts.length === 1 ? found(map.inboxPage(url)) : found(map.inboxItem(parts[1]));
   if (parts[0] !== "map") return { status: 404, body: { detail: { code: "not_found" } } };
   if (parts[1] === "activity") return found(map.activity(url.searchParams.getAll("scope")));
@@ -454,6 +457,11 @@ export function respond(map: SyntheticMap, path: string): { status: number; body
   if (level === "phases" && b === "tasks" && parts.length === 6) return found(map.tasks(project, a, url));
   if (level === "phases" && b === "tasks" && d === "runs" && parts.length === 8) return found(map.runs(project, a, c, url));
   if (level === "runs" && b === "steps") return found(map.steps(project, a, url));
+  if (level === "documents") return found(fixtureDocuments(url));
+  if (level === "invocations" && (b === "steps" || b === "related")) {
+    const header = map.invocation(project, a);
+    return found(header && tracePage(header, url, b === "steps" ? "steps" : url.searchParams.get("group") ?? "records"));
+  }
   if (level === "invocations" && parts.length === 5) return found(map.invocation(project, a));
   if (level === "bubbles" && parts.length === 4) return found(map.bubbleList(project, url));
   return { status: 404, body: { detail: { code: "map_not_found" } } };

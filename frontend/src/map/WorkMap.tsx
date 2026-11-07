@@ -22,6 +22,7 @@ import { EvidenceLink, InspectorBody, itemTitle } from "./Inspector";
 import { statusText } from "./labels.ts";
 import type { ActorRole, NodeActor } from "./labels.ts";
 import { MapView } from "./MapView";
+import { MapWithDocs } from "./DocsDrawer";
 import type { MapNode } from "./MapView";
 import { chatsOf, phasesView, projectsView, statusSnapshot, stepsView, tasksView } from "./projection.ts";
 import type { Active, LevelItem, LevelView, Texts } from "./projection.ts";
@@ -130,7 +131,7 @@ export function WorkMap({ route, archive, canRespond, display = "map", pollerDep
   // The page type depends on the level; the adapters below read it as their level's projection.
   const main = useLevel<Paged & Record<string, unknown>>(mainPath);
   const pages = main.state.pages;
-  const head = (main.state.head ?? pages[0]) as (Paged & { project?: { key: string; name: string }; phase?: unknown; run?: MapSteps["run"] }) | undefined;
+  const head = (main.state.head ?? pages[0]) as (Paged & { project?: { key: string; name: string; registered_project_id?: string | null }; phase?: unknown; run?: MapSteps["run"] }) | undefined;
   const projectKey = head?.project?.key ?? runsHead?.project?.key ?? project;
 
   // Active chats attached to the run shown (L3 chat lane): a snapshot from the run's steps read, the same on every
@@ -252,7 +253,7 @@ export function WorkMap({ route, archive, canRespond, display = "map", pollerDep
       hrefOf={hrefOf} onEnter={node => node.to && nav.enter(node.to, node.id)} onLeave={nav.parent ? nav.leave : undefined}
       selected={selected} onSelect={onSelect} onActor={onActor} onRequests={onRequests} />;
 
-  return <>
+  const content = <>
     <PageHeader title={title} code={level >= 2}>
       <p>{t(archive ? "map.lede.archive" : "map.lede")}</p>
     </PageHeader>
@@ -284,6 +285,8 @@ export function WorkMap({ route, archive, canRespond, display = "map", pollerDep
     </div>
     <p className="visually-hidden" role="status" aria-live="polite">{spoken}</p>
   </>;
+  return projectKey && level > 0 ? <MapWithDocs key={path} project={projectKey} archive={archive} checkoutProject={head?.project?.registered_project_id}
+    context={{ level, phase: "phase" in route ? route.phase : null, task: "task" in route ? route.task : null }}>{content}</MapWithDocs> : content;
 }
 
 function LevelSummary({ level, head, archive, route }: { level: number; head?: Paged & Record<string, unknown>; archive: boolean; route: MapRoute }) {

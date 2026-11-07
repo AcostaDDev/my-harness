@@ -497,7 +497,10 @@ Excalifont subsets are adopted and served offline, and an SVG engine with seeded
 zoom-enter through the existing routes and history, keyboard operation and reduced motion runs on a development-only
 synthetic fixture. T022's map levels L0–L3 as the home page, the `?view` list toggle, circles and bubbles over T017's
 panel, activity polling and the read-only archive map are implemented and integrated after independent final re-review
-and owner visual acceptance (D314, [record](phase/P002-T022-work-map.md)); L4, the drawer and the talk button are T023–T024.
+and owner visual acceptance (D314, [record](phase/P002-T022-work-map.md)); T023 has integrated L4/drawer source `4a09d5d` after independent technical re-review of the prior source and owner visual
+acceptance (D315; [record](phase/P002-T023-trace-docs.md)). The owner-authorized continuation also delivers
+exact retained large originals by sequence through the existing logs route, verified and bounded per D316.
+Release/publication/installation remain pending. The talk button remains T024.
 The home page becomes a hand-drawn, zoomable, read-only work map:
 projects (L0) → phases (L1) → task instances (L2) → steps of a run (L3) → the trace of one invocation (L4, new route
 `/projects/:p/invocations/:i`). Each level keeps its URL and breadcrumb, and `?view=list` switches to the existing

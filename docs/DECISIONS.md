@@ -3136,3 +3136,71 @@ Evidence: [P002-T022 record](phase/P002-T022-work-map.md).
 - **Development review.** The T021 fixture gains a product source: the real map components under `/__map-fixture`
   with a fetch shim that answers from synthetic T020-shaped projections (`map/fixture/projections.ts`, also used by
   the Node tests) and refuses every mutation. `RouteBase` prefixes route links there; it is empty in the product.
+
+
+## D315 — L4 trace consultation and canonical map documentation
+
+Status: implemented and integrated into develop as source `4a09d5d` under the owner's P002-T023 authorization
+on 2026-11-07. Independent technical re-review passed after the navigation, sequence-arrow, drawer-width and evidence-placement fixes.
+The owner then authorized this session to finish the exact-original read (D316), which is locally verified and
+self-reviewed, and accepted the synthetic desktop/mobile visual review. Final verification passed; push of
+develop is authorized.
+Evidence is in the [task record](phase/P002-T023-trace-docs.md).
+
+L4 reuses the existing SVG, inspector, map/list preference, keyset loader and activity client. Each paged read is
+capped at 200. All evidence holds up to five batches plus the head, with one new page per unfinished group in each
+batch. Batches are read units, not temporal watermarks across group cursors. Native steps keep `seq` order.
+Exact persisted `tool.links` event IDs associate a related record with an unambiguous step in that batch; a
+labelled correlation link has no arrowhead and implies no causation. Other evidence, including permissions and
+records with anchors outside the batch, is shown in a separate **Related evidence — position undetermined**
+section in graph and list, preserving group read order. Receipt clocks, native/broker call IDs and cursor bounds
+do not determine native position. Later pages never reposition already published items. The complete batch is
+split into windows of at most 200 SVG/list items in total across both sections.
+Navigation consumes every window before advancing and restores the exact preceding held window. A stale cursor
+restarts the whole batch history at the first pages. A group filter starts its own history from the first page.
+Turn arrows follow persisted step sequence. Turn membership, recorded event parentage and explicit causation
+have distinct styles. If parentage and causation refer to the same pair, the graph draws the explicit cause once
+and the inspector shows both fields. Source originals are explicit authenticated reads;
+metadata never implies that the large record's bytes can be read.
+
+The L1–L4 non-modal drawer reuses the existing documentation tree and protected Markdown/Mermaid renderer.
+The map and drawer fit the shell's content area. The drawer places the tree beside the document when its own
+width permits, and below the document in narrower drawers.
+`GET /api/managed/map/projects/{p}/documents[?path=…]` resolves the map's persisted root identities and returns only
+canonical accepted Markdown/tree/revision from SQLite using D294's renderer. It exposes no transfer payload and
+never calls runtime project composition. A canonical error never falls back to checkout; legacy checkout reads
+are offered only without structured knowledge in ordinary mode. Archives never use checkout reads. Editing,
+export and adoption remain in their existing views. No schema, dependency or authority change is made.
+
+The initial T018 §6.4 large-original contract discrepancy is resolved by the owner-authorized continuation
+and [D316](#d316--exact-single-record-consultation-of-retained-agent-originals). Owner visual acceptance and
+verification are recorded above. Source, integration,
+protected-main 0.2.0 release, distribution/publication and installation are recorded separately (D242).
+
+
+## D316 — Exact single-record consultation of retained agent originals
+
+Status: implemented and integrated as source `4a09d5d` under the owner's 2026-11-07 instruction to finish
+P002-T023 here, after the
+independent technical re-review of the prior source passed. The optional-sequence proposal in T023 is adopted
+within that authorization; the UTF-8 representation and reuse of T019's bound are implementation choices.
+The owner accepted the visual review on 2026-11-07. Final verification passed; push of develop is authorized.
+
+`GET /api/managed/runs/{run}/attempts/{attempt}/logs` retains its existing `ManagedLogRead[]` response when
+`sequence` is absent. A positive run-event sequence selects exactly one oversize `agent_event` owned by that
+attempt; a foreign or absent record answers the same 404. There is no caller-selected path, offset or range.
+An inline original remains available through its existing run-event read.
+
+The typed `ManagedOriginalRead` envelope names the run, attempt, sequence, stdout offset, byte size and SHA-256,
+with `encoding: utf-8` and `limit_bytes: 4194305` (T019's 4 MiB plus one JSONL newline). Its `content` preserves
+the exact UTF-8 record, including whitespace/newline, only when state is `retained`. A sealed STOPPED capture,
+no-follow file opening, every recorded stream chunk, capture size/hash and the selected record's size/hash are
+verified through the shared `StdoutRanges` descriptor. The range bound is checked before reading/allocating it.
+A missing stream, pending seal/retention intent, authorized purge or verification failure yields
+`missing`, `pending`, `purged` or `unverified`, respectively, with null content and an en/es diagnostic.
+
+Restored consultation resolves only the verified bundle's copy, never its historical path or checkout. Session
+and Host/Origin guards apply; reads write nothing. The inspector explicitly requests the selected original,
+checks the response identity against its projection reference and renders text escaped. The ordinary metadata
+button stays separate. OpenAPI/generated-client and work-map/backup flow parity are included. No model,
+migration, dependency, provider or product execution change is involved.

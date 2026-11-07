@@ -139,6 +139,18 @@ passed, and the owner confirmed visual acceptance of T022 and T021's deferred re
 merge integrates the reviewed source. Next: **P002-T023**. Release 0.2.0, distribution/publication and installation
 remain pending.
 [Record](phase/P002-T022-work-map.md).
+**P002-T023 is complete and integrated into develop**, source `4a09d5d` on
+`feat/p002-t023-trace-docs` from `e831a67` ([record](phase/P002-T023-trace-docs.md), D315–D316).
+L4 graph/list, bounded lazy history, truthful evidence placement and the L1–L4 canonical documentation drawer
+passed independent technical re-review after the navigation, graph-edge, drawer-width and placement corrections.
+The owner then authorized this session to complete exact large-original reads by persisted sequence, with
+verified UTF-8 bytes, T019's bound, retention and checkout-free restored consultation; that addition was tested
+and self-reviewed here. The owner accepted the synthetic desktop/mobile visual review on 2026-11-07.
+Final checks passed: 10 unittest tests, Alembic without new operations, 3,254 pytest tests (3 skipped, 29 subtests),
+409 Node tests, TypeScript/Vite, documentation and whitespace. The owner authorized source commit, the accompanying
+merge and push of develop. **Next: P002-T024.** Release 0.2.0 through protected main, distribution/publication
+and installation remain pending. The operator installation remains 0.1.9.
+
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
 Historical starting context:

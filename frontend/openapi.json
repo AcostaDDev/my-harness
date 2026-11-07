@@ -2393,6 +2393,26 @@
             }
           },
           {
+            "name": "sequence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 9007199254740991,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One persisted oversize agent_event of this attempt. Omit for the existing log metadata list.",
+              "title": "Sequence"
+            },
+            "description": "One persisted oversize agent_event of this attempt. Omit for the existing log metadata list."
+          },
+          {
             "name": "x-my-harness",
             "in": "header",
             "required": false,
@@ -2417,10 +2437,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ManagedLogRead"
-                  },
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ManagedLogRead"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ManagedOriginalRead"
+                    }
+                  ],
                   "title": "Response Managed Attempt Logs"
                 }
               }
@@ -23342,6 +23369,114 @@
         }
       }
     },
+    "/api/managed/map/projects/{project_id}/documents": {
+      "get": {
+        "summary": "Documents",
+        "description": "Canonical accepted Markdown from SQLite. Optional exact path loads one document on demand.\n\nLegacy checkout consultation is signalled only in ordinary mode; it uses the existing guarded viewer.\nThis read never composes a runtime project, renders a transfer payload or grants document ownership.",
+        "operationId": "map_documents",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 400
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Path"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapDocumentsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/map/projects/{project_id}/phases/{code}/tasks": {
       "get": {
         "summary": "Tasks",
@@ -37604,6 +37739,101 @@
         ],
         "title": "ManagedLogRead"
       },
+      "ManagedOriginalRead": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "attempt_id": {
+            "type": "string",
+            "title": "Attempt Id"
+          },
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "stream": {
+            "type": "string",
+            "const": "stdout",
+            "title": "Stream"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "encoding": {
+            "type": "string",
+            "const": "utf-8",
+            "title": "Encoding"
+          },
+          "limit_bytes": {
+            "type": "integer",
+            "const": 4194305,
+            "title": "Limit Bytes"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "retained",
+              "purged",
+              "pending",
+              "missing",
+              "unverified"
+            ],
+            "title": "State"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4194305
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Exact decoded record including its JSONL newline; null unless retained and verified."
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "attempt_id",
+          "sequence",
+          "stream",
+          "offset",
+          "size_bytes",
+          "sha256",
+          "encoding",
+          "limit_bytes",
+          "state",
+          "diagnostic",
+          "content"
+        ],
+        "title": "ManagedOriginalRead",
+        "description": "An explicitly requested persisted agent record, with exact UTF-8 text only after stream/range verification."
+      },
       "ManagedProjectRead": {
         "properties": {
           "id": {
@@ -39004,6 +39234,65 @@
           "id"
         ],
         "title": "MapCrumb"
+      },
+      "MapDocumentsRead": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "canonical",
+              "checkout",
+              "unavailable"
+            ],
+            "title": "Source"
+          },
+          "revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision Id"
+          },
+          "tree": {
+            "$ref": "#/components/schemas/DocumentTreeRead"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "revision_id",
+          "tree",
+          "path",
+          "content"
+        ],
+        "title": "MapDocumentsRead",
+        "description": "Read-only canonical documentation; no transfer metadata or operational composition."
       },
       "MapEdge": {
         "properties": {

@@ -8,6 +8,7 @@ import { blockBody, decisionHref, renderMarkdown, splitBlocks } from "../markdow
 import type { BlockError, BlockedReason, Segment } from "../markdown.ts";
 import { prefersDark, renderDiagram } from "../mermaid-view.ts";
 import { Link, navigate } from "../navigation";
+import { parse } from "../router.ts";
 import { Alert, DiffBlock, Empty, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll } from "../ui";
 import type { Poll } from "../ui";
 import { useWorkspace } from "../workspace";
@@ -103,8 +104,15 @@ function buildTree(files: S["DocumentTreeEntryRead"][]): Node {
 }
 
 function DocsTree({ tree, status, current, error }: { tree?: Tree; status?: DocsStatus; current?: string; error?: string }) {
-  const { t, n } = useI18n();
   const { project } = useWorkspace();
+  return <DocumentTree tree={tree} status={status} current={current} error={error} project={project} />;
+}
+
+/** Shared tree: the map drawer supplies local links without mounting an operational workspace. */
+export function DocumentTree({ tree, status, current, error, project, onNavigate, linkTo }: {
+  tree?: Tree; status?: DocsStatus; current?: string; error?: string; project: string; onNavigate?: (path?: string) => void; linkTo?: (path?: string) => string;
+}) {
+  const { t, n } = useI18n();
   const root = useMemo(() => tree ? buildTree(tree.files) : undefined, [tree]);
   const drift = new Set(status?.documents.filter(d => d.drift).map(d => d.path));
   const local = new Set(status?.uncommitted?.map(c => c.path));
@@ -112,7 +120,7 @@ function DocsTree({ tree, status, current, error }: { tree?: Tree; status?: Docs
   function branch(node: Node, depth: number): ReactNode {
     const entries = [...node.children.values()].sort((a, b) => Number(!!b.file && !b.children.size) - Number(!!a.file && !a.children.size) || a.name.localeCompare(b.name));
     return <ul className="docs-tree-list">{entries.map(child => child.file && !child.children.size
-      ? <li key={child.path}><Link to={{ name: "docs", project, path: child.path }} current={child.path === current} className="docs-tree-file">
+      ? <li key={child.path}><Link to={linkTo ? linkTo(child.path) : { name: "docs", project, path: child.path }} current={child.path === current} className="docs-tree-file">
           <span className="docs-tree-name">{child.name}</span>
           {local.has(child.path) && <span className="docs-flag docs-flag-local" title={t("docs.flag.local_hint")}>{t("docs.flag.local")}</span>}
           {drift.has(child.path) && !local.has(child.path) && <span className="docs-flag docs-flag-drift" title={t("docs.flag.drift_hint")}>{t("docs.flag.drift")}</span>}
@@ -121,12 +129,19 @@ function DocsTree({ tree, status, current, error }: { tree?: Tree; status?: Docs
       : <li key={child.path}><details open={depth < 1 || (!!current && current.startsWith(`${child.path}/`)) || !child.path.includes("archive")}>
           <summary className="docs-tree-folder">{child.name}/</summary>{branch(child, depth + 1)}</details></li>)}</ul>;
   }
-  return <nav className="docs-tree" aria-label={t("docs.tree")}>
-    <p className="docs-tree-title"><Link to={{ name: "docs", project }} current={!current}>{t("nav.docs")}</Link></p>
+  return <nav className="docs-tree" aria-label={t("docs.tree")} onClickCapture={event => {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a");
+    if (!onNavigate || !link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const target = new URL(link.href, "http://local");
+    const route = parse(target.pathname);
+    if (linkTo) { event.preventDefault(); onNavigate(target.searchParams.get("doc") ?? undefined); return; }
+    if (route.name === "docs" && route.project === project) { event.preventDefault(); onNavigate(route.path); }
+  }}>
+    <p className="docs-tree-title"><Link to={linkTo ? linkTo() : { name: "docs", project }} current={!current}>{t("nav.docs")}</Link></p>
     {!root ? (error ? <Alert>{error}</Alert> : <Loading />) : branch(root, 0)}
     {missing.length > 0 && <div className="docs-tree-missing">
       <p className="hint">{t("docs.tree.missing")}</p>
-      <ul className="docs-tree-list">{missing.map(d => <li key={d.path}><Link to={{ name: "docs", project, path: d.path }} current={d.path === current} className="docs-tree-file">
+      <ul className="docs-tree-list">{missing.map(d => <li key={d.path}><Link to={linkTo ? linkTo(d.path) : { name: "docs", project, path: d.path }} current={d.path === current} className="docs-tree-file">
         <span className="docs-tree-name muted">{d.path.split("/").pop()}</span><span className="docs-flag">{t("docs.flag.missing")}</span></Link></li>)}</ul>
     </div>}
     {tree?.truncated && <p className="hint">{t("docs.tree.truncated")}</p>}
@@ -387,9 +402,11 @@ export function MarkdownView({ source, path }: { source: string; path: string })
   return <RichMarkdown source={source} path={path} project={project} />;
 }
 
-export function RichMarkdown({ source, path = "", project = "" }: { source: string; path?: string; project?: string }) {
+export function RichMarkdown({ source, path = "", project = "", onNavigate, checkoutImages = true, internalHref }: {
+  source: string; path?: string; project?: string; onNavigate?: (url: string) => void; checkoutImages?: boolean; internalHref?: (url: string) => string;
+}) {
   const { t } = useI18n();
-  const rendered = useMemo(() => renderMarkdown(source, { project, path }), [source, project, path]);
+  const rendered = useMemo(() => renderMarkdown(source, { project, path, checkoutImages, internalHref }), [source, project, path, checkoutImages, internalHref]);
   const container = useRef<HTMLDivElement>(null);
   const [dark, setDark] = useState(prefersDark);
   useEffect(() => {
@@ -452,7 +469,7 @@ export function RichMarkdown({ source, path = "", project = "" }: { source: stri
     const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[data-internal]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    navigate(link.getAttribute("href")!);
+    (onNavigate ?? navigate)(link.getAttribute("href")!);
   }
   return <>
     {rendered.error && <p className="state state-attention">{t("docs.markers.malformed", { error: blockError(rendered.error, t) })}</p>}

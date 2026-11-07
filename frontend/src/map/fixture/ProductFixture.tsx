@@ -89,7 +89,7 @@ export function ProductFixture({ settings, change }: { settings: Settings; chang
     <ServiceModeContext.Provider value={mode}>
       <RouteBase.Provider value={FIXTURE_BASE}>
         {isMapRoute(route) ? <MapLevelSwitch key={`${settings.product}:${settings.archive}:${reviewer}`} route={route} base={FIXTURE_BASE} />
-          : route.name === "invocation" ? <InvocationPage key={route.invocation} project={route.project} invocation={route.invocation} archive={settings.archive} />
+          : route.name === "invocation" ? <InvocationPage key={route.invocation} project={route.project} invocation={route.invocation} archive={settings.archive} base={FIXTURE_BASE} />
           : <p>{f("fixture.not_map")} <Link to={mapPath({ name: "home" }, FIXTURE_BASE)}>{f("fixture.back")}</Link></p>}
       </RouteBase.Provider>
     </ServiceModeContext.Provider>

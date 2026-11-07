@@ -11,6 +11,8 @@ export type MapRuns = S["MapRunsRead"];
 export type MapSteps = S["MapStepsRead"];
 export type MapActivity = S["MapActivityRead"];
 export type MapInvocation = S["MapInvocationRead"];
+export type MapTrace = S["MapTraceRead"];
+export type MapRelated = S["MapRelatedRead"];
 export type MapBubblesPage = S["MapBubblesRead"];
 /** Exact scope and circle of an element's request list (T020 attribution; absent filters match every item). */
 export type BubbleFilter = { phase?: string; task?: string; run?: string; attempt?: string; circle?: string };
@@ -26,6 +28,9 @@ export const mapPaths = {
   runs: (project: string, phase: string, task: string) => `/map/projects/${e(project)}/phases/${e(phase)}/tasks/${e(task)}/runs`,
   steps: (project: string, run: string) => `/map/projects/${e(project)}/runs/${e(run)}/steps`,
   invocation: (project: string, invocation: string) => `/map/projects/${e(project)}/invocations/${e(invocation)}`,
+  trace: (project: string, invocation: string) => `/map/projects/${e(project)}/invocations/${e(invocation)}/steps?limit=200`,
+  related: (project: string, invocation: string, group: "records" | "permissions") => `/map/projects/${e(project)}/invocations/${e(invocation)}/related?group=${group}&limit=200`,
+  documents: (project: string, path?: string) => `/map/projects/${e(project)}/documents${path ? `?path=${e(path)}` : ""}`,
   /** One element's open requests with their circle, filtered by exact scope and circle on every page. */
   bubbles: (project: string, filter: BubbleFilter = {}) => {
     const params = new URLSearchParams();
@@ -53,6 +58,5 @@ export function isMissing(error: unknown): boolean {
   return error instanceof ManagedError && error.status === 404;
 }
 
-export type Fetcher = <T>(path: string) => Promise<T>;
 /** Reads through the shared managed client (GET, session-aware). */
-export const read: Fetcher = <T,>(path: string) => managed<T>(path);
+export const read = <T,>(path: string) => managed<T>(path);

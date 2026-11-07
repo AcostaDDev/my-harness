@@ -1488,5 +1488,10 @@
   "work_map.cursor_invalid": "Cursor o ámbito del mapa no válido para esta vista.",
   "work_map.cursor_stale": "El mapa cambió desde que se leyó esta página; recarga la primera página.",
   "work_map.group_invalid": "Grupo de registros relacionados desconocido.",
-  "work_map.scope_invalid": "Ámbito del mapa no válido: debe ser un identificador devuelto por una respuesta del mapa."
+  "work_map.scope_invalid": "Ámbito del mapa no válido: debe ser un identificador devuelto por una respuesta del mapa.",
+  "retention.record_unknown": "No se encontró el registro original para este intento.",
+  "retention.record_reference": "Este evento no tiene una referencia válida a un registro grande de stdout.",
+  "retention.record_limit": "El registro original supera el límite de consulta de {limit} bytes.",
+  "retention.record_unsealed": "El flujo original todavía no tiene una captura sellada.",
+  "retention.record_unverified": "No se pudo verificar el registro original ({reason})."
 }

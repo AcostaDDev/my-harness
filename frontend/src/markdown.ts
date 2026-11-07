@@ -120,7 +120,7 @@ export function classify(url: string, context: { project: string; path: string }
   return { kind: "document", path: resolved, href: docHref(context.project, resolved) + anchor };
 }
 
-type Env = { project: string; path: string; slugs: Map<string, number>; mermaid: string[] };
+type Env = { project: string; path: string; checkoutImages?: boolean; internalHref?: (url: string) => string; slugs: Map<string, number>; mermaid: string[] };
 const reasonOf = (target: LinkTarget) => target.kind === "blocked" ? target.reason : "";
 
 function engine(): Engine {
@@ -140,7 +140,7 @@ function engine(): Engine {
       token.attrSet("rel", "noopener noreferrer nofollow");
       token.attrSet("class", "doc-external");
     } else if (target.kind === "anchor") token.attrSet("href", target.href);
-    else if (target.kind === "document") { token.attrSet("href", target.href); token.attrSet("data-internal", "true"); }
+    else if (target.kind === "document") { token.attrSet("href", (env as Env).internalHref?.(target.href) ?? target.href); token.attrSet("data-internal", "true"); }
     else { token.attrSet("class", "doc-unlinked"); token.attrSet("data-blocked", reasonOf(target)); }
     return self.renderToken(tokens, idx, options);
   };
@@ -149,9 +149,9 @@ function engine(): Engine {
     const token = tokens[idx];
     const alt = self.renderInlineAsText(token.children ?? [], options, env);
     const target = classify(String(token.attrGet("src") ?? ""), env as Env, true);
-    if (target.kind !== "image") {
+    if (target.kind !== "image" || (env as Env).checkoutImages === false) {
       // Empty: the viewer writes "[alt: reason]" from these attributes.
-      return `<span class="doc-image-blocked" data-blocked="${reasonOf(target)}" data-alt="${md.utils.escapeHtml(alt)}"></span>`;
+      return `<span class="doc-image-blocked" data-blocked="${(env as Env).checkoutImages === false ? "image_path" : reasonOf(target)}" data-alt="${md.utils.escapeHtml(alt)}"></span>`;
     }
     const title = token.attrGet("title");
     return `<img src="${md.utils.escapeHtml(target.src)}" alt="${md.utils.escapeHtml(alt)}"${title ? ` title="${md.utils.escapeHtml(String(title))}"` : ""} loading="lazy">`;
@@ -182,7 +182,7 @@ const md = engine();
  * Document HTML and Mermaid sources in order. `path` is the document path in the checkout: relative links
  * are resolved from its folder.
  */
-export function renderMarkdown(source: string, context: { project: string; path: string }): { html: string; mermaid: string[]; error?: BlockError } {
+export function renderMarkdown(source: string, context: { project: string; path: string; checkoutImages?: boolean; internalHref?: (url: string) => string }): { html: string; mermaid: string[]; error?: BlockError } {
   const env: Env = { ...context, slugs: new Map(), mermaid: [] };
   const { segments, error } = splitBlocks(source);
   // Block names come from BLOCK_NAMES only; label and empty notice are written by the viewer.

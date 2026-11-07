@@ -788,3 +788,42 @@ g.map-node { cursor: default; }
   .map-main { padding-bottom: 3.6rem; }
 }
 @media (prefers-reduced-motion: no-preference) { .map-inspector { transition: max-height 160ms ease-out; } }
+
+/* P002-T023: an interactive map at left, canonical document in the centre, shared tree at right. */
+.map-docs-layout { min-width: 0; }
+.map-docs-trigger { margin-bottom: 12px; }
+.map-docs-open { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
+.map-docs-map, .map-docs-content { min-width: 0; }
+.map-docs-drawer { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 28%); container: map-drawer / inline-size; border: 1px solid var(--line-strong);
+  border-radius: 12px; background: var(--surface); position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow: auto; }
+.map-docs-drawer > * { grid-column: 1 / -1; }
+.map-docs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line-strong); }
+.map-docs-head h2 { margin: 0; font-size: 16px; }
+.map-docs-content { padding: 12px; overflow-wrap: anywhere; }
+.map-docs-drawer .docs-tree { position: static; max-height: 250px; padding: 12px; border: 0; border-top: 1px solid var(--line-strong);
+  font-size: 12px; overflow-wrap: anywhere; }
+@container map-drawer (min-width: 460px) {
+  .map-docs-drawer .map-docs-content { grid-column: 1; }
+  .map-docs-drawer .docs-tree { grid-column: 2; max-height: none; border-top: 0; border-left: 1px solid var(--line-strong); }
+}
+.map-docs-content .doc-reader { padding: 0; }
+.map-docs-open .map-page { grid-template-columns: minmax(0, 1fr); }
+.map-docs-open .map-main .map-viewport { min-height: 360px; }
+.map-docs-open .map-inspector { position: static; max-height: 420px; }
+.map-edge-containment .map-edge-line { stroke-dasharray: 2 6; }
+.map-edge-parentage .map-edge-line { stroke-dasharray: 10 5 2 5; }
+.map-edge-causation .map-edge-line { stroke-dasharray: 10 5; }
+.map-edge-correlation .map-edge-line { stroke-dasharray: 2 3 2 9; }
+.trace-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 26rem; overflow: auto; font-size: 12px; }
+.trace-source { border-top: 1px solid var(--line-strong); padding-block: 8px; }
+.trace-original { margin-block: 8px; }
+.trace-paging, .trace-list li { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.trace-list { padding-left: 24px; }
+.trace-list li { padding-block: 6px; border-bottom: 1px solid var(--line-strong); }
+@media (max-width: 880px) {
+  .map-docs-open { grid-template-columns: minmax(0, 1fr); }
+  .map-docs-drawer { position: static; max-height: none; }
+  .map-docs-open .map-inspector { position: fixed; max-height: 3.4rem; }
+  .map-docs-open .map-sheet-open .map-inspector { max-height: 55vh; }
+  .map-view-toggle { flex-wrap: wrap; }
+}

@@ -16,7 +16,7 @@ from fastapi.responses import Response
 from pydantic import Field
 
 from my_harness.api.schemas import (
-    CycleDiffRead, CycleRead, JUnitCasesRead, ManagedLogRead,
+    CycleDiffRead, CycleRead, JUnitCasesRead, ManagedLogRead, ManagedOriginalRead,
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ConfirmStoppedCreate, ManagedAttemptRead,
@@ -359,16 +359,20 @@ def managed_router(runtime: ManagedRuntime):
         runtime.ready()
         return call(runtime.views.attempts, run_id, offset, limit)
 
-    @router.get('/runs/{run_id}/attempts/{attempt_id}/logs', response_model=list[ManagedLogRead],
+    @router.get('/runs/{run_id}/attempts/{attempt_id}/logs', response_model=list[ManagedLogRead] | ManagedOriginalRead,
                 operation_id='managed_attempt_logs')
-    def attempt_logs(run_id: str, attempt_id: str):
+    def attempt_logs(run_id: str, attempt_id: str,
+                     sequence: Annotated[int | None, Query(ge=1, le=2**53 - 1,
+                         description='One persisted oversize agent_event of this attempt. Omit for the existing log metadata list.')] = None):
         runtime.ready()
         from sqlalchemy import text
-        from my_harness.storage.retention import inspect_logs
+        from my_harness.storage.retention import inspect_logs, inspect_original
         with runtime.repository.engine.connect() as db:
             owner = db.scalar(text('SELECT run_id FROM managed_attempts WHERE id=:id'), {'id': attempt_id})
         if owner != run_id:
             raise problem(404, 'not_found', say('api.attempt_unknown'))
+        if sequence is not None:
+            return call(inspect_original, runtime.repository.engine.url.database, attempt_id, sequence)
         return call(inspect_logs, runtime.repository.engine.url.database, attempt_id)
 
     @router.get("/runs/{run_id}/events", response_model=ManagedEventsRead, operation_id="managed_run_events")

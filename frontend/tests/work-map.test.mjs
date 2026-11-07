@@ -23,6 +23,7 @@ delete globalThis.__tsxHookHarness;
 const { syntheticMap, respond, DEEP, PROJECTION_SIZES } = await import('../src/map/fixture/projections.ts');
 const { projectsView, phasesView, tasksView, stepsView, chatsOf, routeProject, duration } = await import('../src/map/projection.ts');
 const { LevelLoader, MAX_PAGES } = await import('../src/map/loader.ts');
+const { pageOf } = await import('../src/map/api.ts');
 const { ActivityPoller, changedScopes, ACTIVE_MS, IDLE_MS } = await import('../src/map/refresh.ts');
 const { Announcer, statusChanges, ANNOUNCE_GAP_MS } = await import('../src/map/announce.ts');
 const { viewParam, viewOf, withView, chooseView, rememberedView, rememberView, forgetViewMemory, VIEW_STORAGE } = await import('../src/map/view-mode.ts');
@@ -266,7 +267,8 @@ test('a level loader keeps one read in flight, pages on demand, recovers from cu
   const map = syntheticMap('budget');
   const calls = [];
   const gates = [];
-  const fetcher = path => new Promise((resolve, reject) => {
+  const fetcher = (base, cursor) => new Promise((resolve, reject) => {
+    const path = pageOf(base, cursor);
     calls.push(path);
     gates.push(() => { const answer = respond(map, path); answer.status === 200 ? resolve(answer.body)
       : reject(new ManagedError(answer.status, 'x', answer.body.detail.code)); });
@@ -676,7 +678,7 @@ test('?view=list renders the existing page with its controls and reads no map pr
   } finally { driver.close(); env.close(); forgetViewMemory(); }
 });
 
-test('a circle target opens the existing L4 read header, not a missing page, with owner links and no trace graph', async () => {
+test('a circle target opens L4 with owner links, bounded trace and archive consultation', async () => {
   for (const archive of [false, true]) {
     const map = syntheticMap('review', { archive });
     const project = archive ? DEEP.key : 'atlas';
@@ -688,12 +690,14 @@ test('a circle target opens the existing L4 read header, not a missing page, wit
         el(Page, { route: parse(path) })))));
       assert.match(html, /Executor invocation/);
       assert.match(html, new RegExp(`href="/projects/${project}/phases/P002/tasks/P002-T005"`), 'owner breadcrumb links');
-      assert.match(html, /The step-by-step trace of the invocation is not shown on this page/);
-      assert.doesNotMatch(html, /data-node=/, 'no trace graph here');
+      assert.match(html, /Observed invocation evidence/);
+      assert.match(html, /data-node="step:0"/, 'trace graph is now delivered by T023');
       assert.deepEqual(env.requests.filter(request => request.url.startsWith('/api/managed/map/')).map(request => request.url),
-        [`/api/managed/map/projects/${project}/invocations/inv-atlas-executor-2`]);
-      assert.equal(/Read again/.test(html), !archive, 'archives read once, without a refresh control');
-      assert.equal(env.timers.timers.size, 0);
+        [`/api/managed/map/projects/${project}/invocations/inv-atlas-executor-2`,
+         `/api/managed/map/projects/${project}/invocations/inv-atlas-executor-2/steps?limit=200`,
+         `/api/managed/map/projects/${project}/invocations/inv-atlas-executor-2/related?group=records&limit=200`,
+         `/api/managed/map/projects/${project}/invocations/inv-atlas-executor-2/related?group=permissions&limit=200`]);
+      assert.equal(env.timers.timers.size, archive ? 0 : 1, 'only ordinary mode polls activity');
     } finally { driver.close(); env.close(); }
   }
 });
@@ -720,7 +724,13 @@ test('a stored choice never overrides the last choice of this page when only wri
 test('the loader window keeps memory bounded yet reaches pages after the fifth, and recovers from cursor_stale there', async () => {
   const map = syntheticMap('budget');
   const calls = [];
-  const fetcher = async path => { calls.push(path); const answer = respond(map, path); if (answer.status !== 200) throw new ManagedError(answer.status, 'x', answer.body.detail.code); return answer.body; };
+  const fetcher = async (base, cursor) => {
+    const path = pageOf(base, cursor);
+    calls.push(path);
+    const answer = respond(map, path);
+    if (answer.status !== 200) throw new ManagedError(answer.status, 'x', answer.body.detail.code);
+    return answer.body;
+  };
   const states = [];
   const loader = new LevelLoader('/map/projects/atlas/phases/P002/tasks?limit=1', fetcher, state => states.push(state));
   loader.reload(); await tick();

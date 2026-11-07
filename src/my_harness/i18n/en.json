@@ -1488,5 +1488,10 @@
   "work_map.cursor_invalid": "Invalid map cursor or scope for this view.",
   "work_map.cursor_stale": "The map changed since this page was read; reload the first page.",
   "work_map.group_invalid": "Unknown related-record group.",
-  "work_map.scope_invalid": "Invalid map scope: it must be a scope id a map response returned."
+  "work_map.scope_invalid": "Invalid map scope: it must be a scope id a map response returned.",
+  "retention.record_unknown": "Original record not found for this attempt.",
+  "retention.record_reference": "This event has no valid oversize stdout reference.",
+  "retention.record_limit": "The original record exceeds the {limit}-byte consultation limit.",
+  "retention.record_unsealed": "The original stream has no sealed capture yet.",
+  "retention.record_unverified": "The original record could not be verified ({reason})."
 }

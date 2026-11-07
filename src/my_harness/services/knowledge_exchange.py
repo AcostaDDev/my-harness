@@ -23,6 +23,23 @@ def head(call):
     return call.knowledge.revision(call.project_id, row.number)
 
 
+def rendered_documents(session, project_id, revision=None):
+    """Read canonical accepted Markdown only, including in query-only copies. No transfer payload or writes."""
+    from my_harness.storage.knowledge import KnowledgeSession
+    knowledge = KnowledgeSession(session)
+    revision = revision or knowledge.revision(project_id)
+    ownership = store.latest(session, project_id, 'ownership')
+    if ownership:
+        manifest = ownership.payload['manifest']
+    else:
+        root = session.get(KnowledgeProjectRow, project_id).root
+        work_language = get_language(session, root)
+        if not work_language:
+            raise ValueError('work_language_required')
+        manifest = d.ownership(project_id, work_language['work_language'])
+    return revision, d.render(d.snapshot(revision), manifest)
+
+
 def bundle(call):
     call.authorize()
     revision = head(call)

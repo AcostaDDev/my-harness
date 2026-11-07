@@ -11,7 +11,7 @@ flowchart TD
     M -- yes --> Q["SQLite query_only; no project composition, ports or supervisor"]
     Q --> A["Local session; supervisor.read_only_archive = true"]
     A --> H["Archive home: read-only map L0 beside the run-id entry, or load /runs/:id directly"]
-    H --> MapR["Map levels L1–L3 and invocation header from SQLite projections; no polling"]
+    H --> MapR["Map levels L1–L4, trace/list and canonical drawer from SQLite; no polling"]
     H --> R["Read projected evidence, paginated diff/JUnit, jobs, attempts, events and metrics"]
     R --> P["Pages on demand or explicit reload; historical states preserved"]
     A --> X["Operational UI routes blocked; no pending submissions or mutation controls"]
@@ -81,3 +81,16 @@ T012, integrated into develop after independent technical re-review, adds a **Pr
 persisted projects, accepted history, drafts, search results and frozen context/run associations without a checkout,
 registered project or `ProjectWorkspace`. It mounts no pending confirmation handling or mutation controls in that
 lane. Missing accepted revisions and missing READY/task associations remain explicit; no conversion is performed.
+
+
+P002-T023 locally adds the L4 graph/list and L1–L4 documentary drawer (D315), after prior-source technical re-review and owner visual
+acceptance; integration remains pending. Restored reads use the existing step/related projections, explicit authenticated originals and the new
+read-only canonical document GET from SQLite. No runtime project/checkout is composed, including for the drawer;
+legacy checkout documentation is unavailable in archives. Header counters, pre-T019/pending/integrity/excluded
+states and retention availability remain historical, without backfill or projection writes. A historical grant is
+shown separately from present authority. Archive return links avoid operational chat/check pages. There is no
+poll, announcement timer or mutation affordance. D316 adds an optional persisted `sequence` to the existing logs route, preserving its ordinary metadata list.
+The exact UTF-8 original is explicit, bounded by T019's 4 MiB plus newline, and verified against stream chunks,
+sealed capture and the record digest. Restored reads use only the verified bundle copy, even after the original
+checkout and captures disappear. Pending/missing/purged/unverified records return null content and their
+diagnostic. No range, arbitrary path, checkout access or write is admitted.

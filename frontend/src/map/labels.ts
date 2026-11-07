@@ -26,6 +26,8 @@ export type NodeText = {
   title: string;
   statusClass: string;
   status: string;
+  /** Explicit event/outcome text when a trace node is not a lifecycle status. */
+  statusLabel?: string;
   actors?: readonly NodeActor[];
   requests?: number;
   /** Primary counter, already formatted with its meaning ("Phases 2/5", "not observed"). */
@@ -38,7 +40,8 @@ export type NodeText = {
 };
 
 /** Visible status text: the translated class, or the raw code for a value outside the contract (§5.1). */
-export function statusText(node: Pick<NodeText, "statusClass" | "status">, t: Translate): string {
+export function statusText(node: Pick<NodeText, "statusClass" | "status" | "statusLabel">, t: Translate): string {
+  if (node.statusLabel) return node.statusLabel;
   const cls = statusClassOf(node.statusClass);
   return cls === "unknown" ? t("map.status.unknown_code", { code: node.status }) : t(STATUS_LABELS[cls]);
 }

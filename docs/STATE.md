@@ -139,6 +139,17 @@ passed, and the owner confirmed visual acceptance of T022 and T021's deferred re
 merge integrates the reviewed source. Next: **P002-T023**. Release 0.2.0, distribution/publication and installation
 remain pending.
 [Record](phase/P002-T022-work-map.md).
+**P002-T023 has locally implemented source**, on `feat/p002-t023-trace-docs` from `e831a67`
+([record](phase/P002-T023-trace-docs.md)): L4 graph/list, bounded lazy history, explicit source reads and the L1–L4
+canonical documentation drawer. Independent technical re-review passed after the navigation, graph edges,
+drawer width and evidence-placement corrections (76 focused Node tests, documentation/whitespace checks).
+The owner then authorized completion here: D316 implements an optional exact large-original read by persisted
+sequence, with verified UTF-8 bytes, T019's bound, retention and checkout-free archive consultation. Its checks
+and self-review are recorded separately. The owner accepted the desktop/mobile visual review on 2026-11-07 after seeing the
+synthetic browser and captures. The final full check passed (3,254 pytest tests and 409 Node tests, plus unittest/Alembic/build).
+Source is complete and uncommitted pending the authorized integration into develop. Protected-main release 0.2.0,
+distribution/publication and installation are separate pending stages. The operator installation remains 0.1.9.
+
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
 Historical starting context:

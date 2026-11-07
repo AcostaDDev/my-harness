@@ -6,7 +6,8 @@ and [D306](../DECISIONS.md#d306--work-map-read-projections-polling-refresh-and-a
 [D311](../DECISIONS.md#d311--work-map-read-projections-tokens-and-indexes). The map is a projection (FL14): rebuilt
 from persisted rows on every read, never stored, never authority. T021 supplies the rendering engine. P002-T022
 ([D314](../DECISIONS.md#d314--work-map-levels-on-the-product-routes-refresh-client-and-read-only-archive-map)) renders L0–L3 on the product routes with the navigation and
-polling client below; L4 and the drawer are T023.
+polling client below. T023 locally implements L4 and the drawer (D315), pending independent/owner visual review
+and the bounded large-original decision; it is not closed.
 
 ```mermaid
 flowchart TD
@@ -37,6 +38,7 @@ flowchart TD
 | `map/projects/{p}/invocations/{i}/steps` | L4 | T019 steps with source records resolved | 200 |
 | `map/projects/{p}/invocations/{i}/related?group=` | L4 | `records` (receipts, discovery and schema loads, broker and tool events, rulings, context, observation, artifact links) or `permissions` (requests the attempt raised) | 200 |
 | `map/projects/{p}/bubbles?phase=&task=&run=&attempt=&circle=` | L0–L3 | One element's unresolved owner items (P002-T022 review, D314): id, kind, topic, circle, attribution and phase/task/run, filtered exactly by the element's scope and optionally one circle on every page, with the counts of the whole filtered set; keyset by item id | 50 |
+| `map/projects/{p}/documents[?path=…]` | L1–L4 drawer | Accepted canonical Markdown/tree/revision from SQLite; exact Markdown path on demand, no transfer payload; ordinary-only legacy checkout signal | One document |
 | `map/activity?scope=` | — | Version token per requested scope (≤ 10), active invocations, bubble counters, polling metadata | ≤ 8 KiB idle |
 
 `{p}` accepts the project's T017 identity and its aliases (knowledge project, registered project, `run:` and
@@ -179,3 +181,47 @@ Circle targets resolve chat ownership through the persisted conversation (phase 
 project assistance through its registered project (including logical retirement) and persisted ASSIST operation.
 Historical consultation does not require operational ACTIVE status, compose a checkout or admit new operations. Active and settled invocations
 use the same chronological selection and L4 ownership; global assistance stays unscoped.
+
+
+## L4 trace and documentation client (P002-T023)
+
+The invocation route reads the header and uses the shared `LevelLoader` to page its evidence. All evidence
+combines one fresh page of up to 200 items from each unfinished group. A complete batch is published together
+as a read unit, never a temporal watermark across the group's different cursor orders. Native steps keep `seq`
+order. Exact persisted `tool.links` event IDs associate related records with unambiguous steps in that batch,
+using labelled correlation links without arrowheads. Other evidence, including permissions and records whose
+anchor is outside the batch, is shown in a separate **Related evidence — position undetermined** section in graph
+and list, in group read order. Receipt clocks, native/broker call IDs and page boundaries never establish a native
+position. Later reads do not reposition already published items; persisted references remain in the inspector
+and group filters. No extra read or API change is required. SVG and list render up to 200 items in total across
+the sections at once. Advancing across a batch
+boundary requires its last window, and reversing across the boundary restores the preceding batch's last
+window. Five batches plus the head are retained. Group filters start at the first page of their own history.
+Turn order follows persisted step sequence. Turn membership (parallel fan-out), recorded event parentage and
+explicit causation have distinct styles and never transfer a native position. Connections use visible items in
+the same section only; the inspector retains references outside it. The list selects the same
+inspector and source reads as SVG.
+Ordinary mode polls the header and the scopes of the active evidence filter through D306. A changed evidence
+scope or a `409 cursor_stale` restarts the active history from the first pages. Disposed loaders discard late
+responses. Archives use on-demand
+GETs only, including the drawer and originals, without action controls or operational chat/check navigation.
+
+The non-modal drawer stores `doc`/`doc_anchor` beside `view` in the same route query, preserving browser history.
+It reuses `pages/Docs.tsx`'s tree and safe Markdown/Mermaid viewer; links stay in the drawer and the map stays
+interactive. The map and drawer fit the available content width beside the application sidebar. At mobile
+widths the drawer follows the map. The tree sits beside the document when the drawer is wide enough and
+below it at narrower drawer widths. Persisted level/phase/task context selects ROADMAP/NEXT_STEPS/SPECIFICATION and a deterministic
+available-file fallback. Escape returns focus to the opener; delayed content cannot take focus from the map.
+Canonical document reads use the map's existing root identities, accepted-revision integrity checks and D294's
+renderer, from SQLite only. Exact Markdown paths are allowlisted from that render. Transfer JSON is excluded;
+canonical errors never become checkout fallback. Only ordinary-mode legacy roots with a configured registered project may use the existing guarded
+checkout tree/content viewer, addressed by that registered ID rather than a historical `run:` map key. Canonical documents never request checkout images. No export/adoption/edit control
+is mounted.
+
+Native originals remain explicit authenticated event reads, verified against attempt and sequence.
+D316 adds `sequence` to the existing attempt-logs GET: omission keeps the metadata list; a positive persisted
+sequence returns the typed exact-original envelope. The server verifies the attempt's event, sealed stdout,
+chunk/capture/record digests, filesystem containment and 4 MiB plus newline bound before returning UTF-8 text.
+Purged, pending, missing or unverified content stays null. Archives read their verified bundle copy and never
+historical paths. The inspector checks the response's identity against its source reference and escapes the
+content. The read has no side effects or polling. See the [T023 evidence](../phase/P002-T023-trace-docs.md).

@@ -363,3 +363,67 @@ def inspect_logs(database, attempt_id):
                            'size_bytes': artifact['size'], 'state': state, 'diagnostic': diagnostic,
                            'authorization': removed.get(artifact['path']) or intents.get(artifact['path'])})
         return result
+
+
+def inspect_original(database, attempt_id, sequence):
+    """One persisted oversize agent record. Exact bytes are verified on the same descriptor as its sealed stream."""
+    from my_harness.storage.observed_steps import MAX_RECORD, StdoutRanges, Unavailable
+    from my_harness.storage.backup import RESTORED_USER_VERSION, verify_bundle
+
+    with closing(_connect(_database(database))) as db:
+        db.execute('BEGIN')
+        row = db.execute("""SELECT a.run_id, e.payload, p.capture, p.status FROM managed_attempts a
+            JOIN managed_events e ON e.run_id = a.run_id AND e.sequence = ? AND e.kind = 'agent_event'
+                AND json_extract(e.payload, '$.attempt_id') = a.id
+            LEFT JOIN managed_processes p ON p.attempt_id = a.id WHERE a.id = ?""", (sequence, attempt_id)).fetchone()
+        if row is None:
+            raise LookupError(tr('retention.record_unknown'))
+        payload = json.loads(row['payload'])
+        reference = payload.get('original_reference')
+        if (not isinstance(reference, dict) or reference.get('stream') != 'stdout'
+                or type(reference.get('offset')) is not int or reference['offset'] < 0
+                or type(reference.get('size')) is not int or reference['size'] <= 0
+                or not isinstance(reference.get('sha256'), str) or len(reference['sha256']) != 64
+                or any(c not in '0123456789abcdef' for c in reference['sha256'])):
+            raise ValueError(tr('retention.record_reference'))
+        result = {'run_id': row['run_id'], 'attempt_id': attempt_id, 'sequence': sequence, 'stream': 'stdout',
+                  'offset': reference['offset'], 'size_bytes': reference['size'], 'sha256': reference['sha256'],
+                  'encoding': 'utf-8', 'limit_bytes': MAX_RECORD, 'state': 'unverified', 'diagnostic': None,
+                  'content': None}
+        if reference['size'] > MAX_RECORD:
+            return {**result, 'diagnostic': tr('retention.record_limit', limit=MAX_RECORD)}
+        if row['status'] != 'STOPPED' or not row['capture']:
+            return {**result, 'state': 'pending', 'diagnostic': tr('retention.record_unsealed')}
+        capture = json.loads(row['capture'])
+        artifact = capture.get('artifacts', {}).get('stdout')
+        if not isinstance(artifact, dict):
+            return {**result, 'diagnostic': tr('retention.record_unverified', reason='capture_absent')}
+        try:
+            refs = _references(db)
+            intents, removed = audit(db, refs)
+            source = artifact['path']
+            stream = refs[source]
+            if source in removed:
+                return {**result, 'state': 'purged', 'diagnostic': tr('retention.retired')}
+            if source in intents:
+                return {**result, 'state': 'pending', 'diagnostic': tr('retention.pending_intent')}
+            if db.execute('PRAGMA user_version').fetchone()[0] == RESTORED_USER_VERSION:
+                bundle = Path(database).parent
+                manifest = verify_bundle(bundle)
+                restored = next(item['path'] for item in manifest['files'] if item['source'] == source)
+                artifact = {**artifact, 'path': str(bundle / restored)}
+            with StdoutRanges(artifact, stream['chunks']) as ranges:
+                data = ranges.read(reference)
+            if isinstance(data, Unavailable):
+                return {**result, 'state': 'missing' if data.code == 'stdout_missing' else 'unverified',
+                        'diagnostic': tr('retention.record_unverified', reason=data.code)}
+            content = data.decode('utf-8')
+            from my_harness.adapters.streams import strict_json
+            original = strict_json(content)
+            if not isinstance(original, dict) or original.get('type') != payload.get('type'):
+                raise ValueError('record_invalid')
+        except (FileNotFoundError, StopIteration):
+            return {**result, 'state': 'missing', 'diagnostic': tr('retention.lost')}
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            return {**result, 'diagnostic': tr('retention.record_unverified', reason=_diagnostic(error))}
+        return {**result, 'state': 'retained', 'content': content}

@@ -3640,6 +3640,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/map/projects/{project_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Documents
+         * @description Canonical accepted Markdown from SQLite. Optional exact path loads one document on demand.
+         *
+         *     Legacy checkout consultation is signalled only in ordinary mode; it uses the existing guarded viewer.
+         *     This read never composes a runtime project, renders a transfer payload or grants document ownership.
+         */
+        get: operations["map_documents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/map/projects/{project_id}/phases/{code}/tasks": {
         parameters: {
             query?: never;
@@ -8125,6 +8148,51 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /**
+         * ManagedOriginalRead
+         * @description An explicitly requested persisted agent record, with exact UTF-8 text only after stream/range verification.
+         */
+        ManagedOriginalRead: {
+            /** Run Id */
+            run_id: string;
+            /** Attempt Id */
+            attempt_id: string;
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stream
+             * @constant
+             */
+            stream: "stdout";
+            /** Offset */
+            offset: number;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Encoding
+             * @constant
+             */
+            encoding: "utf-8";
+            /**
+             * Limit Bytes
+             * @constant
+             */
+            limit_bytes: 4194305;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "retained" | "purged" | "pending" | "missing" | "unverified";
+            /** Diagnostic */
+            diagnostic: string | null;
+            /**
+             * Content
+             * @description Exact decoded record including its JSONL newline; null unless retained and verified.
+             */
+            content: string | null;
+        };
         /** ManagedProjectRead */
         ManagedProjectRead: {
             /** Id */
@@ -8597,6 +8665,24 @@ export interface components {
             id: string | null;
         } & {
             [key: string]: unknown;
+        };
+        /**
+         * MapDocumentsRead
+         * @description Read-only canonical documentation; no transfer metadata or operational composition.
+         */
+        MapDocumentsRead: {
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "canonical" | "checkout" | "unavailable";
+            /** Revision Id */
+            revision_id: string | null;
+            tree: components["schemas"]["DocumentTreeRead"];
+            /** Path */
+            path: string | null;
+            /** Content */
+            content: string | null;
         };
         /** MapEdge */
         MapEdge: {
@@ -14045,7 +14131,10 @@ export interface operations {
     };
     managed_attempt_logs: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description One persisted oversize agent_event of this attempt. Omit for the existing log metadata list. */
+                sequence?: number | null;
+            };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-my-harness"?: string | null;
@@ -14064,7 +14153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManagedLogRead"][];
+                    "application/json": components["schemas"]["ManagedLogRead"][] | components["schemas"]["ManagedOriginalRead"];
                 };
             };
             /** @description Forbidden */
@@ -26139,6 +26228,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MapPhasesRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_documents: {
+        parameters: {
+            query?: {
+                path?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapDocumentsRead"];
                 };
             };
             /** @description Forbidden */

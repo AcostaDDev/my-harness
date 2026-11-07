@@ -2,7 +2,7 @@
 // Left-to-right layers by longest path, dummy points for long edges and barycentric ordering. Every step works on a
 // canonical order (sort key, then id), so the same graph gives the same layout whatever the input order.
 
-export type EdgeKind = "depends_on" | "replaces" | "sequence";
+export type EdgeKind = "depends_on" | "replaces" | "sequence" | "containment" | "parentage" | "causation" | "correlation";
 
 export type LayoutNode = { id: string; order?: string };
 /** `from` is the earlier element: the prerequisite of `depends_on`, the replaced task of `replaces`. */

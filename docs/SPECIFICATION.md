@@ -495,8 +495,10 @@ final re-review and owner acceptance (D312, D313, [record](phase/P002-T021-rende
 and personal visual review is explicitly deferred to T022's real-data map. rough.js and the
 Excalifont subsets are adopted and served offline, and an SVG engine with seeded shapes, layered layout, camera,
 zoom-enter through the existing routes and history, keyboard operation and reduced motion runs on a development-only
-synthetic fixture. The map views, the home replacement, the list toggle and polling are not implemented yet
-(T022–T024). The home page becomes a hand-drawn, zoomable, read-only work map:
+synthetic fixture. T022's map levels L0–L3 as the home page, the `?view` list toggle, circles and bubbles over T017's
+panel, activity polling and the read-only archive map exist as local source pending independent review and the
+owner's visual review (D314, [record](phase/P002-T022-work-map.md)); L4, the drawer and the talk button are T023–T024.
+The home page becomes a hand-drawn, zoomable, read-only work map:
 projects (L0) → phases (L1) → task instances (L2) → steps of a run (L3) → the trace of one invocation (L4, new route
 `/projects/:p/invocations/:i`). Each level keeps its URL and breadcrumb, and `?view=list` switches to the existing
 list page. Cards are compact, with a side inspector. Six status classes (done, progress, waiting, failed, pending,

@@ -20,6 +20,8 @@ export type Route =
   | { name: "phase"; project: string; phase: string; section?: "check" }
   | { name: "task"; project: string; phase: string; task: string }
   | { name: "run"; project: string; phase: string; task: string; run: string }
+  // T018 §4 L4 URL; P002-T022 serves only its read header, the trace graph is T023.
+  | { name: "invocation"; project: string; invocation: string }
   | { name: "chat"; project: string; conversation?: string }
   | { name: "settings"; project: string }
   | { name: "project-stats"; project: string }
@@ -84,6 +86,7 @@ export function parse(pathname: string): Route {
     return { name: c, project, ...(d ? { conversation: d } : {}), ...(rest.length ? { path: rest.join("/") } : {}) };
   }
   if (c === "chat" && n <= 4) return n === 3 ? { name: "chat", project } : { name: "chat", project, conversation: d };
+  if (c === "invocations" && n === 4) return { name: "invocation", project, invocation: d };
   if (c !== "phases") return { name: "not-found", path: pathname };
   if (n === 3) return { name: "phases", project };
   if (n === 4) return { name: "phase", project, phase: d };
@@ -114,6 +117,7 @@ export function href(route: Route): string {
     case "phase": return `/projects/${e(route.project)}/phases/${e(route.phase)}${route.section ? "/check" : ""}`;
     case "task": return `/projects/${e(route.project)}/phases/${e(route.phase)}/tasks/${e(route.task)}`;
     case "run": return `/projects/${e(route.project)}/phases/${e(route.phase)}/tasks/${e(route.task)}/runs/${e(route.run)}`;
+    case "invocation": return `/projects/${e(route.project)}/invocations/${e(route.invocation)}`;
     case "chat": return `/projects/${e(route.project)}/chat${route.conversation ? `/${e(route.conversation)}` : ""}`;
     case "settings": return `/projects/${e(route.project)}/settings`;
     case "project-stats": return `/projects/${e(route.project)}/stats`;
@@ -184,5 +188,6 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
     if (route.conversation) items.push({ label: t("trail.conversation"), to: route });
   }
   if (route.name === "run") items.push({ label: t("trail.run", { id: route.run.slice(0, 8) }), to: route });
+  if (route.name === "invocation") items.push({ label: t("trail.invocation", { id: route.invocation.slice(0, 8) }), to: route });
   return items;
 }

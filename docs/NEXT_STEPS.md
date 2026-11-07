@@ -20,7 +20,14 @@ its source commit, the accompanying merge and push of develop. T012 is completed
 source commit, merge and push of develop. **T021 is complete and integrated as source `6b6a0ee` after independent
 final re-review and owner acceptance** (D312, D313, [record](phase/P002-T021-rendering-foundation.md#14-source-integration--2026-11-06));
 the owner authorized commit, merge and push of develop and explicitly deferred personal visual review until T022
-connects the map to real data. **T022 is next** and retains that visual review. Release 0.2.0,
+connects the map to real data. **T022 is local source on `feat/p002-t022-work-map`, uncommitted** (D314,
+[record](phase/P002-T022-work-map.md)); the seven defects of its first independent technical review and the two
+problems its re-review reproduced are corrected locally (minimal read extensions: the element request list and the
+run's chat lane in the steps read), and so are the two blocking browser defects found on the synthetic frontend (card
+status/counter overlap; hidden controls of the closed mobile inspector in the Tab order; record §11, with the browser
+measurements now taken). The next re-review reproduced quadratic label fitting and stale deferred inspector focus.
+Both are corrected locally with regressions and renewed measurements (record §12). The diff awaits re-review; the owner's visual review (including T021's) is pending before
+integration. Release 0.2.0,
 distribution/publication and installation are pending. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
 
@@ -92,7 +99,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
 
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021 is **complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance; owner visual review deferred to T022 (D313)**. T022–T029 are **planned** (plan v0.4, D303). Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021 is **complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance; owner visual review deferred to T022 (D313)**. T022 is **local source, uncommitted, pending independent review and the owner's visual review (D314)**. T023–T029 are **planned** (plan v0.4, D303). Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -777,6 +784,27 @@ This review also carries T021's personal visual review, explicitly deferred to t
 **Basis:** B17, B19–B20, B23.
 
 **Gates:** —. **Threats:** TM13, TM14, TM17.
+
+**Status (2026-11-07):** local source complete on `feat/p002-t022-work-map` from `4535804`, not committed (D314,
+[record](phase/P002-T022-work-map.md)): L0–L3 on the product routes over T020's projections, `?view` toggle, inspector,
+circles, bubbles over T017's panel, polling with gap recovery, read-only archive map and the six-class `Status`.
+Node, server-render and synthetic-fixture browser evidence; the owner's visual review (with T021's deferred one) is
+pending, and so are the independent technical re-review, integration, release, distribution and installation. The first independent technical review (2026-11-06) found seven functional
+defects; all are corrected locally with behaviour regressions (record §9): polling without runs and read-failure
+recovery, exact actor and scope of request lists (new read `map/projects/{p}/bubbles`, OpenAPI and client updated),
+an inspectable archive table, concurrent invocations and the L3 chat lane, a page window instead of a page cap,
+evidence links to the run page, and the in-page view choice after a failed write. The re-review (2026-11-06)
+reproduced two remaining problems, corrected locally with connected regressions (record §10): a failed run-selector
+reread after an empty read is now shown with "Read again", and L3's chat lane comes from the run's steps read
+(`chats`, bounded, versioned, archive parity) instead of the truncated global activity list. Opening the synthetic
+frontend (2026-11-07) showed two blocking browser defects, corrected locally with regressions and browser evidence
+(record §11): card status and counter now have separate fitted rows, and a closed mobile inspector no longer keeps
+hidden controls in the Tab order (its body is not rendered; the heading and toggle stay in view; narrowing the window
+keeps the focus). Browser measurements taken: first L2 render with 80 tasks median 165.8 ms (≤ 500 ms), engine
+pan/zoom at 200 visible cards 60 fps mean (≥ 50 fps). The subsequent re-review found two defects, corrected locally
+with regressions (record §12): title fitting now has bounded glyph work and deferred inspector focus revalidates
+its target. Next: independent technical re-review of this diff, then the
+owner's visual review.
 ## P002-T023 — Agent trace graph and documentation drawer
 
 **Problem:** users need to follow what one agent actually did and to read the project documentation without leaving
@@ -1026,3 +1054,25 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
     authorized merge. Product source matches the reviewed commit; the merge adds source identity and delivery status
     only. Push of develop is authorized. Next: **P002-T022**, including the owner's deferred visual review of the map
     with real data (D313). Release 0.2.0, distribution/publication and installation remain pending.
+
+25. **P002-T022 source (2026-11-06).** Implemented on `feat/p002-t022-work-map` from `4535804` (D314; no backend, schema,
+    API or dependency change); synthetic evidence, the Node server-render measurement and the owner's review
+    instructions in the [record](phase/P002-T022-work-map.md). Not committed. Next: independent technical review and
+    re-review of any correction, then the owner's visual review in the browser (T022's and T021's deferred one, D313)
+    before integration at the owner's request; then **P002-T023**. Release 0.2.0, distribution/publication and
+    installation remain pending.
+26. **P002-T022 review corrections (2026-11-06).** The first independent technical review repeated the tests and
+    found seven functional defects; the task was not approved for integration. All seven are corrected on the same
+    uncommitted branch with regressions that fail on the original code (record §9). Contract change: one read
+    extension authorized by the owner for the corrections, `GET /api/managed/map/projects/{p}/bubbles` (T020's
+    attributed set filtered by exact scope and circle; 50 per page; archive parity; OpenAPI and generated client
+    updated; no schema, persistence or authorization change). Not committed. Next: independent re-review; then the
+    owner's visual review and browser measurements (T022's and T021's deferred one, D313), which still block
+    integration.
+27. **P002-T022 re-review corrections (2026-11-06).** The independent re-review passed its repeated checks but
+    reproduced two problems related to defects 1 and 4; integration was not approved. Both are corrected on the same
+    uncommitted branch (record §10): the selector's failure is shown with "Read again" even after an empty read, and
+    the L3 chat lane is read from `MapStepsRead.chats`/`chats_truncated` (the run's own active chats, part of the steps
+    version, identical in archives; OpenAPI and generated client updated; no schema, persistence or authorization
+    change). Not committed. Next: independent re-review; the owner's visual review and browser measurements still
+    block integration.

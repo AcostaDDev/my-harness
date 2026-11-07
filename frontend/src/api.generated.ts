@@ -3700,6 +3700,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/map/projects/{project_id}/bubbles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bubbles
+         * @description Owner requests of one element with T020's circle and attribution: exact scope (phase, task, run,
+         *     attempt) and optionally one circle, on every page. Identities and counts only; T017 stays the authority.
+         */
+        get: operations["map_bubbles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/map/projects/{project_id}/invocations/{invocation_id}": {
         parameters: {
             query?: never;
@@ -8364,6 +8385,50 @@ export interface components {
             /** Updated At */
             updated_at: string;
         };
+        /** MapBubbleEntry */
+        MapBubbleEntry: {
+            /**
+             * Id
+             * @description T017 inbox item id; the panel re-reads the item.
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "permission" | "question" | "judge" | "lifecycle" | "notification";
+            /**
+             * Topic
+             * @enum {string}
+             */
+            topic: "run_permission" | "standing_permission" | "task_gap" | "phase_question" | "autonomous_question" | "judge_escalation" | "phase_ready" | "limit_reached" | "recovery_required" | "failed" | "task_completed" | "phase_closed";
+            /**
+             * Circle
+             * @enum {string}
+             */
+            circle: "R" | "E" | "J" | "H";
+            /** Attributed */
+            attributed: boolean;
+            /** Phase */
+            phase: string | null;
+            /** Task */
+            task: string | null;
+            /** Run Id */
+            run_id: string | null;
+        };
+        /** MapBubbleFilter */
+        MapBubbleFilter: {
+            /** Phase */
+            phase: string | null;
+            /** Task */
+            task: string | null;
+            /** Run */
+            run: string | null;
+            /** Attempt */
+            attempt: string | null;
+            /** Circle */
+            circle: ("R" | "E" | "J" | "H") | null;
+        };
         /** MapBubbleItem */
         MapBubbleItem: {
             /**
@@ -8412,6 +8477,42 @@ export interface components {
             items?: components["schemas"]["MapBubbleItem"][] | null;
             /** Items Truncated */
             items_truncated?: boolean | null;
+        };
+        /**
+         * MapBubblesRead
+         * @description One element's unresolved owner items with T020's attribution, filtered by exact scope and circle.
+         */
+        MapBubblesRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-map-1";
+            /** Level */
+            level: string;
+            /**
+             * Scope
+             * @description Opaque scope id; echo it to the activity poll.
+             */
+            scope: string;
+            /**
+             * Version
+             * @description Version token of the scope; a changed token reloads the first page.
+             */
+            version: string;
+            /** Read Only Archive */
+            read_only_archive: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque keyset cursor bound to scope and version.
+             */
+            next_cursor?: string | null;
+            project: components["schemas"]["MapProjectHead"];
+            filter: components["schemas"]["MapBubbleFilter"];
+            /** @description Counts of the whole filtered set (every page). */
+            bubbles: components["schemas"]["MapBubbles"];
+            /** Items */
+            items: components["schemas"]["MapBubbleEntry"][];
         };
         /** MapCircleState */
         MapCircleState: {
@@ -9218,6 +9319,16 @@ export interface components {
             /** Items */
             items: components["schemas"]["MapStep"][];
             bubbles: components["schemas"]["MapBubbles"];
+            /**
+             * Chats
+             * @description Active chat invocations attached to this run (L3 chat lane; the same on every page and part of its version), oldest first, at most 20; never steps of the run.
+             */
+            chats: components["schemas"]["MapActiveInvocation"][];
+            /**
+             * Chats Truncated
+             * @description More active chats are attached to the run than `chats` lists.
+             */
+            chats_truncated: boolean;
             /** Edges */
             edges: components["schemas"]["MapEdge"][];
         };
@@ -26227,6 +26338,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MapStepsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    map_bubbles: {
+        parameters: {
+            query?: {
+                phase?: string | null;
+                task?: string | null;
+                run?: string | null;
+                attempt?: string | null;
+                circle?: ("R" | "E" | "J" | "H") | null;
+                /** @description Opaque keyset cursor of the previous page. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapBubblesRead"];
                 };
             };
             /** @description Forbidden */

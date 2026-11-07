@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../Language";
 import { managed, managedApi, jobRequest, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
-import { Link, navigate } from "../navigation";
+import { Link, navigate, useSearch } from "../navigation";
 import { Permissions } from "../Permissions";
 import { href, runRoute } from "../router.ts";
 import { Empty, Loading, message, usePoll } from "../ui";
@@ -10,13 +10,14 @@ import { RunEvidence } from "./RunEvidence";
 import { LiveActivity } from "../Activity";
 import { useWorkspace } from "../workspace";
 
-/** `/runs/:id`: resolves the canonical run URL and replaces it in the history. */
+/** `/runs/:id`: resolves the canonical run URL and replaces it in the history, keeping its query (`?view=list`). */
 export function RunRedirect({ run }: { run: string }) {
   const { t } = useI18n();
+  const search = useSearch();
   const read = usePoll<S["ManagedRunRead"]>(`/runs/${encodeURIComponent(run)}`, 0);
   useEffect(() => {
     const route = read.data && runRoute(read.data);
-    if (route) navigate(route, { replace: true });
+    if (route) navigate(`${href(route)}${search}`, { replace: true });
   }, [read.data]);
   if (read.missing) return <Empty title={t("run.missing")}><p>{t("not_found.hint")} <Link to={{ name: "home" }}>{t("not_found.back")}</Link></p></Empty>;
   if (read.data && !read.data.project_id) return <Empty title={t("run.unregistered.title")}><p>{t("run.unregistered.body")}</p></Empty>;
@@ -71,7 +72,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
   // A URL with another phase, task or project is corrected to the canonical one without adding history.
   const canonical = run && runRoute(run);
   useEffect(() => {
-    if (canonical && href(canonical) !== window.location.pathname) navigate(canonical, { replace: true });
+    if (canonical && href(canonical) !== window.location.pathname) navigate(`${href(canonical)}${window.location.search ?? ""}`, { replace: true });
   }, [canonical && href(canonical)]);
   if (missing && !run) return <Empty title={t("run.missing")}><p>{rich("run.back_to_task", { task: <Link className="mono" to={{ name: "task", project, phase, task }}>{task}</Link> })}</p></Empty>;
   if (!run) return error ? <p role="alert" className="state state-error">{error}</p> : <Loading>{t("run.loading")}</Loading>;

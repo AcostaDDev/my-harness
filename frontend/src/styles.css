@@ -231,6 +231,14 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .status-danger { color: var(--danger); background: var(--danger-soft); }
 .status-neutral { color: var(--neutral); background: var(--neutral-soft); }
 .status-attention .status-mark { border-radius: 2px; transform: rotate(45deg); }
+/* Shared status classes (T018 §5.1, P002-T022): colour, icon and text; every pair ≥ 4.5:1 in both themes. */
+.status-icon { width: 13px; height: 13px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.status-done { color: var(--ok); background: var(--ok-soft); }
+.status-progress { color: var(--progress); background: var(--progress-soft); }
+.status-waiting { color: var(--waiting); background: var(--waiting-soft); }
+.status-failed { color: var(--danger); background: var(--danger-soft); }
+.status-pending, .status-unknown { color: var(--neutral); background: var(--neutral-soft); }
+.status-inactive { color: var(--muted); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
 
 /* Phase lifecycle: the main track and its detours. */
 .rail { margin: 4px 0 12px; overflow-x: auto; }
@@ -711,3 +719,72 @@ g.map-node { cursor: default; }
   .map-help { display: none; }
   .map-viewport { min-height: 60vh; }
 }
+/* Product map (P002-T022): cards, overlays, inspector and toggle. Colour always pairs with an icon and text. */
+.map-badge { font-size: 13px; fill: var(--muted); }
+.map-counter { font-size: 13px; fill: var(--ink); }
+.map-error-circle-fill { fill: var(--danger-soft); }
+.map-error-circle { fill: none; stroke: var(--danger); stroke-width: 1.6; }
+.map-error-count { font-size: 13px; fill: var(--danger); font-weight: 700; }
+.map-slot-label { font-size: 12px; fill: currentColor; }
+.map-slot-actors { font-size: 12px; fill: var(--muted); }
+.map-slot-empty .map-slot-label { fill: var(--muted); }
+.map-node.map-selected .map-card { stroke-width: 3; }
+.map-overlay .map-label { pointer-events: none; }
+.map-actor-link, .map-actor-requests, .map-bubble, .map-details { cursor: pointer; outline: none; }
+.map-actor-link:hover .map-actor-circle, .map-details:hover .map-details-circle { stroke-width: 2.6; }
+.map-actor-inert { cursor: default; }
+.map-actor-inert .map-actor-letter { fill: var(--muted); }
+.map-chat-label { font-size: 12px; fill: var(--muted); }
+.map-bubble-small { font-size: 11px; }
+.map-details-circle-fill { fill: var(--surface); }
+.map-details-circle { fill: none; stroke: var(--muted); stroke-width: 1.3; }
+.map-details-mark { font-size: 13px; fill: var(--ink); font-weight: 700; }
+.map-view-toggle { display: inline-flex; gap: 4px; margin-bottom: 10px; }
+.map-view-toggle button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; }
+.map-view-mark { width: 12px; height: 12px; border: 1.6px solid currentColor; border-radius: 50%; }
+.map-view-list { border-radius: 2px; border-width: 1.6px 0; height: 9px; }
+.map-page { display: grid; grid-template-columns: minmax(0, 1fr) clamp(280px, 30%, 400px); gap: 16px; align-items: start; }
+.map-main { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.map-main .map-viewport { min-height: min(68vh, 720px); }
+.map-more { align-self: flex-start; }
+.map-runs { align-items: center; }
+.map-runs select { max-width: 100%; }
+.map-inspector { position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.map-inspector-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.map-inspector-head h2 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+.map-sheet-toggle { display: none; }
+.map-inspector-section h3 { font-size: 13px; margin: 14px 0 4px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.map-fields { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.map-fields ul, .map-circle-list, .map-active-list, .map-slot-list, .map-request-list { margin: 4px 0; padding-left: 18px; }
+.map-table-actors { margin: 0; padding: 0; list-style: none; }
+.map-table-actors li + li { margin-top: 2px; }
+.table tr[aria-current="true"] { outline: 2px solid var(--active); outline-offset: -2px; }
+.map-source { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+.map-json { display: inline-block; max-width: 100%; overflow-wrap: anywhere; white-space: pre-wrap; font-size: 12px; }
+.map-circle-chip { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid var(--muted); border-radius: 50%; font-size: 11px; font-weight: 700; }
+.map-circle-active { border-color: var(--progress); color: var(--progress); }
+.map-requests-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.map-requests-head h2 { font-size: 16px; margin: 0; }
+.map-requests .panel { margin: 10px 0; padding: 10px; }
+.map-request-open { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.map-owner ol { display: flex; flex-wrap: wrap; gap: 4px 6px; list-style: none; padding: 0; margin: 0 0 12px; }
+.map-owner li + li::before { content: "›"; margin-right: 6px; color: var(--muted); }
+.archive-entry { margin-top: 20px; }
+@media (max-width: 880px) {
+  /* Narrow screens: the inspector is a bottom sheet over the map, collapsed to its heading until opened. Closed, its
+     body is not rendered (out of the tab order and the accessibility tree); open, only the body scrolls, so the
+     heading and the Show/Hide control stay in view. Wide screens always show the body, whatever the sheet state. */
+  .map-page { grid-template-columns: minmax(0, 1fr); }
+  .map-inspector { position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 15; max-height: 3.4rem; overflow: hidden;
+    display: flex; flex-direction: column; border-radius: 14px 14px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18); padding: 10px 16px; }
+  .map-sheet-open .map-inspector { max-height: 55vh; }
+  .map-inspector-head { flex: none; min-height: 2.15rem; }
+  .map-inspector-head h2 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-sheet-open .map-inspector-head h2 { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+  .map-inspector-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .map-page:not(.map-sheet-open) .map-inspector-body { display: none; }
+  .map-sheet-toggle { display: inline-flex; flex: none; }
+  .map-main { padding-bottom: 3.6rem; }
+}
+@media (prefers-reduced-motion: no-preference) { .map-inspector { transition: max-height 160ms ease-out; } }

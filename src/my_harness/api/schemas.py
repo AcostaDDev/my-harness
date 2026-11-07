@@ -3496,6 +3496,28 @@ class MapRunsRead(MapPage):
     items: list[MapRunItem]
 
 
+class MapBubbleEntry(MapBubbleItem):
+    phase: str | None
+    task: str | None
+    run_id: str | None
+
+
+class MapBubbleFilter(BaseModel):
+    phase: str | None
+    task: str | None
+    run: str | None
+    attempt: str | None
+    circle: MapCircle | None
+
+
+class MapBubblesRead(MapPage):
+    """One element's unresolved owner items with T020's attribution, filtered by exact scope and circle."""
+    project: MapProjectHead
+    filter: MapBubbleFilter
+    bubbles: MapBubbles = Field(description='Counts of the whole filtered set (every page).')
+    items: list[MapBubbleEntry]
+
+
 class MapRunHead(BaseModel):
     run_id: str
     purpose: str
@@ -3536,6 +3558,10 @@ class MapStepsRead(MapPage):
     run: MapRunHead
     items: list[MapStep]
     bubbles: MapBubbles
+    chats: list[MapActiveInvocation] = Field(
+        description='Active chat invocations attached to this run (L3 chat lane; the same on every page and part '
+                    'of its version), oldest first, at most 20; never steps of the run.')
+    chats_truncated: bool = Field(description='More active chats are attached to the run than `chats` lists.')
     edges: list[MapEdge]
 
 

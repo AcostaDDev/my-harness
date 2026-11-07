@@ -6,6 +6,9 @@ import type { MessageKey } from "./i18n.ts";
 import { managed, ManagedError } from "./managed-api";
 import type { S } from "./managed-api";
 import { refusalLine } from "./configuration.ts";
+import { STATUS_ICONS, STATUS_LABELS, statusClassOf } from "./map/status.ts";
+import type { StatusClass } from "./map/status.ts";
+import { listStatusClass } from "./status-class.ts";
 import type { LiveRefusal } from "./configuration.ts";
 
 /** Text of an error to show: a service problem without a diagnostic gets the interface's own sentence. */
@@ -132,36 +135,57 @@ export function Hash({ value, length = 12 }: { value?: string | null; length?: n
   return <code className="hash" title={value}>{value.slice(0, length)}</code>;
 }
 
-type Tone = "ok" | "active" | "attention" | "danger" | "neutral";
-
-const RUN: Record<string, [MessageKey, Tone]> = {
-  QUEUED: ["status.run.QUEUED", "active"], ACTIVE: ["status.run.ACTIVE", "active"], PLANNING: ["status.run.PLANNING", "active"],
-  PREPARING: ["status.run.PREPARING", "active"], EXECUTING: ["status.run.EXECUTING", "active"], REVIEWING: ["status.run.REVIEWING", "active"],
-  VALIDATING: ["status.run.VALIDATING", "active"], COMMITTING: ["status.run.COMMITTING", "active"],
-  ANSWERING: ["status.run.ANSWERING", "active"], DISCOVERING: ["status.run.DISCOVERING", "active"],
-  ACCEPTANCE_READY: ["status.run.ACCEPTANCE_READY", "attention"], BLOCKED: ["status.run.BLOCKED", "attention"],
-  REVISION_LIMIT: ["status.run.REVISION_LIMIT", "attention"], RECOVERY_REQUIRED: ["status.run.RECOVERY_REQUIRED", "attention"],
-  STOPPED: ["status.run.STOPPED", "neutral"], INTERRUPTED: ["status.run.INTERRUPTED", "danger"],
-  COMMITTED: ["status.run.COMMITTED", "ok"], COMPLETED: ["status.run.COMPLETED", "ok"], DONE: ["status.run.DONE", "ok"],
-  FAILED: ["status.run.FAILED", "danger"], ABORTED: ["status.run.ABORTED", "danger"], INTENT: ["status.run.INTENT", "active"],
+// Labels of the persisted codes the lists show; the class (colour and icon) comes from `status-class.ts`.
+const RUN: Record<string, MessageKey> = {
+  QUEUED: "status.run.QUEUED", ACTIVE: "status.run.ACTIVE", PLANNING: "status.run.PLANNING", PREPARING: "status.run.PREPARING",
+  EXECUTING: "status.run.EXECUTING", REVIEWING: "status.run.REVIEWING", VALIDATING: "status.run.VALIDATING",
+  COMMITTING: "status.run.COMMITTING", ANSWERING: "status.run.ANSWERING", DISCOVERING: "status.run.DISCOVERING",
+  CHECKING: "status.run.CHECKING", ACCEPTANCE_READY: "status.run.ACCEPTANCE_READY", BLOCKED: "status.run.BLOCKED",
+  REVISION_LIMIT: "status.run.REVISION_LIMIT", RECOVERY_REQUIRED: "status.run.RECOVERY_REQUIRED", STOPPED: "status.run.STOPPED",
+  INTERRUPTED: "status.run.INTERRUPTED", COMMITTED: "status.run.COMMITTED", COMPLETED: "status.run.COMPLETED", DONE: "status.run.DONE",
+  FAILED: "status.run.FAILED", ABORTED: "status.run.ABORTED", REFUSED: "status.run.REFUSED", INTENT: "status.run.INTENT",
   // Attempt outcomes: the adapter's stream status, upper-cased when the attempt is stored.
-  COMPLETE: ["status.run.COMPLETE", "ok"], PARTIAL: ["status.run.PARTIAL", "attention"], INVALID: ["status.run.INVALID", "danger"],
-  CANCELLED: ["status.run.CANCELLED", "neutral"], TIMEOUT: ["status.run.TIMEOUT", "danger"], TIMED_OUT: ["status.run.TIMEOUT", "danger"],
+  COMPLETE: "status.run.COMPLETE", PARTIAL: "status.run.PARTIAL", INVALID: "status.run.INVALID", CANCELLED: "status.run.CANCELLED",
+  TIMEOUT: "status.run.TIMEOUT", TIMED_OUT: "status.run.TIMEOUT", REPETITIVE: "status.run.REPETITIVE",
 };
 
-export const PHASE: Record<S["PhaseRead"]["status"], [MessageKey, Tone]> = {
-  ACTIVE: ["status.phase.ACTIVE", "active"], CHECKING: ["status.phase.CHECKING", "active"],
-  READY_TO_CLOSE: ["status.phase.READY_TO_CLOSE", "attention"], NEEDS_RECONCILIATION: ["status.phase.NEEDS_RECONCILIATION", "attention"],
-  BLOCKED: ["status.phase.BLOCKED", "attention"], CLOSING: ["status.phase.CLOSING", "active"], CLOSED: ["status.phase.CLOSED", "ok"],
-  ABANDONED: ["status.phase.ABANDONED", "neutral"],
+export const PHASE: Record<S["PhaseRead"]["status"], MessageKey> = {
+  ACTIVE: "status.phase.ACTIVE", CHECKING: "status.phase.CHECKING", READY_TO_CLOSE: "status.phase.READY_TO_CLOSE",
+  NEEDS_RECONCILIATION: "status.phase.NEEDS_RECONCILIATION", BLOCKED: "status.phase.BLOCKED", CLOSING: "status.phase.CLOSING",
+  CLOSED: "status.phase.CLOSED", ABANDONED: "status.phase.ABANDONED",
 };
 
-/** Status with text and tone; color is never the only signal. An unknown status is shown as is. */
+/** Icon of a status class (T018 §5.1): check, arrow, hand, cross, empty circle, dash or question mark. */
+export function StatusIcon({ cls }: { cls: StatusClass }) {
+  const icon = STATUS_ICONS[cls];
+  return <svg className="status-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+    {icon.kind === "circle" ? <circle cx="10" cy="10" r="6" /> : <path d={icon.d} />}
+  </svg>;
+}
+
+/**
+ * Status in one of the six classes plus `unknown` (D304): icon, translated text and the original code for assistive
+ * technology; colour is never the only signal. A code without a mapping is `unknown` and shows its raw value.
+ */
 export function Status({ value, kind = "run" }: { value: string; kind?: "run" | "phase" }) {
   const { t } = useI18n();
-  const known = kind === "phase" ? PHASE[value as S["PhaseRead"]["status"]] : RUN[value];
-  const [label, tone] = known ? [t(known[0]), known[1]] : [value, "neutral" as Tone];
-  return <span className={`status status-${tone}`} title={value}><span className="status-mark" aria-hidden="true" />{label}</span>;
+  const cls = listStatusClass(kind, value);
+  const key = kind === "phase" ? PHASE[value as S["PhaseRead"]["status"]] : RUN[value];
+  const label = key ? t(key) : cls === "unknown" ? t("map.status.unknown_code", { code: value }) : t(STATUS_LABELS[cls]);
+  return <span className={`status status-${cls}`} title={value} data-status-class={cls}>
+    <StatusIcon cls={cls} /><span>{label}</span>{cls !== "unknown" && <span className="visually-hidden"> ({value})</span>}
+  </span>;
+}
+
+/** A projected status (`{code, class}` from T020): the class is shown as projected, never recomputed. */
+export function MapStatusBadge({ status }: { status: { code?: string | null; class: string } }) {
+  const { t } = useI18n();
+  const cls = statusClassOf(status.class);
+  const code = status.code ?? undefined;
+  const label = cls === "unknown" && code ? t("map.status.unknown_code", { code }) : t(STATUS_LABELS[cls]);
+  return <span className={`status status-${cls}`} title={code} data-status-class={cls}>
+    <StatusIcon cls={cls} /><span>{label}</span>{code && cls !== "unknown" && <span className="visually-hidden"> ({code})</span>}
+  </span>;
 }
 
 const TRACK: S["PhaseRead"]["status"][] = ["ACTIVE", "CHECKING", "READY_TO_CLOSE", "CLOSING", "CLOSED"];
@@ -174,11 +198,11 @@ export function PhaseRail({ status }: { status: S["PhaseRead"]["status"] }) {
   const { t } = useI18n();
   const siding = SIDINGS[status];
   const position = TRACK.indexOf(siding ?? status);
-  return <div className="rail" role="img" aria-label={t("phase.rail", { status: t(PHASE[status][0]) })}>
+  return <div className="rail" role="img" aria-label={t("phase.rail", { status: t(PHASE[status]) })}>
     <ol className="rail-track">
       {TRACK.map((step, index) => <li key={step} className={index < position ? "rail-past" : index === position ? (siding ? "rail-branch" : "rail-now") : "rail-next"}>
-        <span className="rail-stop" aria-hidden="true" /><span className="rail-label">{t(PHASE[step][0])}</span>
-        {index === position && siding && <span className="rail-siding">{t(PHASE[status][0])}</span>}
+        <span className="rail-stop" aria-hidden="true" /><span className="rail-label">{t(PHASE[step])}</span>
+        {index === position && siding && <span className="rail-siding">{t(PHASE[status])}</span>}
       </li>)}
     </ol>
   </div>;

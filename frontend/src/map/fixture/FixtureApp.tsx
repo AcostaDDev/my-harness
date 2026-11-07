@@ -16,6 +16,8 @@ import type { Scenario } from "./data.ts";
 import { panZoomBenchmark, visibleNodes } from "./measure.ts";
 import type { BenchmarkResult } from "./measure.ts";
 import { fixtureText } from "./text.ts";
+import type { ProjectionScenario } from "./projections.ts";
+import { ProductFixture } from "./ProductFixture";
 import type { FixtureKey } from "./text.ts";
 
 export const FIXTURE_BASE = "/__map-fixture";
@@ -23,8 +25,9 @@ const STORAGE = "harness-map-fixture";
 
 type Theme = "system" | "light" | "dark";
 type Motion = "system" | "reduce" | "allow";
-type Settings = { scenario: Scenario; language: Language; theme: Theme; motion: Motion };
-const DEFAULTS: Settings = { scenario: "normal", language: "en", theme: "system", motion: "system" };
+export type Source = "engine" | "product";
+export type Settings = { scenario: Scenario; language: Language; theme: Theme; motion: Motion; source: Source; product: ProjectionScenario; archive: boolean };
+const DEFAULTS: Settings = { scenario: "normal", language: "en", theme: "system", motion: "system", source: "engine", product: "review", archive: false };
 
 // Per-tab convenience only: losing it just shows the defaults.
 function stored(): Settings {
@@ -43,8 +46,9 @@ export function FixtureRoot() {
     if (settings.theme === "system") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", settings.theme);
   }, [settings]);
+  const change = (patch: Partial<Settings>) => setSettings(current => ({ ...current, ...patch }));
   return <I18nProvider fixed={settings.language}>
-    <FixtureApp settings={settings} change={patch => setSettings(current => ({ ...current, ...patch }))} />
+    {settings.source === "product" ? <ProductFixture settings={settings} change={change} /> : <FixtureApp settings={settings} change={change} />}
   </I18nProvider>;
 }
 
@@ -102,6 +106,9 @@ function FixtureApp({ settings, change }: { settings: Settings; change: (patch: 
       <h1>{f("fixture.title")}</h1>
       <p className="muted">{f("fixture.synthetic")}</p>
       <div className="map-fixture-controls">
+        <label>{f("fixture.source")} <select value={settings.source} onChange={event => { forgetViews(); change({ source: event.target.value as Source }); }}>
+          {(["engine", "product"] as const).map(item => <option key={item} value={item}>{f(`fixture.source.${item}`)}</option>)}
+        </select></label>
         <label>{f("fixture.scenario")} <select value={settings.scenario} onChange={event => { forgetViews(); change({ scenario: event.target.value as Scenario }); }}>
           {SCENARIOS.map(item => <option key={item} value={item}>{f(`fixture.scenario.${item}`)}</option>)}
         </select></label>

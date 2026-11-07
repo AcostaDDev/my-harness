@@ -1,0 +1,22 @@
+{
+  "run": {
+    "done": ["COMMITTED", "COMPLETED", "DONE"],
+    "progress": ["QUEUED", "ACTIVE", "PLANNING", "PREPARING", "EXECUTING", "REVIEWING", "VALIDATING", "COMMITTING", "ANSWERING", "DISCOVERING", "CHECKING", "INTENT"],
+    "waiting": ["ACCEPTANCE_READY"],
+    "failed": ["BLOCKED", "REVISION_LIMIT", "RECOVERY_REQUIRED", "INTERRUPTED", "FAILED", "ABORTED", "REFUSED"],
+    "inactive": ["STOPPED"]
+  },
+  "attempt": {
+    "done": ["COMPLETE", "COMPLETED"],
+    "progress": ["ACTIVE"],
+    "failed": ["PARTIAL", "INVALID", "FAILED", "TIMEOUT", "TIMED_OUT", "INTERRUPTED", "REFUSED", "REPETITIVE"],
+    "inactive": ["CANCELLED"]
+  },
+  "phase": {
+    "done": ["CLOSED"],
+    "progress": ["ACTIVE", "CHECKING", "CLOSING"],
+    "waiting": ["READY_TO_CLOSE", "NEEDS_RECONCILIATION"],
+    "failed": ["BLOCKED"],
+    "inactive": ["ABANDONED"]
+  }
+}

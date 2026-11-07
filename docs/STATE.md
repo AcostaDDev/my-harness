@@ -110,6 +110,33 @@ authorized commit, merge and push of develop, with personal visual review explic
 the map to real data (D313). The accompanying merge integrates reviewed source `6b6a0ee`; push of develop is authorized.
 Next: **P002-T022**. Release 0.2.0, distribution/publication and installation remain pending.
 [Record](phase/P002-T021-rendering-foundation.md#14-source-integration--2026-11-06).
+**P002-T022 (work-map levels and home page) is local source on `feat/p002-t022-work-map` from `4535804`, not
+committed** (D314): the map L0–L3 is the home page and the entry of the phase, task and run routes, with the existing
+pages one `?view=list` toggle away (remembered per browser); cards, inspector (bottom sheet on narrow screens),
+R/E/J/H circles with rays and the chat lane, T017 bubbles opening `InboxConversation` over the map, a paged run
+selector, activity polling with stale-cursor recovery, a throttled polite live region, the read-only archive map
+beside the run-id entry, the invocation header behind circles, and the shared `Status` on the six classes plus
+`unknown` with a Python parity test. Synthetic evidence only. The first independent technical review found seven functional
+defects (no follow-up before a task's first run, request lists losing actor or scope, an archive table without
+access to details, concurrent invocations collapsed into one circle and no L3 chat lane, a page cap that cut the
+history, evidence links leading back to the map, a stale stored view winning over a failed write); they are corrected
+locally with regressions (record §9). The corrections add one read, the element request list
+`GET /api/managed/map/projects/{p}/bubbles` (T020 attribution, exact scope and circle, archive parity, OpenAPI and
+generated client); no schema, persistence, authorization or dependency change. The independent re-review reproduced
+two remaining problems (a failed run-selector reread hidden behind an earlier empty read; L3 chats taken only from
+the truncated global activity list, and none in archives); both are corrected locally with regressions (record §10),
+adding the run's chat lane to the steps read (`chats`, `chats_truncated`, part of its version; OpenAPI and generated
+client updated). Opening the synthetic frontend then showed two blocking browser defects: status and counter
+overlapping on cards, and a closed mobile inspector whose hidden controls stayed in the Tab order. Both are corrected
+locally (record §11): separate fitted card rows, and a closed sheet whose body is not rendered while its heading and
+toggle stay in view, with the focus kept when the window narrows; browser geometry, keyboard and screenshot evidence
+from the synthetic fixture (development server only). Browser measurements: first L2 render of the product map with
+80 tasks median 165.8 ms (≤ 500 ms), engine pan/zoom at 200 visible cards 60 fps mean, 5th percentile ≥ 53.8 fps
+(≥ 50 fps). The subsequent re-review reproduced quadratic label fitting and stale deferred inspector focus.
+Both are corrected locally with regressions and fresh browser measurements (record §12). Pending: independent
+re-review of this diff, the owner's visual review (T022's and T021's deferred one,
+D313), integration, release 0.2.0, distribution/publication and installation.
+[Record](phase/P002-T022-work-map.md).
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
 Historical starting context:

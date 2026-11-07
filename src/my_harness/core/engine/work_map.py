@@ -14,7 +14,8 @@ CLASSES = ('done', 'progress', 'waiting', 'failed', 'pending', 'inactive', 'unkn
 # Counter and field sources, as everywhere in the trace (T006): absence is a source, never a zero.
 SOURCES = ('supplied', 'reported', 'derived', 'measured', 'absent')
 # Page caps per level (D306). Every route clamps to these; nothing larger is ever read for one page.
-LIMITS = {'projects': 100, 'phases': 200, 'tasks': 300, 'runs': 50, 'steps': 200, 'trace': 200, 'related': 200}
+LIMITS = {'projects': 100, 'phases': 200, 'tasks': 300, 'runs': 50, 'steps': 200, 'trace': 200, 'related': 200,
+          'bubbles': 50}
 POLLING = {'active_interval_ms': 2000, 'idle_interval_ms': 10000, 'pause_when_hidden': True}
 MAX_SCOPES = 10
 
@@ -195,7 +196,21 @@ def scope(level: str, *parts: str) -> str:
 
 
 # Arity of each scope: the project key plus the level's own arguments (`projects` has none).
-ARITY = {'projects': 0, 'phases': 1, 'tasks': 2, 'runs': 3, 'steps': 2, 'invocation': 2, 'trace': 2, 'related': 3}
+ARITY = {'projects': 0, 'phases': 1, 'tasks': 2, 'runs': 3, 'steps': 2, 'invocation': 2, 'trace': 2, 'related': 3,
+         'bubbles': 6}
+BUBBLE_FILTERS = ('phase', 'task', 'run', 'attempt', 'circle')
+
+
+def bubble_scope(project_key: str, filters: dict) -> str:
+    """Scope of one element's request list: each filter is `=value` or `~` (absent), so absence is never a value."""
+    return scope('bubbles', project_key, *('~' if filters.get(k) is None else '=' + filters[k] for k in BUBBLE_FILTERS))
+
+
+def bubble_filters(parts: list[str]) -> dict:
+    """Inverse of `bubble_scope` over a decoded scope's filter parts; anything else is a `TokenError('scope')`."""
+    if not all(v == '~' or (v.startswith('=') and len(v) > 1) for v in parts):
+        raise TokenError('scope')
+    return {k: None if v == '~' else v[1:] for k, v in zip(BUBBLE_FILTERS, parts)}
 
 
 def read_scope(value) -> tuple[str, list[str]]:

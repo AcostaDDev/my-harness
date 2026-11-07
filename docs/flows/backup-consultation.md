@@ -10,7 +10,8 @@ flowchart TD
     M -- no --> N["Ordinary runtime and canonical project run routes"]
     M -- yes --> Q["SQLite query_only; no project composition, ports or supervisor"]
     Q --> A["Local session; supervisor.read_only_archive = true"]
-    A --> H["Archive home: enter run id, or load /runs/:id directly"]
+    A --> H["Archive home: read-only map L0 beside the run-id entry, or load /runs/:id directly"]
+    H --> MapR["Map levels L1–L3 and invocation header from SQLite projections; no polling"]
     H --> R["Read projected evidence, paginated diff/JUnit, jobs, attempts, events and metrics"]
     R --> P["Pages on demand or explicit reload; historical states preserved"]
     A --> X["Operational UI routes blocked; no pending submissions or mutation controls"]
@@ -58,6 +59,16 @@ flowchart TD
   (`polling.enabled = false`) and no writes; the reads need neither the checkout nor project composition. Source
   record availability comes from the persisted retention audit; the existing log route verifies restored bytes on read
   ([work-map reads](work-map.md#archives)).
+
+- P002-T022 renders that projection in the archive UI: the archive home is the
+  read-only map L0 beside the run-id entry, and the map routes `/projects/:p/phases`, `…/phases/:code`,
+  `…/tasks/:task`, `…/runs/:run` and the invocation header `/projects/:p/invocations/:i` are unblocked, with a table
+  over the same projection as their list alternative. They resolve in the query-only branch before any
+  `ProjectWorkspace` or pending-submission read, use the map key, read `GET /api/managed/map/…` (including the
+  element request list) and T017's item read only, and start no poll, announcement timer, action or talk button;
+  requests open T017's panel read-only, and each table row reaches its details, invocations and requests.
+  The phase check, project page and every other operational page stay blocked
+  ([work-map client](work-map.md#product-map-navigation-and-refresh-client-p002-t022)).
 
 ## Source
 

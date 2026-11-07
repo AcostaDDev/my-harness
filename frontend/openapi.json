@@ -23752,6 +23752,222 @@
         }
       }
     },
+    "/api/managed/map/projects/{project_id}/bubbles": {
+      "get": {
+        "summary": "Bubbles",
+        "description": "Owner requests of one element with T020's circle and attribution: exact scope (phase, task, run,\nattempt) and optionally one circle, on every page. Identities and counts only; T017 stays the authority.",
+        "operationId": "map_bubbles",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 199
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 199
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "run",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 199
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run"
+            }
+          },
+          {
+            "name": "attempt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 199
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attempt"
+            }
+          },
+          {
+            "name": "circle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "R",
+                    "E",
+                    "J",
+                    "H"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Circle"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque keyset cursor of the previous page.",
+              "title": "Cursor"
+            },
+            "description": "Opaque keyset cursor of the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapBubblesRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/map/projects/{project_id}/invocations/{invocation_id}": {
       "get": {
         "summary": "Invocation",
@@ -38202,6 +38418,177 @@
         ],
         "title": "MapAutonomousRun"
       },
+      "MapBubbleEntry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "T017 inbox item id; the panel re-reads the item."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "permission",
+              "question",
+              "judge",
+              "lifecycle",
+              "notification"
+            ],
+            "title": "Kind"
+          },
+          "topic": {
+            "type": "string",
+            "enum": [
+              "run_permission",
+              "standing_permission",
+              "task_gap",
+              "phase_question",
+              "autonomous_question",
+              "judge_escalation",
+              "phase_ready",
+              "limit_reached",
+              "recovery_required",
+              "failed",
+              "task_completed",
+              "phase_closed"
+            ],
+            "title": "Topic"
+          },
+          "circle": {
+            "type": "string",
+            "enum": [
+              "R",
+              "E",
+              "J",
+              "H"
+            ],
+            "title": "Circle"
+          },
+          "attributed": {
+            "type": "boolean",
+            "title": "Attributed"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "topic",
+          "circle",
+          "attributed",
+          "phase",
+          "task",
+          "run_id"
+        ],
+        "title": "MapBubbleEntry"
+      },
+      "MapBubbleFilter": {
+        "properties": {
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "run": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run"
+          },
+          "attempt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt"
+          },
+          "circle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "R",
+                  "E",
+                  "J",
+                  "H"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Circle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase",
+          "task",
+          "run",
+          "attempt",
+          "circle"
+        ],
+        "title": "MapBubbleFilter"
+      },
       "MapBubbleItem": {
         "properties": {
           "id": {
@@ -38333,6 +38720,76 @@
           "unattributed"
         ],
         "title": "MapBubbles"
+      },
+      "MapBubblesRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "work-map-1",
+            "title": "Format"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Opaque scope id; echo it to the activity poll."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version token of the scope; a changed token reloads the first page."
+          },
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque keyset cursor bound to scope and version."
+          },
+          "project": {
+            "$ref": "#/components/schemas/MapProjectHead"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/MapBubbleFilter"
+          },
+          "bubbles": {
+            "$ref": "#/components/schemas/MapBubbles",
+            "description": "Counts of the whole filtered set (every page)."
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapBubbleEntry"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "level",
+          "scope",
+          "version",
+          "read_only_archive",
+          "project",
+          "filter",
+          "bubbles",
+          "items"
+        ],
+        "title": "MapBubblesRead",
+        "description": "One element's unresolved owner items with T020's attribution, filtered by exact scope and circle."
       },
       "MapCircleState": {
         "properties": {
@@ -40718,6 +41175,19 @@
           "bubbles": {
             "$ref": "#/components/schemas/MapBubbles"
           },
+          "chats": {
+            "items": {
+              "$ref": "#/components/schemas/MapActiveInvocation"
+            },
+            "type": "array",
+            "title": "Chats",
+            "description": "Active chat invocations attached to this run (L3 chat lane; the same on every page and part of its version), oldest first, at most 20; never steps of the run."
+          },
+          "chats_truncated": {
+            "type": "boolean",
+            "title": "Chats Truncated",
+            "description": "More active chats are attached to the run than `chats` lists."
+          },
           "edges": {
             "items": {
               "$ref": "#/components/schemas/MapEdge"
@@ -40737,6 +41207,8 @@
           "run",
           "items",
           "bubbles",
+          "chats",
+          "chats_truncated",
           "edges"
         ],
         "title": "MapStepsRead"

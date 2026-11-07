@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useI18n } from "./Language";
-import type { MessageKey } from "./i18n.ts";
+import type { MessageKey, Translate } from "./i18n.ts";
+import { mapLevel } from "./map/routes.ts";
 import { Link } from "./navigation";
 import { href, trail } from "./router.ts";
 import type { Route } from "./router.ts";
@@ -58,7 +59,7 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
   const items: [MessageKey, Route, boolean][] = [
     ["nav.summary", { name: "project", project }, route.name === "project"],
     ["inbox.title", { name: "project-inbox", project }, route.name === "project-inbox"],
-    ["nav.phases", { name: "phases", project }, ["phases", "phase", "task", "run"].includes(route.name)],
+    ["nav.phases", { name: "phases", project }, ["phases", "phase", "task", "run", "invocation"].includes(route.name)],
     ["knowledge.title", { name: "project-knowledge", project }, route.name === "project-knowledge"],
     ["nav.docs", { name: "docs", project }, route.name === "docs"],
     ["nav.chat", { name: "chat", project }, route.name === "chat"],
@@ -72,13 +73,23 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
   </div>;
 }
 
+/**
+ * Breadcrumb in a query-only archive: the read-only map levels and invocation headers keep their trail, starting at
+ * the archive home, with the project leading to its phases (the project page stays blocked there).
+ */
+export function archiveTrail(route: Route, t: Translate): { label: string; to: Route }[] {
+  const home = { label: t("archive.title"), to: { name: "home" } as Route };
+  if (mapLevel(route) === undefined && route.name !== "invocation") return [home, ...(route.name === "run-short" ? [{ label: route.run, to: route }] : [])];
+  return [home, ...trail(route, t).slice(1).map(item => item.to.name === "project" ? { ...item, to: { name: "phases", project: item.to.project } as Route } : item)];
+}
+
 export function Shell({ route, children }: { route: Route; children: ReactNode }) {
   const { t, unavailable, preferences } = useI18n();
   const archive = useArchive();
   const mode = useServiceMode();
   const configuring = !!mode?.configuration_mode && mode.configuration_mode !== "READY";
   const [theme, cycle] = useTheme();
-  const items = archive && route.name !== "inbox" && route.name !== "project-inbox" ? [{ label: t("archive.title"), to: { name: "home" } as Route }, ...(route.name === "run-short" ? [{ label: route.run, to: route }] : [])] : trail(route, t);
+  const items = archive && route.name !== "inbox" && route.name !== "project-inbox" ? archiveTrail(route, t) : trail(route, t);
   const project = "project" in route ? route.project : undefined;
   const path = href(route);
   const first = useRef(true);

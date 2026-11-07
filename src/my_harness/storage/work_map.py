@@ -1145,7 +1145,14 @@ class WorkMap:
             GROUP BY invocation_id, kind ORDER BY invocation_id, kind""", ids=json.dumps(sorted(invocations)),
             kinds=json.dumps(sorted({*MARKERS, *RELATED})))]
 
-    def _steps_version(self, db, run):
+    def _run_chats(self, db, run, active=None):
+        """Active chat invocations whose conversation is attached to this run (the L3 chat lane), in T020's
+        activity order. The run's own project only: `_active` reads by root and the conversation's task run must
+        share it; never inferred from a global, possibly truncated, activity list."""
+        active = self._active(db, run['root']) if active is None else active
+        return [a for a in active if a['chat'] and a['root'] == run['root'] and a['scope']['run_id'] == run['id']]
+
+    def _steps_version(self, db, run, active=None):
         invocations = list(db.scalars(text("""SELECT i.id FROM managed_attempts a JOIN usage_invocations i
             ON i.source_kind = 'managed_attempt' AND i.source_id = a.id WHERE a.run_id = :run"""), {'run': run['id']}))
         open_ = _rows(db, """SELECT a.id, p.status FROM managed_attempts a LEFT JOIN managed_processes p
@@ -1156,10 +1163,11 @@ class WorkMap:
         permissions = db.scalar(text("""SELECT max(x.sequence) FROM knowledge_projects k
             JOIN permission_records x ON x.project_id = k.id WHERE k.root = :root"""), {'root': run['root']})
         bubbles = [b['id'] for b in self._bubbles(db, run['root']) if b['run_id'] == run['id']]
+        chats = [[a['attempt_id'], a['process']] for a in self._run_chats(db, run, active)]
         return wm.version({'run': run['version'], 'open': [[r['id'], r['status']] for r in open_],
                            'markers': self._markers(db, invocations),
                            'deliveries': [[r['invocation_id'], r['n']] for r in deliveries],
-                           'permissions': permissions, 'bubbles': bubbles})
+                           'permissions': permissions, 'bubbles': bubbles, 'chats': chats})
 
     def _attempt_status(self, attempt):
         if not attempt['open']:
@@ -1330,7 +1338,8 @@ class WorkMap:
             identity = self._project(db, project)
             run = self._run(db, identity, run_id)
             scope = wm.scope('steps', identity['key'], run_id)
-            version = self._steps_version(db, run)
+            chats = self._run_chats(db, run)
+            version = self._steps_version(db, run, chats)
             after = wm.read_cursor(cursor, scope, version, (int, int))
             last = tuple(after) if after else (0, 9)
             if last[0] < 0 or (last[0] != TAIL and last[1] not in (0, 1, 2, 9)):
@@ -1381,9 +1390,47 @@ class WorkMap:
                             'revisions': run['revisions'], 'revision_limit': run['revision_limit'],
                             'created_at': run['created_at'], 'updated_at': run['updated_at']},
                     'items': shown, 'bubbles': self._bubble_view(bubbles),
+                    'chats': [{**self._active_view(a), 'project_id': identity['key']} for a in chats[:MAX_LIST]],
+                    'chats_truncated': len(chats) > MAX_LIST,
                     'edges': [{'kind': 'step_order', 'source': a['key'], 'target': b['key']}
                               for a, b in zip(shown, shown[1:])],
                     'next_cursor': wm.cursor(scope, version, next_key) if more and next_key else None}
+
+    # --- owner requests of one element ------------------------------------------------------------------------
+
+    BUBBLE_FIELDS = {'phase': 'phase', 'task': 'task', 'run': 'run_id', 'attempt': 'attempt_id', 'circle': 'circle'}
+
+    def _filtered(self, db, root, filters):
+        """T020's attributed bubbles of a project that match every given filter exactly (absent filters match all):
+        the same set the element's counters were computed from, never re-attributed here."""
+        return [b for b in self._bubbles(db, root)
+                if all(value is None or b[self.BUBBLE_FIELDS[name]] == value for name, value in filters.items())]
+
+    @staticmethod
+    def _bubbles_version(items):
+        return wm.version({'bubbles': [b['id'] for b in items]})
+
+    def bubbles(self, project: str, *, phase=None, task=None, run=None, attempt=None, circle=None, cursor=None,
+                limit=wm.LIMITS['bubbles']) -> dict:
+        """Unresolved, non-notification owner items of one element, with their circle and attribution, keyset by
+        item id. Filters are exact: an L0 aggregate gives none, a phase its code, a task phase and code, a step its
+        run and attempt; `circle` keeps one circle's own items on every page."""
+        limit = max(1, min(int(limit), wm.LIMITS['bubbles']))
+        filters = {'phase': phase, 'task': task, 'run': run, 'attempt': attempt, 'circle': circle}
+        with self.engine.connect() as db:
+            identity = self._project(db, project)
+            items = self._filtered(db, identity['root'], filters)
+            scope = wm.bubble_scope(identity['key'], filters)
+            version = self._bubbles_version(items)
+            after = wm.read_cursor(cursor, scope, version, (str,))
+            rest = [b for b in items if not after or b['id'] > after[0]]
+            page = rest[:limit]
+            return {'format': wm.FORMAT, 'level': 'bubbles', 'scope': scope, 'version': version,
+                    'read_only_archive': self._archive(db), 'project': self._head(identity), 'filter': filters,
+                    'bubbles': self._bubble_view(items),
+                    'items': [{k: b[k] for k in ('id', 'kind', 'topic', 'circle', 'attributed', 'phase', 'task',
+                                                 'run_id')} for b in page],
+                    'next_cursor': wm.cursor(scope, version, [page[-1]['id']]) if len(rest) > limit else None}
 
     # --- L4: one invocation -----------------------------------------------------------------------------------
 
@@ -1784,7 +1831,11 @@ class WorkMap:
                 raise MapNotFound(parts[2])
             return self._runs_version(db, root, parts[1], parts[2])
         if level == 'steps':
-            return self._steps_version(db, self._run(db, identity, parts[1]))
+            return self._steps_version(db, self._run(db, identity, parts[1]), [a for a in active if a['root'] == root])
+        if level == 'bubbles':
+            return self._bubbles_version([b for b in bubbles if b['root'] == root and all(
+                value is None or b[self.BUBBLE_FIELDS[name]] == value
+                for name, value in wm.bubble_filters(parts[1:]).items())])
         invocation = self._invocation(db, identity, parts[1])
         if level == 'invocation':
             return self._invocation_version(db, invocation)

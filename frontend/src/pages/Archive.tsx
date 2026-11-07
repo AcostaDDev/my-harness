@@ -6,23 +6,27 @@ import { Empty, Loading, PageHeader, Pagination, Stale, usePoll } from "../ui";
 import { RunEvidence } from "./RunEvidence";
 import { Attempts } from "./AttemptMetrics";
 import { useArchive } from "../ServiceMode";
+import { MapLevelSwitch } from "../map/LevelSwitch";
 
 export function ArchiveNotice() {
   const { t } = useI18n();
   return <p role="status" className="state state-attention">{t("archive.notice")}</p>;
 }
 
+/** Archive home (T018 §4, D304): the read-only map L0 (or its table) beside the existing entry by run id. */
 export function ArchiveHome() {
   const { t } = useI18n();
   const [id, setId] = useState("");
   return <>
-    <Link to={{ name: "knowledge" }}>{t("knowledge.title")}</Link>
-    <PageHeader title={t("archive.title")}><p>{t("archive.lede")}</p></PageHeader>
-    <form className="panel" onSubmit={event => { event.preventDefault(); if (id.trim()) navigate({ name: "run-short", run: id.trim() }); }}>
+    <MapLevelSwitch route={{ name: "home" }} />
+    <form className="panel archive-entry" aria-labelledby="archive-entry" onSubmit={event => { event.preventDefault(); if (id.trim()) navigate({ name: "run-short", run: id.trim() }); }}>
+      <h2 id="archive-entry">{t("archive.entry")}</h2>
+      <p>{t("archive.lede")}</p>
       <label>{t("archive.run_id")}<input value={id} required onChange={event => setId(event.target.value)} /></label>
       <p className="hint">{t("archive.id_hint")}</p>
       <button type="submit" disabled={!id.trim()}>{t("archive.open")}</button>
     </form>
+    <p><Link to={{ name: "knowledge" }}>{t("knowledge.title")}</Link></p>
   </>;
 }
 

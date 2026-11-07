@@ -2688,7 +2688,7 @@ delivery is dropped, and T018 still follows T017.
 ## D304 — Work-map levels, cards, navigation and status classes
 
 Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q5–Q15 and Q20); completes G14's remaining input
-(cards, information, navigation) on D297's visual direction. Not implemented. Contract:
+(cards, information, navigation) on D297's visual direction. L0–L3 are implemented and integrated in P002-T022 ([D314](#d314--work-map-levels-on-the-product-routes-refresh-client-and-read-only-archive-map)); L4, the drawer and the talk button are T023–T024. Contract:
 [T018 §§3–5](phase/P002-T018-work-map-contract.md#3-levels-cards-and-inspector-g14).
 
 The map keeps D278's read-only projection. Compact cards per level carry code, title, status, circles, one primary
@@ -2736,7 +2736,7 @@ survive retention, backups and query-only restore.
 
 Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answers Q5 and Q16); binds T020 and T022. The
 API side is implemented and integrated as source `b30a00c` in P002-T020 after independent final re-review
-([D311](#d311--work-map-read-projections-tokens-and-indexes)); T022's polling client is not implemented. Refines D278's
+([D311](#d311--work-map-read-projections-tokens-and-indexes)); T022's polling client and archive map are implemented and integrated ([D314](#d314--work-map-levels-on-the-product-routes-refresh-client-and-read-only-archive-map)). Refines D278's
 "polling remains the default" and keeps D029. Contract:
 [T018 §§7–8](phase/P002-T018-work-map-contract.md#7-read-projections-and-api-t020).
 
@@ -2797,8 +2797,10 @@ measured the projection-page and idle-poll budgets on the §12 fixture (integrat
 [evidence](phase/P002-T020-work-map-api.md)); T021 measured the rendering budgets on its synthetic fixture in the browser
 (80-node first render median 77 ms, pan and zoom 60 fps at 200 visible nodes) and again on the code corrected after
 review (median 71.6 ms; 60 fps; independent final re-review passed, source `6b6a0ee` integrated,
-[evidence](phase/P002-T021-rendering-foundation.md#127-browser-re-verification-of-the-corrected-code)); T022 re-measures
-them on the product map. Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
+[evidence](phase/P002-T021-rendering-foundation.md#127-browser-re-verification-of-the-corrected-code)); T022 measured the
+80-node first L2 render of the product map separately in Node SSR and in the synthetic browser, and repeated the
+browser pan/zoom measurement after updating shared label fitting
+([evidence](phase/P002-T022-work-map.md#12-bounded-label-fitting-and-current-inspector-focus-2026-11-07)). Contract: [T018 §§11–12](phase/P002-T018-work-map-contract.md#11-accessibility-t021t024).
 
 The map and trace meet WCAG 2.2 AA. Every SVG node is focusable with an accessible name (kind, code, title, status
 text, actors, bubble count), and keyboard operation is complete. Status is never shown by colour alone, and label
@@ -2887,7 +2889,9 @@ pagination, transactions and recovery); implemented and integrated as source `e1
 Status: accepted within the latitude the owner delegated for P002-T020 (endpoint and type names, module organization,
 response representation, cursors, queries and justified indexes); source complete after corrections to the
 first technical review (six findings), three re-review remnants and historical assistance ownership after registry
-retirement. Independent final re-review passed on 2026-11-05; source `b30a00c` is integrated into develop. Implements [D306](#d306--work-map-read-projections-polling-refresh-and-archive-map) under
+retirement. Independent final re-review passed on 2026-11-05; source `b30a00c` is integrated into develop. P002-T022's
+review corrections add one read on the same tokens and attribution, the element request list `map/projects/{p}/bubbles`
+(local source, pending re-review; [D314](#d314--work-map-levels-on-the-product-routes-refresh-client-and-read-only-archive-map)). Implements [D306](#d306--work-map-read-projections-polling-refresh-and-archive-map) under
 [T018 §§5, 7–8](phase/P002-T018-work-map-contract.md#7-read-projections-and-api-t020), D304 and D309;
 [evidence](phase/P002-T020-work-map-api.md), [flow](flows/work-map.md).
 
@@ -2980,7 +2984,7 @@ Status: accepted within the latitude the owner delegated for P002-T021 (names, m
 interfaces and reversible details, including the arrow-key convention); refined by the corrections of the first
 independent review rounds (zoom range, gesture guard and delayed keyboard repeats); independent final re-review passed
 and the owner accepted T021 on 2026-11-06. Source `6b6a0ee` is integrated into develop; personal visual review is explicitly
-deferred to T022 under D313. Implements [D297](#d297--work-map-visual-direction-and-agent-conversation-entry-points),
+deferred to T022 under D313 and confirmed at T022 integration. Implements [D297](#d297--work-map-visual-direction-and-agent-conversation-entry-points),
 [D304](#d304--work-map-levels-cards-navigation-and-status-classes), [D308](#d308--roughjs-466-and-excalifont-v0181-for-the-hand-drawn-map)
 and [D309](#d309--accessibility-and-realistic-size-budgets-for-the-work-map) under
 [T018 §§4, 5.1, 10–12](phase/P002-T018-work-map-contract.md#4-navigation); [evidence](phase/P002-T021-rendering-foundation.md).
@@ -3031,3 +3035,104 @@ acceptance; other tasks' review gates are unchanged. The T018 contract and histo
 This acceptance does not authorize T022 implementation, release/publication, installation, database migration or
 real agents/providers. Source completion, develop integration and operational delivery remain separate under D242.
 Evidence: [T021 final review and acceptance](phase/P002-T021-rendering-foundation.md#13-independent-final-re-review-and-owner-acceptance--2026-11-06).
+On 2026-11-07 the owner confirmed the deferred T021 visual acceptance together with T022's.
+[Acceptance and integration record](phase/P002-T022-work-map.md#13-final-review-owner-acceptance-and-integration--2026-11-07).
+
+## D314 — Work-map levels on the product routes, refresh client and read-only archive map
+
+Status: accepted within the latitude the owner delegated for P002-T022 (module organization, names, hooks, internal
+representation and reversible details compatible with the contract); **complete and integrated as source
+`1149765` after independent final re-review and owner visual acceptance on 2026-11-07**. The first independent technical
+review found seven defects, corrected locally (2026-11-06); the re-review reproduced two remaining problems (a failed
+run-selector reread hidden behind an earlier empty read; L3 chats taken from the truncated global activity list and
+absent in archives), corrected locally; opening the synthetic frontend then showed two blocking browser defects
+(status and counter overlapping on cards; a closed mobile inspector keeping hidden controls in the Tab order),
+corrected locally on 2026-11-07 with browser evidence and the D309 browser measurements. The next re-review
+reproduced quadratic label fitting and stale deferred inspector focus, both corrected and independently re-reviewed
+(record §§12–13). The corrections needed two minimal read extensions, authorized for them by
+the owner: the element request list and the run's chat lane in the steps read, both below.
+Implements [D304](#d304--work-map-levels-cards-navigation-and-status-classes),
+[D306](#d306--work-map-read-projections-polling-refresh-and-archive-map) and
+[D309](#d309--accessibility-and-realistic-size-budgets-for-the-work-map) on T020's projections
+([D311](#d311--work-map-read-projections-tokens-and-indexes)) with T021's engine
+([D312](#d312--work-map-engine-interaction-conventions-and-development-fixture)); the owner's visual review, including
+T021's deferred one ([D313](#d313--t021-acceptance-with-owner-visual-review-deferred-to-the-real-data-map)), is confirmed.
+Evidence: [P002-T022 record](phase/P002-T022-work-map.md).
+
+- **Routes and toggle.** `/`, `/projects/:p/phases`, `…/phases/:code`, `…/tasks/:task` and `…/runs/:run` render the
+  map by default and the existing page with all its controls under `?view=list`; the check route is not a map level.
+  The toggle writes the parameter as a history entry and remembers the choice in `localStorage` (try/catch). The
+  choice made in this page wins over an older stored value, so a write that fails while reads work keeps the new
+  choice; a parameter applies to its own URL only (corrected: a URL that names the view no longer becomes the
+  remembered choice, so an evidence link does not turn the owner's map into the list for cards and breadcrumbs). `navigation.tsx`
+  adds `useSearch` and compares path and query when deduplicating, while `usePath` keeps observing the path only.
+  Entering a project card in ordinary mode uses its configured project id (the list pages need it); archives and
+  unregistered projects use the map key, which T020 and T017 accept as an alias.
+- **Cards and controls.** Cards draw T020's class, primary counter (or "not observed"), error mark, L0 mode badge and
+  L1 Plan · Check · Close slots inside the card link. Rows (corrected after the browser review): code and badge, two
+  title lines, the status and the counter each on a row of its own (cards 128 px high); every label is fitted to its
+  row with a per-character width table that bounds both the map font and its fallback, the same on the server and in
+  the browser, and cut with "…" only when it does not fit; an unknown status that does not fit as "Unknown: CODE"
+  shows its raw code. The accessible name keeps the full status text and counter, the description the raw code. Circles, request bubbles and a details control are separate
+  overlay controls outside the link, kept out of the tab order (the inspector offers each one to the keyboard), so
+  choosing them never navigates the card. Circles are drawn on every project card and, deeper, only on the open phase
+  or where a circle is active, waits or a task is in progress or waiting; the inspector always lists every circle.
+  Several active invocations stay distinct (corrected): an active circle is one actor per active invocation of the
+  element, from T020's `active_invocations`, each with its own persisted invocation as target and its own chat flag,
+  so a task reviewer and a chat at once are two R circles; the circle's request count sits on its first actor; H stays
+  one actor. At L3 an active chat attached to the run shown is a lane node of its own, with R lit and labelled "chat",
+  no edge into the step sequence and no fabricated step. Its source is the run's own steps read (corrected after the
+  re-review; never the global activity list, truncated at 50): `MapStepsRead.chats` lists the active chat invocations
+  whose conversation is attached to the run (T020's `_active` for the run's root, `chat` and `scope.run_id`), oldest
+  first, at most 20, with `chats_truncated` shown as a coverage hint; the list is the same on every page and part of
+  the steps version (every attached chat's attempt and process), so a chat that starts, changes process or ends
+  rereads the steps, and an archive's single read shows it. OpenAPI and the generated client are updated; no schema,
+  persistence or authorization change.
+- **Inspector.** Selection follows focus (and clicks on leaves); it is a side panel, or a bottom sheet below 880 px.
+  Closed, the sheet shows its heading and *Show details* only: its body is not rendered (no Tab stop or accessible
+  content); open, only the body scrolls, so the heading and the control stay in view (corrected after the browser
+  review). The control names the body with `aria-controls`; wide screens always show the body. Narrowing the window
+  with the focus in the inspector opens the sheet and keeps (or restores) that focus, never taking it from elsewhere.
+  Fields keep their T020 source; harness attempts, revision rounds, native turns, requested and reported models are
+  separate fields. Steps stay the deepest map level: the circle of an invocation opens `/projects/:p/invocations/:i`,
+  which in T022 serves only T020's existing L4 header read (identity, owner breadcrumb, counters, observed-step
+  state, run evidence link); the trace graph and drawer remain T023.
+- **Requests.** Bubbles open T017's `InboxConversation` inside the inspector, carrying item identities only; the
+  conversation re-reads the item. A single listed request opens directly. L0 aggregates (counts only) and
+  `items_truncated` lists read the **element request list** `GET /api/managed/map/projects/{p}/bubbles` (corrected;
+  T017's inbox items carry no circle or attempt, so filtering them could not keep the actor): T020's own attributed
+  set (`_bubbles`, the one the counters come from) filtered exactly by `phase`, `task`, `run`, `attempt` and
+  optionally `circle`, 50 per page keyset by item id, with the counts of the whole set. Its scope token carries the
+  filters (`=value` or `~`), its version digests the filtered ids, so a cursor is bound to project and filters and a
+  changed set answers `409 cursor_stale`; it polls like any scope, is isolated by the project root (foreign ids 404),
+  reads SQLite only and is identical in restored archives; OpenAPI and the generated client are updated. No
+  authorization semantics or persistence change; T017 stays the authority for resolution and actions. L0 reads no
+  scope, L1 its phase, L2 phase and task, a step its run and attempt. Archives open it read-only.
+- **Refresh.** One `LevelLoader` per level path: one request in flight (a reload asked meanwhile runs once after it),
+  further pages on demand inside a window of five held pages (corrected: past it the oldest pages are dropped and
+  counted, the first page is kept apart for its head fields, and "Back to the first page" reloads, so pages after the
+  fifth stay reachable with bounded memory), `409 cursor_stale` returns to the first page and rereads it, and a
+  disposed loader applies no late answer. One `ActivityPoller` per view sends one aggregated `map/activity` read for
+  every scope known in view (level and run selector; corrected: a task without runs is followed through its run
+  selector, so its first run appears without navigation), schedules the next read only after the previous one
+  settled (2 s active, 10 s idle, as the response states), pauses while hidden and stops when a response disables
+  polling. A changed or vanished scope reloads that level's first page. A failed first read offers "Read again"; a
+  failed reread over a snapshot still shown, including a run selector read empty before (corrected after the
+  re-review), keeps that snapshot as possibly out of date with the error and a mounted "Read again"; a failed poll
+  shows that the map may be out of date until a read succeeds (retried at 10 s, one timer). Archives create neither a
+  poller nor an announcer.
+- **Announcements.** A polite live region summarises status changes of elements already shown (class and raw code,
+  so a language switch is not a change) at most once every 10 s; a level's first read is never announced.
+- **Status.** `frontend/src/status-classes.json` copies T020's run, attempt and phase tables; the shared `Status`
+  shows the six classes plus `unknown` with an icon, translated text and the raw code for assistive technology, and
+  `tests/product/test_frontend_status_parity.py` fails on any divergence from `core/engine/work_map.py` or the
+  persisted vocabularies. The map shows T020's class as projected (`MapStatusBadge`).
+- **Archives.** Map levels resolve in the query-only branch before any `ProjectWorkspace`: the archive home is the
+  map L0 beside the run-id entry, map routes and the invocation header are unblocked, their list alternative is a
+  table over the same projection whose rows (corrected) fill the inspector, link to each actor's invocation and open
+  the element's requests from the keyboard, and every operational page stays blocked. "Run evidence" (L3 summary and
+  invocation header) opens the run page with its evidence and controls (`?view=list`; `/runs/:id` keeps the query
+  when it resolves) and the run consultation in archives.
+- **Development review.** The T021 fixture gains a product source: the real map components under `/__map-fixture`
+  with a fetch shim that answers from synthetic T020-shaped projections (`map/fixture/projections.ts`, also used by
+  the Node tests) and refuses every mutation. `RouteBase` prefixes route links there; it is empty in the product.

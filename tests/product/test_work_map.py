@@ -19,9 +19,12 @@ from sqlalchemy import text
 
 from my_harness.api.app import create_app
 from my_harness.core.engine import work_map as wm
+from my_harness.core.engine.contracts import RunHistory
+from my_harness.core.engine.serialization import dump_history
 from my_harness.services.managed_runtime import ManagedConfig
 from my_harness.storage.backup import create_backup, restore_backup
 from my_harness.storage.knowledge import KnowledgeRepository
+from my_harness.storage import run_projection
 from my_harness.storage.observed_steps import ObservedStepProjector
 from session_client import TestClient
 from test_managed import context, repository  # noqa: F401
@@ -1573,3 +1576,253 @@ def test_retired_registry_preserves_settled_assistance_history_and_archive(tmp_p
             assert db.scalar(text('PRAGMA query_only')) == 1
     assert sha256(restored.read_bytes()).hexdigest() == digest
     engine.dispose()
+
+
+def ask_permission(engine, run_id, attempt, ident):
+    """A pending run permission raised by `attempt`, written as the broker persists it (request row and event)."""
+    with engine.begin() as db:
+        sequence = db.scalar(text('SELECT coalesce(max(sequence), 0) + 1 FROM managed_events WHERE run_id = :r'),
+                             {'r': run_id})
+        db.execute(text("""INSERT INTO permission_requests (id, run_id, version, status, request, fingerprint,
+            expires_at, created_at) VALUES (:id, :run, 1, 'PENDING', :req, :fp, '2100-01-01T00:00:00+00:00', :at)"""),
+            {'id': ident, 'run': run_id, 'req': json.dumps({'source_attempt_id': attempt, 'operation': 'network',
+                                                             'note': SECRET}), 'fp': '0' * 64, 'at': NOW})
+        db.execute(text("""INSERT INTO managed_events (run_id, sequence, kind, recorded_at, payload)
+            VALUES (:run, :seq, 'permission_requested', :at, :payload)"""),
+            {'run': run_id, 'seq': sequence, 'at': NOW, 'payload': json.dumps({'id': ident})})
+
+
+def test_element_requests_keep_exact_circle_and_scope_on_every_page_isolated_and_archived(world, tmp_path):
+    """P002-T022 review (D314): an element's request list is T020's own attributed set, filtered exactly by scope
+    and circle on every page, so a counter and the items it opens are the same set; it is bounded, keyset, bound
+    to its filters, isolated per project and identical in a restored query-only archive."""
+    w = world
+    engine = w.repository.engine
+    foreign = KnowledgeRepository(engine).project(str(tmp_path / 'foreign'))
+    with engine.connect() as db:
+        run = db.scalar(text("SELECT id FROM managed_runs WHERE purpose = 'task'"))
+    with engine.begin() as db:  # a run in review again: its open permissions are unresolved (T017)
+        db.execute(text("UPDATE managed_runs SET status = 'REVIEWING' WHERE id = :r"), {'r': run})
+    executor = inflight(engine, run, role='executor')
+    reviewer = inflight(engine, run, role='reviewer')
+    for n in range(3):
+        ask_permission(engine, run, executor, f'perm-e-{n}')
+    for n in range(2):
+        ask_permission(engine, run, reviewer, f'perm-r-{n}')
+    path = w.url.removeprefix('sqlite:///')
+    managed = config(w.context, w.ports, supervisor=False)
+    base = f'/projects/{w.project}/bubbles'
+    with client(w.url, tmp_path, managed) as http:
+        marks = table_marks(path)
+        card = next(c for c in get(http, '/projects')['items'] if c['id'] == w.project)
+        [node] = get(http, f'/projects/{w.project}/phases/P001/tasks')['items']
+        steps = {s.get('attempt_id'): s for s in get(http, f'/projects/{w.project}/runs/{run}/steps')['items']}
+        assert card['bubbles']['by_circle'] == {'E': 3, 'R': 2, 'H': 1}
+
+        # The aggregate: every item of the project, in bounded keyset pages that are complete and disjoint.
+        everything, count, last = pages(http, base, limit=2)
+        assert count == 3 and len(everything) == card['bubbles']['total'] == last['bubbles']['total'] == 6
+        assert [i['id'] for i in everything] == sorted(i['id'] for i in everything)
+        assert last['bubbles']['by_circle'] == card['bubbles']['by_circle'] and last['level'] == 'bubbles'
+        # One circle: only its own items on every page, never another circle's of the same element.
+        for circle, expected in (('E', 3), ('R', 2), ('H', 1)):
+            mine, _, page = pages(http, base, limit=1, circle=circle)
+            assert len(mine) == expected == card['bubbles']['by_circle'][circle], circle
+            assert {i['circle'] for i in mine} == {circle} and page['filter']['circle'] == circle
+        # Exact scope: the task's set equals its node; a step's set is its own attempt's, not the run's.
+        task, _, page = pages(http, base, limit=1, phase='P001', task='P001-T001')
+        counts = lambda view: {k: v for k, v in view.items() if k not in ('items', 'items_truncated')}  # noqa: E731
+        assert len(task) == node['bubbles']['total'] and counts(page['bubbles']) == counts(node['bubbles'])
+        for attempt, circle in ((executor, 'E'), (reviewer, 'R')):
+            own, _, page = pages(http, base, limit=1, run=run, attempt=attempt)
+            assert {i['id'] for i in own} == {i['id'] for i in steps[attempt]['bubbles']['items']}
+            assert {i['circle'] for i in own} == {circle} and all(i['run_id'] == run for i in own)
+        assert get(http, base, run=run, attempt=executor, circle='R')['items'] == []
+        assert get(http, base, phase='P002')['items'] == [] and get(http, base, phase='P002')['bubbles']['total'] == 0
+
+        # Bounded, validated, isolated; a cursor is bound to its filters and project.
+        assert http.get(MAP + base, params={'limit': 51}).status_code == 422
+        assert http.get(MAP + base, params={'circle': 'X'}).status_code == 422
+        assert http.get(MAP + base, params={'phase': 'P' * 200}).status_code == 422
+        assert http.get(MAP + '/projects/unknown/bubbles').status_code == 404
+        assert get(http, f'/projects/{foreign}/bubbles')['items'] == []
+        cursor = get(http, base, limit=1, circle='E')['next_cursor']
+        for params in ({'circle': 'R'}, {}, {'circle': 'E', 'phase': 'P001'}):
+            refused = http.get(MAP + base, params={'cursor': cursor, 'limit': 1, **params})
+            assert refused.status_code == 422 and refused.json()['detail']['code'] == 'cursor_invalid', params
+        refused = http.get(MAP + f'/projects/{foreign}/bubbles', params={'cursor': cursor, 'circle': 'E'})
+        assert refused.status_code == 422
+        assert http.post(MAP + base, headers=CSRF).status_code == 405
+        # The list scope polls like any other; a new item of the set supersedes its cursor (409, then reread).
+        first = get(http, base, limit=1, circle='E')
+        poll = get(http, '/activity', scope=[first['scope']])
+        assert poll['scopes'] == [{'scope': first['scope'], 'version': first['version'], 'error': None}]
+        assert table_marks(path) == marks  # nothing above wrote
+        other = get(http, base, limit=1, circle='R')
+        ask_permission(engine, run, executor, 'perm-e-9')
+        stale = http.get(MAP + base, params={'cursor': first['next_cursor'], 'limit': 1, 'circle': 'E'})
+        assert stale.status_code == 409 and stale.json()['detail']['code'] == 'cursor_stale'
+        assert get(http, '/activity', scope=[first['scope']])['scopes'][0]['version'] != first['version']
+        assert get(http, base, circle='R')['version'] == other['version'], 'another circle is not superseded'
+        current, _, _ = pages(http, base, limit=2)
+        assert len(current) == 7
+        dump = json.dumps([get(http, base), current])
+        assert SECRET not in dump and str(w.context.root) not in dump
+
+    with engine.begin() as db:  # the synthetic in-flight processes have no artifact directory to back up
+        db.execute(text('DELETE FROM managed_processes WHERE id IN (:e, :r)'), {'e': executor, 'r': reviewer})
+    create_backup(path, tmp_path / 'backup', writers_stopped=True)
+    restore_backup(tmp_path / 'backup', tmp_path / 'restored')
+    w.context.root.rename(tmp_path / 'checkout-gone')
+    restored = tmp_path / 'restored/state.sqlite3'
+    before = sha256(restored.read_bytes()).hexdigest()
+    archive = create_app(f'sqlite:///{restored}', managed=ManagedConfig(supervisor=False))
+    with TestClient(archive, base_url=LOCAL) as http:
+        archived, _, page = pages(http, f'/projects/{w.project}/bubbles', limit=2)
+        assert page['read_only_archive'] and archived == current
+        assert [i['id'] for i in pages(http, f'/projects/{w.project}/bubbles', circle='E')[0]] == [
+            i['id'] for i in current if i['circle'] == 'E']
+    assert sha256(restored.read_bytes()).hexdigest() == before
+
+
+def task_chat(engine, root, task_run, *, process='RUNNING', at=NOW):
+    """An active chat turn whose conversation is attached to `task_run` (the L3 chat lane), as the chat service and
+    supervisor persist it; returns (chat run, attempt)."""
+    chat = chat_run(engine, root, None)
+    with engine.begin() as db:
+        db.execute(text("UPDATE chat_conversations SET task_run_id = :task WHERE id = "
+                        "(SELECT conversation_id FROM chat_turns WHERE run_id = :run)"), {'task': task_run, 'run': chat})
+    return chat, inflight(engine, chat, role='chat', process=process, at=at)
+
+
+def second_task_run(engine, run):
+    """Another task run of the same task (a copy of `run`'s row under a new id)."""
+    other = str(uuid.uuid4())
+    with engine.begin() as db:
+        columns = [r['name'] for r in db.execute(text('PRAGMA table_info(managed_runs)')).mappings() if r['name'] != 'id']
+        listed = ', '.join(columns)
+        db.execute(text(f'INSERT INTO managed_runs (id, {listed}) SELECT :other, {listed} FROM managed_runs '
+                        'WHERE id = :run'), {'other': other, 'run': run})
+    return other
+
+
+def test_l3_chat_lane_is_a_bounded_snapshot_of_the_runs_own_chats_versioned_isolated_and_archived(world, tmp_path):
+    """P002-T022 re-review (D314): the steps read carries the active chats attached to its run, so the lane never
+    depends on the global activity list (truncated at 50) and a restored archive shows it without polling. The
+    list is the run's own (another run, a phase chat or another project's chat never appear), bounded with an
+    explicit `chats_truncated`, the same on every page and part of the steps version: a chat that starts, changes
+    process or ends changes the version the poll compares, and a cursor issued before it is stale."""
+    w = world
+    engine = w.repository.engine
+    root = str(w.context.root)
+    with engine.connect() as db:
+        run = db.scalar(text("SELECT id FROM managed_runs WHERE purpose = 'task' LIMIT 1"))
+    other = second_task_run(engine, run)
+    path = w.url.removeprefix('sqlite:///')
+    steps = f'/projects/{w.project}/runs/{run}/steps'
+    with client(w.url, tmp_path, config(w.context, w.ports, supervisor=False)) as http:
+        quiet = get(http, steps)
+        assert quiet['chats'] == [] and quiet['chats_truncated'] is False
+        cursor = get(http, steps, limit=1)['next_cursor']
+        assert cursor
+
+        # Noise that must never reach this run's lane: a phase chat, a chat on another run, and a foreign project's
+        # chat whose conversation names this run (attribution is by root, never by run id alone); 50 earlier
+        # foreign invocations fill and truncate the global activity list.
+        phase_chat = inflight(engine, chat_run(engine, root, w.phase_id), role='chat')
+        _, on_other = task_chat(engine, root, other)
+        _, foreign = task_chat(engine, root + '-foreign', run)
+        for _ in range(50):
+            inflight(engine, chat_run(engine, root + '-noise', None), role='chat', at='2000-01-01')
+        chat, mine = task_chat(engine, root, run, process='PENDING', at='2090-01-01')
+
+        started = get(http, steps)
+        assert [c['attempt_id'] for c in started['chats']] == [mine] and started['chats_truncated'] is False
+        [lane] = started['chats']
+        assert lane['chat'] and lane['circle'] == 'R' and lane['invocation_id'] == f'inv-{mine}'
+        assert lane['scope']['run_id'] == run and lane['project_id'] == w.project and lane['process'] == 'PENDING'
+        assert lane['run_id'] == chat, 'the chat keeps its own run: it is not a step of the task run'
+        assert all(s.get('attempt_id') != mine for s in started['items']), 'no step fabricated'
+        assert started['version'] != quiet['version'], 'a chat that starts changes the run version'
+        stale = http.get(MAP + steps, params={'cursor': cursor, 'limit': 1})
+        assert stale.status_code == 409 and stale.json()['detail']['code'] == 'cursor_stale'
+        # The global list is truncated and does not list this chat; the poll's version is the shown one anyway.
+        activity = get(http, '/activity', scope=[started['scope']])
+        assert activity['active_invocations_truncated'] is True and len(activity['active_invocations']) == 50
+        assert f'inv-{mine}' not in {a['invocation_id'] for a in activity['active_invocations']}
+        assert activity['scopes'] == [{'scope': started['scope'], 'version': started['version'], 'error': None}]
+        # Every page carries the same lane; the other run shows only its own chat.
+        assert all(page['chats'] == started['chats'] for page in [get(http, steps, limit=1)]
+                   + [get(http, steps, limit=1, cursor=get(http, steps, limit=1)['next_cursor'])])
+        assert [c['attempt_id'] for c in get(http, f'/projects/{w.project}/runs/{other}/steps')['chats']] == [on_other]
+        assert phase_chat not in {c['attempt_id'] for c in started['chats']} and foreign not in {
+            c['attempt_id'] for c in started['chats']}
+        marks = table_marks(path)
+        get(http, steps)
+        get(http, '/activity', scope=[started['scope']])
+        assert table_marks(path) == marks, 'reads write nothing'
+
+        # Changing process changes the version; past 20 chats the list is cut explicitly.
+        with engine.begin() as db:
+            db.execute(text("UPDATE managed_processes SET status = 'RUNNING' WHERE id = :a"), {'a': mine})
+        running = get(http, steps)
+        assert running['chats'][0]['process'] == 'RUNNING' and running['version'] != started['version']
+        extra = [inflight(engine, chat, role='chat', at=f'2091-01-{n + 1:02d}') for n in range(20)]
+        crowded = get(http, steps)
+        assert len(crowded['chats']) == 20 and crowded['chats_truncated'] is True
+        assert [c['attempt_id'] for c in crowded['chats']] == [mine, *extra[:19]], 'oldest first'
+        # Ending them clears the lane and changes the version the poll compares.
+        with engine.begin() as db:
+            for attempt in [*extra]:
+                db.execute(text("UPDATE managed_attempts SET result_json = '{}', status = 'COMPLETED' WHERE id = :a"),
+                           {'a': attempt})
+                db.execute(text("UPDATE managed_processes SET status = 'STOPPED' WHERE id = :a"), {'a': attempt})
+        assert get(http, steps)['chats_truncated'] is False
+        with engine.begin() as db:
+            db.execute(text("UPDATE managed_attempts SET result_json = '{}', status = 'COMPLETED' WHERE id = :a"),
+                       {'a': on_other})
+            db.execute(text("UPDATE managed_processes SET status = 'STOPPED' WHERE id = :a"), {'a': on_other})
+        ended = get(http, f'/projects/{w.project}/runs/{other}/steps')
+        assert ended['chats'] == []
+        assert get(http, '/activity', scope=[ended['scope']])['scopes'][0]['version'] == ended['version']
+        live = get(http, steps)
+        assert [c['attempt_id'] for c in live['chats']] == [mine]
+
+    # A restored query-only archive reads the same persisted lane from SQLite: no checkout, no poll, no write.
+    artifacts = tmp_path / 'artifacts'
+    with engine.begin() as db:
+        # Synthetic processes have no artifact directory to back up; only this run's chat keeps one (below).
+        db.execute(text("DELETE FROM managed_processes WHERE json_extract(spec, '$.artifacts') IS NULL AND id != :a"),
+                   {'a': mine})
+        # Synthetic runs carry an empty history (`chat_run`) or a copied one (`second_task_run`); a backup checks
+        # every history and its projection, so they get an empty valid one and its projection (real writer).
+        for rid in db.scalars(text("SELECT id FROM managed_runs WHERE history_json = '{}' OR id = :other"),
+                              {'other': other}).all():
+            history = RunHistory(rid, '{}')
+            db.execute(text('UPDATE managed_runs SET history_json = :h WHERE id = :id'),
+                       {'id': rid, 'h': dump_history(history)})
+            for name in run_projection.TABLES:
+                db.execute(text(f'DELETE FROM {name} WHERE run_id = :id'), {'id': rid})
+            run_projection.create(db, rid, dump_history(history), history)
+        directory = artifacts / mine
+        directory.mkdir(parents=True)
+        prompt = b'Synthetic chat prompt'
+        (directory / 'prompt.txt').write_bytes(prompt)
+        db.execute(text('UPDATE managed_processes SET spec = :spec WHERE id = :a'), {'a': mine, 'spec': json.dumps(
+            {'provider': 'codex', 'artifacts': str(directory), 'prompt_path': str(directory / 'prompt.txt'),
+             'prompt_sha256': sha256(prompt).hexdigest()})})
+    with client(w.url, tmp_path, config(w.context, w.ports, supervisor=False)) as http:
+        ordinary = get(http, steps)
+    create_backup(path, tmp_path / 'backup', artifact_roots=[artifacts], writers_stopped=True)
+    restore_backup(tmp_path / 'backup', tmp_path / 'restored')
+    w.context.root.rename(tmp_path / 'checkout-gone')
+    restored = tmp_path / 'restored/state.sqlite3'
+    before = sha256(restored.read_bytes()).hexdigest()
+    archive = create_app(f'sqlite:///{restored}', managed=ManagedConfig(supervisor=False))
+    with TestClient(archive, base_url=LOCAL) as http:
+        archived = get(http, steps)
+        assert archived['read_only_archive'] and archived['chats'] == ordinary['chats']
+        assert [c['attempt_id'] for c in archived['chats']] == [mine] and archived['version'] == ordinary['version']
+        assert get(http, '/activity', scope=[archived['scope']])['polling']['enabled'] is False
+        assert get(http, f'/projects/{w.project}/runs/{other}/steps')['chats'] == []
+    assert sha256(restored.read_bytes()).hexdigest() == before

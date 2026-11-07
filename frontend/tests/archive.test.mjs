@@ -11,6 +11,7 @@ const { ServiceModeContext, ServiceModeProvider } = await import('../src/Service
 const { Page } = await import('../src/Page.tsx');
 const { RunEvidence } = await import('../src/pages/RunEvidence.tsx');
 const { parse, href } = await import('../src/router.ts');
+const { syntheticMap, respond } = await import('../src/map/fixture/projections.ts');
 delete globalThis.__tsxHookHarness;
 
 const mode = archive => ({ read_only_archive: archive, enabled: false, alive: false, last_error: null,
@@ -37,6 +38,8 @@ const page = (items, next_offset = null) => ({ items, next_offset });
 
 function environment(language = 'en', status = 'COMMITTED') {
   const driver = hookHost();
+  // P002-T022: map levels read T020's projections (synthetic, query-only shaped) and nothing operational.
+  const map = syntheticMap('review', { archive: true });
   const requests = [], timers = [], navigation = [], pendingReads = [];
   const original = { fetch: globalThis.fetch, setTimeout: globalThis.setTimeout, clearTimeout: globalThis.clearTimeout };
   globalThis.setTimeout = callback => { timers.push(callback); return timers.length; };
@@ -64,6 +67,7 @@ function environment(language = 'en', status = 'COMMITTED') {
     else if (url.pathname.endsWith('/diff')) data = { sha256: hash, size_bytes: 10, offset: 0, next_offset: null, text: '+synthetic' };
     else if (url.pathname.endsWith('/reports/0')) data = { items: [{ id: 'case-1', suite: ['suite'], name: 'synthetic case', result: 'passed', error: null }], next_offset: null, command_id: 'check', source_attempt_id: 'attempt-1', evidence: {} };
     else if (url.pathname.endsWith('/logs')) data = [{ stream: 'stdout', state: 'purged', size_bytes: 0 }];
+    else if (url.pathname.startsWith('/api/managed/map/')) { const answer = respond(map, path); return Response.json(answer.body, { status: answer.status }); }
     else assert.fail(`Unexpected read: ${path}`);
     return Response.json(data);
   };
@@ -135,7 +139,7 @@ for (const status of ['QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED', 'REVISION_LIMIT']
 }
 
 test('archive home, blocked direct routes, missing run and loading gate never mount workspace', async () => {
-  for (const path of ['/', '/projects/new', '/preferences', '/projects/p/settings', '/projects/p/phases/P001/tasks/T001/runs/saved-run',
+  for (const path of ['/', '/projects/new', '/preferences', '/projects/p/settings', '/projects/p/phases/P001/check',
     '/projects/p/chat', '/projects/p/docs', '/projects/p/onboarding', '/projects/p/setup', '/projects/p/phases/P001/plan', '/runs/unknown']) {
     const env = environment('es');
     try {
@@ -143,8 +147,30 @@ test('archive home, blocked direct routes, missing run and loading gate never mo
       assert.doesNotMatch(html, /decision-pending|my-harness serve --config/);
       if (path === '/') assert.match(html, /Id de run/);
       else if (path !== '/runs/unknown') assert.match(html, /no está disponible/);
-      assert.ok(env.requests.length === 0 || path === '/runs/unknown');
+      // P002-T022: the archive home is the read-only map L0 beside the run-id entry; it reads map projections only.
+      if (path === '/') assert.ok(env.requests.length > 0 && env.requests.every(request => request.startsWith('/api/managed/map/')), env.requests.join(' '));
+      else assert.ok(env.requests.length === 0 || path === '/runs/unknown');
       assert.deepEqual(env.pendingReads, []);
+      assert.deepEqual(env.timers, []);
+    } finally { env.close(); }
+  }
+});
+
+test('archive map levels L1–L3 read SQLite projections only, without workspace, actions or timers', async () => {
+  for (const path of ['/projects/kp-atlas/phases', '/projects/kp-atlas/phases/P002', '/projects/kp-atlas/phases/P002/tasks/P002-T005',
+    '/projects/kp-atlas/phases/P002/tasks/P002-T005/runs/run-atlas-latest', '/projects/kp-atlas/phases/P002?view=list']) {
+    const env = environment('en');
+    const [pathname, search = ''] = path.split('?');
+    globalThis.window.location.pathname = pathname;
+    globalThis.window.location.search = search ? `?${search}` : '';
+    try {
+      const html = await env.render(env.tree(pathname));
+      assert.match(html, search ? /<table/ : /data-node=/, path);
+      assert.doesNotMatch(html, /decision-pending|run-decision|type="checkbox"|<textarea|no está disponible|is not available/);
+      assert.ok(env.requests.length > 0 && env.requests.every(request => request.startsWith('/api/managed/map/')), env.requests.join(' '));
+      assert.deepEqual(env.pendingReads, []);
+      assert.deepEqual(env.timers, [], 'no polling timer in archives');
+      assert.deepEqual(env.navigation, []);
     } finally { env.close(); }
   }
 });
@@ -169,7 +195,9 @@ test('persistent archive signal is loaded before routing and stops supervisor po
   try {
     const tree = el(I18nProvider, null, el(ServiceModeProvider, null, el(Page, { route: { name: 'home' } })));
     assert.match(await env.render(tree), /Run id/);
-    assert.deepEqual(env.requests, ['/api/managed/supervisor']);
+    // The mark is read first; the archive home then reads the map projection only (P002-T022), with no timer.
+    assert.equal(env.requests[0], '/api/managed/supervisor');
+    assert.ok(env.requests.slice(1).every(request => request.startsWith('/api/managed/map/')), env.requests.join(' '));
     assert.deepEqual(env.timers, []);
     assert.equal(href({ name: 'run-short', run: 'id #?ñ' }), '/runs/id%20%23%3F%C3%B1');
   } finally { env.close(); }
@@ -199,6 +227,8 @@ test('ordinary project run retains decisions, recovery, permissions and polling 
   globalThis.sessionStorage = { getItem: () => null };
   const path = '/projects/registered/phases/P001/tasks/T001/runs/saved-run';
   globalThis.window.location.pathname = path;
+  // P002-T022: the run route shows the map by default; the run page with its controls is its list view.
+  globalThis.window.location.search = '?view=list';
   globalThis.fetch = async (path, options) => {
     if (path.endsWith('/permissions')) { env.requests.push(path); return Response.json([]); }
     const response = await fetch(path, options);
@@ -237,9 +267,12 @@ test('archive home submits an encoded run link without making a request', async 
     await env.render(tree);
     env.host.elements.find(e => e.type === 'input').props.onChange({ target: { value: 'id #?ñ' } });
     await env.render(tree);
+    const before = env.requests.length;
     env.host.elements.find(e => e.type === 'form').props.onSubmit({ preventDefault() {} });
     assert.deepEqual(env.navigation, ['/runs/id%20%23%3F%C3%B1']);
-    assert.deepEqual(env.requests, []);
+    // Submitting makes no request; the only reads are the map projection of the archive home (P002-T022).
+    assert.equal(env.requests.length, before);
+    assert.ok(env.requests.every(request => request.startsWith('/api/managed/map/')));
   } finally { env.close(); }
 });
 

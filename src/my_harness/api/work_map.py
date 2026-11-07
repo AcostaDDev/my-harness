@@ -11,8 +11,8 @@ from fastapi import APIRouter, Depends, Path, Query
 
 from my_harness.api.managed import ERRORS
 from my_harness.api.schemas import (
-    MapActivityRead, MapInvocationRead, MapPhasesRead, MapProjectsRead, MapRelatedRead, MapRunsRead, MapStepsRead,
-    MapTasksRead, MapTraceRead,
+    MapActivityRead, MapBubblesRead, MapInvocationRead, MapPhasesRead, MapProjectsRead, MapRelatedRead, MapRunsRead,
+    MapStepsRead, MapTasksRead, MapTraceRead,
 )
 from my_harness.api.security import local_request, problem
 from my_harness.core.engine import work_map as wm
@@ -23,6 +23,8 @@ from my_harness.storage.preferences import language
 from my_harness.storage.work_map import MapNotFound, WorkMap
 
 Ident = Annotated[str, Path(min_length=1, max_length=200)]
+# Request-list filters travel inside the list's scope token (`=value`), hence one character less than an identity.
+Filter = Annotated[str | None, Query(min_length=1, max_length=199)]
 Cursor = Annotated[str | None, Query(min_length=1, max_length=2048, description='Opaque keyset cursor of the previous page.')]
 
 
@@ -80,6 +82,15 @@ def work_map_router(runtime: ManagedRuntime) -> APIRouter:
     def steps(project_id: Ident, run_id: Ident, cursor: Cursor = None, limit: _limit('steps') = wm.LIMITS['steps']):
         """L3: agent invocations and Harness validate, format and commit stages of one run, in order."""
         return call(work_map().steps, project_id, run_id, cursor=cursor, limit=limit)
+
+    @router.get('/projects/{project_id}/bubbles', response_model=MapBubblesRead, operation_id='map_bubbles')
+    def bubbles(project_id: Ident, phase: Filter = None, task: Filter = None, run: Filter = None,
+                attempt: Filter = None, circle: Literal['R', 'E', 'J', 'H'] | None = None, cursor: Cursor = None,
+                limit: _limit('bubbles') = wm.LIMITS['bubbles']):
+        """Owner requests of one element with T020's circle and attribution: exact scope (phase, task, run,
+        attempt) and optionally one circle, on every page. Identities and counts only; T017 stays the authority."""
+        return call(work_map().bubbles, project_id, phase=phase, task=task, run=run, attempt=attempt, circle=circle,
+                    cursor=cursor, limit=limit)
 
     @router.get('/projects/{project_id}/invocations/{invocation_id}', response_model=MapInvocationRead,
                 operation_id='map_invocation')

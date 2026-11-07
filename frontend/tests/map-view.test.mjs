@@ -76,7 +76,8 @@ test('the six classes and unknown are drawn with icon, colour class and status t
         const text = translate({ en, es }, language, `map.status.${cls}`);
         assert.match(html, new RegExp(`class="map-label map-status-text" x="14" y="\\d+">${text}</text>`), `${cls} ${language}`);
       }
-      assert.match(html, /map-status-text[^>]*>(Unknown|Desconocido): (LEGACY_HOLD|X_FUTURE_STATE)</, 'unknown shows the raw code');
+      // The raw code stays visible; the translated prefix is dropped on the card when both do not fit (P002-T022 §11).
+      assert.match(html, /map-status-text[^>]*>(?:(?:Unknown|Desconocido): )?(LEGACY_HOLD|X_FUTURE_STATE)</, 'unknown shows the raw code');
     }
   }
 });

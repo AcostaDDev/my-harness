@@ -86,7 +86,7 @@ queue; closing the browser does not cancel work.
 Accounting, Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
 provider), `markdown.ts` and `mermaid-view.ts` (isolated rendering), `managed-api.ts` (idempotent submissions),
 `api.generated.ts` (generated, never edited), `map/` (P002-T021 work-map engine, fonts and development-only fixture,
-D312). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`,
+D312; P002-T022 product levels, loader, activity poll, inspector and requests panel, D314). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`,
 `check_distribution.py`, `smoke_cli.py`. `examples/`: the `local_config.example.toml` template, the minimal
 one-provider example, v2 recipe fragments and a synthetic demo.
 
@@ -561,7 +561,7 @@ version and cursor tokens of `core/engine/work_map.py`; `api/work_map.py` serves
 `/api/managed/map/` behind the session and Host/Origin guards. Every query is root-scoped and bounded, selects no
 `history_json`, and runs unchanged on query-only archives from SQLite alone; migration 0041 adds seven read indexes.
 **T021 is complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance;
-personal visual review is explicitly deferred to T022's real-data map** (D312, D313,
+the deferred owner visual review was confirmed at T022 integration** (D312, D313,
 [record](phase/P002-T021-rendering-foundation.md)). `frontend/src/map/` holds pure modules — stable seeds, status
 classes, a layered layout with dummy points and barycentric ordering, camera maths, `MapController` (pointer, pinch,
 wheel and keyboard input, zoom-enter and zoom-out-leave thresholds, navigation lock and a page-wide gesture guard so
@@ -569,9 +569,19 @@ one gesture navigates once across level changes) and the binding of levels to th
 existing `Route`/`href`/`parse` and `navigate` — plus `MapView`, which renders rough.js 4.6.6 generator paths as SVG
 coloured by theme tokens. The Excalifont subsets are global `@font-face` assets used only by map labels, emitted with
 `assets/Excalifont-OFL-1.1.txt` and served by the existing static handler. A development-only fixture
-(`map-fixture.html`, Vite dev server under `/__map-fixture/`) drives it with synthetic data; nothing in the product
-imports the engine yet. The components below from T022 onwards do not exist yet: T022–T023 render L0–L4 and the
-drawer with that engine through the existing router.
+(`map-fixture.html`, Vite dev server under `/__map-fixture/`) drives it with synthetic data. **T022 is complete and integrated as source
+`1149765` after independent final re-review and owner visual acceptance** (D314, [record](phase/P002-T022-work-map.md)):
+`Page.tsx` routes the map levels to `MapLevelSwitch`, which renders `WorkMap` or, under `?view=list`, the existing page
+(a table over the same projection in archives). `WorkMap` reads one T020 level per path through `LevelLoader`, adapts
+it with the pure `projection.ts` (no status or counter is recomputed), keeps it current with one `ActivityPoller` per
+view over every scope known (a task without runs is followed through its run selector) and fills the inspector;
+bubbles open T017's `InboxConversation` in place (lists without every identity read T020's element request list
+`map/projects/{p}/bubbles`, exact scope and circle) and each active invocation is its own circle opening the
+invocation header at `/projects/:p/invocations/:i` (an active chat on the run shown is its own L3 lane). Archives
+resolve before any `ProjectWorkspace` and mount no poller or action; their table rows reach the same inspector,
+invocations and requests. The
+shared `Status` follows `status-classes.json`, a copy of T020's tables checked by a Python parity test. T023 renders L4
+and the drawer with the same engine through the existing router.
 T024 seals chat turns that carry element context through T007's boundary, using a single-node chat graph thread
 over the existing scheduler. No second scheduler, workflow editor or executable graph authority is introduced.
 

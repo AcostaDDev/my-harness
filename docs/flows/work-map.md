@@ -4,8 +4,9 @@ P002-T020 implements the read side of [D304](../DECISIONS.md#d304--work-map-leve
 and [D306](../DECISIONS.md#d306--work-map-read-projections-polling-refresh-and-archive-map) under the
 [T018 contract](../phase/P002-T018-work-map-contract.md#7-read-projections-and-api-t020); the choices it made are
 [D311](../DECISIONS.md#d311--work-map-read-projections-tokens-and-indexes). The map is a projection (FL14): rebuilt
-from persisted rows on every read, never stored, never authority. Rendering, navigation and the polling timers are
-T021–T023.
+from persisted rows on every read, never stored, never authority. T021 supplies the rendering engine. P002-T022
+([D314](../DECISIONS.md#d314--work-map-levels-on-the-product-routes-refresh-client-and-read-only-archive-map)) renders L0–L3 on the product routes with the navigation and
+polling client below; L4 and the drawer are T023.
 
 ```mermaid
 flowchart TD
@@ -31,10 +32,11 @@ flowchart TD
 | `map/projects/{p}/phases` | L1 | Roadmap identities with their instances, roadmap order edges, tasks committed/total, READY and last check, Plan · Check · Close slots with the actors that took part | 200 |
 | `map/projects/{p}/phases/{code}/tasks` | L2 | Task nodes (plan, accepted identities, run-only tasks), latest run, attempts and revision limit, acceptance and commit, `depends_on` and `replaces` edges | 300 |
 | `map/projects/{p}/phases/{code}/tasks/{task}/runs` | L2 | Run selector, latest first | 50 |
-| `map/projects/{p}/runs/{run}/steps` | L3 | Agent invocations and the Harness format, validate and commit stages, in order | 200 |
+| `map/projects/{p}/runs/{run}/steps` | L3 | Agent invocations and the Harness format, validate and commit stages, in order; the run's chat lane (`chats`: active chat invocations attached to the run, at most 20, `chats_truncated`; same on every page, part of the version; P002-T022 re-review, D314) | 200 |
 | `map/projects/{p}/invocations/{i}` | L4 | Header: identity, owning context and breadcrumb for every lane, counters, observed-step state | — |
 | `map/projects/{p}/invocations/{i}/steps` | L4 | T019 steps with source records resolved | 200 |
 | `map/projects/{p}/invocations/{i}/related?group=` | L4 | `records` (receipts, discovery and schema loads, broker and tool events, rulings, context, observation, artifact links) or `permissions` (requests the attempt raised) | 200 |
+| `map/projects/{p}/bubbles?phase=&task=&run=&attempt=&circle=` | L0–L3 | One element's unresolved owner items (P002-T022 review, D314): id, kind, topic, circle, attribution and phase/task/run, filtered exactly by the element's scope and optionally one circle on every page, with the counts of the whole filtered set; keyset by item id | 50 |
 | `map/activity?scope=` | — | Version token per requested scope (≤ 10), active invocations, bubble counters, polling metadata | ≤ 8 KiB idle |
 
 `{p}` accepts the project's T017 identity and its aliases (knowledge project, registered project, `run:` and
@@ -93,11 +95,79 @@ A restored `query_only` copy serves the same routes from SQLite alone: no checko
 supervisor. Responses carry `read_only_archive: true`, configured agents are absent and nothing is written; reads
 work with the original checkout removed ([backup consultation](backup-consultation.md)).
 
+## Product map: navigation and refresh client (P002-T022)
+
+```mermaid
+flowchart TD
+    URL["Map route: /, /projects/p/phases, …/phases/code, …/tasks/task, …/runs/run"] --> View{"?view, else the remembered choice, else map"}
+    View -- list --> Page["Existing page with its controls (ordinary mode) / table over the same projection (archive)"]
+    View -- map --> Load["LevelLoader: first page of the level (L3: run selector, then steps of the latest or chosen run)"]
+    Load --> Cards["Cards, circles, bubbles; inspector of the selected element"]
+    Cards -- "card: click, Enter, zoom-enter" --> Child["pushState: child route"]
+    Cards -- "Escape, zoom-out, Up one level" --> Parent["pushState: parent route"]
+    Cards -- "circle" --> Header["/projects/p/invocations/i: T020 L4 header read"]
+    Cards -- "bubble" --> Panel["T017 InboxConversation over the map (re-reads the item)"]
+    Load --> Poll{"Archive?"}
+    Poll -- no --> Activity["ActivityPoller: map/activity for every scope known in view (level and run selector, even before the first run); 2 s active, 10 s idle, paused when hidden"]
+    Activity -- "version changed or scope gone" --> Load
+    Activity -- "read failed" --> Notice["'may be out of date' notice; retry at 10 s; cleared by the next read"]
+    Load -- "read failed" --> Retry["Error with a Read again control (a snapshot shown before, even an empty run selector, stays marked out of date)"]
+    Load -- "next page" --> More["cursor page; window of 5 held pages, earlier ones dropped and counted"]
+    More -- "409 cursor_stale" --> Load
+    Cards -- "bubble without full list" --> List["map/projects/p/bubbles with the element's exact scope and circle"]
+```
+
+- **Toggle.** The same path renders map or list; the toggle pushes `?view=map|list` (Back/Forward replay it) and
+  remembers the choice in this browser. A parameter applies to its own URL only, so a link such as "Run evidence"
+  (`…/runs/:run?view=list`) opens the existing page without changing the remembered choice, and cards and
+  breadcrumbs keep entering the map. The last choice made in a page wins over an older stored value when writing it
+  failed (storage that reads but refuses writes), and is kept in page memory when storage is unavailable. The check route is not a map
+  level. In ordinary mode a project card enters its configured project id; archives and unregistered projects use the
+  map key (an alias T020 and T017 accept).
+- **Controls.** Card links navigate; circles, request bubbles, the details control and the run selector are separate
+  controls and never trigger the card. Selection follows focus and fills the inspector (bottom sheet below 880 px).
+  A closed sheet keeps only its heading and *Show details*: its body is out of the Tab order and the accessibility
+  tree; open, only the body scrolls. Narrowing the window with the focus in the inspector opens the sheet and keeps
+  that focus. On cards the status and the counter are separate rows, each fitted to the card.
+- **Actors.** Each active invocation of an element is its own circle with its own target, so a task reviewer and a
+  chat running at once are two R circles (rays on both, "chat" on the chat). At L3 an active chat attached to the run
+  shown is a lane node of its own with no edge into the run's step sequence; its inspector lists the invocation. The
+  lane comes from the run's steps read (`chats`, reread with the steps when their version changes; a cut list shows a
+  coverage hint), never from the global activity list, whose truncation proves nothing about a chat. J, H and reduced
+  motion follow the engine's rules unchanged.
+- **Requests.** A bubble carries T017 identities; when the projection lists none (L0 aggregates) or only the first 20
+  (`items_truncated`), the panel reads `map/projects/{p}/bubbles` with the element's exact scope (phase; phase and
+  task; a step's run and attempt) and, for a circle's own bubble, that circle, in pages of 50: the count and the items
+  shown are the same set, attributed by T020, never guessed from the request kind. The conversation re-reads the item
+  and acts only through T017's guarded commands, so a changed item shows its current state instead of applying an old
+  one.
+- **Refresh.** One read in flight per level; a reload asked meanwhile runs once after it; a level that is no longer
+  shown applies no late answer. One aggregated activity read per view over every scope known (a task without runs is
+  followed through its run selector, so its first run appears without navigation), scheduled after the previous one
+  settled; a changed token reloads the level's first page. Further pages load on demand inside a window of five held
+  pages: past it the oldest pages are dropped and counted ("Back to the first page" reloads), so later data stays
+  reachable with bounded memory; a stale cursor returns to the first page. A failed first read offers "Read again"; a
+  failed reread over a snapshot still shown (including a run selector read empty before) shows the error and "Read
+  again" over that snapshot; a failed poll shows that the map may be out of date until a read succeeds. A polite live region summarises status
+  changes at most every 10 s.
+- **Evidence.** "Run evidence" in the L3 summary and the invocation header opens the run page with its evidence and
+  controls (`?view=list`; the short `/runs/:id` keeps the query when it resolves) and, in archives, the run
+  consultation `/runs/:id`.
+- **Archives.** No poller, announcer or action; the archive home is map L0 beside the run-id entry
+  ([backup consultation](backup-consultation.md)). The table alternative gives each row a "Details" control that
+  fills the inspector (steps included), links to each actor's invocation and opens the element's requests read-only.
+  L3's chat lane comes from the same single steps read (the persisted active chats attached to the run).
+
 ## Source
 
 - `src/my_harness/core/engine/work_map.py`, `src/my_harness/storage/work_map.py`, `src/my_harness/api/work_map.py`,
   `src/my_harness/api/schemas.py` (`Map*`), migration `0041_work_map_reads`.
 - Evidence: [P002-T020 record](../phase/P002-T020-work-map-api.md).
+- Product map (P002-T022): `frontend/src/map/` (`WorkMap.tsx`, `loader.ts`, `use-level.ts`, `refresh.ts`,
+  `projection.ts`, `Inspector.tsx`, `Requests.tsx`, `LevelSwitch.tsx`, `view-mode.ts`, `InvocationPage.tsx`),
+  `frontend/src/Page.tsx`, `frontend/src/navigation.tsx`; element request list: `WorkMap.bubbles` in
+  `src/my_harness/storage/work_map.py` and its route in `src/my_harness/api/work_map.py`; evidence:
+  [P002-T022 record](../phase/P002-T022-work-map.md).
 
 ## Re-review read dependencies
 

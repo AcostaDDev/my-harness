@@ -18,6 +18,8 @@ import { useServiceMode, useServiceError } from "./ServiceMode";
 import { ArchiveBlocked, ArchiveHome, ArchiveRun } from "./pages/Archive";
 import { Empty, Loading, PageHeader } from "./ui";
 import { ProjectWorkspace, useWorkspace } from "./workspace";
+import { InvocationPage } from "./map/InvocationPage";
+import { MapLevelSwitch } from "./map/LevelSwitch";
 
 // Documentation (markdown-it and, when drawing, Mermaid) is only downloaded when opened (H6.2 E3).
 const KnowledgePage = lazy(() => import("./pages/Knowledge").then(module => ({ default: module.KnowledgePage })));
@@ -36,11 +38,14 @@ function ProjectPageFor({ route }: { route: Exclude<Route, { name: "inbox" | "pr
   switch (route.name) {
     case "project-knowledge": return null;
     case "project": return <ProjectPage />;
-    case "phases": return <PhaseListPage />;
-    case "phase": return <PhasePage key={route.phase} code={route.phase} checkOnly={route.section === "check"} />;
+    // Map levels (P002-T022): the map, or the existing page with its controls one toggle away (`?view=list`).
+    case "phases": return <MapLevelSwitch route={route} list={<PhaseListPage />} />;
+    case "phase": return route.section === "check" ? <PhasePage key={route.phase} code={route.phase} checkOnly />
+      : <MapLevelSwitch route={route} list={<PhasePage key={route.phase} code={route.phase} />} />;
     case "project-autonomous": return <><PageHeader title={t("autonomy.title")} /><AutonomousRun key={route.run} runId={route.run} /></>;
-    case "task": return <TaskPage key={`${route.phase}/${route.task}`} phase={route.phase} task={route.task} />;
-    case "run": return <RunPage key={route.run} phase={route.phase} task={route.task} run={route.run} />;
+    case "task": return <MapLevelSwitch route={route} list={<TaskPage key={`${route.phase}/${route.task}`} phase={route.phase} task={route.task} />} />;
+    case "run": return <MapLevelSwitch route={route} list={<RunPage key={route.run} phase={route.phase} task={route.task} run={route.run} />} />;
+    case "invocation": return <InvocationPage key={route.invocation} project={route.project} invocation={route.invocation} archive={false} />;
     case "chat": return <Chat conversation={route.conversation} />;
     case "settings": return <SettingsPage />;
     case "project-stats": return <Suspense fallback={<Loading />}><ProjectStats /></Suspense>;
@@ -73,9 +78,14 @@ export function Page({ route }: { route: Route }) {
     return <InboxPage key={scope ?? "global"} project={scope} item={route.name === "project-inbox" ? route.item : undefined}
       canRespond={!mode.read_only_archive && (!mode.configuration_mode || mode.configuration_mode === "READY")} />;
   }
+  // Archives resolve before any workspace or pending-action handling: the map levels and their table read SQLite
+  // projections only; every operational page stays blocked.
   if (mode.read_only_archive) {
     switch (route.name) {
       case "home": return <ArchiveHome />;
+      case "phases": case "task": case "run": return <MapLevelSwitch route={route} />;
+      case "phase": return route.section ? <ArchiveBlocked /> : <MapLevelSwitch route={route} />;
+      case "invocation": return <InvocationPage key={route.invocation} project={route.project} invocation={route.invocation} archive />;
       case "run-short": return <ArchiveRun key={route.run} run={route.run} />;
       case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
       case "accounting": return <Suspense fallback={<Loading />}><AccountingPage /></Suspense>;
@@ -90,7 +100,7 @@ export function Page({ route }: { route: Route }) {
   switch (route.name) {
     case "initial-setup":
     case "configuration": return <ConfigurationPage />;
-    case "home": return <Home />;
+    case "home": return <MapLevelSwitch route={route} list={<Home />} />;
     case "preferences": return <PreferencesPage />;
     case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
     case "accounting": return <Suspense fallback={<Loading />}><AccountingPage /></Suspense>;

@@ -59,5 +59,11 @@ unconsumed. That retry calls the ordinary run command with the current run versi
 
 P002-T020's work-map bubbles reuse this projection unchanged (unresolved, non-notification items) and only attach each
 item to an actor circle; they carry item identities and counts ([work-map reads](work-map.md#statuses-actors-and-counters)).
+P002-T022 opens this conversation panel from those bubbles over the map, without
+leaving the view: the bubble carries item identities only and the panel re-reads the item. Aggregates without
+identities and truncated lists read the element's items with T020's attribution from the work-map request list
+(`map/projects/{p}/bubbles`, exact scope and circle; notifications excluded), not this list API, whose items carry no
+circle. Archives open it read-only
+([work-map client](work-map.md#product-map-navigation-and-refresh-client-p002-t022)).
 
 The [task record](../phase/P002-T017-global-inbox.md) contains the evidence and delivery state.

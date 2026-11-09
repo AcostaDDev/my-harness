@@ -28,7 +28,10 @@ flowchart TD
 Owner controls use `permissions.inspect/request/preview/respond` through DomainOperations, its idempotency outcomes
 and trace journal. Owner requests can select the grantee; agent role/project/operation and source attempt are
 transport-bound. Scope, role, canonical evidence, purpose class and operation identify the service subject;
-rephrasing, changed spelling, broader targets and duration alone do not create evidence. Explicit owner replacement
+agent request evidence must name the exact context sealed for its invocation. Another snapshot of the same
+project and accepted revision is refused before equivalence lookup or request persistence (T027); differing code
+captures or selected exposures cannot manufacture new evidence inside a live invocation.
+Rephrasing, changed spelling, broader targets and duration alone do not create evidence. Explicit owner replacement
 links preserve the old response. Confirmations are rejected after a changed permission revision, preview, target
 identity, active source attempt or authority. A new context/evidence does not itself authorize inference: the
 T009 consumer still requires explicit reconsideration under supplied bounds, with no T016 defaults.

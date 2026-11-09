@@ -20,6 +20,9 @@ if '--help' in sys.argv:
           '--no-chrome --restricted --json-schema')
     raise SystemExit(0)
 sys.stdin.read()
+if os.environ.get('BRIDGE_LAUNCHES'):
+    with open(os.environ['BRIDGE_LAUNCHES'], 'a') as launches:
+        launches.write(json.dumps({'client': client, 'version': version, 'mode': mode}) + '\n')
 args = sys.argv[4:]
 if client == 'codex':
     config = tomllib.loads('\n'.join(args[i + 1] for i, a in enumerate(args) if a == '-c'))
@@ -95,7 +98,17 @@ elif mode not in ('no-bridge', 'startup-failure'):
         result = call('invoke_tool', {'id': entry['id'], 'version': entry['version'],
             'schema_sha256': entry['schema_sha256'], 'arguments': {'item_id': os.environ['ITEM_ID']}, 'key': 'read'})
         Path(os.environ['BRIDGE_RESULT']).write_text(json.dumps(result))
-if os.environ.get('JUDGE_PROTOCOL_FAULT'):
+if mode == 'partial':
+    if client == 'claude':
+        print(json.dumps({'type': 'stream_event', 'event': {'type': 'message_start', 'message': {
+            'id': 'partial-message', 'model': 'synthetic-reported',
+            'usage': {'input_tokens': 7, 'output_tokens': 2}}}}), flush=True)
+        print(json.dumps({'type': 'assistant', 'message': {'id': 'partial-message', 'model': 'synthetic-reported',
+            'content': [], 'usage': {'input_tokens': 7, 'output_tokens': 2}}}), flush=True)
+    else:
+        print(json.dumps({'type': 'turn.started'}), flush=True)
+    raise SystemExit(0)  # deliberately no terminal; detached relay still needs independent cleanup
+if os.environ.get('JUDGE_PROTOCOL_FAULT') or mode == 'unexpected':
     print('{}', flush=True)  # Invalid envelope, distinct from malformed final JSON.
 if mode == 'cancel':
     time.sleep(30)

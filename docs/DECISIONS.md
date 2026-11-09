@@ -3317,3 +3317,18 @@ The owner diagnostic identifies the stored and registered stamps and the action 
 quarantine. Checkpoints and sealed outcomes remain available.
 
 [Scope, recovery matrix and verification](phase/P002-T026-installed-recovery.md).
+
+## D320 — Permission request evidence bound to its invocation context
+
+Status: implemented in P002-T027 and integrated into `develop` as source `41b652f` after independent technical
+review. Refines enforcement of D275/D289/D291 without changing their authority model.
+
+An agent permission request must name the exact canonical context sealed for its invocation, verified through the
+shared invocation-context reader in the domain command transaction. Project and accepted-revision equality alone
+are insufficient: two snapshots can contain different code captures or knowledge exposures. The agent cannot
+substitute another snapshot to create a new evidence identity for an equivalent blocker. The existing typed
+`permission_invalid` refusal and its domain/trace evidence precede request persistence; the owner request path is
+unchanged. Existing requests, grants, snapshots, catalogue digests and histories remain frozen. No schema, API shape,
+dependency or new native qualification is introduced.
+
+[Integrated audit, failing regression and delivery disposition](phase/P002-T027-security-provider-audit.md).

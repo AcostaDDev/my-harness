@@ -146,12 +146,18 @@ class PermissionLifecycle:
         if not isinstance(data['purpose'], str) or not data['purpose'].strip() or len(data['purpose']) > 100 or not isinstance(data['operation_key'], str) or not 1 <= len(data['operation_key']) <= 100:
             invalid()
         duration_check(data['duration'])
-        from my_harness.storage.frozen_context import load
+        from my_harness.storage.frozen_context import bound, load
         snapshot, _ = load(session, data['snapshot_id'], project)
         if caller.principal == 'agent':
             boundary = session.get(Boundary, caller.invocation_id)
-            bound = self.get(session, project, boundary.snapshot_id, 'snapshot') if boundary else None
-            if bound is None or data['purpose'] != bound.payload['purpose'] or data['operation_key'] != bound.payload['operation_key'] or snapshot.revision_id != caller.frozen_revision_id:
+            permission_snapshot = self.get(session, project, boundary.snapshot_id, 'snapshot') if boundary else None
+            if (permission_snapshot is None or data['purpose'] != permission_snapshot.payload['purpose'] or
+                    data['operation_key'] != permission_snapshot.payload['operation_key'] or
+                    snapshot.revision_id != caller.frozen_revision_id):
+                invalid()
+            # A different snapshot at the same revision can contain different code/exposures. Only the
+            # invocation's sealed context is evidence for its request; arguments cannot mint new evidence.
+            if snapshot.id != bound(session, caller.invocation_id, caller=caller)[1].id:
                 invalid()
         root = session.get(Project, project).root
         if not isinstance(data['targets'], list) or not 1 <= len(data['targets']) <= 100:

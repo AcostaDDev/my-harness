@@ -347,6 +347,8 @@ schema upgrade, use the new generation's CLI separately before starting:
 
 `migrate` takes a verified snapshot outside every checkout and leaves a current database untouched. Failure
 preserves database/snapshot for inspection; no automatic restore. `serve` never migrates.
+After migration, the owner can preview and confirm installed project knowledge with `knowledge-convert`.
+See the [conversion plan and source selection](docs/flows/database-migration.md#convert-installed-project-knowledge).
 
 **Backup.** With the service and writers stopped:
 
@@ -359,7 +361,8 @@ preserves database/snapshot for inspection; no automatic restore. `serve` never 
 `--artifact-root` (repeatable) authorizes state and configuration roots. Format 3 includes versioned TOML,
 working copies, operation intents, referenced evidence and verified P001 accounting records. A bundle created with an
 earlier schema revision is not migrated in place: `backup-upgrade /path/old-backup /path/upgraded-backup`
-writes a new verified format-3 bundle from a copy and leaves the original unchanged. A restore creates a new,
+writes a new verified format-3 bundle from a copy and leaves the original unchanged. This includes format-3
+backups from 0.1.9 at `0028_usage_accounting` and older formats 1 and 2. A restore creates a new,
 query-only database with the same schema revision. To browse it, start `serve --database
 /path/restored/state.sqlite3` from the installed venv and open the local UI. The archive home accepts a run id;
 `/runs/:id` opens its recorded evidence, diff, JUnit and metrics without a configured project or checkout.

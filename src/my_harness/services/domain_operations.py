@@ -224,6 +224,72 @@ class DomainOperations:
             'knowledge.lookup': self._lookup, 'knowledge.search': self._search,
         }
 
+    def convert_installed(self, root, plan, *, preview_sha256=None, reason=None):
+        """Local owner CLI boundary for first adoption from verified, installed documentary sources."""
+        from my_harness.services import installed_knowledge as installed
+        from my_harness.storage import knowledge_exchange as exchange
+        from my_harness.storage.backup import is_read_only_archive
+        from my_harness.storage.models import CheckoutLockRow, KnowledgeIdentityRow
+
+        if is_read_only_archive(self.engine):
+            installed.refuse('archive')
+        root = installed.validate_plan(root, plan)
+        if preview_sha256 is not None and (not isinstance(reason, str) or not reason.strip()):
+            installed.refuse('reason')
+        with Session(self.engine) as session, session.begin():
+            knowledge = KnowledgeSession(session)
+            if preview_sha256 is not None:
+                knowledge.writable()
+                knowledge.lock()
+            project = knowledge.project_id(root)
+            receipt = exchange.latest(session, project, installed.RECEIPT) if project else None
+            if receipt and preview_sha256 is not None:
+                if (receipt.payload['preview_sha256'], receipt.payload['reason'], receipt.payload['plan']) != (
+                        preview_sha256, reason, plan):
+                    installed.refuse('stale')
+                revision = knowledge.revision(project, 1)
+                if receipt.payload['result']['revision_sha256'] != revision.revision_sha256:
+                    installed.refuse('stale')
+                return {**receipt.payload['result'], 'replayed': True}
+            if project and session.scalar(select(KnowledgeRevisionRow.id).where(
+                    KnowledgeRevisionRow.project_id == project).limit(1)):
+                installed.refuse('already_converted')
+            if session.get(CheckoutLockRow, root):
+                installed.refuse('writer')
+            preview = installed.preview(session, root, project, plan)
+            sha = core.digest(preview)
+            if preview_sha256 is None:
+                return {**preview, 'preview_sha256': sha}
+            if sha != preview_sha256:
+                installed.refuse('stale')
+            if any(note.get('blocking') for note in preview['report']):
+                installed.refuse('unresolved')
+            project = project or knowledge.create_project(root)
+            draft = self._installed_draft(knowledge, project, None, preview['members'], preview['links'])
+            revision = knowledge.adopt(draft, None, origin='owner_confirmed',
+                                        actor={'principal': 'owner', 'channel': 'installed_cli'}, reason=reason)
+            proposals = (self._installed_draft(knowledge, project, revision.id,
+                                               preview['proposals'], preview['proposal_links'])
+                         if preview['proposals'] else None)
+            for mapping in preview['mapping']:
+                session.add(KnowledgeIdentityRow(project_id=project, **mapping, created_at=now()))
+            result = {'project_id': project, 'revision_id': revision.id, 'revision_sha256': revision.revision_sha256,
+                      'proposal_draft_id': proposals, 'replayed': False}
+            exchange.add(session, project, installed.RECEIPT, {'preview': preview, 'preview_sha256': sha, 'plan': plan,
+                         'reason': reason, 'result': result}, key=installed.RECEIPT)
+            return result
+
+    @staticmethod
+    def _installed_draft(knowledge, project, base, members, links):
+        draft = knowledge.open_draft(project, base)
+        for item in members:
+            knowledge.put(draft, item['kind'], item['code'], item['content'], document=item['document'],
+                          provenance=item['provenance'], source=item['source'], root_position=item['root_position'],
+                          item_id=item['item_id'])
+        for link in links:
+            knowledge.link(draft, **link)
+        return draft
+
     # Discovery for the broker (T008) -------------------------------------------------------------------------------
 
     def scoped(self, caller: Caller):
@@ -449,6 +515,12 @@ class DomainOperations:
             DomainCommandRow.operation_id.in_(('knowledge.draft.open', 'intake.stage', 'documents.stage')),
             DomainCommandRow.outcome == 'ACCEPTED'))
         if opener is None:
+            if call.caller.principal == 'owner':
+                from my_harness.services.installed_knowledge import RECEIPT
+                from my_harness.storage.knowledge_exchange import latest
+                converted = latest(call.session, call.project_id, RECEIPT)
+                if converted and converted.payload['result']['proposal_draft_id'] == draft.id:
+                    return draft, None
             raise DomainRefusal('draft_unattributed')
         if opener.operation_id in ('intake.stage', 'documents.stage') and call.entry.id != 'knowledge.draft.get' and not call.entry.id.startswith('documents.'):
             raise DomainRefusal('draft_not_owned')
@@ -629,7 +701,8 @@ class DomainOperations:
                          'items': sorted([m.item_id, m.content_sha256] for m in members.values())}
         return {'draft_id': draft.id, 'status': draft.status, 'base_revision_id': draft.base_revision_id,
                 'draft_sha256': sha, 'opener': {'principal': opener.principal, **{
-                    k: v for k, v in opener.caller.items() if k in ('role', 'invocation_id', 'thread_id')}},
+                    k: v for k, v in opener.caller.items() if k in ('role', 'invocation_id', 'thread_id')}}
+                if opener else {'principal': 'owner'},
                 'members': [self._member(m) for m in sorted(members.values(), key=lambda m: (m.kind, m.code))],
                 'links': [self._link(l) for l in sorted(links, key=core.Link.key)]}
 

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine, make_url
+from sqlalchemy.engine import Engine, URL, make_url
 
 from my_harness.i18n import tr
 
@@ -11,7 +11,7 @@ def database_url() -> str:
     return os.environ.get("HARNESS_DATABASE_URL", "sqlite:///.local/harness.sqlite3")
 
 
-def make_engine(url: str) -> Engine:
+def make_engine(url: str | URL) -> Engine:
     parsed = make_url(url)
     if parsed.drivername != "sqlite" or not parsed.database or parsed.database == ":memory:":
         raise ValueError(tr('database.local_file'))

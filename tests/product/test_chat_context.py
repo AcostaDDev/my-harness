@@ -225,7 +225,14 @@ def test_run_digest_change_requires_refresh_and_cross_project_is_not_resolved(ch
     assert frozen in w['adapter'].requests[-1].prompt
 
 
-def test_backup_reads_old_and_new_receipts_without_checkout_or_writes(chat_world, migrated_database, tmp_path):
+def test_head_archive_joins_trace_steps_chat_and_accounting_without_checkout(chat_world, migrated_database, tmp_path):
+    from my_harness.api.app import create_app
+    from my_harness.services.managed_runtime import ManagedConfig
+    from my_harness.storage.accounting_views import AccountingViews
+    from my_harness.storage.observed_steps import ObservedStepProjector, ObservedSteps
+    from my_harness.storage.operation_journal import OperationJournal
+    from session_client import TestClient
+    from test_backup import dump_rows
     w = chat_world
     # Ordinary T007 evidence remains in the same archive as the new v3 envelope.
     old_job, claim, request = old_start(w['world'], w['repository'], w['context'])
@@ -236,19 +243,55 @@ def test_backup_reads_old_and_new_receipts_without_checkout_or_writes(chat_world
     w['repository'].close_owner(claim)
     job = say(w, ref(w, 'run', old_job.run_id)); w['worker'].run_once()
     before = deliveries(w, job)
+    invocation_id = invocation(w, job)
+    root = str(w['context'].root)
+    live = w['repository'].engine
+    ObservedStepProjector(live).project_many([invocation_id])
+    with Session(live) as session:
+        operation = session.scalar(select(WorkflowOperationRow).where(WorkflowOperationRow.invocation_id == invocation_id))
+        thread = operation.thread_id
+    trace = OperationJournal(live).events(root, thread)
+    steps = ObservedSteps(live).page(invocation_id, root=root)
+    ledger = AccountingViews(live).invocation(invocation_id)
+    assert steps['state'] == 'sealed' and steps['items']
+    assert any(item['invocation_id'] == invocation_id for item in trace['items'])
+    queued = say(w, key='archived-queue')
     create_backup(migrated_database[0].removeprefix('sqlite:///'), tmp_path / 'bundle', writers_stopped=True,
                   artifact_roots=(tmp_path / 'captures',))
     restore_backup(tmp_path / 'bundle', tmp_path / 'archive')
     shutil.rmtree(w['context'].root)
-    engine = make_engine('sqlite:///' + str(tmp_path / 'archive/state.sqlite3'))
+    shutil.rmtree(tmp_path / 'captures')
+    archive = tmp_path / 'archive/state.sqlite3'
+    frozen = dump_rows(archive)
+    archive_url = 'sqlite:///' + str(archive)
+    engine = make_engine(archive_url)
     statements = []
     event.listen(engine, 'before_cursor_execute', lambda conn, cursor, statement, *args: statements.append(statement))
     contexts = ContextRepository(engine)
     assert contexts.deliveries(w['world']['project'], invocation(w, job)) == before
     assert contexts.deliveries(w['world']['project'], 'managed_attempt:' + request.id)[0]['receipts'][0]['format'] == 'knowledge-delivery-2'
     assert contexts.invocation(w['world']['project'], invocation(w, job))['prompt'] == w['adapter'].requests[-1].prompt
+    assert OperationJournal(engine).events(root, thread) == trace
+    assert ObservedSteps(engine).page(invocation_id, root=root) == steps
+    assert AccountingViews(engine).invocation(invocation_id) == ledger
+    other = str(tmp_path / 'foreign-checkout')
+    with pytest.raises(LookupError):
+        OperationJournal(engine).events(other, thread)
+    with pytest.raises(LookupError):
+        ObservedSteps(engine).page(invocation_id, root=other)
+    with pytest.raises(core.ContextError):
+        contexts.deliveries('foreign-project', invocation_id)
+    assert AccountingViews(engine).invocations({'root': other}, 0, 20)['items'] == []
     assert all(s.lstrip().upper().startswith(('SELECT', 'PRAGMA')) for s in statements)
     engine.dispose()
+    app = create_app(archive_url, tmp_path / 'archive-ui', managed=ManagedConfig(
+        supervisor=True, ports_factory=lambda *_: pytest.fail('Archive attempted to open execution ports')))
+    with TestClient(app, headers={'X-My-Harness': '1'}) as http:
+        assert http.get('/api/managed/supervisor').json()['enabled'] is False
+        assert http.get(f'/api/managed/runs/{queued.run_id}').json()['status'] == 'QUEUED'
+        assert http.post(f"/api/managed/conversations/{w['cid']}/messages", json={}).status_code == 409
+        assert http.post(f'/api/managed/jobs/{queued.id}/confirm-stopped', json={}).status_code == 409
+    assert dump_rows(archive) == frozen
 
 
 @pytest.mark.parametrize('boundary', ['refused', 'partial', 'persist', 'commit', 'uncertain'])

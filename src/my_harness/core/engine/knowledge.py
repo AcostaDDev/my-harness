@@ -341,13 +341,18 @@ _PARTIAL = re.compile(r'\b(?:partially|partial|in part|parcialmente|parcial|en p
 _DECISION_CODE = re.compile(r'\bD(\d{3,})(?:\s*[–-]\s*D(\d{3,}))?')
 
 
-def _codes(text: str) -> list[str]:
-    codes = []
-    for first, last in _DECISION_CODE.findall(text):
-        width = len(first)
-        for number in range(int(first), int(last or first) + 1):
-            codes.append(f'D{number:0{width}d}')
-    return codes
+def _superseders(clauses, known_codes):
+    """Resolve the written ranges against this set without expanding absent codes."""
+    known = sorted((int(code[1:]), code) for code in set(known_codes) if CODES['decision'].fullmatch(code))
+    linked, missing = {}, False
+    for clause in clauses:
+        for first, last in _DECISION_CODE.findall(clause):
+            width, start, end = len(first), int(first), int(last or first)
+            matches = [code for number, code in known
+                       if start <= number <= end and code == f'D{number:0{width}d}']
+            linked.update(dict.fromkeys(matches))
+            missing |= len(matches) < end - start + 1
+    return list(linked), missing
 
 
 def map_decision_status(status_line: str | None, known_codes=()) -> dict:
@@ -357,7 +362,6 @@ def map_decision_status(status_line: str | None, known_codes=()) -> dict:
     `supersedes` lists `(code, qualifier)` links *into* this decision from identifiable decisions of the same set,
     with qualifier None when the extent needs the owner's choice; `report` lists what the preview must show.
     """
-    known = set(known_codes)
     line = (status_line or '').strip()
     found = _STATUS_LINE.match(line)
     text = (found.group(1) if found else line).strip()
@@ -367,9 +371,8 @@ def map_decision_status(status_line: str | None, known_codes=()) -> dict:
         result['report'].append('unrecognized_status')
         return result
     clauses = _SUPERSEDED_BY.findall(text)
-    superseders = [code for clause in clauses for code in _codes(clause)]
-    linked = [code for code in dict.fromkeys(superseders) if code in known]
-    if superseders and len(linked) < len(set(superseders)):
+    linked, missing = _superseders(clauses, known_codes)
+    if missing:
         result['report'].append('superseder_not_in_set')
     if leading == 'superseded':
         partial = bool(_PARTIAL.search(text))

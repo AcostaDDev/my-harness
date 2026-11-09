@@ -76,6 +76,12 @@ class GraphRunner:
         definition, builder = checked
         return self._run(definition, builder, thread_id, None)
 
+    def check_compatibility(self, thread_id: str, expected: tuple[str, ...]) -> SegmentResult:
+        """Fence a continuation before a caller replaces its routing thread."""
+        self._writable()
+        checked = self._checked(thread_id, expected)
+        return checked if isinstance(checked, SegmentResult) else self.status(thread_id)
+
     def cancel(self, thread_id: str, reason: str = 'owner_cancelled') -> SegmentResult:
         return self._stop(thread_id, 'CANCELLED', reason)
 
@@ -113,7 +119,8 @@ class GraphRunner:
         return definition, builder
 
     def _quarantine(self, row, reason: str, detail: dict) -> SegmentResult:
-        self.threads.transition(row.id, (row.status,), 'QUARANTINED', reason=reason, detail=detail)
+        self.threads.transition(row.id, (row.status,), 'QUARANTINED', reason=reason,
+                                detail={**detail, 'owner_action': tr('orchestration.quarantine_action')})
         return self.status(row.id)
 
     def _settle(self, thread_id: str, status: str, reason=None, detail=None, values=None) -> SegmentResult:

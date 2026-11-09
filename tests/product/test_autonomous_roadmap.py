@@ -928,7 +928,8 @@ def test_crash_recovery_requires_stopped_writer_and_never_reissues_the_effect(wo
     assert_no_duplicate_effects(fake)
 
 
-def test_node_failure_continues_on_a_new_thread_only_without_pending_operations(world):
+@pytest.mark.parametrize('drift', [False, True])
+def test_node_failure_continues_only_with_compatible_stamp_and_without_pending_operations(world, monkeypatch, drift):
     fake = FakeRoadmap(world.root, ['P001'])
     original = fake.observe
     calls = {'n': 0}
@@ -941,9 +942,24 @@ def test_node_failure_continues_on_a_new_thread_only_without_pending_operations(
     fake.observe = flaky
     service, run = start(world, fake)
     assert run['status'] == 'FAILED' and run['reason'] == 'node_failed'
-    resumed = service.resume(world.root, run['id'], expected_version=run['version'])
-    assert resumed['status'] == 'COMPLETED' and resumed['thread_id'].endswith('-c1')
-    assert_no_duplicate_effects(fake)
+    if drift:
+        from my_harness.orchestration import roadmap
+        from test_operation_journal import rows
+        url = str(world.engine.url)
+        tables = ('graph_checkpoints', 'graph_checkpoint_writes', 'workflow_operations')
+        before = {table: rows(url, table) for table in tables}
+        effects = list(fake.effects)
+        monkeypatch.setattr(roadmap, 'GRAPH_VERSION', 'synthetic-next')
+        restarted = world.build(fake)
+        resumed = restarted.resume(world.root, run['id'], expected_version=run['version'])
+        assert resumed['status'] == 'FAILED' and resumed['reason'] == 'graph_quarantined'
+        assert resumed['thread_id'] == run['thread_id'] and fake.effects == effects
+        assert resumed['detail']['graph']['detail']['owner_action']
+        assert {table: rows(url, table) for table in tables} == before
+    else:
+        resumed = service.resume(world.root, run['id'], expected_version=run['version'])
+        assert resumed['status'] == 'COMPLETED' and resumed['thread_id'].endswith('-c1')
+        assert_no_duplicate_effects(fake)
 
 
 @pytest.mark.parametrize('case', ['abandoned', 'successor_missing', 'evidence_incomplete'])

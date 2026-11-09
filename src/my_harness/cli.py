@@ -95,6 +95,12 @@ def build_parser(language: str = DEFAULT_LANGUAGE) -> argparse.ArgumentParser:
     command.add_argument('--database', required=True, help=say('database_existing'))
     command.add_argument('--snapshots', required=True, help=say('snapshots'))
     command.add_argument('--writers-stopped', action='store_true', help=say('writers_stopped'))
+    command = operations.add_parser('knowledge-convert', help=say('knowledge_convert'))
+    command.add_argument('--database', required=True, help=say('database_existing'))
+    command.add_argument('--root', required=True, help=say('knowledge_root'))
+    command.add_argument('--plan', required=True, help=say('knowledge_plan'))
+    command.add_argument('--preview-sha256', help=say('knowledge_preview'))
+    command.add_argument('--reason', help=say('knowledge_reason'))
     for name in ('init-db', 'serve'):
         command = operations.add_parser(name, help=say('init_db' if name == 'init-db' else 'serve'))
         command.add_argument('--database', required=True, help=say('database'))
@@ -126,6 +132,23 @@ def _run(args, language: str) -> int:
             from my_harness.storage.migrate import migrate_database
             result = migrate_database(args.database, Path(args.snapshots), writers_stopped=args.writers_stopped)
             print(json.dumps(asdict(result), default=str, ensure_ascii=False, indent=2))
+            return 0
+        if args.operation == 'knowledge-convert':
+            from my_harness.core.engine.knowledge_documents import MAX_TOTAL, loads
+            from my_harness.launcher import local_database
+            from my_harness.services.domain_operations import DomainOperations
+            path, url = local_database(args.database, language)
+            if not path.is_file():
+                raise ValueError(message('cli.backfill_missing', language))
+            with Path(args.plan).open('rb') as file:
+                raw = file.read(MAX_TOTAL + 1)
+            if len(raw) > MAX_TOTAL:
+                raise ValueError(message('installed_knowledge.plan', language))
+            engine = make_engine(url)
+            require_schema(engine)
+            result = DomainOperations(engine).convert_installed(
+                args.root, loads(raw), preview_sha256=args.preview_sha256, reason=args.reason)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
         if args.operation in ('init-db', 'serve'):
             from my_harness.launcher import initialize, serve

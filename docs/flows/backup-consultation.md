@@ -37,7 +37,13 @@ flowchart TD
   valuation and cohort digests in the same snapshot; any mismatch refuses verification. Accounting values, reasons
   and cohorts are read from SQLite without original roots, clients or network; nothing is recalculated or backfilled.
   A bundle of an older schema is refused with a pointer to `backup-upgrade`, which migrates a private copy into a new
-  query-only format-3 bundle and leaves the original bundle byte-identical.
+  query-only format-3 bundle and leaves the original bundle byte-identical. This covers formats 1 and 2
+  and the 0.1.9 format-3 bundle at `0028_usage_accounting`. The latter must match its accounting and
+  configuration inventories. The working SQLite copy retains the archive mark throughout the upgrade. Alembic
+  writes through a private connection, while ordinary product connections remain query-only even if the process
+  exits abruptly after Alembic commits head. The command verifies the source revision, file and database integrity,
+  the reference inventory and digests before publishing the new bundle's `COMPLETE` seal. An interruption before
+  the seal leaves the original intact and the destination without a completed bundle.
 - Consultation does not resume jobs, release locks or certify that historical writers stopped. Stop the service
   normally; its ephemeral access key is removed. Uncertain historical process identity remains uncertain.
 - P002-T007 adds persisted service readers for canonical context snapshots, exact invocation prompts and paged

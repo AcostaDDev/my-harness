@@ -71,6 +71,9 @@ class RoadmapGraphs:
     def recover(self, thread_id):
         return self.runner.recover(thread_id, writer_stopped=True)
 
+    def check_failed_continuation(self, thread_id):
+        return self.runner.check_compatibility(thread_id, ('FAILED', 'COMPLETED'))
+
     def revoke(self, thread_id):
         try:
             if self.runner.status(thread_id).status in ('RUNNING', 'WAITING'):

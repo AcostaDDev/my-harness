@@ -121,7 +121,8 @@ def _snapshot(path, revision, target, directory):
     os.chmod(destination, 0o600)
     with closing(_connect(path, 'ro')) as source, closing(_connect(destination, 'rw')) as copy:
         source.backup(copy)
-        if copy.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+        if (copy.execute('PRAGMA integrity_check').fetchone()[0] != 'ok'
+                or copy.execute('PRAGMA foreign_key_check').fetchone()):
             raise MigrationRefused(tr('migrate.snapshot_integrity', snapshot=destination))
         if copy.execute('SELECT version_num FROM alembic_version').fetchall() != [(revision,)]:
             raise MigrationRefused(tr('migrate.snapshot_revision', snapshot=destination))
@@ -183,7 +184,13 @@ def _prepare_database(value, snapshots, *, create):
         snapshots = _snapshot_directory(path, snapshots)
     if current == head:
         return MigrationOutcome('current', current, head)
-    snapshot = _snapshot(path, current, head, Path(snapshots))
+    with closing(_connect(path, 'rw')) as guard:
+        guard.execute('BEGIN IMMEDIATE')
+        if _revision(path) != current:
+            raise MigrationRefused(tr('migrate.revision_changed'))
+        if _writers_alive(path):
+            raise MigrationRefused(tr('migrate.alive'))
+        snapshot = _snapshot(path, current, head, Path(snapshots))
     try:
         command.upgrade(_config(url), 'head')
         engine = make_engine(url)

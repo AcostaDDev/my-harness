@@ -3290,3 +3290,30 @@ execution collapse to one managed-run attribution. Conflicting parent identities
 The immediate `workflow_id` retains its meaning. Historical reads can include closed executions and earlier
 authorization revisions within the same lineage. Readiness work before delegation stays unlinked. Accounting
 reads the existing ownership evidence independently of the live admission, cap and fencing checks.
+
+## D319 — Explicit installed knowledge conversion and format-3 backup compatibility
+
+Status: implemented in P002-T026 and integrated into `develop` as source `2fe92a4` after independent technical re-review.
+
+After the installed schema upgrade, the local owner can preview a project-scoped conversion of frozen
+phase definitions and explicitly selected documents verified against their persisted adoption hashes.
+The digest binds the root, destination, source identities and exact bytes, choices, losses, canonical members
+and links. Confirmation with the same digest and an owner reason commits the first accepted revision, legacy
+identity mappings and an insert-only conversion receipt in one transaction. Proposed decisions go to a
+separate owner draft on that revision. The same confirmation returns the stored outcome. The conversion uses
+D284 validation and creates neither document ownership nor operational readiness.
+Source phase and task codes identify the same entity across adopted definitions and selected headings.
+Code choices apply once per original identity. A shared canonical code claimed by distinct originals blocks
+confirmation and names those originals in the preview.
+
+0.1.9 format-3 bundles at `0028_usage_accounting` use the explicit copy upgrade. The manifest must match the
+source revision and the accounting and configuration inventories. The working copy retains its query-only mark
+throughout the upgrade, and Alembic writes through a private migration connection. The completion seal is
+published after verifying the migrated database and the original artifact references.
+The existing format-1 and format-2 path remains available.
+
+The autonomous continuation branch checks the previous graph stamp before replacing a failed routing thread.
+The owner diagnostic identifies the stored and registered stamps and the action required to resolve the
+quarantine. Checkpoints and sealed outcomes remain available.
+
+[Scope, recovery matrix and verification](phase/P002-T026-installed-recovery.md).

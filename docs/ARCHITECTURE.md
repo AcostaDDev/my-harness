@@ -126,6 +126,9 @@ The persistent restore mark, exposed as `SupervisorRead.read_only_archive`, enab
 configured projects, a checkout or supervisor. All mutations retain their 409 guard
 ([flow](flows/backup-consultation.md)).
 `migrate` upgrades an existing database after a verified snapshot ([flow](flows/database-migration.md)).
+P002-T026 qualifies the installed 0028 path and adds explicit owner conversion through `DomainOperations`
+and the shared knowledge revision validation and adoption transaction. The source receipt and scoped identity mappings use existing tables.
+Backup upgrade verifies a private copy, including the installed format-3 accounting and referenced artifacts.
 
 ## 6. Agents and configuration
 

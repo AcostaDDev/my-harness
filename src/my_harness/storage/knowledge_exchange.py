@@ -123,3 +123,15 @@ def verify_archive(db):
                 found = db.execute('SELECT project_id FROM knowledge_items WHERE id=?', (ident,)).fetchone()
                 if not found or found[0] != row['project_id']:
                     raise ValueError('exchange_mapping_integrity')
+        if row['kind'] == 'installed_conversion':
+            result = payload['result']
+            adopted = db.execute('SELECT project_id, revision_sha256 FROM knowledge_revisions WHERE id=?',
+                                 (result['revision_id'],)).fetchone()
+            if (digest(payload['preview']) != payload['preview_sha256'] or result['project_id'] != row['project_id']
+                    or adopted is None or tuple(adopted) != (row['project_id'], result['revision_sha256'])):
+                raise ValueError('exchange_conversion_integrity')
+            if result['proposal_draft_id']:
+                proposal = db.execute('SELECT project_id, base_revision_id FROM knowledge_revisions WHERE id=?',
+                                      (result['proposal_draft_id'],)).fetchone()
+                if proposal is None or tuple(proposal) != (row['project_id'], result['revision_id']):
+                    raise ValueError('exchange_conversion_integrity')

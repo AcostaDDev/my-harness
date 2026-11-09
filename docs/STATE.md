@@ -173,7 +173,16 @@ verification covered settlement, aggregate parity and restored consultation. The
 records payload bytes, local timings, exchanges and simulated completion.
 [Contract and verification](phase/P002-T025-accounting-efficiency.md#source-integration--2026-11-09).
 Release 0.2.0 through protected `main`, distribution/publication and installation remain pending.
-The recorded installation remains 0.1.9. **Next: P002-T026.**
+The recorded installation remains 0.1.9.
+
+**P002-T026 is complete and integrated into `develop`** as source `2fe92a4` on
+`feat/p002-t026-installed-recovery` from `cd85462` (D319). Installed 0.1.9 schema migration, explicit installed
+knowledge conversion, integrated restart recovery and format-3 backup upgrade have synthetic evidence. Head remains
+`0041_work_map_reads` with 94 tables. The archive interruption and remapped knowledge identity fixes passed
+independent technical re-review. The owner authorized source commit, merge and push of `develop` after review.
+Release 0.2.0 via protected `main`, distribution/publication and installation are pending. The recorded installation
+remains 0.1.9. The one-off queue remains empty. **Next: P002-T027.**
+[Evidence and delivery stages](phase/P002-T026-installed-recovery.md#source-integration--2026-11-09).
 
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
@@ -348,4 +357,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025 is complete and integrated as source `18bef36` (D318). T026–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025 is complete and integrated as source `18bef36` (D318). T026 is complete and integrated as source `2fe92a4` after independent technical re-review (D319). T027–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.

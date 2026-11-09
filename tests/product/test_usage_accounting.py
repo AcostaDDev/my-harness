@@ -30,6 +30,7 @@ from my_harness.storage.models import (
     UsageValuationLineRow, UsageValuationRow, ValuationCohortMemberRow, ValuationCohortRow,
 )
 from my_harness.storage.retention import apply_retention, preview_retention
+from my_harness.storage.schema import SCHEMA_REVISION
 from test_backup import db_path, dump_rows, reseal_database
 from test_configuration import activate, active_global, change, dumps, project_data, register, save, setup  # noqa: F401
 from test_managed import context, edit, repository, review, submit, worker  # noqa: F401
@@ -542,30 +543,39 @@ def test_a31_format3_backup_verifies_accounting_and_restored_consultation_is_que
         verify_bundle(corrupt)
 
 
-def test_older_bundle_upgrade_is_an_explicit_new_copy(tmp_path, context, repository, migrated_database):
+@pytest.mark.parametrize('bundle_format, schema', [
+    (1, '0027_profile_proposals'), (2, '0027_profile_proposals'), (2, SCHEMA_REVISION),
+])
+def test_older_bundle_upgrade_is_an_explicit_new_copy(tmp_path, context, repository, migrated_database, bundle_format, schema):
     port, _, supervisor = flow(tmp_path, context, repository)
     supervisor.run_once()
     path = db_path(migrated_database)
     clear_accounting(path)
     bundle = tmp_path / 'old'
     create_backup(path, bundle, artifact_roots=[port.artifact_root], writers_stopped=True)
-    # Turn it into the exact shape a 0.1.8 release produced: schema 0027 and format 2.
-    with closing(sqlite3.connect(bundle / 'state.sqlite3')) as db:
-        db.execute('PRAGMA user_version=0')
-    from my_harness.storage.migrate import _config
-    command.downgrade(_config(f'sqlite:///{bundle / "state.sqlite3"}'), '0027_profile_proposals')
-    with closing(sqlite3.connect(bundle / 'state.sqlite3')) as db:
-        db.execute('PRAGMA user_version=4732210')
+    # Format 2 at 0027 matches 0.1.8. The format 1 compatibility shape carries no configuration rows.
+    if schema != SCHEMA_REVISION:
+        with closing(sqlite3.connect(bundle / 'state.sqlite3')) as db:
+            db.execute('PRAGMA user_version=0')
+        from my_harness.storage.migrate import _config
+        command.downgrade(_config(f'sqlite:///{bundle / "state.sqlite3"}'), schema)
+        with closing(sqlite3.connect(bundle / 'state.sqlite3')) as db:
+            db.execute('PRAGMA user_version=4732210')
     manifest = json.loads((bundle / 'manifest.json').read_text())
-    manifest.update(format=2, schema='0027_profile_proposals')
+    manifest.update(format=bundle_format, schema=schema)
     manifest.pop('accounting')
+    if bundle_format == 1:
+        assert not any(manifest.pop('configuration').values())
     (bundle / 'manifest.json').write_text(json.dumps(manifest))
     reseal_database(bundle)
+    if schema != SCHEMA_REVISION:
+        with pytest.raises(BackupError, match='backup-upgrade'):
+            verify_bundle(bundle)
+    else:
+        assert verify_bundle(bundle)['format'] == bundle_format
     originals = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in bundle.rglob('*') if p.is_file()}
-    with pytest.raises(BackupError, match='backup-upgrade'):
-        verify_bundle(bundle)
     upgraded = upgrade_bundle(bundle, tmp_path / 'upgraded')
-    assert upgraded['format'] == 3 and upgraded['upgraded_from']['schema'] == '0027_profile_proposals'
+    assert upgraded['format'] == 3 and upgraded['upgraded_from']['schema'] == schema
     assert upgraded['files'] == manifest['files'] and upgraded['accounting']['usage_invocations'] == 0
     assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in bundle.rglob('*') if p.is_file()} == originals
     restore_backup(tmp_path / 'upgraded', tmp_path / 'consult')

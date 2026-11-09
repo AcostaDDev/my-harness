@@ -1330,6 +1330,58 @@ class WorkMap:
                          'evidence': {'commit': commit['commit_sha']}})
         return tail
 
+    def contextual_evidence(self, db, root, run_id, step_key=None):
+        """T024: a bounded selection of the same L3 projections; no history, originals or page scan.
+
+        The digest also binds the run version, so a mutation beyond the bounded summary requires explicit refresh.
+        Stable step keys address one attempt/round or the run's tail; SQL selects only that member.
+        """
+        run = self._run(db, {'root': root}, run_id)
+        result = {'run': run, 'format': wm.FORMAT}
+        if step_key is None:
+            result['counts'] = dict(db.execute(text('''SELECT attempts, executor_attempts, cycle_count
+                FROM run_projections WHERE run_id = :run'''), {'run': run_id}).mappings().first() or {})
+            return result
+        number, slot = map(int, step_key.split('.'))
+        step = None
+        if number != TAIL and slot in (0, 1, 2):
+            attempts = self._attempts(db, run_id, number=number)
+            if attempts:
+                attempt = attempts[0]
+                self._ordinals(db, run_id, attempts)
+                if slot == 0:
+                    step = self._invocation_step(db, run, attempt, self._record_counts(db, run, attempts))
+                elif attempt['role'] == 'executor' and attempt['executor_round']:
+                    steps = self._cycle_steps(db, run, [attempt['executor_round'] - 1])
+                    step = steps.get(attempt['executor_round'] - 1, [None, None])[slot - 1]
+        elif number == TAIL:
+            executors = db.scalar(text('''SELECT count(*) FROM managed_attempts a
+                WHERE a.run_id = :run AND json_extract(a.request_json, '$.role') = 'executor' '''), {'run': run_id})
+            cycles = db.scalar(text('''SELECT count(*) FROM run_projection_cycles
+                WHERE run_id = :run AND number >= :n'''), {'run': run_id, 'n': executors})
+            if slot < cycles * 2:
+                cycle = db.scalar(text('''SELECT number FROM run_projection_cycles WHERE run_id = :run
+                    AND number >= :n ORDER BY number LIMIT 1 OFFSET :offset'''),
+                    {'run': run_id, 'n': executors, 'offset': slot // 2})
+                step = self._cycle_steps(db, run, [cycle])[cycle][slot % 2]
+            else:
+                stop = db.scalar(text('''SELECT stage FROM run_projection_stops WHERE run_id = :run
+                    ORDER BY ordinal DESC LIMIT 1'''), {'run': run_id})
+                extra = stop == 'formatter' or (run['stage'] == 'validation' and run['status'] == 'VALIDATING')
+                offset = slot - cycles * 2
+                if extra and offset == 0:
+                    step = {'kind': 'harness', 'stage': 'format' if stop == 'formatter' else 'validate',
+                            'status': 'failed' if stop == 'formatter' else 'running'}
+                else:
+                    step = db.execute(text('''SELECT operation_id, status, commit_sha, created_at, finished_at
+                        FROM managed_commits WHERE run_id = :run ORDER BY created_at, operation_id
+                        LIMIT 1 OFFSET :offset'''), {'run': run_id, 'offset': offset - int(extra)}).mappings().first()
+                    step = {'kind': 'harness', 'stage': 'commit', **dict(step)} if step else None
+        if step is None:
+            raise MapNotFound(step_key)
+        result.update(step_key=step_key, step=step)
+        return result
+
     def steps(self, project: str, run_id: str, *, cursor=None, limit=wm.LIMITS['steps']) -> dict:
         """Keyset over (attempt number, sub-step): each attempt, then its executor round's format and validate,
         then the tail. Only the page's attempts are read and enriched."""

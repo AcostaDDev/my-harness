@@ -2753,7 +2753,9 @@ Query-only archives serve the same projections from SQLite alone, and the archiv
 
 ## D307 — Contextual reviewer conversation on the canonical chat boundary
 
-Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answer Q3); binds T024. Not implemented. Refines D297's
+Status: accepted explicitly by the owner on 2026-11-04 in P002-T018 (answer Q3); binds T024. Implemented as local
+T024 source on 2026-11-09; independent technical review, owner visual acceptance and integration remain pending
+([evidence](phase/P002-T024-contextual-chat.md)). Refines D297's
 "recorded as a knowledge delivery" for chat, which today has no T007 boundary. Contract:
 [T018 §9](phase/P002-T018-work-map-contract.md#9-contextual-reviewer-conversation-t024).
 
@@ -3204,3 +3206,48 @@ and Host/Origin guards apply; reads write nothing. The inspector explicitly requ
 checks the response identity against its projection reference and renders text escaped. The ordinary metadata
 button stays separate. OpenAPI/generated-client and work-map/backup flow parity are included. No model,
 migration, dependency, provider or product execution change is involved.
+
+## D317 — Contextual chat references and observed element evidence
+
+Status: accepted technical implementation of D307 within P002-T024, authorized on 2026-11-09. Local source;
+independent technical review, owner visual acceptance and integration remain pending. No new authority or provider
+qualification. [Evidence](phase/P002-T024-contextual-chat.md).
+
+`GET /api/managed/projects/{project}/chat-context` resolves an explicit phase/task identity or code, run ID, or run
+ID plus T020 stable step key into a server-owned label and closed reference. The reference's `project` is the
+persisted knowledge-project ID, not a browser label or filesystem path. Knowledge references contain `stable_id`
+and the current `revision_id`; run references contain `run_id` and `evidence_digest`; step references additionally
+contain `step_key`. The run ID plus stable key covers invocation steps and deterministic Harness stages. The
+request cannot contain other identities, labels or content. Admission verifies membership and freshness in the
+same managed write transaction that freezes the turn and prepares T007's accepted snapshot. A matching idempotent
+replay returns the original job even after a later revision. `409 element_stale` requires an explicit tag refresh
+or removal. Refresh never resubmits inference. Tag controls are locked while a submitted request is pending/uncertain, so
+its immutable idempotent replay cannot secretly restore a removed selection. Commands require tag removal and retain their existing confirmation.
+
+Map-created conversations have no implicit phase/task-run bindings. Their removable selection is held per project
+and conversation in the browser session; only `element` is sent with the message. Clearing it also removes its
+refresh locator. Existing manually bound conversations, explicit documents/run selections, previous-turn history
+and untagged chat retain their contracts. Legacy projects explain the absence of canonical context. Restored maps
+mount no talk control and the existing archive mutation middleware refuses submissions.
+
+The existing canonical entity renderer supplies phase/task Markdown. Run/step evidence reads bounded T020
+projections directly, never complete run histories or native originals. The reference, label and evidence frame count towards the
+16 KiB UTF-8 ceiling; complete Unicode scalars, source and exposure digests, codepoint ranges, byte limit and
+truncation are preserved. The selected element is a capture, never an instruction or permission. Ordinary accepted
+instructions and the frozen profile remain T007 sources. Canonical renderer output and old snapshot formats are
+unchanged.
+
+No migration or new scheduler: `chat_turns.request` holds the bounded frozen selection and the canonical marker;
+`context_snapshots` keeps its existing format. A single-node `chat-turn@1` graph wraps the claimed job and supplies
+its `agent_invocation` operation. The existing native attempt creates exactly one accounting row. The execution
+directory is still the read-only HEAD export; the request, knowledge project, operation and accounting retain the
+original root. No checkout lock is acquired.
+
+Only the existing completed-input adapter observation records `initial_context`: ordinary T007 entries plus
+exactly one element exposure. Preparation, queueing and a model answer do not establish delivery. Pre-GO refusal
+has failure receipts without delivery digests; partial input is unknown; receipt persistence failure cannot report
+success; uncertain results are never retried automatically. Phase/task receipts keep `knowledge-delivery-2` and
+their existing entity kinds. Only `run_evidence` uses additive `knowledge-delivery-3`; v1/v2 remain unchanged.
+Readers and backup verification check the frozen turn, prompt, canonical source, exposures, receipt hashes and
+journal correspondence, including without checkout in query-only restored copies. Trace events carry identities,
+limits and hashes, never element text.

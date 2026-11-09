@@ -10334,6 +10334,132 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/chat-context": {
+      "get": {
+        "summary": "Chat Context",
+        "description": "Explicit selection/refresh of a current reference, without queuing or granting authority.",
+        "operationId": "managed_chat_context",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(phase|task|run|step)$",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Target"
+            }
+          },
+          {
+            "name": "step_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{6}\\.\\d{4}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Step Key"
+            }
+          },
+          {
+            "name": "x-my-harness",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-My-Harness"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatElementRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/conversations/{conversation_id}": {
       "get": {
         "summary": "Conversation",
@@ -29984,6 +30110,143 @@
         ],
         "title": "ChatDocumentRead"
       },
+      "ChatElementRead": {
+        "properties": {
+          "reference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChatElementReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "legacy",
+                  "unavailable"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reference",
+          "label"
+        ],
+        "title": "ChatElementRead"
+      },
+      "ChatElementReference": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "phase",
+              "task",
+              "run",
+              "step"
+            ],
+            "title": "Kind"
+          },
+          "project": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project"
+          },
+          "stable_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stable Id"
+          },
+          "revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "step_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{6}\\.\\d{4}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Key"
+          },
+          "evidence_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Digest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "project"
+        ],
+        "title": "ChatElementReference",
+        "description": "Server-verifiable selection; labels and content are never admission inputs."
+      },
       "ChatMessageCreate": {
         "properties": {
           "expected_version": {
@@ -29996,6 +30259,16 @@
             "maxLength": 20000,
             "minLength": 1,
             "title": "Text"
+          },
+          "element": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChatElementReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "documents": {
             "anyOf": [
@@ -30261,6 +30534,16 @@
       },
       "ChatTurnRead": {
         "properties": {
+          "element": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChatElementRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"

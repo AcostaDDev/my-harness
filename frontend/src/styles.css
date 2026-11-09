@@ -827,3 +827,9 @@ g.map-node { cursor: default; }
   .map-docs-open .map-sheet-open .map-inspector { max-height: 55vh; }
   .map-view-toggle { flex-wrap: wrap; }
 }
+
+/* T024: removable evidence selection shares the existing composer and responsive action flow. */
+.chat-element { border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem; margin-block: .75rem; overflow-wrap: anywhere; }
+.chat-element p { margin-block: .25rem .5rem; }
+.chat-element .actions { flex-wrap: wrap; }
+.reviewer-talk { margin-block: .5rem 1rem; }

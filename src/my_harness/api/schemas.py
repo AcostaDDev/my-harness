@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Any, Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class SimulationCreate(BaseModel):
@@ -1008,7 +1008,32 @@ class ChatDocumentRead(BaseModel):
     truncated: bool
 
 
+class ChatElementReference(BaseModel):
+    """Server-verifiable selection; labels and content are never admission inputs."""
+    model_config = ConfigDict(extra='forbid', strict=True)
+    kind: Literal['phase', 'task', 'run', 'step']
+    project: str = Field(min_length=1, max_length=200)
+    stable_id: str | None = Field(default=None, min_length=1, max_length=200)
+    revision_id: str | None = Field(default=None, min_length=1, max_length=200)
+    run_id: str | None = Field(default=None, min_length=1, max_length=200)
+    step_key: str | None = Field(default=None, pattern=r'^\d{6}\.\d{4}$')
+    evidence_digest: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
+
+    @model_validator(mode='after')
+    def coherent_identity(self):
+        from my_harness.core.engine.chat_context import reference
+        reference(self.model_dump(exclude_none=True))
+        return self
+
+
+class ChatElementRead(BaseModel):
+    reference: ChatElementReference | None
+    label: str | None
+    reason: Literal['legacy', 'unavailable'] | None = None
+
+
 class ChatTurnRead(BaseModel):
+    element: ChatElementRead | None = None
     id: str
     number: int
     status: ChatTurnStatus
@@ -1078,6 +1103,7 @@ class ChatMessageCreate(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     expected_version: int = Field(ge=0)
     text: str = Field(min_length=1, max_length=20_000)
+    element: ChatElementReference | None = None
     documents: list[str] | None = Field(default=None, max_length=8, description=(
         'Checkout documents frozen as context; null: those of the phase or STATE and NEXT_STEPS.'))
     run_ids: list[str] = Field(default_factory=list, max_length=10,

@@ -2975,5 +2975,21 @@
   "trace.outcome.unclassified": "Unclassified",
   "trace.outcome.recorded": "Recorded",
   "trace.field.status_code": "Native status",
-  "trace.open_large": "Read exact large original"
+  "trace.open_large": "Read exact large original",
+  "chat.element.conversation": "Reviewer conversation",
+  "chat.element.talk": "Talk to the reviewer",
+  "chat.element.label": "Selected element context",
+  "chat.element.included": "The context of {label} will be included.",
+  "chat.element.remove": "Remove context",
+  "chat.element.refresh": "Refresh context tag",
+  "chat.element.stale": "This context changed. Refresh the tag or remove it before sending.",
+  "chat.element.loading": "Refreshing the context tag…",
+  "chat.element.legacy": "This legacy project has no accepted canonical knowledge. No element context is attached.",
+  "chat.element.evidence": "Up to 16 KiB of element evidence; it grants no permissions. Delivery is recorded only when observed.",
+  "chat.element.command": "Remove the context tag before preparing a command.",
+  "chat.element.selected": "Selected context: {label}. Delivery evidence is in the invocation trace.",
+  "chat.element.kind.phase": "Phase",
+  "chat.element.kind.task": "Task",
+  "chat.element.kind.run": "Run",
+  "chat.element.kind.step": "Step"
 }

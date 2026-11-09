@@ -29,6 +29,31 @@ def rebuild(revision, data):
                          profile=captures['profile'][0], code=captures['code'], context_format=data['format'])
 
 
+def accepted_revision(session, *, root=None, project=None, revision_id=None):
+    """Read-only, transaction-scoped context consumer interface; exposes no knowledge mutation methods."""
+    knowledge = KnowledgeSession(session)
+    project = project or knowledge.project_id(root)
+    if project is None:
+        return None
+    row = session.get(KnowledgeRevisionRow, revision_id) if revision_id else knowledge.head(project)
+    if row is None:
+        return None
+    if row.project_id != project or row.status != 'ACCEPTED':
+        core.fail()
+    return knowledge.revision(project, row.number)
+
+
+def prepare_snapshot(session, revision, item_ids, *, client, profile, code=()):
+    """Prepare source bytes within a consumer's existing write transaction. This proves no delivery."""
+    data = core.assemble(revision, item_ids, client=client, profile=profile, code=code)
+    payload = freeze(data)
+    row = Snapshot(id=str(uuid4()), project_id=revision.project_id, revision_id=revision.id,
+                   sha256=core.digest(payload), payload=payload, created_at=now())
+    session.add(row)
+    session.flush()
+    return row
+
+
 def load(session, snapshot_id, project_id=None):
     row = session.get(Snapshot, snapshot_id)
     if row is None or project_id is not None and row.project_id != project_id:
@@ -64,6 +89,8 @@ def seal(session, snapshot_id, operation, request):
     # Every source and mandatory instruction must actually have entered the rendered prompt.
     if data['instructions'] not in request.prompt or core.prompt_tail(data) not in request.prompt:
         core.fail()
+    from my_harness.storage.chat_context import invocation_element
+    invocation_element(session, request.id, row)
     session.add(Boundary(invocation_id=operation.invocation_id, attempt_id=request.id, operation_id=operation.id,
                          snapshot_id=row.id, prompt_sha256=core.digest(request.prompt), created_at=now()))
     session.flush()
@@ -89,6 +116,8 @@ def bound(session, invocation_id, *, caller=None):
             caller.knowledge_project_id != row.project_id or caller.frozen_revision_id != row.revision_id or
             caller.thread_id != operation.thread_id or caller.role != operation.refs.get('role')):
         core.fail()
+    from my_harness.storage.chat_context import invocation_element
+    invocation_element(session, boundary.attempt_id, row)
     return boundary, row, context, operation
 
 
@@ -105,7 +134,8 @@ def persist(session, invocation_id, key, request_sha256, channel, result, exposu
     receipts = []
     for index, e in enumerate(exposures):
         identity = e['identity']
-        receipt = {'format': 'knowledge-delivery-2', 'invocation_id': invocation_id, 'channel': channel,
+        receipt = {'format': 'knowledge-delivery-3' if identity['kind'] == 'run_evidence' else 'knowledge-delivery-2',
+                   'invocation_id': invocation_id, 'channel': channel,
                    'entity_type': identity['kind'], 'stable_id': identity['item_id'],
                    'revision_id': snapshot.revision_id, 'exposure': e['exposure'],
                    'page': e.get('page', {'truncated': e.get('truncated', False)}), 'failure': failure,
@@ -164,8 +194,10 @@ def observe(session, attempt_id, prompt_sha256):
     if boundary.prompt_sha256 != prompt_sha256:
         core.fail()
     _, _, context, _ = bound(session, boundary.invocation_id)
+    from my_harness.storage.chat_context import invocation_element
+    element = invocation_element(session, attempt_id)
     persist(session, boundary.invocation_id, 'initial', prompt_sha256, 'initial_context',
-            {'context_sha256': core.digest(freeze(context))}, context['entries'])
+            {'context_sha256': core.digest(freeze(context))}, context['entries'] + ([element] if element else []))
 
 
 def launch_refused(session, attempt_id):
@@ -174,9 +206,11 @@ def launch_refused(session, attempt_id):
     if boundary is None:
         return
     _, _, context, _ = bound(session, boundary.invocation_id)
+    from my_harness.storage.chat_context import invocation_element
+    element = invocation_element(session, attempt_id)
     persist(session, boundary.invocation_id, 'initial_failure', boundary.prompt_sha256, 'initial_context', None,
             [{'identity': e['identity'], 'authority': e['authority'], 'exposure': e['exposure'], 'data': ''}
-             for e in context['entries']], failure='launch_refused')
+             for e in context['entries'] + ([element] if element else [])], failure='launch_refused')
 
 
 class ContextRepository:
@@ -200,11 +234,7 @@ class ContextRepository:
                     accepted = knowledge.revision(project, revision)
                 except LookupError:
                     core.fail('revision_unavailable')
-                data = core.assemble(accepted, item_ids, client=client, profile=profile, code=code)
-                payload = freeze(data)
-                row = Snapshot(id=str(uuid4()), project_id=project, revision_id=accepted.id,
-                               sha256=core.digest(payload), payload=payload, created_at=now())
-                session.add(row)
+                row = prepare_snapshot(session, accepted, item_ids, client=client, profile=profile, code=code)
                 return row.id
         except core.ContextError as error:
             if error.code != 'query_only':
@@ -243,7 +273,7 @@ class ContextRepository:
         if type(offset) is not int or offset < 0 or type(limit) is not int or not 1 <= limit <= 100:
             core.fail()
         with Session(self.engine) as session:
-            _, row, _, _ = bound(session, invocation_id)
+            boundary, row, context, _ = bound(session, invocation_id)
             if row.project_id != project_id:
                 core.fail()
             rows = session.scalars(select(Delivery).where(Delivery.invocation_id == invocation_id)
@@ -251,6 +281,15 @@ class ContextRepository:
             result = []
             for delivery in rows:
                 data = delivery_data(delivery)
+                if delivery.channel == 'initial_context':
+                    from my_harness.storage.chat_context import invocation_element
+                    element = invocation_element(session, boundary.attempt_id, row)
+                    expected = context['entries'] + ([element] if element else [])
+                    if data['failure'] is not None:
+                        expected = [{'identity': e['identity'], 'authority': e['authority'],
+                                     'exposure': e['exposure'], 'data': ''} for e in expected]
+                    if data['exposures'] != expected:
+                        core.fail()
                 for receipt in delivery.receipts:
                     if receipt['revision_id'] != row.revision_id:
                         core.fail()
@@ -332,6 +371,7 @@ class ReceiptSink:
 def verify_archive(db):
     """Read-only integrity checks used before backup and restore; no checkout or source files."""
     snapshots = {}
+    revisions = {}
     for sid, project, revision, sha, payload in db.execute(
             'SELECT id, project_id, revision_id, sha256, payload FROM context_snapshots'):
         data = core.verify(payload, sha)
@@ -361,6 +401,7 @@ def verify_archive(db):
                 freeze(rebuild(accepted, data)) != payload):
             core.fail()
         snapshots[sid] = data
+        revisions[sid] = accepted
     boundaries = {}
     for invocation, attempt, operation, sid, sha in db.execute(
             'SELECT invocation_id, attempt_id, operation_id, snapshot_id, prompt_sha256 FROM invocation_contexts'):
@@ -373,7 +414,12 @@ def verify_archive(db):
         request = json.loads(request[0])
         if core.digest(request['prompt']) != sha:
             core.fail()
-        boundaries[invocation] = snapshots[sid]
+        from types import SimpleNamespace
+        from my_harness.storage.chat_context import turn_element
+        turn = db.execute('SELECT request FROM chat_turns WHERE run_id = '
+                          '(SELECT run_id FROM managed_attempts WHERE id = ?)', (attempt,)).fetchone()
+        element = turn_element(SimpleNamespace(**request), json.loads(turn[0]), revisions[sid]) if turn else None
+        boundaries[invocation] = (snapshots[sid], element)
     for did, invocation, channel, payload, sha, receipts in db.execute(
             'SELECT id, invocation_id, channel, payload, sha256, receipts FROM knowledge_deliveries'):
         if invocation not in boundaries:
@@ -383,9 +429,18 @@ def verify_archive(db):
         delivery_data(SimpleNamespace(id=did, invocation_id=invocation, channel=channel, payload=payload,
                                       sha256=sha, receipts=receipts))
         for index, r in enumerate(receipts):
-            if r['revision_id'] != boundaries[invocation]['revision_id']:
+            if r['revision_id'] != boundaries[invocation][0]['revision_id']:
                 core.fail()
             event = db.execute('SELECT payload FROM trace_events WHERE dedupe_key = ?',
                                (f'receipt:{did}:{index}',)).fetchone()
             if not event or json.loads(event[0]) != r:
+                core.fail()
+        data = json.loads(payload)
+        if channel == 'initial_context':
+            context, element = boundaries[invocation]
+            expected = context['entries'] + ([element] if element else [])
+            if data['failure'] is not None:
+                expected = [{'identity': e['identity'], 'authority': e['authority'],
+                             'exposure': e['exposure'], 'data': ''} for e in expected]
+            if data['exposures'] != expected:
                 core.fail()

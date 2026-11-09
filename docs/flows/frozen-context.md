@@ -80,3 +80,27 @@ sequenceDiagram
   T014–T016 product graph migration, T018–T024 views and T026 conversion.
 
 Tables: [data diagram](../DDBB-DIAGRAM.md#p002-frozen-context-and-delivery-evidence).
+
+## Contextual chat consumer (P002-T024)
+
+[D307](../DECISIONS.md#d307--contextual-reviewer-conversation-on-the-canonical-chat-boundary) and
+[D317](../DECISIONS.md#d317--contextual-chat-references-and-observed-element-evidence) add the tagged
+[chat path](chat.md#contextual-map-entry-p002-t024-d307-d317) as a T007 consumer. Admission prepares the existing
+snapshot format with accepted instructions/profile and freezes one separately bounded evidence selection in
+`chat_turns.request`. The single-node `chat-turn@1` graph supplies the invocation operation to the ordinary
+fenced attempt/ledger boundary. Request and accounting project identity stay on the original root even while the
+adapter's directory is the read-only HEAD export. No second ledger row or scheduler is introduced.
+
+Sealing verifies the exact prompt, marker and frozen turn; phase/task evidence is rebuilt from the same accepted
+revision using the canonical entity renderer. Captured run/step evidence is checked as historical bytes, never
+replaced by current projection content. Completed input delivery writes ordinary T007 exposures and exactly one
+element exposure in the same `initial_context` record. The reference, label and frame count towards the 16 KiB UTF-8 ceiling; receipts
+include range, source/exposure digests, limit and truncation. Existing entity kinds keep v2; only `run_evidence`
+uses `knowledge-delivery-3`. Formats v1/v2 and existing snapshots are unchanged. A removed tag uses the historical
+untagged chat path and produces no element receipt.
+
+Failure and replay rules above apply unchanged. Initial delivery reads and backup verification additionally bind
+the persisted element exposure to the saved turn/prompt and canonical source; archives read without checkout or
+writes. Trace payloads contain only metadata/digests. Local source is complete; independent technical review,
+owner visual acceptance, integration and subsequent delivery remain pending
+([record](../phase/P002-T024-contextual-chat.md)).

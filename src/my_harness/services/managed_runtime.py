@@ -147,6 +147,11 @@ def run_phase_graph(repository, claim, journal, work):
     return execute_phase_job(repository, claim, journal, work)
 
 
+def run_chat_graph(repository, claim, journal, work):
+    from my_harness.orchestration.chat import execute_chat_job
+    return execute_chat_job(repository, claim, journal, work)
+
+
 def roadmap_graphs(engine, **options):
     """P002-T016: factory of the roadmap graph operations for a service (lazy LangGraph import, D280)."""
     def build(service):

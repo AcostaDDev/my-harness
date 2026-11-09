@@ -225,3 +225,24 @@ chunk/capture/record digests, filesystem containment and 4 MiB plus newline boun
 Purged, pending, missing or unverified content stays null. Archives read their verified bundle copy and never
 historical paths. The inspector checks the response's identity against its source reference and escapes the
 content. The read has no side effects or polling. See the [T023 evidence](../phase/P002-T023-trace-docs.md).
+
+## Contextual reviewer talk (P002-T024)
+
+The separate talk button is a reviewer conversation entry, distinct from actor navigation and T017 request
+bubbles. It selects the current phase/task, the run in view, or an inspector-selected L3 step. L4 managed invocation
+headers resolve the owning run and attempt's L3 key. Executor and judge detail panels retain no free composer.
+Before a task has any run, the valid run-selector read supplies its server-verified registered and knowledge
+project identities; talk selects the task without creating an execution run. An archive mark from either the
+level/steps read or the selector, or the explicit archive mode, suppresses talk. A subsequently observed first run
+and inspector selection update the target through the same resolver.
+`GET projects/{registered-project}/chat-context` returns a verifiable reference and server-owned label; a removable
+tag appears in the existing chat composer. Map-created conversations have no implicit phase/task-run bindings.
+Removal omits the reference and associated evidence; refresh is explicit after `409 element_stale`, and late reads
+cannot reattach a removed tag or navigate away from a newer selection. Legacy projects explain the missing tag.
+Restored maps mount no talk control and the API mutation middleware remains read-only.
+
+The [chat flow](chat.md#contextual-map-entry-p002-t024-d307-d317) defines enqueue, T007 graph/operation sealing and
+observed delivery. Evidence uses the canonical knowledge renderer or one bounded T020 projection selection, never
+full native originals or run histories. Trace related records display the new `run_evidence` v3 receipt metadata
+through the existing record viewer. Local source is complete; independent technical review, owner visual acceptance
+and integration remain pending ([record and visual fixture](../phase/P002-T024-contextual-chat.md)).

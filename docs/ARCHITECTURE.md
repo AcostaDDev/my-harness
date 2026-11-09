@@ -582,8 +582,16 @@ resolve before any `ProjectWorkspace` and mount no poller or action; their table
 invocations and requests. The
 shared `Status` follows `status-classes.json`, a copy of T020's tables checked by a Python parity test. T023 renders L4
 and the drawer with the same engine through the existing router.
-T024 seals chat turns that carry element context through T007's boundary, using a single-node chat graph thread
-over the existing scheduler. No second scheduler, workflow editor or executable graph authority is introduced.
+T024's local source seals chat turns carrying element context through T007's boundary with a single-node
+`chat-turn@1` graph on the existing managed scheduler. `storage/chat_context.py` resolves closed project-scoped
+references and freezes the bounded canonical-renderer/T020 selection in the enqueue transaction.
+`orchestration/chat.py` supplies the invocation operation to the existing native attempt/accounting row;
+`storage/frozen_context.py` verifies the saved element/prompt and records it only on completed-input observation.
+The accepted snapshot format is unchanged; run evidence alone adds `knowledge-delivery-3`. Original project root
+and accounting identity survive export to the read-only temporary execution directory. `ReviewerTalk` opens an
+unbound conversation; `ChatElement` owns explicit refresh/removal, without reusing inbox or granting authority.
+Readers/backup retain checkout-free query-only consultation. Independent technical review, owner visual acceptance
+and integration remain pending ([record](phase/P002-T024-contextual-chat.md)).
 
 ## Global inbox projection
 

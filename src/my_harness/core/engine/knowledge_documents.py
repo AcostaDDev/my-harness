@@ -122,6 +122,37 @@ def _path(m, members, links):
     return PATHS[m['document'] or m['kind']]
 
 
+def entity_heading(member):
+    return '\n## ' + member['code'] + (' — ' + member['content'].get('title', '') if member['content'].get('title') else '') + '\n'
+
+
+def entity_fields(m):
+    """Canonical field rendering shared by document export and bounded contextual chat."""
+    for name, value in sorted(m['content'].items()):
+        if not isinstance(value, str) or name in ('title', 'status', 'target', 'format', 'tag', 'historical_status'):
+            continue
+        display = value
+        fence = None
+        if name == 'body' and m['content'].get('format') == 'mermaid':
+            longest = max((len(run) for run in re.findall(r'`+', value)), default=0)
+            fence = '`' * max(3, longest + 1)
+            display = fence + 'mermaid\n' + value + '\n' + fence
+        token, i = 'f0', 0
+        while token in display:
+            i += 1
+            token = f'f{i}'
+        text = (f'<!-- harness:field {m["item_id"]} {name} {token} -->\n' + display
+                + f'\n<!-- harness:end {m["item_id"]} {name} {token} -->\n')
+        yield name, text, token, fence
+
+
+def render_entity(member):
+    """One phase/task, in the same Markdown as the canonical document renderer."""
+    from dataclasses import asdict
+    m = asdict(member)
+    return entity_heading(m) + ''.join(text for _, text, _, _ in entity_fields(m))
+
+
 def render(data, manifest):
     validate_snapshot(data)
     expected = ownership(manifest['destination'], manifest['work_language'],
@@ -159,22 +190,9 @@ def render(data, manifest):
                               'start': start, 'length': len(prefix + m['content']['body'] + '\n')}
             del item['content']['body']
         else:
-            files[path] += '\n## ' + m['code'] + (' — ' + m['content'].get('title', '') if m['content'].get('title') else '') + '\n'
-            for name, value in sorted(m['content'].items()):
-                if not isinstance(value, str) or name in ('title', 'status', 'target', 'format', 'tag', 'historical_status'):
-                    continue
-                display = value
-                fence = None
-                if name == 'body' and m['content'].get('format') == 'mermaid':
-                    longest = max((len(run) for run in re.findall(r'`+', value)), default=0)
-                    fence = '`' * max(3, longest + 1)
-                    display = fence + 'mermaid\n' + value + '\n' + fence
-                token, i = 'f0', 0
-                while token in display:
-                    i += 1
-                    token = f'f{i}'
-                files[path] += (f'<!-- harness:field {m["item_id"]} {name} {token} -->\n' + display
-                                + f'\n<!-- harness:end {m["item_id"]} {name} {token} -->\n')
+            files[path] += entity_heading(m)
+            for name, rendered, token, fence in entity_fields(m):
+                files[path] += rendered
                 fields[name] = {'path': path, 'token': token}
                 if fence:
                     fields[name]['fence'] = fence

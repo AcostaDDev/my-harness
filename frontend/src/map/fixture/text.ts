@@ -35,6 +35,7 @@ const en = {
   "fixture.source.product": "Product map on synthetic T020 projections (T022)",
   "fixture.product.scenario.review": "Review: every state, chat beside the task, requests",
   "fixture.product.scenario.budget": "Budget: D309 maxima (80 tasks, 300 requests)",
+  "fixture.legacy": "Legacy conversation (no canonical context)",
   "fixture.archive": "Archive",
   "fixture.archive.off": "Ordinary mode",
   "fixture.archive.on": "Read-only archive",
@@ -45,7 +46,7 @@ const en = {
   "fixture.reviewer.off": "Off",
   "fixture.reviewer.on": "On",
   "fixture.version": "Projection version {version}",
-  "fixture.product.note": "The map, inspector, run selector and requests panel are the product components. This page answers their reads from synthetic T020 projections and refuses every action.",
+  "fixture.product.note": "The map, inspector, run selector and requests panel are the product components. This page answers their reads from synthetic T020 projections. Reviewer chat is simulated in memory; other actions are refused.",
   "fixture.refused": "Synthetic fixture: actions are not applied.",
 } as const;
 
@@ -83,6 +84,7 @@ const es: Record<FixtureKey, string> = {
   "fixture.source.product": "Mapa del producto con proyecciones T020 sintéticas (T022)",
   "fixture.product.scenario.review": "Revisión: todos los estados, chat junto a la tarea, solicitudes",
   "fixture.product.scenario.budget": "Presupuesto: máximos de D309 (80 tareas, 300 solicitudes)",
+  "fixture.legacy": "Conversación legacy (sin contexto canónico)",
   "fixture.archive": "Archivo",
   "fixture.archive.off": "Modo ordinario",
   "fixture.archive.on": "Archivo de solo lectura",
@@ -93,7 +95,7 @@ const es: Record<FixtureKey, string> = {
   "fixture.reviewer.off": "No",
   "fixture.reviewer.on": "Sí",
   "fixture.version": "Versión de la proyección {version}",
-  "fixture.product.note": "El mapa, el inspector, el selector de ejecuciones y el panel de solicitudes son los componentes del producto. Esta página responde a sus lecturas con proyecciones T020 sintéticas y rechaza toda acción.",
+  "fixture.product.note": "El mapa, el inspector, el selector de ejecuciones y el panel de solicitudes son los componentes del producto. Esta página responde a sus lecturas con proyecciones T020 sintéticas. El chat del revisor se simula en memoria; las demás acciones se rechazan.",
   "fixture.refused": "Fixture sintético: las acciones no se aplican.",
 };
 

@@ -1826,3 +1826,29 @@ def test_l3_chat_lane_is_a_bounded_snapshot_of_the_runs_own_chats_versioned_isol
         assert get(http, '/activity', scope=[archived['scope']])['polling']['enabled'] is False
         assert get(http, f'/projects/{w.project}/runs/{other}/steps')['chats'] == []
     assert sha256(restored.read_bytes()).hexdigest() == before
+
+
+def test_contextual_chat_evidence_addresses_real_invocation_and_harness_step_keys(world):
+    """T024 selects one T020 step directly, without paging through or decoding run histories/originals."""
+    from sqlalchemy.orm import Session
+    from my_harness.storage.chat_context import selected
+    from my_harness.storage.work_map import WorkMap
+    from my_harness.core.engine.contracts import freeze
+    w = world
+    projection = WorkMap(w.repository.engine)
+    with w.repository.engine.connect() as db:
+        run_id = db.scalar(text("SELECT id FROM managed_runs WHERE purpose = 'task' AND root = :root"),
+                           {'root': str(w.context.root)})
+    page = projection.steps(w.project, run_id)
+    assert {'invocation', 'harness'} <= {step['kind'] for step in page['items']}
+    for step in page['items']:
+        with w.repository.engine.connect() as db:
+            summary = projection.contextual_evidence(db, str(w.context.root), run_id, step['key'])
+        assert summary['step']['kind'] == step['kind']
+        if step['kind'] == 'harness':
+            assert summary['step']['stage'] == step['stage']
+        with Session(w.repository.engine) as session:
+            element = selected(session, str(w.context.root), 'step', run_id, step['key'])
+        assert element['reference']['step_key'] == step['key']
+        assert len(element['exposure']['data'].encode('utf-8')) <= 16384
+        assert freeze(summary) in element['exposure']['data']

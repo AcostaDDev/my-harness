@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { translateNow, useI18n } from "./Language";
 import type { MessageKey } from "./i18n.ts";
 import { createOnce, managed, jobRequest, ManagedError } from "./managed-api";
@@ -9,6 +9,7 @@ import { LiveActivity } from "./Activity";
 import { useWorkspace } from "./workspace";
 import { ChatCommand } from "./ChatCommand";
 import { commandNames, isCommand } from "./chat-commands";
+import { ChatElement, useChatElement } from "./ChatElement";
 
 const lines = (value: string) => value.split("\n").map(item => item.trim()).filter(Boolean);
 const turnNames: Record<S["ChatTurnRead"]["status"], MessageKey> = {
@@ -69,6 +70,8 @@ export function Chat({ conversation }: { conversation?: string }) {
 function Conversation({ id }: { id: string }) {
   const { t, n, rich } = useI18n();
   const { project, busy, refresh, operate, send } = useWorkspace();
+  const element = useChatElement(project, id);
+  const composer = useRef<HTMLTextAreaElement>(null);
   const [missing, setMissing] = useState(false);
   const [conversation, setConversation] = useState<S["ChatConversationRead"]>();
   const [error, setError] = useState("");
@@ -98,7 +101,8 @@ function Conversation({ id }: { id: string }) {
   if (!conversation) return missing ? <Empty title={t("chat.missing.title")}><p>{t("chat.missing.body")}</p></Empty>
     : error ? <p role="alert" className="state state-error">{error}</p> : <Loading>{t("chat.loading")}</Loading>;
   const v = conversation.version;
-  const canSend = !busy && !error && (isCommand(text) || conversation.actions.includes("message"));
+  const canSend = !busy && !error && !element.stale && !element.loading
+    && !(element.reference && isCommand(text)) && (isCommand(text) || conversation.actions.includes("message"));
   const latest = conversation.turns.reduce<S["ChatTurnRead"] | undefined>((last, turn) => !last || turn.number > last.number ? turn : last, undefined);
   const pending = conversation.proposals.filter(p => p.actions.includes("accept")).length;
   return <Workbench label={t("chat.rail")} aside={<>
@@ -123,6 +127,7 @@ function Conversation({ id }: { id: string }) {
       const run = <Link to={{ name: "run-short", run: turn.run_id }}>{t("trail.run", { id: turn.run_id.slice(0, 8) })}</Link>;
       return <div className="entry turn" key={turn.id}><p className="turn-head"><strong>{t("chat.turn", { number: turn.number })}</strong> {t(turnNames[turn.status])}</p>
         <p className="turn-message">{turn.message}</p>
+        {turn.element && <p className="hint">{t("chat.element.selected", { label: turn.element.label ?? "" })}</p>}
         <p className="hint">{turn.command ? t("chat.turn.command") : turn.head ? rich("chat.turn.head", { head: <code className="hash">{turn.head.slice(0, 12)}</code> }) : t("chat.turn.legacy")}</p>
         {turn.status === "QUEUED" && turn.run_status === "RECOVERY_REQUIRED" && <p className="state state-attention">{rich("chat.turn.interrupted", { run })}</p>}
         {turn.status === "ANSWERED" && result?.answer && <p className="turn-answer">{result.answer}</p>}
@@ -163,6 +168,8 @@ function Conversation({ id }: { id: string }) {
     })}
 
     <h3>{t("chat.message.title")}</h3>
+    <ChatElement state={element} locked={busy} onRemove={() => composer.current?.focus()} />
+    {element.reference && isCommand(text) && <p role="status">{t("chat.element.command")}</p>}
     <p className="hint">{t("chat.message.hint")}</p>
     <div className="command-list" aria-label={t("chat.commands")}>{commandNames.map(name => <button type="button" key={name} className="button-quiet mono" onClick={() => { setText(`/${name}${name === "tarea" ? " " : ""}`); setCommand(undefined); }}>/{name}</button>)}</div>
     {!conversation.actions.includes("message") && <p>{t("chat.message.pending")}</p>}
@@ -171,10 +178,17 @@ function Conversation({ id }: { id: string }) {
         const preview = await managed<S["ChatCommandRead"]>(`/conversations/${id}/commands/preview`, { expected_version: v, text } satisfies S["ChatCommandCreate"]);
         if (preview.name !== "tarea") { setCommand(preview); setText(""); return; }
       }
-      await send(jobRequest(`/conversations/${id}/messages`, { expected_version: v, text, documents: lines(documents).length ? lines(documents) : null, run_ids: lines(runIds) }));
+      try {
+        await send(jobRequest(`/conversations/${id}/messages`, { expected_version: v, text,
+          documents: lines(documents).length ? lines(documents) : null, run_ids: lines(runIds),
+          ...(element.reference ? { element: element.reference } : {}) }));
+      } catch (error) {
+        if (error instanceof ManagedError && error.code === "element_stale") element.markStale();
+        throw error;
+      }
       setText(""); setCommand(undefined);
     }); }}>
-      <label>{t("chat.message")}<textarea rows={4} value={text} maxLength={20000} onChange={e => { setText(e.target.value); setCommand(undefined); }} /></label>
+      <label>{t("chat.message")}<textarea ref={composer} rows={4} value={text} maxLength={20000} onChange={e => { setText(e.target.value); setCommand(undefined); }} /></label>
       <div className="form-row"><label>{t("chat.message.documents")}<textarea rows={2} value={documents} onChange={e => setDocuments(e.target.value)} /></label>
         <label>{t("chat.message.runs")}<textarea rows={2} value={runIds} onChange={e => setRunIds(e.target.value)} /></label></div>
       <button disabled={!canSend || !text.trim()}>{isCommand(text) ? t("chat.message.prepare") : t("chat.message.send")}</button>

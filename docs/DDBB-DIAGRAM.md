@@ -178,6 +178,13 @@ P002-T007, migration `0033_frozen_context`, [D288](DECISIONS.md#d288--frozen-inv
 No backfill. Every snapshot belongs to a verified accepted revision; a boundary is sealed inside the fenced
 attempt/ledger/operation transaction. A prepared snapshot or boundary does not claim delivery.
 
+P002-T024 adds no table, column or migration. Its `chat_turns.request` optionally holds a bounded frozen `element`
+(reference, server label, exact exposure) and `canonical` T007 snapshot marker, atomically with the queued job.
+`chat-turn@1` threads and invocation operations use the existing graph/operation tables and the attempt's existing
+accounting row. Initial receipts contain ordinary T007 entries plus one element exposure; only `run_evidence` uses
+`knowledge-delivery-3`. Existing formats/rows are unchanged. Backup/read integrity binds the element to the saved
+turn/prompt and accepted source, without live checkout or historical evidence reconstruction (D307, D317).
+
 ```mermaid
 erDiagram
     context_snapshots {
@@ -204,7 +211,7 @@ erDiagram
         string channel "initial_context, query_result, tool_result"
         text payload "exact response and per-source exposure bytes or explicit failure"
         string sha256 "digest over payload and receipts together"
-        json receipts "knowledge-delivery-2 locators and exact exposure digests"
+        json receipts "knowledge-delivery-2 or additive run_evidence v3; exact exposure digests"
         string created_at
     }
     context_snapshots ||--o{ invocation_contexts : snapshot_id

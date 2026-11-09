@@ -81,7 +81,7 @@ def task_text(proposal: dict, task_id: str, origin: dict, language: str = 'en') 
 
 
 def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, journal,
-              catalog, language=None) -> tuple[RunHistory, dict]:
+              catalog, language=None, *, canonical=None) -> tuple[RunHistory, dict]:
     """A single invocation with the frozen request; the checkout evidence cannot change."""
 
     def done(history, status, reasons, *, result=None, checkout=None):
@@ -104,8 +104,14 @@ def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, jo
             message += ("\nThis turn inspects an exported, read-only tree of commit " + snapshot['context']['head']
                         + ". The current directory is the snapshot; project.root identifies its source only. "
                         "Do not read the live source checkout. Uncommitted changes are not part of this snapshot.")
+        if canonical is not None:
+            message += snapshot['context']['element']['exposure']['data']
+        from my_harness.core.engine.chat_context import prompt_context
         prompt, prompt_snapshot = render_attempt(catalog, "chat-turn", {
-            "CONTEXT_JSON": freeze(snapshot["context"]), "MESSAGE": message}, context, language)
+            "CONTEXT_JSON": freeze(prompt_context(snapshot["context"])), "MESSAGE": message}, context, language, canonical=canonical)
+        if canonical is not None:
+            import json
+            prompt_snapshot = freeze({**json.loads(prompt_snapshot), 'chat_element': snapshot['context']['element']})
     except (ValueError, KeyError, TypeError) as exc:
         return done(stop_history(history, "prompts", str(exc)), "FAILED", [str(exc)], checkout={"before": observed})
     history = replace(history, prompt_catalog_json=catalog_json)

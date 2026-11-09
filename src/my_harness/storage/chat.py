@@ -186,6 +186,8 @@ class ChatRepository:
                     'phase_code': context['phase']['code'] if context['phase'] else None,
                     'previous_turns': len(context['previous_turns']), 'head': context.get('head'),
                     'command': context.get('command'),
+                    'element': ({'reference': context['element']['reference'], 'label': context['element']['label'],
+                                 'reason': None} if context.get('element') else None),
                     'context_sha256': turn.request['context_sha256'], 'request_sha256': turn.request_sha256,
                     'result': turn.result, 'actor': turn.actor, 'created_at': turn.created_at,
                     'finished_at': turn.finished_at})
@@ -216,7 +218,7 @@ class ChatRepository:
                 raise LookupError(tr('managed.unknown_managed_run'))
             turn, _ = _turn(session, run)
             return {'turn_id': turn.id, 'message': turn.message, 'context': turn.request['context'],
-                    'context_sha256': turn.request['context_sha256']}
+                    'context_sha256': turn.request['context_sha256'], 'canonical': turn.request.get('canonical')}
 
     # --- conversation and turns --------------------------------------------------------
 
@@ -253,16 +255,20 @@ class ChatRepository:
             session.add(row)
             return row.id
 
-    def submit_message(self, context, conversation_id, expected, *, key, versions, text, documents=None, run_ids=None, reader=None):
+    def submit_message(self, context, conversation_id, expected, *, key, versions, text, documents=None, run_ids=None, reader=None,
+                       element=None):
         """Freezes message and explicit context in the transaction that queues the turn."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_MESSAGE:
             raise ValueError(tr('chat.chat_message_contain_1', max_message=MAX_MESSAGE))
         command = parse(text)
+        if command and element is not None:
+            raise ValueError(tr('chat.element_command'))
         if command and command['name'] != 'tarea':
             raise ValueError(tr('chat.use_deterministic_command_preview'))
         run_ids = _distinct([] if run_ids is None else run_ids, 'runs', MAX_RUNS)
         request = freeze({'action': 'chat_command' if command else 'chat_snapshot', 'conversation_id': conversation_id, 'expected_version': expected,
-                          'text': text, 'documents': documents, 'run_ids': run_ids})
+                          'text': text, 'documents': documents, 'run_ids': run_ids,
+                          **({'element': element} if element is not None else {})})
         with Session(self.managed.engine) as session:
             existing = self.managed._existing(session, key, request)
             if existing:
@@ -305,12 +311,17 @@ class ChatRepository:
                       'previous_turns': history, 'head': head, 'snapshot_format': 'head-export-1',
                       'command': command,
                       **({'command_result': command_proposal(command['argument'], context.work_language)} if command else {})}
+            canonical = None
+            if element is not None:
+                from my_harness.storage.chat_context import admit
+                frozen['element'], canonical = admit(session, context, element, versions)
             job = self.managed._queue_new_run(session, assessment, context, versions,
                                               f'CHAT-{conversation.id[:8]}-{number}', phase.code if phase else 'CHAT',
                                               key, request, purpose='chat')
             context_sha256 = digest(frozen)
             session.add(Turn(id=str(uuid4()), conversation_id=conversation.id, number=number, run_id=job.run_id,
-                             status='QUEUED', message=text, request={'context': frozen, 'context_sha256': context_sha256},
+                             status='QUEUED', message=text, request={'context': frozen, 'context_sha256': context_sha256,
+                                                                  **({'canonical': canonical} if canonical else {})},
                              request_sha256=digest({'message': text, 'context_sha256': context_sha256}),
                              result=None, actor=actor(), created_at=self.managed._now()))
             _touch(self.managed, conversation)

@@ -378,6 +378,11 @@ class LocalSupervisor:
                     agents.bind_process_journal(journal)
                 frozen = ChatRepository(self.repository).snapshot(claim.run_id)
                 catalog = PromptRepository(self.repository.engine).catalog(context)
+                canonical = None
+                if frozen.get('canonical'):
+                    from my_harness.storage.frozen_context import ContextRepository
+                    canonical = ContextRepository(self.repository.engine).snapshot(
+                        frozen['context']['element']['reference']['project'], frozen['canonical']['id'])
                 if request['action'] == 'chat_snapshot':
                     from my_harness.adapters.chat_snapshot import HeadSnapshot, snapshot_path
                     destination = snapshot_path(self.repository, claim)
@@ -386,8 +391,13 @@ class LocalSupervisor:
                     reader = HeadSnapshot(context.root, executable=getattr(evidence, 'executable', 'git'))
                     evidence = reader.export(frozen['context']['head'], destination)
                     context = replace(context, root=destination)
-                history, outcome = chat_turn(context, record.history, frozen, agents, evidence, journal, catalog,
-                                             language)
+                work = lambda: chat_turn(context, record.history, frozen, agents, evidence, journal, catalog,
+                                         language, canonical=canonical)
+                if canonical is not None:
+                    from my_harness.services.managed_runtime import run_chat_graph
+                    history, outcome = run_chat_graph(self.repository, claim, journal, work)
+                else:
+                    history, outcome = work()
             elif request["action"] == "planning_turn":
                 # H6.5: definition or phase planning turn, read-only and with a frozen request.
                 from my_harness.core.engine.definition import planning_turn

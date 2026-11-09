@@ -84,7 +84,7 @@ export type SyntheticMap = ReturnType<typeof syntheticMap>;
  * A deterministic synthetic map. `version` advances the tokens (see `bump`), as a real writer would; cursors carry
  * the version they were issued for and become `cursor_stale` once it changed.
  */
-export function syntheticMap(scenario: ProjectionScenario = "review", options: { archive?: boolean; reviewer?: boolean } = {}) {
+export function syntheticMap(scenario: ProjectionScenario = "review", options: { archive?: boolean; reviewer?: boolean; legacy?: boolean } = {}) {
   const size = PROJECTION_SIZES[scenario];
   const archive = !!options.archive;
   const state = { version: 1, finished: false, chatEnded: false, started: new Set<string>() };
@@ -93,7 +93,7 @@ export function syntheticMap(scenario: ProjectionScenario = "review", options: {
   const executorAttempt = "att-atlas-6";
   const reviewerRunning = "inv-atlas-reviewer-3";
   const chatInvocation = "inv-atlas-chat-1";
-  const head = (key: string = DEEP.key, name: string = DEEP.name) => ({ key, name, knowledge_project_id: key, registered_project_id: archive ? null : key === DEEP.key ? DEEP.registered : null });
+  const head = (key: string = DEEP.key, name: string = DEEP.name) => ({ key, name, knowledge_project_id: options.legacy ? null : key, registered_project_id: archive ? null : key === DEEP.key ? DEEP.registered : null });
 
   // Requests: permissions raised by the running executor and task questions on the deep task; phase questions
   // without a run (unattributed, on H) on the deep phase. The budget scenario carries 300 open items.

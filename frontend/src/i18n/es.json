@@ -2975,5 +2975,21 @@
   "trace.outcome.unclassified": "Sin clasificar",
   "trace.outcome.recorded": "Registrado",
   "trace.field.status_code": "Estado nativo",
-  "trace.open_large": "Leer original grande exacto"
+  "trace.open_large": "Leer original grande exacto",
+  "chat.element.conversation": "Conversación con el revisor",
+  "chat.element.talk": "Hablar con el revisor",
+  "chat.element.label": "Contexto del elemento seleccionado",
+  "chat.element.included": "Se incluirá el contexto de {label}.",
+  "chat.element.remove": "Quitar contexto",
+  "chat.element.refresh": "Actualizar etiqueta de contexto",
+  "chat.element.stale": "Este contexto ha cambiado. Actualiza o quita la etiqueta antes de enviar.",
+  "chat.element.loading": "Actualizando la etiqueta de contexto…",
+  "chat.element.legacy": "Este proyecto legacy no tiene conocimiento canónico aceptado. No se adjunta contexto del elemento.",
+  "chat.element.evidence": "Hasta 16 KiB de evidencia del elemento; no concede permisos. La entrega solo se registra cuando se observa.",
+  "chat.element.command": "Quita la etiqueta de contexto antes de preparar un comando.",
+  "chat.element.selected": "Contexto seleccionado: {label}. La evidencia de entrega está en la traza de la invocación.",
+  "chat.element.kind.phase": "Fase",
+  "chat.element.kind.task": "Tarea",
+  "chat.element.kind.run": "Run",
+  "chat.element.kind.step": "Paso"
 }

@@ -1493,5 +1493,9 @@
   "retention.record_reference": "This event has no valid oversize stdout reference.",
   "retention.record_limit": "The original record exceeds the {limit}-byte consultation limit.",
   "retention.record_unsealed": "The original stream has no sealed capture yet.",
-  "retention.record_unverified": "The original record could not be verified ({reason})."
+  "retention.record_unverified": "The original record could not be verified ({reason}).",
+  "chat.element_invalid": "The selected element is unavailable in this project.",
+  "chat.element_stale": "The selected context changed. Refresh the tag before sending.",
+  "chat.element_command": "Remove the element tag before preparing a deterministic command.",
+  "orchestration.chat_graph_failed": "Chat graph {thread} stopped ({status}): {reason}"
 }

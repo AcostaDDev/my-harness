@@ -1493,5 +1493,9 @@
   "retention.record_reference": "Este evento no tiene una referencia válida a un registro grande de stdout.",
   "retention.record_limit": "El registro original supera el límite de consulta de {limit} bytes.",
   "retention.record_unsealed": "El flujo original todavía no tiene una captura sellada.",
-  "retention.record_unverified": "No se pudo verificar el registro original ({reason})."
+  "retention.record_unverified": "No se pudo verificar el registro original ({reason}).",
+  "chat.element_invalid": "El elemento seleccionado no está disponible en este proyecto.",
+  "chat.element_stale": "El contexto seleccionado ha cambiado. Actualiza la etiqueta antes de enviar.",
+  "chat.element_command": "Quita la etiqueta del elemento antes de preparar un comando determinista.",
+  "orchestration.chat_graph_failed": "El grafo del chat {thread} se detuvo ({status}): {reason}"
 }

@@ -2,9 +2,13 @@
 // This is a deterministic hook host for request/navigation tests, not browser lifecycle QA.
 export * from 'react';
 import * as React from 'react';
+export const HookScope = React.createContext('');
+function hookId() {
+  return React.useContext(HookScope) + ':' + React.useId();
+}
 export function useState(initial) {
   const host = globalThis.__tsxHookHarness;
-  const id = React.useId();
+  const id = hookId();
   if (!host.state.has(id)) host.state.set(id, typeof initial === 'function' ? initial() : initial);
   return [host.state.get(id), value => {
     host.state.set(id, typeof value === 'function' ? value(host.state.get(id)) : value);
@@ -14,7 +18,7 @@ export function useState(initial) {
 export function useRef(initial) { return useState(() => ({ current: initial }))[0]; }
 export function useEffect(effect, dependencies) {
   const host = globalThis.__tsxHookHarness;
-  const id = React.useId();
+  const id = hookId();
   const previous = host.effects.get(id);
   if (!previous || !dependencies || dependencies.some((value, i) => !Object.is(value, previous.dependencies?.[i]))) {
     host.pending.push(() => {
@@ -32,7 +36,7 @@ export function useLayoutEffect(effect, dependencies) {
 export function useMemo(factory, dependencies) {
   const host = globalThis.__tsxHookHarness;
   if (!host?.lifecycle) return React.useMemo(factory, dependencies);
-  const id = React.useId();
+  const id = hookId();
   host.memos ??= new Map();
   const previous = host.memos.get(id);
   if (previous && dependencies && dependencies.length === previous.dependencies.length

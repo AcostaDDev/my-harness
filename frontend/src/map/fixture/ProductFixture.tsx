@@ -1,7 +1,7 @@
 // Development fixture of the product map (P002-T022, D312): the real `MapLevelSwitch`, `WorkMap`, inspector, run
 // selector, requests panel (T017's `InboxConversation`) and invocation header, under `/__map-fixture`, with every
 // `/api/managed/…` read answered in this page from synthetic T020 projections (`projections.ts`). Every mutation is
-// refused, so nothing is applied. Served by the Vite development server only; never built or packaged.
+// refused except T024's in-memory synthetic chat simulation. No backend mutation. Development only.
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../../Language";
 import type { Language } from "../../i18n.ts";
@@ -19,12 +19,17 @@ import { PROJECTION_SCENARIOS, respond, syntheticMap } from "./projections.ts";
 import type { ProjectionScenario, SyntheticMap } from "./projections.ts";
 import { fixtureText } from "./text.ts";
 import type { FixtureKey } from "./text.ts";
+import { Chat } from "../../Chat";
+import { ProjectWorkspace } from "../../workspace";
+import { chatFixture } from "./chat";
 
 let current: SyntheticMap | undefined;
 let original: typeof fetch | undefined;
+let chat: ReturnType<typeof chatFixture> | undefined;
 
 /** Routes `/api/managed/…` to the synthetic map (reads) or a refusal (mutations); anything else is the real fetch. */
 function install(map: SyntheticMap, refused: string) {
+  if (current !== map) chat = chatFixture(map);
   current = map;
   if (original) return;
   original = window.fetch.bind(window);
@@ -32,6 +37,8 @@ function install(map: SyntheticMap, refused: string) {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     if (!current || !url.startsWith("/api/managed/")) return original!(input, init);
     await new Promise(resolve => setTimeout(resolve, 60));
+    const simulated = chat?.(url, init?.method ?? "GET", init?.body ? JSON.parse(String(init.body)) : undefined);
+    if (simulated) return Response.json(simulated.body, { status: simulated.status });
     if (init?.method && init.method !== "GET") return Response.json({ detail: { code: "synthetic_fixture", diagnostic: refused } }, { status: 409 });
     const answer = respond(current, url);
     return Response.json(answer.body, { status: answer.status });
@@ -44,7 +51,9 @@ export function ProductFixture({ settings, change }: { settings: Settings; chang
   const navigation = useMapNavigation(FIXTURE_BASE);
   const { route } = navigation;
   const [reviewer, setReviewer] = useState(false);
-  const map = useMemo(() => syntheticMap(settings.product, { archive: settings.archive, reviewer }), [settings.product, settings.archive, reviewer]);
+  const [legacy, setLegacy] = useState(false);
+  const map = useMemo(() => syntheticMap(settings.product, { archive: settings.archive, reviewer, legacy }), [settings.product, settings.archive, reviewer, legacy]);
+  const projectionKey = `${settings.product}:${settings.archive}:${reviewer}:${legacy}`;
   // Installed while rendering: the map's own effects read before a parent effect would run.
   useMemo(() => install(map, f("fixture.refused")), [map, settings.language]);
   useEffect(() => () => { current = undefined; }, []);
@@ -78,6 +87,7 @@ export function ProductFixture({ settings, change }: { settings: Settings; chang
         <label>{f("fixture.reviewer")} <select value={reviewer ? "on" : "off"} onChange={event => { forgetViews(); setReviewer(event.target.value === "on"); }}>
           <option value="off">{f("fixture.reviewer.off")}</option><option value="on">{f("fixture.reviewer.on")}</option>
         </select></label>
+        <label className="check"><input type="checkbox" checked={legacy} onChange={event => setLegacy(event.target.checked)} />{f("fixture.legacy")}</label>
         <span className="muted">{f("fixture.version", { version })}</span>
       </div>
       <nav aria-label="breadcrumb" className="map-fixture-trail">
@@ -88,8 +98,9 @@ export function ProductFixture({ settings, change }: { settings: Settings; chang
     </header>
     <ServiceModeContext.Provider value={mode}>
       <RouteBase.Provider value={FIXTURE_BASE}>
-        {isMapRoute(route) ? <MapLevelSwitch key={`${settings.product}:${settings.archive}:${reviewer}`} route={route} base={FIXTURE_BASE} />
-          : route.name === "invocation" ? <InvocationPage key={route.invocation} project={route.project} invocation={route.invocation} archive={settings.archive} base={FIXTURE_BASE} />
+        {isMapRoute(route) ? <MapLevelSwitch key={projectionKey} route={route} base={FIXTURE_BASE} />
+          : route.name === "invocation" ? <InvocationPage key={`${projectionKey}:${route.invocation}`} project={route.project} invocation={route.invocation} archive={settings.archive} base={FIXTURE_BASE} />
+          : route.name === "chat" && !settings.archive ? <ProjectWorkspace key={route.project} project={route.project}><Chat conversation={route.conversation} /></ProjectWorkspace>
           : <p>{f("fixture.not_map")} <Link to={mapPath({ name: "home" }, FIXTURE_BASE)}>{f("fixture.back")}</Link></p>}
       </RouteBase.Provider>
     </ServiceModeContext.Provider>

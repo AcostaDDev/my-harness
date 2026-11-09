@@ -109,12 +109,14 @@ def knowledge_receipt(value) -> dict:
     _closed(value, '$', ('format', 'invocation_id', 'channel', 'entity_type', 'stable_id', 'revision_id',
                          'exposure', 'page', 'failure', 'delivery_id', 'index'),
             ('digest', 'source_sha256', 'range', 'version', 'authority'))
-    if value['format'] != 'knowledge-delivery-2':
+    if value['format'] not in ('knowledge-delivery-2', 'knowledge-delivery-3'):
         raise EnvelopeError('invalid_value', '$.format')
     for field in ('invocation_id', 'stable_id', 'revision_id', 'delivery_id'):
         _identifier(value[field], '$.' + field)
     _choice(value['channel'], CHANNELS, '$.channel')
-    _choice(value['entity_type'], (*ENTITY_TYPES, 'revision', 'profile', 'code', 'result', 'draft'), '$.entity_type')
+    entities = ('run_evidence',) if value['format'] == 'knowledge-delivery-3' else (
+        *ENTITY_TYPES, 'revision', 'profile', 'code', 'result', 'draft')
+    _choice(value['entity_type'], entities, '$.entity_type')
     _choice(value['exposure'], EXPOSURES, '$.exposure')
     _count(value['index'], '$.index')
     page = value['page']

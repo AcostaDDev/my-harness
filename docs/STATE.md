@@ -151,6 +151,19 @@ Final checks passed: 10 unittest tests, Alembic without new operations, 3,254 py
 merge and push of develop. **Next: P002-T024.** Release 0.2.0 through protected main, distribution/publication
 and installation remain pending. The operator installation remains 0.1.9.
 
+
+**P002-T024 is complete and integrated into develop** as source `c1f28ab` on `feat/p002-t024-contextual-chat` from clean `develop` at
+`dcef8ee` ([record](phase/P002-T024-contextual-chat.md), D307, D317). The separate reviewer talk entry carries a
+removable, server-verified phase/task/run/step tag. Admission freezes bounded evidence with a T007 accepted
+snapshot; `chat-turn@1`, its invocation operation and the existing accounting row run on the managed chat lane over
+the read-only HEAD export. Only adapter-observed input records the element receipt; run evidence adds v3 without
+changing old formats. Guarded refresh/removal, failure/replay, archive readers and en/es interaction are covered
+synthetically. The first independent technical review found a missing talk button before a task's first run;
+the frontend correction and both subsequent fixture fixes passed independent technical re-review. The owner
+confirmed visual acceptance on 2026-11-09 and authorized the source commit, merge and push of develop.
+Release 0.2.0 through protected `main`, distribution/publication and installation remain pending. The recorded
+installation remains 0.1.9. The one-off queue remains empty. **Next: P002-T025.**
+
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
 Historical starting context:
@@ -324,4 +337,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.

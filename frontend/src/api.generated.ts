@@ -1468,6 +1468,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/chat-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chat Context
+         * @description Explicit selection/refresh of a current reference, without queuing or granting authority.
+         */
+        get: operations["managed_chat_context"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/conversations/{conversation_id}": {
         parameters: {
             query?: never;
@@ -5512,12 +5532,44 @@ export interface components {
             /** Truncated */
             truncated: boolean;
         };
+        /** ChatElementRead */
+        ChatElementRead: {
+            reference: components["schemas"]["ChatElementReference"] | null;
+            /** Label */
+            label: string | null;
+            /** Reason */
+            reason?: ("legacy" | "unavailable") | null;
+        };
+        /**
+         * ChatElementReference
+         * @description Server-verifiable selection; labels and content are never admission inputs.
+         */
+        ChatElementReference: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "phase" | "task" | "run" | "step";
+            /** Project */
+            project: string;
+            /** Stable Id */
+            stable_id?: string | null;
+            /** Revision Id */
+            revision_id?: string | null;
+            /** Run Id */
+            run_id?: string | null;
+            /** Step Key */
+            step_key?: string | null;
+            /** Evidence Digest */
+            evidence_digest?: string | null;
+        };
         /** ChatMessageCreate */
         ChatMessageCreate: {
             /** Expected Version */
             expected_version: number;
             /** Text */
             text: string;
+            element?: components["schemas"]["ChatElementReference"] | null;
             /**
              * Documents
              * @description Checkout documents frozen as context; null: those of the phase or STATE and NEXT_STEPS.
@@ -5609,6 +5661,7 @@ export interface components {
         };
         /** ChatTurnRead */
         ChatTurnRead: {
+            element?: components["schemas"]["ChatElementRead"] | null;
             /** Id */
             id: string;
             /** Number */
@@ -18099,6 +18152,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_chat_context: {
+        parameters: {
+            query: {
+                kind: string;
+                target: string;
+                step_key?: string | null;
+            };
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-my-harness"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatElementRead"];
                 };
             };
             /** @description Forbidden */

@@ -23,6 +23,7 @@ import { TraceDetails } from "./TraceDetails";
 import { keepSheetFocus, SHEET_MEDIA } from "./sheet-focus.ts";
 import { Announcer, statusChanges } from "./announce.ts";
 import type { PollerDeps } from "./refresh.ts";
+import { ReviewerTalk } from "../ReviewerTalk";
 type Crumb = { level: string; id: string | null; role?: string | null; ordinal?: number | null };
 const WINDOW_SIZE = 200;
 
@@ -116,6 +117,11 @@ export function InvocationPage({ project, invocation, archive, pollerDeps, base 
   return <MapWithDocs project={project} archive={archive} checkoutProject={data.project.registered_project_id} context={{ level: 4, phase: data.owner.phase, task: taskLane ? data.owner.task : null }}>
     <ViewToggle mode={mode} choose={choose} />
     <PageHeader title={t("map.invocation.heading", { role: roleText(head.role, t) })}><p>{t("trace.lede")}</p></PageHeader>
+    {!archive && !data.read_only_archive && data.project.registered_project_id && <ReviewerTalk project={data.project.registered_project_id}
+      legacy={!data.project.knowledge_project_id}
+      target={data.owner.run_id ? data.step?.harness_attempt?.value != null
+        ? { kind: "step", target: data.owner.run_id, step_key: `${String(data.step.harness_attempt.value).padStart(6, "0")}.0000` }
+        : { kind: "run", target: data.owner.run_id } : undefined} />}
     <Stale error={header.state.error ? message(header.state.error) : pollError ? message(pollError) : undefined} />
     <nav aria-label={t("map.invocation.owner")} className="map-owner"><ol>{crumbs.map((crumb, i) => {
       const to = crumbRoute(project, crumb, data.owner);

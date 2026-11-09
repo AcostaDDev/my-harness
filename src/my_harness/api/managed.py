@@ -72,6 +72,9 @@ def call(operation, /, *args, **kwargs):
     except WorkLanguageImmutable as error:
         raise problem(409, "work_language_immutable", str(error)) from error
     except Conflict as error:
+        from my_harness.storage.chat_context import StaleElement
+        if isinstance(error, StaleElement):
+            raise problem(409, 'element_stale', str(error)) from error
         # P011-T022: the client tells these refusals apart by code, never by the (localized) diagnostic.
         code = ("mode_refused" if isinstance(error.__cause__, ModeConflict)
                 else "document_changed" if isinstance(error.__cause__, BaseChanged)
@@ -1004,6 +1007,23 @@ def managed_router(runtime: ManagedRuntime):
     def conversations(project_id: str):
         return call(runtime.chat.list, str(project(project_id).context.root))
 
+    from my_harness.api.schemas import ChatElementRead
+
+    @router.get('/projects/{project_id}/chat-context', response_model=ChatElementRead,
+                operation_id='managed_chat_context')
+    def chat_context(project_id: str, kind: Annotated[str, Query(pattern='^(phase|task|run|step)$')],
+                     target: Annotated[str, Query(min_length=1, max_length=200)],
+                     step_key: Annotated[str | None, Query(pattern=r'^\d{6}\.\d{4}$')] = None):
+        """Explicit selection/refresh of a current reference, without queuing or granting authority."""
+        from sqlalchemy.orm import Session
+        from my_harness.storage.chat_context import selected
+        context = project(project_id).context
+        with Session(runtime.engine) as session:
+            value = call(selected, session, str(context.root), kind, target, step_key)
+        if value is None:
+            return {'reference': None, 'label': None, 'reason': 'legacy'}
+        return {'reference': value['reference'], 'label': value['label'], 'reason': None}
+
     @router.post("/projects/{project_id}/conversations", response_model=ChatConversationRead, status_code=201,
                  operation_id="managed_create_conversation")
     def create_conversation(project_id: str, body: ChatConversationCreate, idempotency_key: IdempotencyKey):
@@ -1028,7 +1048,8 @@ def managed_router(runtime: ManagedRuntime):
         reader = HeadSnapshot(item.context.root, executable=getattr(writer, 'executable', 'git'))
         job = call(runtime.chat.submit_message, item.context, conversation_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), text=body.text, documents=body.documents,
-                   run_ids=body.run_ids, reader=reader)
+                   run_ids=body.run_ids, reader=reader,
+                   element=body.element.model_dump(exclude_none=True) if body.element else None)
         return queued(job)
 
     @router.post("/conversations/{conversation_id}/commands/preview", response_model=ChatCommandRead,

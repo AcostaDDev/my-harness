@@ -35,6 +35,8 @@ import { mapLevel, useMapNavigation } from "./routes.ts";
 import { STATUS_LABELS, statusClassOf } from "./status.ts";
 import { useLevel } from "./use-level.ts";
 import type { Loaded } from "./use-level.ts";
+import { ReviewerTalk } from "../ReviewerTalk";
+import type { ElementTarget } from "../chat-element";
 
 export type MapRoute = Extract<Route, { name: "home" | "phases" | "phase" | "task" | "run" }>;
 
@@ -131,8 +133,12 @@ export function WorkMap({ route, archive, canRespond, display = "map", pollerDep
   // The page type depends on the level; the adapters below read it as their level's projection.
   const main = useLevel<Paged & Record<string, unknown>>(mainPath);
   const pages = main.state.pages;
-  const head = (main.state.head ?? pages[0]) as (Paged & { project?: { key: string; name: string; registered_project_id?: string | null }; phase?: unknown; run?: MapSteps["run"] }) | undefined;
+  const head = (main.state.head ?? pages[0]) as (Paged & { project?: MapSteps["project"]; phase?: unknown; run?: MapSteps["run"] }) | undefined;
   const projectKey = head?.project?.key ?? runsHead?.project?.key ?? project;
+  // Before the first run there is no steps read. The selector still verifies the project's chat identity;
+  // never use the route alias as a registered identity, and honor an archive mark from either read.
+  const reviewerProject = head?.project ?? runsHead?.project;
+  const canTalk = !archive && !head?.read_only_archive && !runsHead?.read_only_archive;
 
   // Active chats attached to the run shown (L3 chat lane): a snapshot from the run's steps read, the same on every
   // page and reread with it when its version changes (a chat starts, changes process or ends).
@@ -257,6 +263,8 @@ export function WorkMap({ route, archive, canRespond, display = "map", pollerDep
     <PageHeader title={title} code={level >= 2}>
       <p>{t(archive ? "map.lede.archive" : "map.lede")}</p>
     </PageHeader>
+    {canTalk && reviewerProject?.registered_project_id && <ReviewerTalk project={reviewerProject.registered_project_id}
+      legacy={!reviewerProject.knowledge_project_id} target={reviewerTarget(item, route, runId)} />}
     {stale && <><Stale error={message(error)} />{retry}</>}
     {pollError !== undefined && <p role="status" className="state state-stale">{t("map.poll.failed", { error: message(pollError) })}</p>}
     {main.state.recovered && <p role="status" className="state state-stale">{t("map.recovered")}</p>}
@@ -287,6 +295,17 @@ export function WorkMap({ route, archive, canRespond, display = "map", pollerDep
   </>;
   return projectKey && level > 0 ? <MapWithDocs key={path} project={projectKey} archive={archive} checkoutProject={head?.project?.registered_project_id}
     context={{ level, phase: "phase" in route ? route.phase : null, task: "task" in route ? route.task : null }}>{content}</MapWithDocs> : content;
+}
+
+export function reviewerTarget(item: LevelItem | undefined, route: MapRoute, runId?: string): ElementTarget | undefined {
+  if (item?.level === 1) return { kind: "phase", target: item.item.code };
+  if (item?.level === 2) return { kind: "task", target: item.item.code };
+  if (item?.level === 3 && !item.chat && item.item.key && runId)
+    return { kind: "step", target: runId, step_key: item.item.key };
+  if (runId) return { kind: "run", target: runId };
+  if ("task" in route) return { kind: "task", target: route.task };
+  if ("phase" in route) return { kind: "phase", target: route.phase };
+  return undefined;
 }
 
 function LevelSummary({ level, head, archive, route }: { level: number; head?: Paged & Record<string, unknown>; archive: boolean; route: MapRoute }) {

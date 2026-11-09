@@ -500,7 +500,10 @@ panel, activity polling and the read-only archive map are implemented and integr
 and owner visual acceptance (D314, [record](phase/P002-T022-work-map.md)); T023 has integrated L4/drawer source `4a09d5d` after independent technical re-review of the prior source and owner visual
 acceptance (D315; [record](phase/P002-T023-trace-docs.md)). The owner-authorized continuation also delivers
 exact retained large originals by sequence through the existing logs route, verified and bounded per D316.
-Release/publication/installation remain pending. The talk button remains T024.
+Release/publication/installation remain pending. T024 integrates contextual reviewer talk into develop after independent
+technical re-review and owner visual acceptance (D307, D317, [record](phase/P002-T024-contextual-chat.md)).
+It provides a removable phase/task/run/step tag, server-verified references, bounded evidence, T007 sealing and
+adapter-observed receipts. Legacy chat is untagged and archives omit the talk button.
 The home page becomes a hand-drawn, zoomable, read-only work map:
 projects (L0) → phases (L1) → task instances (L2) → steps of a run (L3) → the trace of one invocation (L4, new route
 `/projects/:p/invocations/:i`). Each level keeps its URL and breadcrumb, and `?view=list` switches to the existing

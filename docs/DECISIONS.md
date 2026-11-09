@@ -3332,3 +3332,75 @@ unchanged. Existing requests, grants, snapshots, catalogue digests and histories
 dependency or new native qualification is introduced.
 
 [Integrated audit, failing regression and delivery disposition](phase/P002-T027-security-provider-audit.md).
+
+## D321 — Verifiable prevention of raw project documentation reads
+
+Status: accepted owner direction on 2026-11-09 during the P002 knowledge/context planning review; not implemented
+or qualified. The mechanism, exact protected-source scope and implementation task admission remain pending.
+
+For the new v0.2.0 context path, raw project-knowledge documentation reads must be technically prevented. Agent
+profiles that cannot guarantee the adopted boundary must be refused; a prompt prohibition, disabled automatic
+loading or after-the-fact detection cannot substitute for enforcement. There is no cooperative fallback for that
+path. Canonical knowledge is delivered by the harness through frozen context and scoped tools.
+
+The design must address every admitted access route, including native file tools, shell/subprocesses, Git history,
+path aliases and client instruction autoload. Before dependent implementation, establish a feasible boundary and
+its qualification contract while preserving admitted code/build/test access and exact Git effects. The owner's
+answer selects the guarantee, not a specific isolation mechanism, OS-wide security claim or arbitrary ban on all
+Markdown/source files. Exact coverage and residual limits must be explicit and verifiable per supported profile.
+
+This refines D064's cooperative boundary as a requirement for the new path; D064 still describes current and
+historical implementations. It does not retroactively qualify any profile or rewrite frozen runs. Native provider
+execution and installation remain separately authorized actions. The rest of the proposal and plan v0.5 are not
+adopted by this answer. [Planning record](phase/P002-knowledge-context-proposal.md#9-instructions-and-raw-document-access).
+
+## D322 — Instruction files as optional external compatibility exports
+
+Status: accepted owner direction on 2026-11-09 during the P002 knowledge/context planning review; new export
+ownership/version migration and runtime enforcement remain unimplemented.
+
+Keep AGENTS.md and the CLAUDE.md/GEMINI.md derivatives exportable for work outside the harness. In the new context
+path they are compatibility-only views: harness invocations receive canonical instructions from SQLite and do
+not load these files, either automatically or through raw discovery. Their optional export selection is separate
+from the runtime context and does not weaken D321's access requirement.
+
+This supersedes the mandatory AGENTS export obligation of D294 for the proposed new format and refines D285's
+export purpose. Existing accepted ownership manifests, wrapper bytes, budgets and renderer contracts remain valid
+for their versions until an explicit ownership/format transition. Do not silently delete files, relinquish owned
+targets or rewrite historical generations. This repository's own Markdown-owned development instructions remain
+unchanged. [Planning record](phase/P002-knowledge-context-proposal.md#9-instructions-and-raw-document-access).
+
+## D323 — P002 v0.5 planning adoption and prerequisites before journey qualification
+
+Status: accepted explicitly by the owner on 2026-11-09 after review of the proposal, its three coverage corrections
+and human-editing extension. Planning/documentation only; no product implementation or T030 design completion.
+
+Adopt [the reviewed planning contract](phase/P002-knowledge-context-proposal.md) as P002 plan v0.5: scope,
+dependencies, task ownership, subtasks and acceptance coverage are now in NEXT_STEPS. Add T030–T038 before T028/T029
+without renumbering any existing ID. The plan has 38 tasks; T001–T027 retain their completed scope and evidence.
+**Next is T030**, followed by T031 → T032 → T033 → T034 → T035 → T036 → T037 → T038 → T028 → T029, one bounded
+task at a time. Dependencies remain those of the adopted task table; the order is not parallel authorization.
+
+T030 owns the unresolved semantic/document schemas, I01–I17 graph/context/source policies, protected-source
+selection independent of export ownership, gate/evidence evaluation, human editing/recovery/transition and
+execution-impact contracts. **T031 is blocked until verifiable D321 enforcement is established as feasible and the
+required T030 design is explicitly accepted.** Planning adoption is not acceptance of an isolation mechanism,
+wire format, illustrative schema, lifecycle impact choice, new dependency or profile qualification. An infeasible
+D321 result returns to the owner; no cooperative fallback is authorized. D321/D322 remain in force.
+
+The planning matrices bind coverage of selected unowned/pre-adoption originals, copies and history; all T025
+inference entry points; gate states/evaluators/inputs/validity and evidence refusal; and the six-document plus
+instruction human-editing contract. T031/T033 own persistence/shared domain services, T032 export/authority
+transition, T034 execution/effect guards, T035 protection/qualification, T036 intake/conversion, T037 UI and real
+browser owner visual/user-journey acceptance, and T038 the integrated re-audit. Each implementation uses its
+accepted T030 contract and requires its own evidence; current document review supplies none of that product proof.
+
+T028 now depends on T011–T027 and T030–T038. T029 retains package/release qualification and authorized-delivery
+tracking, consuming T038 through T028. Preserve D293/D298's draft recovery, exact separate confirmations, frozen
+contexts/contracts and historical evidence; no cancellation, retroactive rewrite or automatic replanning is
+introduced. Earlier decision bodies, phase/task records, snapshots, catalogues and fingerprints remain unchanged.
+
+The owner authorized checked documentation commit, merge into develop and push of develop from
+`docs/p002-knowledge-context-proposal`, following D235/D295. This authorization covers this planning adoption only;
+implementation stays with the tasks. Release 0.2.0 through protected main, distribution/publication, installation,
+native provider execution and network installation remain separate pending stages requiring their own authority.

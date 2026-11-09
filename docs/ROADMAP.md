@@ -43,6 +43,15 @@ engine. The accepted T001 contract guides implementation; unsupported evidence c
 
 ## P002 — Continuous Mode
 
+**Plan v0.5 adopted as planning on 2026-11-09**
+([D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)):
+[the reviewed planning contract](phase/P002-knowledge-context-proposal.md) adds T030–T038 before T028/T029 without
+renumbering. **Next: T030**, design only; D321 feasibility for selected originals/copies/history and the required
+T030 design acceptance block T031. Scope covers all T025 inference entries, gate/evidence evaluation and human
+block/entity editing under D293/D298, with explicit domain/export/execution and T037 UI/visual review owners.
+The model/schema/mechanism/impact choices assigned to T030 remain open; no implementation is asserted.
+T028 depends on T011–T027 and T030–T038. T029 retains package/release qualification and authorized delivery tracking.
+
 **Target release:** `0.2.0`, published at P002 closure (D253). The heading keeps the reserved name; the adopted scope
 is **autonomous mode and project authority redesign**
 ([D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline), superseding
@@ -58,7 +67,7 @@ delivered knowledge are traced; a global inbox and a task-instance graph serve b
 **Status:** active since the P001 closure (2026-10-29). The owner adopted plan v0.2 and the
 [design basis](phase/P002-design-basis.md) as the evolving baseline; **P002-T001 completed the contracts, flows,
 threat model and coverage as accepted design (D268–D279)**, refining the plan to **v0.3** with 23 tasks
-([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)); plan **v0.4** splits T018 by responsibility, for 29 tasks ([D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)). T001 and T002 (feasibility, D280–D281)
+([NEXT_STEPS](NEXT_STEPS.md), [T001 contracts](phase/P002-T001-contracts.md)); plan **v0.5** has 38 tasks after the v0.4 T018 split ([D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)) and D323's T030–T038 additions. T001 and T002 (feasibility, D280–D281)
 are integrated into develop. **P002-T003** (LangGraph runtime and continuation foundation, D282–D283) is completed and
 integrated into develop; it is exercised by synthetic graphs only and no product behavior
 uses it. **P002-T004** (structured knowledge and revision model, D284–D285) is completed and integrated into develop; it is
@@ -110,10 +119,10 @@ acceptance (D307, D317, [record](phase/P002-T024-contextual-chat.md)). T025 is c
 (D319, [record](phase/P002-T026-installed-recovery.md#source-integration--2026-11-09)).
 T027 is complete and integrated as source `41b652f` after independent technical review on
 `feat/p002-t027-security-provider-audit` from `fdc81bd` (D320, [audit](phase/P002-T027-security-provider-audit.md)).
-G15's remaining native/whole-journey cells are explicit. T028–T029 (plan v0.4, D303), release 0.2.0,
+G15's remaining native/whole-journey cells are explicit. T030–T038 and T028–T029 (plan v0.5, D323), release 0.2.0,
 distribution and installation remain pending; the recorded installation is 0.1.9.
 
-**Exit criteria (adopted with D268):**
+**Exit criteria (adopted with D268; refined by D323):**
 
 - Created and onboarded projects use structured, revisioned database knowledge; task/decision access is attributable
   to agent runs; ordinary and autonomous operations use the same domain model.
@@ -134,6 +143,10 @@ distribution and installation remain pending; the recorded installation is 0.1.9
 - The 0.2.0 distribution and documentation are qualified and every authorized delivery stage is completed or explicitly
   deferred; designed-only behavior is never labelled implemented. Without an autonomous authorization, the manual
   behavior keeps its explicit confirmations.
+
+- D323 adds the [semantic/context/gate/human-editing acceptance](phase/P002-knowledge-context-proposal.md#13-acceptance-of-the-requested-outcome):
+  all I01–I17 routes, verifiable protected-source coverage and recoverable document editing have assigned owners
+  and evidence. T030 resolves its pending designs, T038 re-audits them, and T028 qualifies final journeys.
 
 **Dependencies:** P001 Metrics Records, the existing phase lifecycle, authorization, recovery and accounting
 guarantees, and the T002 feasibility/dependency decision before dependent integration.

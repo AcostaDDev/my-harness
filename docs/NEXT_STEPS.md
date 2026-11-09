@@ -1,7 +1,8 @@
 # P002 — Autonomous mode and project authority redesign (target: 0.2.0)
 
-**Status:** active phase; **task plan v0.4, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
-refined by T001; T018 split by responsibility on 2026-11-04, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered); [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
+**Status:** active phase; **task plan v0.5, adopted as the evolving baseline** (owner adoption of v0.2 on 2026-10-29,
+refined by T001; T030–T038 added before qualification on 2026-11-09,
+[D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification); T018 split by responsibility on 2026-11-04, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered); [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline)).
 **P002-T001 is completed as design and integrated into develop.** **P002-T002 is completed (feasibility; D280–D281
 accepted) and integrated into develop.** **P002-T003 is completed (D282–D283 accepted) and integrated into
 develop.** **P002-T004 is completed (D284–D285 accepted) and integrated into develop.**
@@ -15,7 +16,7 @@ authorized merge; the owner also authorized pushing `develop`. Release/publicati
 T010 is completed and integrated into `develop` as source `d52fbb5` after independent technical re-review;
 G10 A/B/C remain accepted (D291). The owner authorized commit, merge and push of `develop`.
 T011 is completed and integrated into develop as source `616846d` after technical re-review; the owner authorized
-its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018 is complete and integrated into develop as design (`559487b`); T019 is complete and integrated as source `e19cea3` after independent final re-review; T023 is complete and integrated as source `4a09d5d` after technical re-review, owner-authorized exact-original completion and visual acceptance; T024 is complete and integrated as source `c1f28ab` after independent technical re-review and owner visual acceptance; T025 is complete and integrated as source `18bef36` (D318) and T027 is complete and integrated as source `41b652f` after independent review; T028–T029 remain planned (plan v0.4: T018–T024 replace the former T018 and the former T019–T023 are T025–T029). Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T019 is complete and integrated (D305, D310)** after independent final re-review; the owner authorized commit, merge and push of develop. **T020 is complete and integrated as source `b30a00c` after independent final re-review**, including all corrections
+its source commit, the accompanying merge and push of develop. T012 is completed and integrated as source `6643ada` after independent technical re-review; the owner authorized its source commit, merge and push of develop. T013 is completed and integrated as source `2c54fa9` after independent technical re-review; G09 remains accepted as D294. T014 is completed and integrated as source `624631e` after independent technical re-review; the owner authorized commit, merge and push of develop. T015 is completed and integrated after independent technical re-review. T016 is complete and integrated as source `26ccd21` after independent final re-review (D299–D301). T017 is complete and integrated as source `9ebb800` after owner technical review (D302). T018 is complete and integrated into develop as design (`559487b`); T019 is complete and integrated as source `e19cea3` after independent final re-review; T023 is complete and integrated as source `4a09d5d` after technical re-review, owner-authorized exact-original completion and visual acceptance; T024 is complete and integrated as source `c1f28ab` after independent technical re-review and owner visual acceptance; T025 is complete and integrated as source `18bef36` (D318) and T027 is complete and integrated as source `41b652f` after independent review; T030–T038 and T028–T029 remain planned under v0.5 (D323); the v0.4 T018 split and later-task mapping remain preserved by D303. Structured intake uses the knowledge service and existing accounted planning runner; T014 supplies the managed task graph and T015 supplies the phase graph. T016 supplies autonomous roadmap orchestration. T017 supplies the global inbox. **T019 is complete and integrated (D305, D310)** after independent final re-review; the owner authorized commit, merge and push of develop. **T020 is complete and integrated as source `b30a00c` after independent final re-review**, including all corrections
 (D311, [record](phase/P002-T020-work-map-api.md#10-independent-final-re-review--2026-11-05)); the owner authorized
 source commit, merge and push of develop. **T021 is complete and integrated as source `6b6a0ee` after independent
 final re-review and owner acceptance** (D312, D313, [record](phase/P002-T021-rendering-foundation.md#14-source-integration--2026-11-06));
@@ -32,7 +33,15 @@ source `c1f28ab` after independent technical re-review and owner visual acceptan
 (D319, [evidence](phase/P002-T026-installed-recovery.md#source-integration--2026-11-09)).**
 **P002-T027 is complete and integrated as source `41b652f` after independent technical review**
 (D320, [audit and remaining G15 cells](phase/P002-T027-security-provider-audit.md#source-integration--2026-11-09)).
-Next: **P002-T028.** Native qualification and operational delivery remain pending.
+**Next: P002-T030 (design only).** The owner adopted plan v0.5 on 2026-11-09 as planning
+([D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)), adding T030–T038
+before T028/T029 without renumbering. The [reviewed contract and matrices](phase/P002-knowledge-context-proposal.md)
+remain the detailed planning basis. T030 must resolve the designs it owns, including D321 feasibility for selected
+originals/copies/history before T031, all I01–I17 inference policies, gate/evidence semantics and human editing /
+execution impact under D293/D298. Planning adoption does not resolve those designs or complete T030.
+D321/D322 remain accepted policy. Native qualification and operational delivery remain pending.
+The owner authorized the checked documentation source commit, merge into develop and push of develop from
+`docs/p002-knowledge-context-proposal`; this does not authorize implementation or operational delivery.
 Release 0.2.0,
 distribution/publication and installation are pending. Evidence is synthetic only. Read
 [ONE_OFF_TASKS](ONE_OFF_TASKS.md) first; its queue is **empty**.
@@ -80,7 +89,7 @@ Start from these before inferring missing details. Technical baseline: [phase li
   is distinct from integration/distribution/installation. One-offs use D261's latest-main-release route and do not
   absorb unreleased P002 work.
 
-## Phase exit criteria (adopted, D268)
+## Phase exit criteria (adopted, D268; refined by D323)
 
 - Created and onboarded projects use structured, revisioned database knowledge; task/decision access is attributable
   to agent runs. All ordinary/manual operations use the same canonical domain model.
@@ -103,9 +112,14 @@ Start from these before inferring missing details. Technical baseline: [phase li
 - The 0.2.0 distribution and operator documentation are qualified; authorized release/publication/installation
   stages are completed or explicitly deferred with a destination. No designed-only behavior is labelled implemented.
 
+- D323's [planning acceptance](phase/P002-knowledge-context-proposal.md#13-acceptance-of-the-requested-outcome)
+  covers semantic document round trips, all I01–I17 purpose/context paths, verifiable D321 protection of selected
+  originals/copies/history, current gate/evidence coverage and recoverable human document editing. T030 resolves
+  pending design choices; T038 audits their integration before T028 qualification. No designed-only behavior is delivered.
+
 ## Task index
 
-T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021 is **complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance; deferred owner visual review confirmed at T022 (D313)**. T022 is **complete and integrated as source `1149765` after independent final re-review and owner visual acceptance (D314)**. T023 is **complete and integrated as source `4a09d5d`, with owner visual acceptance (D315–D316)**. T024 is **complete and integrated after independent technical re-review and owner visual acceptance**. T025 is **complete and integrated after independent technical re-review**. T026 is **complete and integrated after independent technical re-review** (D319). T027 is **complete and integrated after independent review** (D320); T028–T029 are **planned** (plan v0.4, D303). Dependencies identify
+T001 is **completed (design; integrated)**; T002 is **completed (feasibility; integrated)**; T003 is **completed (integrated)**; T004 is **completed (integrated)**; T005, T006 and T007 are **completed (integrated)**; T008, T009 and T010 are **completed (integrated)**; T011 is **completed (integrated; technical re-review passed)**; T012 is **completed (integrated; independent technical re-review passed)**; T013 is **completed (integrated; G09/D294 accepted; independent technical re-review passed)**; T014 is **completed and integrated after independent technical re-review**; T015 is **completed and integrated after independent technical re-review**; T016 is **complete and integrated after independent final re-review (D299–D301)**; T017 is **complete and integrated after owner technical review (D302)**. T018 is **completed (design; D304–D309 accepted; integrated)**. T019 is **complete and integrated after independent final re-review**. T020 is **complete and integrated after independent final re-review**. T021 is **complete and integrated as source `6b6a0ee` after independent final re-review and owner acceptance; deferred owner visual review confirmed at T022 (D313)**. T022 is **complete and integrated as source `1149765` after independent final re-review and owner visual acceptance (D314)**. T023 is **complete and integrated as source `4a09d5d`, with owner visual acceptance (D315–D316)**. T024 is **complete and integrated after independent technical re-review and owner visual acceptance**. T025 is **complete and integrated after independent technical re-review**. T026 is **complete and integrated after independent technical re-review** (D319). T027 is **complete and integrated after independent review** (D320); T030–T038 and T028–T029 are **planned** (plan v0.5, D323); **next is T030**. Dependencies identify
 prerequisites; they do not authorize parallel implementation.
 
 | ID | Problem/outcome area | Dependencies |
@@ -137,7 +151,16 @@ prerequisites; they do not authorize parallel implementation.
 | P002-T025 | Extend accounting/projections and measure context/tool efficiency (formerly T019; **complete and integrated**) | T006, T008, T009, T014–T016, T023 |
 | P002-T026 | Qualify installed-data migration, crash recovery, backup/restore and archives (formerly T020; **complete and integrated**) | T003–T007, T011, T013–T017, T019, T024, T025 |
 | P002-T027 | Audit integrated authority, provider contracts and failure containment (formerly T021; **complete and integrated after independent technical review**) | T002, T008–T010, T016, T017, T019, T020, T024, T026 |
-| P002-T028 | Qualify complete journeys, normal-mode regression, UX and performance (formerly T022) | T011–T027 |
+| P002-T030 | Resolve semantic, context, gate/evidence, human-editing and D321 feasibility contracts (design) | D323 adoption; D321/D322; T027 integrated baseline |
+| P002-T031 | Extend knowledge, authoring working copies, gate/evidence/impact records and conversion | T030, including accepted D321 feasibility |
+| P002-T032 | Implement document codec, ownership/editor transitions and separate export delivery | T031 |
+| P002-T033 | Implement shared authoring/domain commands, semantic context and gate/evidence services | T031 |
+| P002-T034 | Integrate I01–I17 stages, typed execution and editing-impact/effect guards | T032, T033 |
+| P002-T035 | Enforce and qualify D321 raw-source boundaries for supported profiles | T030, T033, T034 |
+| P002-T036 | Integrate intake/onboarding/conversion, protected source tools and editor transition | T032, T033, T035 |
+| P002-T037 | Implement document/entity UI, recovery and visual/user-journey acceptance | T032, T033, T036 |
+| P002-T038 | Re-audit source/inference/gate/editing boundaries and recovery/accounting | T031–T037 |
+| P002-T028 | Qualify complete journeys, normal-mode regression, UX and performance (formerly T022) | T011–T027, T030–T038 |
 | P002-T029 | Qualify 0.2.0 documentation/package and track authorized delivery (formerly T023) | T027, T028 |
 
 ## P002-T001 — Scope adoption, authority contracts and flow gates
@@ -940,7 +963,7 @@ T028 journeys/UX/performance. The native judge/model-quality thresholds and exec
 scope are visible release blockers; qualification needs specific owner authorization on disposable synthetic projects.
 The independent reviewer repeated 316 focused and 92 selected integration cases successfully. The owner
 authorized source commit, merge and push of `develop` upon successful review. The accompanying merge
-integrates reviewed source `41b652f`; next is T028. Protected-main 0.2.0 release,
+integrates reviewed source `41b652f`; next at that integration was T028, and v0.5 now starts with T030 (D323). Protected-main 0.2.0 release,
 distribution/publication and installation remain pending. Installed version remains 0.1.9.
 
 **Problem:** individually passing features do not establish safe combined authority or provider compatibility.
@@ -961,11 +984,270 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Basis:** B05–B13, B18–B23.
 
 **Gates:** G15; audits TM01–TM20 against the threat model. **Threats:** TM03, TM06, TM08, TM11, TM16.
+## P002-T030 — Semantic, context and human-editing contracts and D321 feasibility
+
+**Status:** planned; next task under adopted plan v0.5 (D323). Design only; this planning adoption does not complete it.
+**Problem:** the foundations do not yet define all semantic/document, source-access, gate/evidence or human-editing
+boundaries needed by the requested runtime. **Expected result:** an explicitly accepted, implementable contract
+resolves the open choices without assuming a technically enforced read boundary.
+**Dependencies:** D323 adoption (given), D321/D322; T027 is the integrated audit baseline.
+
+**Subtasks:**
+
+- Refine the entity/block schemas, identities, relations, exact limits, version conversion and valid/invalid
+  fixtures for all six documents and canonical instructions; separate knowledge definitions from execution facts.
+- Establish D321 feasibility and qualification criteria before T031: protected-source selection independent of
+  export ownership, including unowned/pre-adoption originals, copies/history, source lifecycle and alternate
+  access routes. Preserve bounded source-tool access and identify incompatible profiles without weaker fallback.
+- Resolve all I01–I17 graph/stage/context/source policies and launch-site mappings; obtain explicit owner review
+  of the X1/X2 and legacy I09 dispositions, overflow rules and qualification scope.
+- Define gate states/evaluators, trusted inputs/witnesses, coverage/applicability, validity/invalidation and exact
+  effect-boundary checks, with the negative/positive acceptance matrix of the planning contract §4.1.
+- Define human document/block/entity editing, incomplete-work persistence/recovery, shared command/version
+  bindings, exact confirmation, separate export, legacy transition and visual/user-journey acceptance (§10).
+- Resolve the impact matrix for adopted plans, admitted tasks, READY/evidence, autonomy, running invocations and
+  sealed effects; preserve D293/D298 confirmations and frozen context without invented automatic cancellations,
+  retroactive changes or replanning. Record adopted choices and remaining explicit blockers.
+
+**Acceptance:** owner-reviewed contract/fixtures and a complete inference/source/gate/editing coverage crosswalk
+identify every implementing owner and required evidence. **T031 is blocked until D321 feasibility and the required
+T030 design acceptance are satisfied.** A failed feasibility result returns the concrete incompatibility to the
+owner; it cannot silently relax D321. No new dependency, isolation mechanism or product behavior is adopted by
+this task's planning entry. Native probes/providers still need explicit authorization.
+**Evidence:** design record, feasible boundary/qualification contract, decision resolutions and documentation checks.
+**Basis:** [planning contract](phase/P002-knowledge-context-proposal.md), especially §§4.1, 7.1, 9, 10 and 14; D321–D323.
+**Gates:** D321 feasibility and explicit T030 design acceptance before T031. **Threats:** TM01, TM05, TM09, TM11,
+TM12, TM15, TM16, TM20.
+
+## P002-T031 — Knowledge, authoring work, gate/evidence and impact persistence
+
+**Status:** planned. **Problem:** the existing model lacks identified decomposition and the durable authoring,
+evaluation and impact associations required by the accepted planning scope.
+**Expected result:** versioned entities/relations and separate recoverable working/evaluation records implement
+the accepted T030 contracts without rewriting history. **Dependencies:** T030, including accepted D321 feasibility.
+
+**Subtasks:**
+
+- Extend the item/version/revision/link model for subtasks, gates/evidence requirements, instruction/block
+  applicability and decision/architecture references, using T030's actual endpoint/cardinality/order rules.
+- Persist incomplete authoring work separately from a valid canonical draft; preserve base/version bindings,
+  pending-operation recovery and T012/D293's saved-input guarantees without granting adoption authority.
+- Persist evaluator/evidence/impact associations with verified subject/source/revision/code/validity attribution;
+  keep operational facts and evaluation history separate from editable normative definitions.
+- Implement explicit old-format conversion preserving strings/order/provenance and immutable decisions,
+  replacement lineage, accepted revisions and snapshots; surface missing semantics instead of inferring them.
+- Maintain DDBB/migration, backup/restore/query-only and format/integrity parity in the same task.
+
+**Acceptance:** synthetic invariants cover ownership, cycles, ordering, immutable decisions/evaluations, incomplete
+work recovery and conversion. Missing/unknown/failed/stale evidence retains its meaning through persistence,
+backup and restored reads; no import or working-copy save creates verified satisfaction. Old histories remain
+readable and unchanged. T030's unresolved prerequisites cannot be bypassed by choosing a new schema in code.
+**Evidence:** focused storage/core/conversion/recovery tests and updated data documentation.
+**Basis:** planning contract §§4–6, 10.3–10.4; D284/D293/D298 and adopted T030 design.
+**Gates:** T030 design/feasibility prerequisite. **Threats:** TM04, TM05, TM09, TM12, TM14.
+
+## P002-T032 — Document codec, authority transition and separate export delivery
+
+**Status:** planned. **Problem:** the new semantics and human editing need a deterministic round trip and an
+export state distinct from accepted knowledge, with no competing file writer.
+**Expected result:** the adopted versioned codec and ownership/editor transition preserve historical formats and
+recoverable per-target effects. **Dependencies:** T031.
+
+**Subtasks:**
+
+- Implement all six document projections, typed companions/portable format and instruction compatibility exports
+  according to T030; retain narrative Markdown/Mermaid and exact field/relationship/order mappings.
+- Implement explicit version/ownership transitions, partial-import identity/loss handling and original retention,
+  keeping protected-source selection independent from ownership and rejecting imported operational satisfaction.
+- Expose accepted revision and exported generation independently, including pending/refused/failed/partial
+  delivery; recover the same sealed export without repeating knowledge adoption.
+- Enforce authoritative document classification at old-file-writer mutation/confirmation boundaries, including
+  canonical knowledge without an owned/exported file; preserve uncertain requests and uncommitted bytes.
+- Preserve old codecs/manifests/generations, clean-baseline/path guards and task/phase-owned export effects;
+  maintain affected flows and API/generated-client parity.
+
+**Acceptance:** deterministic round trips, partial selection, located malformed/loss cases, explicit transition,
+stale file-writer refusal and dirty/partial-export recovery pass. Imported statuses/claims cannot create witnesses
+or evaluations. Export failure leaves accepted knowledge intact and visible as pending delivery; recovery neither
+repeats adoption nor rewrites historical bytes. Legacy/noncanonical guards remain enforced.
+**Evidence:** codec/import/authority/export fault tests and documented operator-visible states.
+**Basis:** planning contract §§5–6, 9, 10.1/10.3/10.5; D271/D294/D298/D322 and T030.
+**Gates:** accepted T030 codec/ownership transition. **Threats:** TM09, TM10, TM12.
+
+## P002-T033 — Shared authoring commands, semantic context and gate evaluation
+
+**Status:** planned. **Problem:** humans and agents need one typed path for recoverable edits, exact adoption,
+semantic retrieval and verified gate/evidence outcomes.
+**Expected result:** shared services implement T030's authoring/context/evaluation contracts with independent
+authorization and bounded, revision-bound exposure. **Dependencies:** T031.
+
+**Subtasks:**
+
+- Implement typed working-copy/draft/staging/validation commands that retain incomplete authoring input separately
+  from adoptable content; provide located field/relation diagnostics and explicit discard/recovery.
+- Implement exact base-to-sealed-draft comparison, content/link/order/provenance/sensitive-change presentation,
+  CAS adoption and exact request body/key recovery under D293, without automatic rebase or inferred consent.
+- Implement the shared role/stage semantic resolver and bounded entity/subtree/relation/search/proposal tools;
+  all required applicable context must be delivered or refused, and invocation queries keep its pinned revision.
+- Implement the versioned harness evaluator registry and current outcome/coverage service, including trusted
+  source integrity, applicability, current bindings, freshness/invalidation and bounded impact queries.
+- Preserve caller/capability/revocation/project/query-only guards, idempotency, exact delivery receipts, current
+  response-generation handling and API/catalogue/client parity.
+
+**Acceptance:** planning-contract §4.1 negatives and positive controls cover absent/unknown/failed/stale evidence,
+forged claims/imports, wrong scope/revision/code, unavailable source and evaluator failure. §10 tests cover incomplete
+work, exact comparison, sensitive instructions, stale head/draft/preview, response loss/reload and explicit conflict
+resolution without losing work or repeating uncertain adoption. Context/tool tests prove mandatory coverage,
+revision/budget bounds and receipt/authority parity; no SQL/direct-file or self-adoption path is exposed.
+**Evidence:** domain/API/tool/context/evaluator and authoring recovery tests.
+**Basis:** planning contract §§4.1, 7–8, 10.3–10.4; D286/D288/D293 and T030.
+**Gates:** accepted T030 schemas/policies/evaluators. **Threats:** TM01, TM02, TM03, TM04, TM05, TM14, TM15.
+
+## P002-T034 — Inference stages and execution/editing effect boundaries
+
+**Status:** planned. **Problem:** graph wrappers and special-purpose launches do not yet provide the complete
+context/evidence/editor-impact contract at every inference and effect boundary.
+**Expected result:** explicit versioned stage bindings and typed execution consume T033 without introducing a
+second supervisor, journal owner or retry loop. **Dependencies:** T032, T033.
+
+**Subtasks:**
+
+- Bind every I01–I17 launch to its accepted graph/stage/purpose policy, including ordinary planning/chat, generic
+  preparation, both configuration-assistance scopes/roles and all four judge duties; T036 completes source consumers.
+- Admit validated typed execution contracts directly, preserving explicit legacy adapters without a Markdown
+  intermediate in the new runtime path; assemble/freeze context before each model call.
+- Integrate shared gate/coverage and editor-impact guards at the task/plan/READY/autonomy/invocation and sealed
+  export/commit/closure boundaries assigned by T030; recheck current bindings at effects, not just previews.
+- Preserve D293/D298's separate plan/owner confirmations, admitted contracts, budgets/lineage, authority and
+  in-flight context/tool-read revisions. Editing cannot trigger automatic cancellation, retroactive replacement,
+  authorization renewal or replanning; existing cancellation/revocation controls keep their semantics.
+- Version graph definitions and reconcile operation replay/crash/version mismatch through existing owners,
+  without uncertain inference retry or rewriting frozen checkpoints/catalogues/history.
+
+**Acceptance:** the T025-to-I01–I17 launch-site crosswalk proves each reachable call has sealed context and one
+ledger/journal owner. Missing/unknown/failed/stale gates refuse guarded transitions; preview/effect races and
+changes during admitted/queued/running/autonomous work follow T030's accepted impact matrix. Frozen bytes remain
+unchanged, old READY cannot validate a new revision, and replay/recovery/version drift preserve authority and
+export/commit parity. Unsupported/unbound routes refuse instead of falling back to raw discovery.
+**Evidence:** stage/launch/ledger integration tests, lifecycle races and crash/recovery/version fixtures.
+**Basis:** planning contract §§4.1, 7.1, 10.4, 11; D269/D282/D283/D293/D298 and T030.
+**Gates:** accepted context/stage and editing-impact contracts; existing native qualification stays explicit.
+**Threats:** TM05, TM06, TM07, TM12, TM14, TM20.
+
+## P002-T035 — Enforced protected-source access and profile qualification
+
+**Status:** planned. **Problem:** disabled autoload and prompt instructions alone cannot enforce D321.
+**Expected result:** the accepted feasible boundary technically prevents protected raw-source access for each
+supported profile, or admission refuses that profile. **Dependencies:** T030, T033, T034.
+
+**Subtasks:**
+
+- Implement T030's exact protected-source/profile boundary, covering selected originals before ownership/adoption,
+  copied HEAD/intake/conversion workspaces, caches/retained originals, aliases and Git object/history routes.
+- Enforce source selection independently from export ownership across all I01–I17 stages and client autoload,
+  nested instructions, file tools, shell and subprocess routes; do not ban arbitrary Markdown or necessary code.
+- Preserve successful bounded source-tool delivery, admitted code/build/test access and exact Git effects while
+  refusing unqualified profiles without weaker fallback or a new assumed provider capability.
+- Record the exact client/version/role scope, residual limits, denied routes and recovery/revocation behavior;
+  any native execution, new dependency or network installation still needs its explicit authorization/decision.
+
+**Acceptance:** adversarial direct-read/copy/history/alias/autoload cases fail for unowned/pre-adoption and owned
+sources, with successful bounded source-tool and permitted code access as positive controls. Every supported
+profile meets the adopted guarantee; all others fail admission before inference. Detection after a read or a
+prompt prohibition is not accepted as prevention. No unavailable native qualification is labelled passed.
+**Evidence:** access-route/profile matrix, synthetic enforcement tests and separately authorized native evidence.
+**Basis:** planning contract §§7.1, 9; D321/D322 and T030 feasibility/qualification contract.
+**Gates:** D321 technical guarantee per profile; explicit native authorization where needed.
+**Threats:** TM01, TM03, TM11, TM16.
+
+## P002-T036 — Intake, conversion and protected source/editor transition
+
+**Status:** planned. **Problem:** pre-adoption and legacy lanes must not bypass protected sources, shared authoring
+or gate/evidence policies when no canonical revision/export owner exists.
+**Expected result:** definition/onboarding/conversion and pre-adoption consumers use bounded captured sources,
+typed drafts and explicit independent confirmations. **Dependencies:** T032, T033, T035.
+
+**Subtasks:**
+
+- Bind bootstrap definition, reverse engineering/onboarding, installed conversion and relevant I06–I10/I15–I16
+  consumers to versioned source selection, source-tool reads and known/inferred/unknown provenance.
+- Enforce original/copy/history coverage before the first inference and after adoption/ownership changes without
+  requiring a knowledge head; preserve source bytes, mappings and incomplete drafting work.
+- Implement the accepted I09 retired-bootstrap disposition and exact legacy-to-canonical editor/source transition;
+  retain unsaved input/pending outcomes and refuse stale raw-file writes rather than silently importing them.
+- Integrate applicable gate/coverage checks at conversion/promotion/profile/preparation/activation boundaries;
+  keep knowledge/profile/phase-plan/export confirmations separate and preserve D293/D298.
+
+**Acceptance:** end-to-end source-tool reads succeed while direct original/copy/history alternatives are refused,
+before and after adoption/ownership. Absent/unknown/failed/stale evidence blocks the applicable promotion/readiness
+boundary without losing an incomplete draft. Conversion and legacy-editor recovery preserve originals and exact
+pending operations; no imported assertion, unqualified legacy inference or automatic replanning gains authority.
+**Evidence:** synthetic definition/onboarding/conversion/profile and source/editor-transition journeys.
+**Basis:** planning contract §§6, 7.1, 9–10; D292/D293/D298/D319 and T030.
+**Gates:** source/profile qualification and explicit adoption/promotions, per accepted T030 design.
+**Threats:** TM01, TM09, TM11, TM12.
+
+## P002-T037 — Human document/entity editing and visual user journeys
+
+**Status:** planned. **Problem:** canonical documents need understandable human editing with recoverable work,
+explicit adoption/export and truthful historical/operational consultation.
+**Expected result:** the six documents/instructions, knowledge views and map/drawer implement T030's §10 UI
+contract through the shared typed commands. **Dependencies:** T032, T033, T036.
+
+**Subtasks:**
+
+- Implement the six-document/instruction editability matrix in readable document/block/entity views, including
+  permitted Markdown/Mermaid, identified subtasks and relation pickers without JSON/markers/internal-ID authoring.
+- Implement incomplete/valid work retention, field diagnostics, exact field/link/order/sensitive comparison,
+  separate draft save/adoption/export and explicit pending-request/conflict recovery under D293.
+- Present immutable decisions/supersession, protected history and derived gate/evidence/READY states truthfully;
+  show verified impact, unknown/truncated associations and accepted versus pending/failed/partial export separately.
+- Integrate canonical/legacy/noncanonical editor transitions, map/entity selection and query-only consultation,
+  retaining work across routed navigation/reload and preventing a stale competing file writer.
+- Maintain API/generated-client and en/es/accessibility parity; complete routed user journeys and owner visual
+  review in a real browser with synthetic desktop/narrow-screen projects and keyboard/focus coverage.
+
+**Acceptance:** every §10.6 journey passes, including subtask/order/relation edits and invalid cycles, incomplete
+work/read/save/validation failures, stale head/draft/preview and response loss, immutable decisions, derived states,
+changes during execution, legacy/archive navigation and export pending/recovery without repeated adoption.
+Screenshot/measurement and observed journey evidence support owner visual acceptance; component tests alone do
+not satisfy it. Current planning review is not product visual qualification.
+**Evidence:** routed interaction/API tests, browser visual record and owner acceptance; scope labelled synthetic.
+**Basis:** planning contract §§10.1–10.6, 13; D293/D298 and accepted T030 interaction/impact design.
+**Gates:** owner visual/user-journey acceptance. **Threats:** TM05, TM09, TM13, TM14.
+
+## P002-T038 — Integrated boundary, authoring recovery and evidence re-audit
+
+**Status:** planned. **Problem:** the new contracts invalidate assumptions in the earlier audit/recovery scope;
+focused tests alone cannot demonstrate complete integrated coverage.
+**Expected result:** recorded requalification covers the final source/inference/gate/editor boundaries, preserving
+earlier evidence as evidence of its original version. **Dependencies:** T031–T037.
+
+**Subtasks:**
+
+- Reconcile every T025 launch site with I01–I17 context/source/stage/ledger evidence and explicitly reviewed
+  dispositions; audit ordinary/special-purpose paths, retries, interrupted work and unsupported profiles.
+- Audit D321 originals/copies/history bypasses with source-tool positive controls and the exact client/role matrix.
+- Exercise §4.1 gate/evidence negatives/positives and §10 authoring conflict/reload/pending adoption-export,
+  admitted/running/autonomous work and frozen-history invariants through effect races, resume and restore.
+- Requalify affected installed conversion, backup/query-only consultation, schema/integrity and accounting/
+  efficiency boundaries as targeted T025–T027 deltas, retaining unknown native usage and qualification blockers.
+- Hand the complete matrices and unresolved supported-scope/native cells to T028/T029; do not re-label historical
+  tests, current documentation or synthetic CLI evidence as native product qualification.
+
+**Acceptance:** each inference/source/gate/human-editing matrix entry has evidence or an explicit blocking scope;
+missing/unknown/failed/stale witnesses cannot become success through recovery/aggregation. Restored reads need no
+checkout and expose no mutations. One invocation/operation ownership, frozen evidence and equivalent mandatory
+context coverage are preserved; efficiency claims use matched outcomes and label unknowns.
+**Evidence:** integrated audit/recovery/portability/accounting matrices, focused regressions and appropriate final checks.
+**Basis:** planning contract §§4.1, 7.1, 9–10, 13; T025–T027 evidence; D321–D323 and T030.
+**Gates:** final supported-scope/native blockers retained for T028/T029. **Threats:** TM01–TM20.
+
 ## P002-T028 — Complete journeys and usability qualification (formerly T022)
 
 **Problem:** the full redesign must be useful from intake through completion and preserve normal-mode operation.
 **Expected result:** reproducible end-to-end evidence covers the proposed phase criteria and the owner's agreed UI.
-**Dependencies:** T011–T027.
+**Dependencies:** T011–T027, T030–T038.
 
 **Subtasks:**
 
@@ -975,9 +1257,12 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
   interrupted-work recovery, including stale actions and query-only consultation.
 - Review en/es, accessibility, practical history/context sizes and owner-supplied graph design; run appropriate full
   repository/package checks and map every exit criterion to evidence or an explicit unresolved blocker.
+- Qualify the adopted planning contract's semantic round trips, I01–I17 context/source coverage, D321 protected
+  originals/copies/history, gate/evidence behavior and human editing/phase-plan confirmation/export-pending
+  journeys in normal/autonomous flows; consume T037 visual acceptance and T038 audit evidence, retaining blockers.
 
 **Evidence:** synthetic journey matrix, usability review and integrated check results; real-provider scope is labelled.
-**Basis:** B01–B24.
+**Basis:** B01–B24; D323 and the [planning acceptance matrix](phase/P002-knowledge-context-proposal.md#13-acceptance-of-the-requested-outcome).
 
 **Gates:** G15. **Threats:** —.
 ## P002-T029 — Release qualification and delivery disposition (formerly T023)
@@ -990,6 +1275,8 @@ delivery stage tracked to its actual outcome. **Dependencies:** T027, T028.
 
 - Finalize specification/architecture/data/flows/API/client types, changelog, supported-scope and migration/operation
   guidance; distinguish generated document import, project portability, full recovery and unsupported capabilities.
+  Consume T038's revised scope/evidence through T028, including D321 qualification, document/editor conversion and
+  pending export states; this adds no release/publication/installation authorization.
 - Qualify exact locked dependencies, offline package/UI/migrations, self-contained archives/checksums and installed
   synthetic first-use/upgrade behavior; update version metadata together at the agreed release point.
 - Record source/integration status; perform release PR/merge/tag, publication/download verification and local
@@ -1000,6 +1287,14 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
 
 **Gates:** —. **Threats:** TM19.
 ## Plan revisions
+
+- **v0.5 owner adoption (2026-11-09, [D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)).**
+  The reviewed [knowledge/context and human-editing contract](phase/P002-knowledge-context-proposal.md) adds nine
+  tasks T030–T038 before T028/T029, keeping all existing IDs. The execution order is T030 → T031 → T032 → T033 →
+  T034 → T035 → T036 → T037 → T038 → T028 → T029. T028 adds T030–T038 dependencies; T029 retains release/package/
+  delivery ownership. D321 feasibility and explicit T030 design acceptance block T031. This is planning adoption,
+  not resolution of schemas/mechanisms/impact policies, T030 completion or implementation. Earlier evidence,
+  D293/D298 confirmations, frozen histories and pending delivery remain intact.
 
 - **v0.4 owner revision (2026-11-04, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)).** Before T018 started, the owner split it by
   responsibility into T018 (design), T019–T020 (backend), T021–T023 (frontend) and T024 (full stack), and
@@ -1127,3 +1422,9 @@ phase completion or installed/runtime claim. **Basis:** B09, B21–B24; D235/D24
     acceptance for T022 and T021's deferred review (D313). The accompanying merge integrates reviewed source
     `1149765` and records delivery status. Push of develop is authorized. Next: **P002-T023**. Release 0.2.0,
     distribution/publication and installation remain pending.
+
+29. **Plan v0.5 adoption (2026-11-09, D323).** The owner approved the reviewed planning contract, including the
+    coverage matrices and human-editing extension, and authorized documentation commit, merge into develop and
+    push of develop after checks/diff review. T030–T038 now precede T028/T029 with existing IDs unchanged.
+    **Next: P002-T030**, whose pending designs and D321 feasibility must be resolved before T031. No product
+    implementation, profile qualification, release/publication or installation is claimed or newly authorized.

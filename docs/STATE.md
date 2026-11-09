@@ -6,14 +6,29 @@ Detailed history up to the P001 closure is kept in the [P001 archive](archive/ph
 
 ## Work routing
 
+**P002 plan v0.5 adopted (2026-11-09, [D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)):**
+[the reviewed planning contract](phase/P002-knowledge-context-proposal.md) adds T030–T038 before T028/T029,
+without renumbering existing tasks. **Next: P002-T030**, design only. It owns the unresolved schemas, gate/evidence
+semantics, I01–I17 context policies, human-editing/recovery and execution-impact contracts, and D321 enforcement
+feasibility. T031 cannot start until that feasibility gate and the required T030 design acceptance are satisfied.
+D321/D322 remain accepted policy; no mechanism, profile, new format or implementation is declared delivered.
+
+The matrices cover selected unowned/pre-adoption originals/copies/history independently of export ownership,
+every T025 inference entry, gate evaluation and human document editing under D293/D298. T037 owns UI and visual/
+user-journey evidence; domain/export/execution responsibilities are assigned in NEXT_STEPS. This documentation
+adoption source is `d842fae` on `docs/p002-knowledge-context-proposal` from `812559f`, integrated by the accompanying
+merge into develop. The owner authorized push of develop. Git history records the source/integration; release
+0.2.0, distribution/publication and installation remain pending. No product or installed behavior changed.
+
 Read [ONE_OFF_TASKS](ONE_OFF_TASKS.md) before [NEXT_STEPS](NEXT_STEPS.md); the one-off queue is **empty**
 ([D237](DECISIONS.md#d237--one-off-development-queue-before-phase-work); later one-offs branch from the latest release
 on `main`, D261). **P001 Metrics Records is closed** (D266): released as **0.1.9**, installed on the operator machine
 and archived in [`archive/phase-001/`](archive/phase-001/SUMMARY.md). **Active phase: P002 Continuous Mode** (target
 **0.2.0** at its closure, D253). The owner adopted the expanded autonomous-mode/database-authority plan as the
-evolving baseline (**v0.4, 29 tasks**,
+evolving baseline (**v0.5, 38 tasks**,
 [D268](DECISIONS.md#d268--p002-scope-complete-roadmap-autonomy-and-evolving-plan-baseline);
-T018 split by responsibility into T018–T024 and the former T019–T023 renumbered T025–T029, [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered)).
+T018 split by responsibility under [D303](DECISIONS.md#d303--t018-split-by-responsibility-and-later-p002-tasks-renumbered);
+[D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification) adds T030–T038 without renumbering).
 **P002-T001 is completed as design** ([contracts](phase/P002-T001-contracts.md), [flows](phase/P002-T001-flows.md),
 [threat model](phase/P002-T001-threat-model.md), D268–D279) on `docs/p002-t001-contracts`, committed and merged
 into develop at the owner's authorization. **P002-T002 is completed** ([feasibility](phase/P002-T002-feasibility.md);
@@ -194,7 +209,7 @@ effect/replay revocation, judge-consumer and fake-CLI failure evidence is record
 executor-broker/later-version cells, T028 journeys/UX/performance and T029 package/release qualification remain
 visible with their blocked scope. Independent review passed with 316 focused and 92 selected integration cases.
 The owner authorized source commit, merge and push of `develop` upon successful review. The accompanying
-merge integrates the reviewed source. **Next: P002-T028.** Release 0.2.0 through protected `main`,
+merge integrates the reviewed source. **Next: P002-T030 under plan v0.5 (D323).** Release 0.2.0 through protected `main`,
 distribution/publication and installation remain pending. The recorded installation remains 0.1.9.
 
 See the [T017 record](phase/P002-T017-global-inbox.md).
@@ -364,10 +379,10 @@ remaining design from implemented foundations. **T002 (completed, integrated)** 
 additions and no pin change, offline install, re-executed nodes, silent graph-version drift, hosted tracing by
 inherited environment) and the per-invocation MCP broker on Claude Code 2.1.312 and Codex 0.165.0 with 14 bounded
 real runs; D280 (dependency set and placement) and D281 (transport and minimum capability contract) are accepted.
-[NEXT_STEPS](NEXT_STEPS.md) holds plan v0.3. **T003 (completed, integrated)** added the LangGraph runtime foundation
+[NEXT_STEPS](NEXT_STEPS.md) holds adopted plan v0.5 (D323). **T003 (completed, integrated)** added the LangGraph runtime foundation
 (D282–D283), the only dependency adopted (D280); **T004 (completed, integrated)** adds structured knowledge
 with immutable accepted revisions (D284) and canonical database instructions (D285); **T005 (completed, integrated)** adds typed
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025 is complete and integrated as source `18bef36` (D318). T026 is complete and integrated as source `2fe92a4` after independent technical re-review (D319). T027 is complete and integrated as source `41b652f` after independent technical review (D320); T028–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025 is complete and integrated as source `18bef36` (D318). T026 is complete and integrated as source `2fe92a4` after independent technical re-review (D319). T027 is complete and integrated as source `41b652f` after independent technical review (D320); T030–T038 and T028–T029 remain planned (plan v0.5, D323); next is T030, whose design and D321 feasibility gate remain unresolved. No OpenCode adapter exists, and installed behavior remains 0.1.9.

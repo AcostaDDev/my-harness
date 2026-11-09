@@ -771,6 +771,10 @@ class AutonomousRoadmap:
         """A failed graph thread holds routing only; a new continuation thread starts once none of its sealed
         operations is pending. A pending one makes the run RECOVERY_REQUIRED instead (never reissued)."""
         from my_harness.storage.models import WorkflowOperationRow as Operation
+        graphs = self.graphs()
+        checked = graphs.check_failed_continuation(thread)
+        if checked.status == 'QUARANTINED':
+            return checked
         now = self.managed._now()
         with self.managed._write() as session:
             run = store.run_by_id(session, run_id)
@@ -787,7 +791,7 @@ class AutonomousRoadmap:
             session.flush()
             store.event(session, run, 'graph_continued', {'previous_thread': thread, 'thread': run.thread_id},
                         dedupe=f'{run.id}:continued:{count}', now=now)
-        return self.graphs().start_or_status(run_id, new_thread)
+        return graphs.start_or_status(run_id, new_thread)
 
     def reconcile(self, root):
         """After a restart: start a sealed run whose graph never started; a graph thread still RUNNING has no

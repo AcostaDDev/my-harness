@@ -69,7 +69,10 @@ T014/T015 consume the revision/manifest/renderer and exact delivery receipts for
 A managed task can consume a completed current delivery or seal a new generation under its existing writer.
 A task generation carries a task run ID, pairs its export commit record with the managed commit operation
 and settles completion with that commit. The standalone exporter cannot execute a task generation.
-Phase closure, T016 final readiness and roadmap admission, and T026 installed conversion remain pending.
+The separate [installed conversion](database-migration.md#convert-installed-project-knowledge) uses existing
+adoption validation and creates knowledge and identity mappings from verified local sources. Its consent and
+receipt are separate from portable transfer, export ownership and operational readiness. When the owner changes
+a phase or task code, the mapping keeps the original reference and points to the canonical item.
 Legacy document and closure writers refuse adopted ownership.
 
 Sources: `core/engine/knowledge_documents.py`, `services/knowledge_exchange.py`, `services/knowledge_delivery.py`,

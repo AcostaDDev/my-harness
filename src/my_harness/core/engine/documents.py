@@ -448,16 +448,20 @@ def parse_roadmap(text: str) -> list[dict]:
         if code in seen:
             raise ValueError(tr('documents.duplicate_roadmap_phase', code=code))
         seen.add(code)
-        raw = _fields(_section_after(text, match.end()))
-        criteria = bullet_items(_first(raw, ROADMAP_FIELDS['exit_criteria']))
-        tag = _first(raw, ROADMAP_FIELDS['tag']).split('\n', 1)[0]
-        entries.append({'code': code, 'title': collapse(match.group(2)),
-                        'objective': collapse(_first(raw, ROADMAP_FIELDS['objective'])),
-                        'exit_criteria': [collapse(item) for item in criteria],
-                        'dependencies': collapse(_first(raw, ROADMAP_FIELDS['dependencies'])) or None,
-                        'out_of_scope': collapse(_first(raw, ROADMAP_FIELDS['out_of_scope'])) or None,
-                        'tag': (backticked(tag) or [collapse(tag)])[0] if tag else None})
+        entries.append(roadmap_entry(code, match.group(2), _section_after(text, match.end())))
     return entries
+
+
+def roadmap_entry(code: str, title: str, body: str) -> dict:
+    raw = _fields(body)
+    criteria = bullet_items(_first(raw, ROADMAP_FIELDS['exit_criteria']))
+    tag = _first(raw, ROADMAP_FIELDS['tag']).split('\n', 1)[0]
+    return {'code': code, 'title': collapse(title),
+            'objective': collapse(_first(raw, ROADMAP_FIELDS['objective'])),
+            'exit_criteria': [collapse(item) for item in criteria],
+            'dependencies': collapse(_first(raw, ROADMAP_FIELDS['dependencies'])) or None,
+            'out_of_scope': collapse(_first(raw, ROADMAP_FIELDS['out_of_scope'])) or None,
+            'tag': (backticked(tag) or [collapse(tag)])[0] if tag else None}
 
 
 def plan_tasks(text: str, code: str | None = None) -> list[tuple[str, str]]:

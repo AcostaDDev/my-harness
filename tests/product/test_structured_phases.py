@@ -228,7 +228,10 @@ def test_reopen_reconciles_same_closure_effects(structured, point, monkeypatch):
     monkeypatch.setattr(target, name, fail)
     with pytest.raises((RuntimeError, JournalError), match='Synthetic'): w.run()
     assert w.repository.get_job(job.id).status == 'RECOVERY_REQUIRED'
-    intent = w.get(pid)['operations'][-1]['request']['commit_intent']
+    request = w.get(pid)['operations'][-1]['request']
+    intent = request['commit_intent']
+    export_intent = request['export_intent_id']
+    tag_object = git(w.context.root, 'rev-parse', 'refs/tags/p001')
     from test_documents import confirm
     confirm(w, job)
     from my_harness.storage.database import make_engine
@@ -239,7 +242,9 @@ def test_reopen_reconciles_same_closure_effects(structured, point, monkeypatch):
     w.worker = LocalSupervisor(w.repository, w.ports, commit_factory=w.ports.writer)
     resumed = queue_close(w, pid); w.run()
     assert w.repository.get_run(resumed.run_id).status == 'COMMITTED'
-    assert w.get(pid)['operations'][-1]['request']['commit_intent'] == intent
+    recovered = w.get(pid)['operations'][-1]['request']
+    assert recovered['commit_intent'] == intent and recovered['export_intent_id'] == export_intent
+    assert git(w.context.root, 'rev-parse', 'refs/tags/p001') == tag_object
     assert git(w.context.root, 'rev-list', '--count', before + '..HEAD') == '1'
     assert git(w.context.root, 'rev-parse', 'p001') == before
     assert w.ports.roles().count('phase') == 1

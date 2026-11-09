@@ -69,8 +69,12 @@ sequenceDiagram
   See [task execution](task-run.md) for the acceptance and effect boundaries.
 - **Roadmap graph (P002-T016).** `autonomous-roadmap@1` loops one `advance` node and holds in an interrupting
   `hold` node; the segment limit bounds one durable segment, never the roadmap. A failed thread continues on a
-  new continuation thread only when none of its sealed operations is pending ([flow](autonomous-roadmap.md)).
-  Integrated installation recovery remains pending.
+  new continuation thread only when the previous stamp matches and none of its sealed operations is pending
+  ([flow](autonomous-roadmap.md)). An incompatible stamp quarantines the previous thread before any replacement
+  or node execution. The diagnostic includes the stored and registered stamps and asks the owner to resolve
+  the incompatibility. Historical checkpoints and operation seals remain available.
+  The [T026 matrix](../phase/P002-T026-installed-recovery.md#fault-matrix) covers restart at the command
+  transaction/checkpoint join.
 
 Task gap continuations schedule a new managed job with the exact resolution event ID. The new versioned
 task thread creates fresh invocation identities and binds them to the persisted source gap and resolution.

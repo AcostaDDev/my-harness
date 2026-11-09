@@ -105,10 +105,12 @@ def test_graph_drift_quarantines_before_any_node_runs(world, changed):
                    'structure': (approval_definition(journal, wait_node='await_owner'),),
                    'unknown': ()}[changed]
     entries = journal.count('entries')
+    before = {name: rows(url, name) for name in ('graph_checkpoints', 'graph_checkpoint_writes')}
     result = runner(engine, *definitions).resume('thread-1', 'approved')
     assert result.status == 'QUARANTINED'
     assert result.reason == ('graph_unknown' if changed == 'unknown' else 'graph_version_mismatch')
-    assert result.detail['stamped']['version'] == '1'
+    assert result.detail['stamped']['version'] == '1' and result.detail['owner_action']
+    assert all(rows(url, name) == original for name, original in before.items())
     if changed != 'unknown':
         stamped, registered = result.detail['stamped'], result.detail['registered']
         assert (stamped['version'] != registered['version']) == (changed == 'version')

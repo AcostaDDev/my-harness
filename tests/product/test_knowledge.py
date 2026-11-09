@@ -360,6 +360,8 @@ def test_retired_decisions_exist_only_as_imported_first_versions(world):
     ('Status: superseded by D166–D168.', ('D166', 'D167', 'D168'), 'accepted',
      [('D166', None), ('D167', None), ('D168', None)], ['supersession_extent_required']),
     ('Status: superseded by D900.', (), 'retired', [], ['superseder_not_in_set', 'retired_without_superseder']),
+    ('Status: superseded by D001–D1000000000000.', ('D002',), 'accepted',
+     [('D002', 'full')], ['superseder_not_in_set']),
     ('Estado: sustituida por D012.', ('D012',), 'accepted', [('D012', 'full')], []),
     ('Estado: rechazada.', (), 'rejected', [], []),
     ('Status: withdrawn.', (), 'rejected', [], []),

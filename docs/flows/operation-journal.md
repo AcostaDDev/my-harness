@@ -86,6 +86,11 @@ flowchart TD
   belong to another project answers 404 `trace_unknown`. They read persisted rows only, so a restored query-only copy
   serves them without checkout, registry or providers; every journal write there is refused.
 
+The [T026 fault matrix](../phase/P002-T026-installed-recovery.md#fault-matrix) covers a process exit on each
+side of the domain transaction, before checkpoint advancement. A rolled-back command leaves no journal outcome.
+A committed command replays its existing command, operation and draft identities. At the CLI boundary, the
+stopped-writer check also revalidates the current run version, owner and recorded process groups.
+
 ## Observed steps (P002-T019)
 
 Every settled managed attempt, with or without a workflow operation, gets an `observed-step-1` projection

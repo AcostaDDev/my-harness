@@ -453,6 +453,12 @@ entities and their outgoing relationships unchanged. New roots/children append d
 existing entries; the preview displays the resulting order. A valid portable download remains available even
 when Markdown generation refuses wrappers or size budgets, and downloading never adopts checkout ownership.
 
+P002-T026 adds local owner-confirmed [installed conversion](flows/database-migration.md#convert-installed-project-knowledge).
+The preview binds adopted source bytes, stable identities, explicit references and choices. Conversion retains
+legacy histories and accounting and preserves unknown evidence. Backup upgrade covers 0.1.9 format-3 bundles.
+The integrated [recovery qualification](phase/P002-T026-installed-recovery.md) preserves sealed effects and quarantines
+incompatible graph stamps before any continuation node runs.
+
 ### P002-T015: structured manual lifecycle
 
 For projects with accepted structured knowledge, §§5/7's documentary phase definition and baseline rules are

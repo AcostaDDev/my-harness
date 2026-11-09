@@ -319,6 +319,64 @@ def test_command_outcomes_and_refusals_carry_their_events_in_their_own_transacti
     assert {table: rows(url, table) for table in before} == before
 
 
+@pytest.mark.parametrize('boundary', ['before_commit', 'after_commit'])
+def test_domain_transaction_and_graph_checkpoint_reconcile_after_process_exit(world, tmp_path, monkeypatch, boundary):
+    url, engine, journal = world
+    _, first = seed(ManagedRuntime(engine).domain_operations())
+    module = tmp_path / 'domain_crash_graph.py'
+    module.write_text(DOMAIN + """
+if __name__ == '__main__':
+    import os, sys
+    from my_harness.orchestration import GraphRunner, GraphRegistry
+    from my_harness.services.domain_operations import DomainOperations
+    from my_harness.storage.database import make_engine
+    from my_harness.storage.operation_journal import command_sink
+    url, root, revision, boundary = sys.argv[1:]
+    engine = make_engine(url)
+    def crash_in_transaction(*args):
+        os._exit(38)
+    class CrashAfterCommit(DomainOperations):
+        def execute(self, *args, **kwargs):
+            super().execute(*args, **kwargs)
+            os._exit(39)
+    if boundary == 'before_commit':
+        operations = DomainOperations(engine, audit_sinks=(command_sink, crash_in_transaction))
+    else:
+        operations = CrashAfterCommit(engine, audit_sinks=(command_sink,))
+    GraphRunner(engine, GraphRegistry([definition(operations, root)])).start(
+        'synthetic-domain-trace', 'domain-crash', {'expected': revision})
+""")
+    child = subprocess.run((sys.executable, str(module), url, ROOT, first['revision_id'], boundary),
+                           capture_output=True, text=True, timeout=60)
+    assert child.returncode == (38 if boundary == 'before_commit' else 39), child.stderr
+    operations = rows(url, 'workflow_operations')
+    commands = rows(url, 'domain_commands', "WHERE channel='graph'")
+    checkpoints = rows(url, 'graph_checkpoints')
+    assert checkpoints
+    if boundary == 'before_commit':
+        assert operations == commands == []
+    else:
+        assert len(operations) == len(commands) == 1
+
+    monkeypatch.syspath_prepend(str(tmp_path))
+    from domain_crash_graph import definition
+    graphs = GraphRunner(engine, GraphRegistry([definition(ManagedRuntime(engine).domain_operations(), ROOT)]))
+    assert graphs.status('domain-crash').status == 'RUNNING'
+    with pytest.raises(ValueError):
+        graphs.recover('domain-crash', writer_stopped=False)
+    result = graphs.recover('domain-crash', writer_stopped=True)
+    assert result.status == 'COMPLETED'
+    assert result.values['replayed'] is (boundary == 'after_commit')
+    [op] = rows(url, 'workflow_operations')
+    [cmd] = rows(url, 'domain_commands', "WHERE channel='graph'")
+    assert op['command_id'] == cmd['command_id'] and op['key'] == json.loads(cmd['caller'])['operation_key']
+    assert cmd['draft_id'] == result.values['draft']
+    if operations:
+        assert [op] == operations and [cmd] == commands
+    assert all(row in rows(url, 'graph_checkpoints') for row in checkpoints)
+    assert [event['kind'] for event in journal.events(ROOT, 'domain-crash')['items']] == ['operation.completed']
+
+
 # Agent invocations: fenced seal, ledger link, settlement and recovery (TM12, TM14) ----------------------------------
 
 def started(repository, context, adapter=None, *, key='op-invocation', lease_seconds=30, role='planner'):
@@ -478,12 +536,37 @@ def test_interrupted_gate_accounts_only_observed_native_launch(tmp_path, context
 
     with pytest.raises(JournalError, match='Synthetic interruption'):
         port.invoke(context, request)
-    repository.close_owner(claim)
     repository.quarantine(claim, 'Synthetic interruption')
-    repository.confirm_stopped(job.id, owner_token=claim.owner_token,
-                               expected_version=repository.get_run(job.run_id).version,
-                               reason='Synthetic stopped group')
-    [process] = repository.processes(job.id)
+    from my_harness.adapters import processes
+    from my_harness.services.managed import LocalSupervisor
+    from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+    restarted_engine = make_engine(migrated_database[0])
+    try:
+        restarted = SQLiteManagedRepository(restarted_engine)
+        supervisor = LocalSupervisor(restarted, lambda *_: pytest.fail('Inference relaunched after crash'))
+        assert supervisor.run_once() is None
+        version = restarted.get_run(job.run_id).version
+        evidence = {'owner_token': claim.owner_token, 'expected_version': version,
+                    'reason': 'Synthetic stopped group'}
+        with pytest.raises(Conflict):
+            restarted.confirm_stopped(job.id, **{**evidence, 'expected_version': version - 1})
+        with pytest.raises(Conflict):
+            restarted.confirm_stopped(job.id, **evidence)  # this test process is the live owner
+        with monkeypatch.context() as patch:
+            patch.setattr(processes, 'liveness', lambda *args, **kwargs: 'unknown')
+            with pytest.raises(Conflict):
+                restarted.confirm_stopped(job.id, **evidence)
+        repository.close_owner(claim)
+        with pytest.raises(Conflict):
+            restarted.confirm_stopped(job.id, **evidence)  # owner closure advances the durable version
+        evidence['expected_version'] = restarted.get_run(job.run_id).version
+        restarted.confirm_stopped(job.id, **evidence)
+        assert supervisor.run_once() is None
+        with pytest.raises(Conflict):
+            restarted.confirm_stopped(job.id, **evidence)
+        [process] = restarted.processes(job.id)
+    finally:
+        restarted_engine.dispose()
     assert process['identity'] and process['capture']['settled_by'] == 'closing_owner'
     launches = tmp_path / 'launches.jsonl'
     assert launches.exists() is after_go

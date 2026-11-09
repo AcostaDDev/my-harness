@@ -85,7 +85,8 @@ class KnowledgeSession:
         self.session.flush()
         return project_id
 
-    def _item(self, project_id: str, kind: str, code: str, document: str | None) -> KnowledgeItemRow:
+    def _item(self, project_id: str, kind: str, code: str, document: str | None,
+              item_id: str | None = None) -> KnowledgeItemRow:
         core.validate_item(kind, code, document)
         query = select(KnowledgeItemRow).where(KnowledgeItemRow.project_id == project_id,
                                                KnowledgeItemRow.kind == kind, KnowledgeItemRow.code == code)
@@ -93,7 +94,7 @@ class KnowledgeSession:
                             else KnowledgeItemRow.document == document)
         row = self.session.scalar(query)
         if row is None:
-            row = KnowledgeItemRow(id=str(uuid4()), project_id=project_id, kind=kind, document=document, code=code,
+            row = KnowledgeItemRow(id=item_id or str(uuid4()), project_id=project_id, kind=kind, document=document, code=code,
                                    created_at=now())
             self.session.add(row)
             self.session.flush()
@@ -133,12 +134,13 @@ class KnowledgeSession:
         return row
 
     def put(self, draft_id: str, kind: str, code: str, content: dict, *, document: str | None = None,
-            provenance: str = 'known', source: dict | None = None, root_position: int | None = None) -> str:
+            provenance: str = 'known', source: dict | None = None, root_position: int | None = None,
+            item_id: str | None = None) -> str:
         session = self.session
         content = core.validate_content(kind, document, content)
         source = core.validate_source(provenance, source)
         draft = self.draft(draft_id)
-        item = self._item(draft.project_id, kind, code, document)
+        item = self._item(draft.project_id, kind, code, document, item_id)
         digest = core.content_sha256(kind, document, code, content, provenance, source)
         member = session.get(KnowledgeRevisionMemberRow, (draft_id, item.id))
         current = member and session.get(KnowledgeItemVersionRow, member.version_id)

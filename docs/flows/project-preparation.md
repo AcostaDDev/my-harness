@@ -153,6 +153,14 @@ flowchart TD
   or work language. Moving a project prepared with v1 to v6–v8 is not supported: it would change its frozen
   composition.
 
+## Executor accounting (P002-T025)
+
+For generic preparation executors, the native process intent commits with its ledger row. If closure or
+an explicit stopped-writer disposition finds an executor intent that has no positive launch evidence,
+the ledger records unknown execution. The closing owner's captured partial evidence remains available.
+These accounting transitions leave the preparation step and process evidence as recorded.
+[Accounting flow](metrics-accounting.md).
+
 ## Source
 
 - `recipes/` (`django.py`, `django_2.py`, `typescript_web.py`, `typescript_web_2.py`), `services/project_preparation.py`,

@@ -278,19 +278,24 @@ class Inbox:
         self.clock = clock
         self.projects = projects  # registered UI IDs and checkout roots; no checkout or provider access
 
-    def _root(self, db, project):
+    def _root(self, db, project, *, include_retired=False):
         if project is None:
             return None
         root = db.scalar(text("""
             SELECT root FROM knowledge_projects WHERE id = :project
-            UNION ALL SELECT root FROM registered_projects WHERE id = :project AND status = 'ACTIVE'
+            UNION ALL SELECT root FROM registered_projects WHERE id = :project AND (status = 'ACTIVE' OR :include_retired)
             UNION ALL SELECT root FROM managed_runs WHERE id = substr(:project, 5) AND :project LIKE 'run:%'
             UNION ALL SELECT root FROM managed_phases WHERE id = substr(:project, 7) AND :project LIKE 'phase:%'
             LIMIT 1
-        """), {'project': project}) or self.projects.get(project)
+        """), {'project': project, 'include_retired': include_retired}) or self.projects.get(project)
         if root is None:
             raise LookupError(project)
         return root
+
+    def project_root(self, project):
+        """Resolve a persisted consultation identity without composing a checkout."""
+        with self.engine.connect() as db:
+            return self._root(db, project, include_retired=True)
 
     def _views(self, db, rows):
         if not rows:

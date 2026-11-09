@@ -162,7 +162,18 @@ synthetically. The first independent technical review found a missing talk butto
 the frontend correction and both subsequent fixture fixes passed independent technical re-review. The owner
 confirmed visual acceptance on 2026-11-09 and authorized the source commit, merge and push of develop.
 Release 0.2.0 through protected `main`, distribution/publication and installation remain pending. The recorded
-installation remains 0.1.9. The one-off queue remains empty. **Next: P002-T025.**
+installation remains 0.1.9. The one-off queue remains empty.
+
+**P002-T025 has local corrections ready for technical re-review** on `feat/p002-t025-accounting-efficiency`
+from clean `develop` at `45805c4` (D318). Accounting groups and filters by the workflow execution and its
+invocation operation, including unlinked lanes. L4 opens the exact ledger evidence. The review corrections distinguish
+wrapper identity from observed launch, isolate wrapper startup from Python customization, restore the persisted
+project scope of configuration assistance and add separate
+parent autonomous execution attribution. Synthetic tests cover
+native settlement, aggregate parity and restored consultation. The offline benchmark reports payload bytes,
+local timing, exchanges and simulated completion. [Contract and verification](phase/P002-T025-accounting-efficiency.md).
+The source diff is uncommitted. Integration into `develop`, release 0.2.0 through protected `main`,
+distribution/publication and installation are pending. The recorded operator installation is 0.1.9.
 
 See the [T017 record](phase/P002-T017-global-inbox.md).
 
@@ -337,4 +348,4 @@ with immutable accepted revisions (D284) and canonical database instructions (D2
 domain commands (D286); **T006 (completed, integrated)** adds the operation journal and
 correlated trace events (D287); **T007 (completed, integrated)** adds frozen contexts,
 canonical prompt rendering and exact receipts (D288). **T008 (completed, integrated)** adds (D289):
-scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.
+scoped tools and caller binding exercised with synthetic clients/permissions. T009 is completed and integrated (D290): optional judge profiles and duty contracts exercised synthetically; T010 is completed and integrated after technical re-review (D291); T011 is completed and integrated after technical re-review (D292; see its evidence); T012 is completed and integrated after independent technical re-review (D293); T013 is completed and integrated after independent technical re-review (D294); T014 is completed and integrated after independent technical re-review; T015 is completed and integrated after independent technical re-review; T016 is complete and integrated after independent final re-review (D299–D301); T017 is complete and integrated after owner technical review (D302). T018 is complete and integrated as design (D304–D309; the owner accepted the work-map visual direction as D297, [visual direction](phase/P002-T018-visual-direction.md)). T019 is complete and integrated as source `e19cea3` after independent final re-review (D305, D310). T020–T024 are complete and integrated. T025 is implemented locally for technical review. T026–T029 remain planned (plan v0.4, D303). No OpenCode adapter exists, and installed behavior remains 0.1.9.

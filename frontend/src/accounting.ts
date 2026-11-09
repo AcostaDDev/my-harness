@@ -10,11 +10,12 @@ export type Work = typeof WORK[number];
 export type Filters = {
   phase?: string; task?: string; provider?: string; role?: string; purpose?: string; source_kind?: string;
   outcome?: string; launch?: string; requested_model?: string; effective_model?: string; effective_model_kind?: string;
+  autonomous_run_id?: string; workflow_id?: string; workflow_operation_id?: string; workflow_linked?: "true" | "false";
   work?: Work[]; from_day?: string; until_day?: string;
 };
 
 const TEXT = ["provider", "role", "purpose", "source_kind", "outcome", "launch", "requested_model", "effective_model",
-  "effective_model_kind"] as const;
+  "effective_model_kind", "workflow_id", "workflow_operation_id", "workflow_linked", "autonomous_run_id"] as const;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /** The UTC day after `day`, or undefined when it is not a valid date. */
@@ -66,9 +67,11 @@ export function groupFilter(dimension: string, group: GroupKey, project?: string
     if (kind === "mixed" || kind === "unknown") return { effective_model_kind: kind };
     return key == null ? undefined : { effective_model: key };
   }
+  if (dimension === "workflow_id" || dimension === "workflow_operation_id")
+    return key == null ? { workflow_linked: "false" } : { [dimension]: key };
   if (key == null || kind === "unknown") return undefined;
   switch (dimension) {
-    case "provider": case "requested_model": case "role": case "purpose": case "outcome": case "launch": case "source_kind":
+    case "autonomous_run_id": case "provider": case "requested_model": case "role": case "purpose": case "outcome": case "launch": case "source_kind":
       return { [dimension]: key };
     case "work": return (WORK as readonly string[]).includes(key) ? { work: [key as Work] } : undefined;
     case "day": return DAY.test(key) ? { from_day: key, until_day: key } : undefined;

@@ -32,8 +32,9 @@ const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default
 const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
 // Accounting (P001-T005a): calculated valuations over the accounting API, in its own chunk too.
 const AccountingPage = lazy(() => import("./pages/Accounting").then(module => ({ default: module.AccountingPage })));
+const AccountingInvocationPage = lazy(() => import("./pages/Accounting").then(module => ({ default: module.AccountingInvocationPage })));
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "inbox" | "project-inbox" | "knowledge" | "home" | "stats" | "accounting" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "inbox" | "project-inbox" | "knowledge" | "home" | "stats" | "accounting" | "accounting-invocation" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
   const { t } = useI18n();
   switch (route.name) {
     case "project-knowledge": return null;
@@ -78,6 +79,9 @@ export function Page({ route }: { route: Route }) {
     return <InboxPage key={scope ?? "global"} project={scope} item={route.name === "project-inbox" ? route.item : undefined}
       canRespond={!mode.read_only_archive && (!mode.configuration_mode || mode.configuration_mode === "READY")} />;
   }
+  if (route.name === "accounting-invocation") return <Suspense fallback={<Loading />}>
+    <AccountingInvocationPage key={route.invocation} invocation={route.invocation} />
+  </Suspense>;
   // Archives resolve before any workspace or pending-action handling: the map levels and their table read SQLite
   // projections only; every operational page stays blocked.
   if (mode.read_only_archive) {

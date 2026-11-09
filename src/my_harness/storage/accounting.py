@@ -77,6 +77,10 @@ def settle(session, invocation, *, spec, status, identity_present, capture, outc
     selection = {'model': invocation.requested_model, 'effort': invocation.requested_effort}
     document = build(spec=spec, status=status, identity_present=identity_present, capture=capture,
                      selection=selection)
+    # A native source has settled even when its process journal stopped at intent. There is no
+    # positive launch or refusal evidence in that case, and the invocation is no longer pending.
+    if document['launch'] == 'pending':
+        document['launch'] = 'unknown_execution'
     invocation.launch = document['launch']
     invocation.outcome = outcome
     invocation.finished_at = finished_at

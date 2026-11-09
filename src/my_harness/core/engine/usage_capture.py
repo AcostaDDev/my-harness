@@ -48,8 +48,8 @@ def _amount(value):
 def refusal_boundary(spec, capture, identity_present):
     """Positive supervisor evidence that the target CLI was never released; not inferred from stopping it.
 
-    Additive evidence for T007 receipts and artifact inventories. Historical usage-capture-1 classification below
-    stays unchanged. A gate process can exist while the target executable still has never received GO.
+    Used by T007 receipts, artifact inventories and accounting. A gate process can exist while the target
+    has never received GO.
     """
     if not isinstance(spec, dict) or not isinstance(capture, dict) or capture.get('status') != 'refused':
         return None
@@ -66,13 +66,25 @@ def launch_state(spec, status, identity_present, capture):
     """Native launch gate, from positive evidence only. A missing process row proves nothing."""
     if spec is None:
         return 'unknown_execution'
-    if spec.get('launch_permitted') is False:
+    if refusal_boundary(spec, capture, identity_present) is not None:
         return 'not_invoked'
+    if capture is None and spec.get('launch_permitted') is False and not identity_present:
+        return 'not_invoked'  # the refused process intent can commit before its capture
     if isinstance(capture, dict) and capture.get('status') == 'refused':
-        # The gate wrapper was stopped before it released the CLI (identity_changed) or never spawned.
-        return 'not_invoked'
+        # Older adapters reported an identity mismatch with a stopped wrapper before explicit boundary fields.
+        legacy_gate = (status == 'STOPPED' and identity_present and spec.get('launch_permitted') is not False
+                       and capture.get('diagnostic_code') == 'identity_changed'
+                       and 'launch_boundary' not in capture and 'launch_permitted' not in capture)
+        return 'not_invoked' if legacy_gate else 'unknown_execution'
     if isinstance(capture, dict) and identity_present:
-        return 'observed'
+        # The persisted PID initially identifies process_gate.py. Only the target writes stdout.
+        # Stderr, the wrapper exit code and a completed write to the pipe cannot establish exec.
+        artifacts = capture.get('artifacts')
+        stdout = artifacts.get('stdout') if isinstance(artifacts, dict) else None
+        size = _count(stdout.get('size')) if isinstance(stdout, dict) else None
+        observed = capture.get('observed')
+        if size or (isinstance(observed, dict) and observed):
+            return 'observed'
     if status in (None, 'PENDING') and capture is None and not identity_present:
         return 'pending'
     return 'unknown_execution'

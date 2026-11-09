@@ -3,6 +3,7 @@
 Migrated temporary SQLite, a disposable Git checkout with accepted structured knowledge (T015 fixture), scripted
 reviewer/executor ports and the owner-accepted product policy (D300). No provider, network or service process.
 """
+from collections import Counter
 from types import SimpleNamespace
 
 import pytest
@@ -17,7 +18,7 @@ from my_harness.services.managed_runtime import ManagedProject
 from my_harness.services.permission_lifecycle import PermissionLifecycle
 from my_harness.storage import autonomous_runs as store
 from my_harness.storage.models import (AutonomousChildRow, ManagedJobRow, PhaseAuthorizationRow, PhaseRow,
-                                       WorkflowOperationRow)
+                                       UsageInvocationRow, WorkflowOperationRow)
 from my_harness.storage.operation_journal import OperationJournal
 from my_harness.core.engine.autonomy import AutonomyRefusal, DEFAULT_BOUNDS, ACKNOWLEDGEMENT_VERSION
 from test_managed import repository  # noqa: F401  (fixture)
@@ -151,6 +152,11 @@ def test_managed_journey_completes_two_phases_through_delegated_production_effec
     revisions = [w.knowledge.revision(w.project, n).origin for n in range(1, revision_number(j) + 1)]
     assert 'owner_delegated' in revisions  # the P002 task identity was adopted under the delegated child
     assert w.ports.roles().count('planning') == 5  # readiness report, two plans, two task contracts
+    with Session(j.engine) as session:
+        ledger = session.scalars(select(UsageInvocationRow)).all()
+        assert Counter(row.role for row in ledger) == Counter(w.ports.roles())
+        assert len({row.attempt_id for row in ledger}) == len(ledger)
+        assert {row.launch for row in ledger} == {'unknown_execution'}  # scripted ports report no process
     # Re-entry: repeated notifications and a restarted service create no further jobs or children.
     before = (pending_jobs(j), len(done['children']))
     for _ in range(3):
@@ -158,8 +164,78 @@ def test_managed_journey_completes_two_phases_through_delegated_production_effec
         j.build().advance_all()
     assert (pending_jobs(j), len(j.service.status(j.root)['children'])) == before
 
+    # Add another execution of the same project and an independent manual run to the accounting fixture.
+    from test_accounting_views import Ledger, NOW
+    with Session(j.engine) as session, session.begin():
+        fixture = Ledger(session)
+        original = store.run_by_id(session, done['id'])
+        auth = store.authorization(session, original.authorization_id)
+        key = 'other-accounting-execution'
+        other_id = store.preview_id(key)
+        permission = j.service.permissions.roadmap_parent(session, auth.project_id, authorization_id=other_id,
+            phases=auth.preview['scope']['phases'], tiers=auth.preview['delegation']['tiers'],
+            delegation=None, actor=auth.actor)
+        other_auth, _ = store.seal(session, root=j.root, project=auth.project_id, lineage_id=other_id,
+            previous=None, key=key, request_sha256=auth.request_sha256, preview=auth.preview,
+            actor=auth.actor, reason='Separate synthetic execution', policy=auth.policy,
+            permission_record_id=permission, now=NOW)
+        other = store.create_run(session, root=j.root, authorization_row=other_auth, now=NOW)
+        other_run_id = other.id
+        manual = fixture.call(fixture.run(root=j.root), 'reviewer')
+        external = fixture.call(fixture.run(root=j.root), 'reviewer')
+        store.child(session, other, kind='phase_check', key='other-accounting-job', subject={'phase': 'P001'},
+                    rule='roadmap.phase_check@1', now=NOW)
+        fixture.add(ManagedJobRow(run_id=external.run_id, idempotency_key='other-accounting-job',
+                                  request_json='{}', status='DONE', created_at=NOW))
+        manual_id, other_invocation_id = manual.id, external.id
+        foreign = fixture.call(fixture.run(root=j.root + '-foreign'), 'reviewer')
+        store.child(session, original, kind='phase_check', key='foreign-accounting-job', subject={'phase': 'P001'},
+                    rule='roadmap.phase_check@1', now=NOW)
+        fixture.add(ManagedJobRow(run_id=foreign.run_id, idempotency_key='foreign-accounting-job',
+                                  request_json='{}', status='DONE', created_at=NOW))
+
+        linked = store.delegated_runs(session, [{**c.subject, 'operation_key': c.operation_key}
+                                                for c in store.children(session, original.id)])
+        usage = session.scalar(select(UsageInvocationRow).where(UsageInvocationRow.root == j.root, UsageInvocationRow.run_id.in_(linked))
+                               .order_by(UsageInvocationRow.id).limit(1))
+        fixture.value(usage, fixture.capture(usage), amount='0.440000000001')
+        fixture.value(usage, fixture.capture(usage), origin='repricing', amount='9.000000000000')
+        # A second matching job/child on the managed run cannot multiply its invocations.
+        store.child(session, original, kind='phase_check', key='same-accounting-run', subject={'phase': 'P001'},
+                    rule='roadmap.phase_check@1', now=NOW)
+        fixture.add(ManagedJobRow(run_id=usage.run_id, idempotency_key='same-accounting-run',
+                                  request_json='{}', status='DONE', created_at=NOW))
+
     from test_managed_api import client, config
     with client(migrated_database[0], tmp_path, config(w.context, supervisor=False)) as http:
+        endpoint = '/api/managed/accounting'
+        filters = {'project_id': 'synthetic', 'autonomous_run_id': done['id']}
+        summary = http.get(f'{endpoint}/summary', params=filters)
+        assert summary.status_code == 200, summary.text
+        assert summary.json()['coverage']['invocations'] == 10
+        [amount] = summary.json()['amounts']
+        assert amount['known_subtotal'] == '0.440000000001' and amount['amount'] is None
+        assert summary.json()['filters']['autonomous_run_id'] == done['id']
+        groups = http.get(f'{endpoint}/groups', params={**filters, 'dimension': 'autonomous_run_id'})
+        assert groups.status_code == 200, groups.text
+        [group] = groups.json()['items']
+        assert group['key'] == done['id'] and group['coverage']['invocations'] == 10
+        page = http.get(f'{endpoint}/invocations', params=filters)
+        assert page.status_code == 200
+        ids = [row['id'] for row in page.json()['items']]
+        assert len(ids) == len(set(ids)) == 10
+        assert manual_id not in ids and other_invocation_id not in ids
+        other_page = http.get(f'{endpoint}/invocations', params={**filters, 'autonomous_run_id': other_run_id})
+        assert [row['id'] for row in other_page.json()['items']] == [other_invocation_id]
+        all_groups = http.get(f'{endpoint}/groups', params={'dimension': 'autonomous_run_id'}).json()['items']
+        assert {row['key']: row['coverage']['invocations'] for row in all_groups} == {
+            done['id']: 10, other_run_id: 1, None: 3,
+        }
+        assert any(row['workflow_id'] for row in page.json()['items'])
+        assert all(row['workflow_id'] != done['thread_id'] and row['autonomous_run_id'] == done['id']
+                   for row in page.json()['items'])
+        parent_thread = http.get(f'{endpoint}/summary', params={'workflow_id': done['thread_id']})
+        assert parent_thread.json()['coverage']['invocations'] == 0
         notice = http.get('/api/managed/inbox', params={'mode': 'autonomous', 'kind': 'notification'})
         assert notice.status_code == 200, notice.text
         items = notice.json()['items']

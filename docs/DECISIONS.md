@@ -3251,3 +3251,39 @@ their existing entity kinds. Only `run_evidence` uses additive `knowledge-delive
 Readers and backup verification check the frozen turn, prompt, canonical source, exposures, receipt hashes and
 journal correspondence, including without checkout in query-only restored copies. Trace events carry identities,
 limits and hashes, never element text.
+
+## D318 — Workflow attribution in invocation accounting
+
+Technical implementation of D254–D262 and D287 in P002-T025. Local corrections await technical re-review.
+[Contract and evidence](phase/P002-T025-accounting-efficiency.md).
+
+Accounting resolves a workflow execution as the graph thread of the invocation's journal operation. The
+operation must match the invocation, its native attempt and its root. Both IDs are nullable read fields
+and filter/group dimensions, and presence of the link is independently filterable. Configuration assistance
+retains its original `operation_id`. Trace and Accounting share the persisted link. L4 opens the exact
+ledger detail using its invocation ID. No attribution is inferred from neighbouring trace events, run IDs
+or later workflow activity. The archive resolves its project scope from persisted identities.
+
+Page workflow/operation keys before accumulating their totals. Ranking uses the existing invocation
+selection grain, including one count per cohort member even when multiple bases are selected. The
+original admission valuation, named cohorts, coverage and decimal subtotal rules continue to apply.
+An unclassified process intent becomes unknown when its native source settles. Preparation stopped-writer
+paths settle recorded executor intents, and accounting excludes only proven launch refusals, including the
+historical stopped identity-change gate. No schema migration, history rewrite or authority change.
+
+The technical review tightened the launch and attribution boundaries. A gate wrapper identity and a closing
+capture without target stdout or native telemetry leave execution unknown. The persisted refusal boundary
+and the stopped historical identity-change gate still establish `not_invoked`. Partial native output remains
+observed evidence. Previously sealed captures keep their bytes and interpretation.
+
+Accounting resolves the effective project root of a rootless configuration-assistance invocation through its
+persisted registered project ID, including retired registrations during consultation. A global assistance
+keeps an absent project. The native row and its configuration-assistance operation identity are preserved.
+
+`autonomous_run_id` is a separate filter, grouping dimension and invocation read field. The projection matches
+the exact job idempotency key of an inference-bearing delegated child, verifies the authorization's lineage
+and project root and matches the managed run, native attempt and ledger root. Several matching jobs of one
+execution collapse to one managed-run attribution. Conflicting parent identities leave attribution absent.
+The immediate `workflow_id` retains its meaning. Historical reads can include closed executions and earlier
+authorization revisions within the same lineage. Readiness work before delegation stays unlinked. Accounting
+reads the existing ownership evidence independently of the live admission, cap and fencing checks.

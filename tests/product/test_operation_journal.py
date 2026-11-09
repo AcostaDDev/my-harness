@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from dataclasses import replace
 import json
+from pathlib import Path
 import sqlite3
 import subprocess
 import sys
@@ -21,6 +22,7 @@ import pytest
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy.orm import Session
 
+from my_harness.adapters import cli_agents
 from my_harness.adapters.processes import identity
 from my_harness.core.engine.contracts import AgentRequest, Attempt, Selection, context_snapshot
 from my_harness.orchestration import (
@@ -380,6 +382,15 @@ def test_an_invocation_is_sealed_with_its_attempt_and_ledger_and_settles_once(tm
         repository.agent_started(claim, repository.get_run(job.run_id).history, again,
                                  InvocationOperation('thread-1', 'op-invocation', {'task': 'P001-T001'}))
     assert len(rows(url, 'managed_attempts')) == len(rows(url, 'usage_invocations')) == 1
+    retry = repository.agent_started(claim, repository.get_run(job.run_id).history, again,
+                                     InvocationOperation('thread-1', 'op-retry', {'task': 'P001-T001'}))
+    assert retry.id != request.id
+    assert operation_of(url, retry.id)['invocation_id'] == f'managed_attempt:{retry.id}'
+    assert operation_of(url, retry.id)['id'] != sealed['id']
+    assert {i['launch'] for i in rows(url, 'usage_invocations')} == {'observed', 'pending'}
+    record_result(repository, claim, job, retry, port.invoke(context, retry))
+    assert len(rows(url, 'managed_attempts')) == len(rows(url, 'usage_invocations')) == 2
+    assert len(rows(url, 'usage_captures')) == 2
 
 
 def test_a_supervisor_cancellation_with_exit_zero_settles_as_failed_cancelled(tmp_path, context, repository,
@@ -401,6 +412,90 @@ def test_a_supervisor_cancellation_with_exit_zero_settles_as_failed_cancelled(tm
     assert payload['termination']['class'] == 'cancelled' and payload['usage']['view'] is None
 
 
+def test_wrapper_startup_output_cannot_establish_launch_after_exec_failure(
+        tmp_path, context, repository, migrated_database, monkeypatch):
+    (tmp_path / 'sitecustomize.py').write_text(
+        "import sys\n"
+        "if sys.argv[0].endswith('/process_gate.py'):\n"
+        "    print('synthetic noise', flush=True)\n"
+    )
+    probe = probe_adapter(tmp_path, 'success')
+    planner = probe.agents['reviewer']
+    port = cli_agents.CLIProcessAdapter(
+        (replace(planner, environment=planner.environment + (('PYTHONPATH', str(tmp_path)),)),
+         probe.agents['executor']), probe.artifact_root)
+    job, claim, request = started(repository, context, port)
+
+    # Keep preflight and the real gate intact, but send the gate a missing target.
+    argv_for = cli_agents.argv_for
+
+    def missing_target(config, context, request):
+        return (str(tmp_path / 'missing-cli'), *argv_for(config, context, request)[1:])
+
+    monkeypatch.setattr(cli_agents, 'argv_for', missing_target)
+    result = port.invoke(context, request)
+    record_result(repository, claim, job, request, result)
+
+    [process] = repository.processes(job.id)
+    assert process['identity'] and result.exit_code == 1
+    artifacts = process['capture']['artifacts']
+    assert b'FileNotFoundError' in Path(artifacts['stderr']['path']).read_bytes()
+    [invocation] = rows(migrated_database[0], 'usage_invocations')
+    assert invocation['launch'] == 'unknown_execution'
+    assert artifacts['stdout']['size'] == 0
+    [capture] = rows(migrated_database[0], 'usage_captures')
+    assert json.loads(capture['document'])['launch'] == 'unknown_execution'
+
+
+@pytest.mark.parametrize('after_go', [False, True], ids=['wrapper-only', 'native-partial'])
+def test_interrupted_gate_accounts_only_observed_native_launch(tmp_path, context, repository, migrated_database,
+                                                              monkeypatch, after_go):
+    from my_harness.core.engine.journal import JournalError
+    port = probe_adapter(tmp_path, 'hang', usage=True)
+    job, claim, request = started(repository, context, port, role='executor')
+    journal = port.journal
+
+    def fail():
+        raise JournalError('Synthetic interruption at the launch boundary')
+
+    if after_go:
+        updates = journal.process_updates
+
+        def stop_after_output(attempt, items):
+            updates(attempt, items)
+            if any(kind == 'agent_event' and payload.get('original', {}).get('type') == 'stream_event'
+                   for kind, payload in items):
+                fail()
+        monkeypatch.setattr(journal, 'process_updates', stop_after_output)
+    else:
+        update = journal.process_update
+
+        def stop_after_spawn(attempt, kind, payload):
+            update(attempt, kind, payload)
+            if kind == 'process_spawned':
+                fail()
+        monkeypatch.setattr(journal, 'process_update', stop_after_spawn)
+
+    with pytest.raises(JournalError, match='Synthetic interruption'):
+        port.invoke(context, request)
+    repository.close_owner(claim)
+    repository.quarantine(claim, 'Synthetic interruption')
+    repository.confirm_stopped(job.id, owner_token=claim.owner_token,
+                               expected_version=repository.get_run(job.run_id).version,
+                               reason='Synthetic stopped group')
+    [process] = repository.processes(job.id)
+    assert process['identity'] and process['capture']['settled_by'] == 'closing_owner'
+    launches = tmp_path / 'launches.jsonl'
+    assert launches.exists() is after_go
+    if after_go:
+        assert json.loads(launches.read_text())['explicit'] == 'selected'
+    url = migrated_database[0]
+    [invocation] = rows(url, 'usage_invocations')
+    [capture] = rows(url, 'usage_captures')
+    assert invocation['launch'] == ('observed' if after_go else 'unknown_execution')
+    assert json.loads(capture['evidence'])['coverage'] == ('partial' if after_go else 'absent')
+
+
 def test_joint_rollback_leaves_no_attempt_ledger_or_operation(context, repository, migrated_database, monkeypatch):
     url = migrated_database[0]
 
@@ -412,11 +507,15 @@ def test_joint_rollback_leaves_no_attempt_ledger_or_operation(context, repositor
     assert rows(url, 'managed_attempts') == rows(url, 'usage_invocations') == rows(url, 'workflow_operations') == []
 
 
+@pytest.mark.parametrize('process_intent', [None, 'allowed', 'refused'])
 def test_expired_lease_and_stale_writer_leave_the_invocation_uncertain_until_confirmed_stopped(
-        context, repository, migrated_database):
+        context, repository, migrated_database, process_intent):
     url = migrated_database[0]
     journal = OperationJournal(repository.engine)
     job, claim, request = started(repository, context, lease_seconds=0.2)
+    if process_intent is not None:
+        repository.process_intent(claim, request.id, {'provider': 'claude',
+                                                      'launch_permitted': process_intent == 'allowed'})
     assert journal.recover('thread-1', writer_stopped=True) == []  # a live fenced owner may still record the result
     time.sleep(0.3)
     [changed] = journal.recover('thread-1')  # the lease expired: no proof of a stopped writer, nor of an outcome
@@ -434,7 +533,8 @@ def test_expired_lease_and_stale_writer_leave_the_invocation_uncertain_until_con
     settled = operation_of(url, request.id)
     assert settled['status'] == 'FAILED' and json.loads(settled['error'])['code'] == 'interrupted_outcome_unknown'
     [invocation] = rows(url, 'usage_invocations')
-    assert invocation['launch'] == 'unknown_execution' and len(rows(url, 'usage_captures')) == 0
+    assert invocation['launch'] == ('not_invoked' if process_intent == 'refused' else 'unknown_execution')
+    assert len(rows(url, 'usage_captures')) == int(process_intent is not None)
     port = JournalPort(journal, 'thread-1', settled['root'])
     assert port.seal(settled['key'], 'agent_invocation', {'role': 'planner', 'task': 'P001-T001'}).state == 'FAILED'
     assert [e['kind'] for e in journal.events(settled['root'], 'thread-1')['items']] == [

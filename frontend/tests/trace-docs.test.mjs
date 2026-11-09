@@ -163,6 +163,8 @@ test('server renders graph and list with equivalent details, bounded nodes, arch
       assert.match(html, /codex_turn/); assert.ok(button(host.host, translate({en, es}, language, 'trace.group.records')));
       assert.match(html, /trace-paging/); assert.match(html, /map-inspector-body/);
       assert.ok(html.includes(translate({en, es}, language, 'trace.timing')));
+      assert.ok(html.includes(translate({en, es}, language, 'trace.accounting')));
+      assert.ok(html.includes(`href="/accounting/invocations/${encodeURIComponent(INV)}"`));
       assert.equal(e.timers.size, archive ? 0 : 1);
       assert.ok(e.requests.every(r => r.method === 'GET'));
       assert.ok(!e.requests.some(r => /\/events|\/logs|\/artifacts|\/documents/.test(r.url)), 'originals and drawer are lazy');

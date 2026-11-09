@@ -8248,6 +8248,78 @@
             }
           },
           {
+            "name": "workflow_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Id"
+            }
+          },
+          {
+            "name": "workflow_operation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Operation Id"
+            }
+          },
+          {
+            "name": "autonomous_run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Autonomous Run Id"
+            }
+          },
+          {
+            "name": "workflow_linked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter for presence or absence of a persisted workflow operation link.",
+              "title": "Workflow Linked"
+            },
+            "description": "Filter for presence or absence of a persisted workflow operation link."
+          },
+          {
             "name": "provider",
             "in": "query",
             "required": false,
@@ -8596,7 +8668,10 @@
                 "task",
                 "day",
                 "outcome",
-                "launch"
+                "launch",
+                "workflow_id",
+                "workflow_operation_id",
+                "autonomous_run_id"
               ],
               "type": "string",
               "title": "Dimension"
@@ -8693,6 +8768,78 @@
               ],
               "title": "Task"
             }
+          },
+          {
+            "name": "workflow_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Id"
+            }
+          },
+          {
+            "name": "workflow_operation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Operation Id"
+            }
+          },
+          {
+            "name": "autonomous_run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Autonomous Run Id"
+            }
+          },
+          {
+            "name": "workflow_linked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter for presence or absence of a persisted workflow operation link.",
+              "title": "Workflow Linked"
+            },
+            "description": "Filter for presence or absence of a persisted workflow operation link."
           },
           {
             "name": "provider",
@@ -9078,6 +9225,78 @@
               ],
               "title": "Task"
             }
+          },
+          {
+            "name": "workflow_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Id"
+            }
+          },
+          {
+            "name": "workflow_operation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Operation Id"
+            }
+          },
+          {
+            "name": "autonomous_run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Autonomous Run Id"
+            }
+          },
+          {
+            "name": "workflow_linked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter for presence or absence of a persisted workflow operation link.",
+              "title": "Workflow Linked"
+            },
+            "description": "Filter for presence or absence of a persisted workflow operation link."
           },
           {
             "name": "provider",
@@ -9487,6 +9706,78 @@
               ],
               "title": "Task"
             }
+          },
+          {
+            "name": "workflow_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Id"
+            }
+          },
+          {
+            "name": "workflow_operation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Operation Id"
+            }
+          },
+          {
+            "name": "autonomous_run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Autonomous Run Id"
+            }
+          },
+          {
+            "name": "workflow_linked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter for presence or absence of a persisted workflow operation link.",
+              "title": "Workflow Linked"
+            },
+            "description": "Filter for presence or absence of a persisted workflow operation link."
           },
           {
             "name": "provider",
@@ -25806,6 +26097,50 @@
             ],
             "title": "Task"
           },
+          "workflow_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Id"
+          },
+          "workflow_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Operation Id"
+          },
+          "workflow_linked": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Linked"
+          },
+          "autonomous_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autonomous Run Id"
+          },
           "provider": {
             "anyOf": [
               {
@@ -26079,7 +26414,10 @@
               "task",
               "day",
               "outcome",
-              "launch"
+              "launch",
+              "workflow_id",
+              "workflow_operation_id",
+              "autonomous_run_id"
             ],
             "title": "Dimension"
           },
@@ -26312,7 +26650,44 @@
                 "type": "null"
               }
             ],
-            "title": "Operation Id"
+            "title": "Operation Id",
+            "description": "Configuration-assistance operation, if any."
+          },
+          "workflow_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Id",
+            "description": "Workflow execution (graph thread) of the linked invocation operation."
+          },
+          "workflow_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Operation Id",
+            "description": "Directly linked invocation operation in the workflow journal."
+          },
+          "autonomous_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autonomous Run Id",
+            "description": "Parent autonomous execution of the delegated managed run."
           },
           "request_id": {
             "anyOf": [
@@ -26601,6 +26976,9 @@
           "preparation_id",
           "preparation_step_id",
           "operation_id",
+          "workflow_id",
+          "workflow_operation_id",
+          "autonomous_run_id",
           "request_id",
           "root",
           "project_id",
@@ -26707,7 +27085,44 @@
                 "type": "null"
               }
             ],
-            "title": "Operation Id"
+            "title": "Operation Id",
+            "description": "Configuration-assistance operation, if any."
+          },
+          "workflow_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Id",
+            "description": "Workflow execution (graph thread) of the linked invocation operation."
+          },
+          "workflow_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Operation Id",
+            "description": "Directly linked invocation operation in the workflow journal."
+          },
+          "autonomous_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autonomous Run Id",
+            "description": "Parent autonomous execution of the delegated managed run."
           },
           "request_id": {
             "anyOf": [
@@ -26943,6 +27358,9 @@
           "preparation_id",
           "preparation_step_id",
           "operation_id",
+          "workflow_id",
+          "workflow_operation_id",
+          "autonomous_run_id",
           "request_id",
           "root",
           "project_id",
@@ -40073,6 +40491,16 @@
             ],
             "title": "Task"
           },
+          "workflow_operation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapWorkflowOperation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "breadcrumb": {
             "items": {
               "$ref": "#/components/schemas/MapCrumb"
@@ -42230,6 +42658,28 @@
         ],
         "title": "MapTraceStep",
         "description": "One `observed-step-1` step (T019) with its source records resolved; no native content."
+      },
+      "MapWorkflowOperation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MapStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "thread_id",
+          "status"
+        ],
+        "title": "MapWorkflowOperation"
       },
       "MetricAccountingRead": {
         "properties": {

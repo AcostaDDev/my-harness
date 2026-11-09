@@ -196,7 +196,8 @@ function FilterPanel({ project, filters, effective, onChange }: { project?: stri
   const toggle = (work: Work, on: boolean) => setDraft({ ...draft, work: on ? [...(draft.work ?? []), work] : (draft.work ?? []).filter(item => item !== work) });
   const submit = (event: FormEvent) => { event.preventDefault(); onChange(draft); };
   const active = activeFilters(filters);
-  const field = (name: "provider" | "role" | "purpose" | "outcome" | "requested_model" | "effective_model", label: MessageKey) =>
+  const field = (name: "provider" | "role" | "purpose" | "outcome" | "requested_model" | "effective_model" |
+    "workflow_id" | "workflow_operation_id" | "autonomous_run_id", label: MessageKey) =>
     <label key={name}>{t(label)}<input value={draft[name] ?? ""} onChange={e => set(name, e.target.value)} spellCheck={false} autoComplete="off" /></label>;
   const choice = (name: "source_kind" | "launch" | "effective_model_kind", label: MessageKey, values: readonly string[], family: "source" | "launch" | "kind") =>
     <label key={name}>{t(label)}<select value={draft[name] ?? ""} onChange={e => set(name, e.target.value)}>
@@ -210,6 +211,16 @@ function FilterPanel({ project, filters, effective, onChange }: { project?: stri
         {project && <label>{t("runs.column.task")}<input value={draft.task ?? ""} onChange={e => set("task", e.target.value)} spellCheck={false} disabled={!draft.phase} /></label>}
         {field("provider", "settings.provider")}
         {field("role", "stats.column.role")}
+        {field("autonomous_run_id", "accounting.dimension.autonomous_run_id")}
+        {field("workflow_id", "accounting.dimension.workflow_id")}
+        {field("workflow_operation_id", "accounting.dimension.workflow_operation_id")}
+        <label>{t("accounting.filters.workflow_linked")}
+          <select value={draft.workflow_linked ?? ""} onChange={e => set("workflow_linked", e.target.value)}>
+            <option value="">{t("accounting.filters.any")}</option>
+            <option value="true">{t("accounting.group.linked")}</option>
+            <option value="false">{t("accounting.group.unlinked")}</option>
+          </select>
+        </label>
         {field("purpose", "accounting.column.purpose")}
         {field("outcome", "accounting.column.outcome")}
         {field("requested_model", "stats.dimension.requested_model")}
@@ -363,7 +374,9 @@ const DIMENSIONS: [Dimension, MessageKey][] = [
   ["requested_model", "stats.dimension.requested_model"], ["role", "stats.dimension.role"], ["purpose", "accounting.column.purpose"],
   ["work", "accounting.dimension.work"], ["source_kind", "accounting.dimension.source_kind"], ["root", "stats.dimension.root"],
   ["phase", "stats.dimension.phase"], ["task", "runs.column.task"], ["day", "stats.dimension.day"],
-  ["outcome", "accounting.column.outcome"], ["launch", "accounting.dimension.launch"]];
+  ["outcome", "accounting.column.outcome"], ["launch", "accounting.dimension.launch"],
+  ["autonomous_run_id", "accounting.dimension.autonomous_run_id"],
+  ["workflow_id", "accounting.dimension.workflow_id"], ["workflow_operation_id", "accounting.dimension.workflow_operation_id"]];
 
 function useGroupLabel() {
   const { t } = useI18n();
@@ -374,7 +387,9 @@ function useGroupLabel() {
     const where = project ? "" : `${f.rootLabel(group.root, projects)} · `;
     if (dimension === "effective_model" && (kind === "mixed" || kind === "unknown")) return code("kind", kind);
     if (dimension === "root") return f.rootLabel(key, projects);
-    if (key == null) return t("accounting.group.unknown");
+    if (key == null && dimension === "autonomous_run_id") return t("accounting.group.no_autonomous_run");
+    if (key == null) return t(dimension === "workflow_id" || dimension === "workflow_operation_id"
+      ? "accounting.group.unlinked" : "accounting.group.unknown");
     switch (dimension) {
       case "role": return code("role", key);
       case "purpose": return code("purpose", key);
@@ -504,7 +519,15 @@ function runLink(item: Invocation): Route | undefined {
   return item.run_id ? { name: "run-short", run: item.run_id } : undefined;
 }
 
-function InvocationDetail({ id, cohort, onClose }: { id: string; cohort?: string; onClose: () => void }) {
+export function AccountingInvocationPage({ invocation }: { invocation: string }) {
+  const { t } = useI18n();
+  return <>
+    <PageHeader title={t("nav.accounting")} />
+    <InvocationDetail id={invocation} />
+  </>;
+}
+
+function InvocationDetail({ id, cohort, onClose }: { id: string; cohort?: string; onClose?: () => void }) {
   const { t, n } = useI18n();
   const f = useFormats();
   const code = useCode();
@@ -518,7 +541,8 @@ function InvocationDetail({ id, cohort, onClose }: { id: string; cohort?: string
   return <section className="panel" aria-labelledby="accounting-detail">
     <div className="panel-head">
       <h2 id="accounting-detail" tabIndex={-1}>{t("accounting.invocation.title", { id: invocationLabel(id) })}</h2>
-      <button type="button" className="button-quiet" onClick={onClose}>{t("accounting.invocation.close")}</button>
+      {onClose ? <button type="button" className="button-quiet" onClick={onClose}>{t("accounting.invocation.close")}</button>
+        : <Link to={{ name: "accounting" }}>{t("accounting.invocation.back")}</Link>}
     </div>
     <Stale error={d ? read.error : undefined} />
     {read.missing ? <Empty title={t("accounting.invocation.missing")} /> : !d ? read.error ? <p role="alert" className="state state-error">{read.error}</p> : <Loading /> : <>
@@ -526,6 +550,11 @@ function InvocationDetail({ id, cohort, onClose }: { id: string; cohort?: string
         [t("accounting.dimension.source_kind"), <>{code("source", d.source_kind)}<br /><Hash value={d.source_id} /></>],
         [t("accounting.column.work"), <>{code("work", d.work)} · {code("purpose", d.purpose)}</>],
         [t("runs.column.task"), d.task_id ? `${d.phase_code}/${d.task_id}` : d.phase_code ?? none],
+        [t("accounting.dimension.autonomous_run_id"), d.autonomous_run_id
+          ? <code>{d.autonomous_run_id}</code> : t("accounting.group.no_autonomous_run")],
+        [t("accounting.dimension.workflow_id"), d.workflow_id ? <code>{d.workflow_id}</code> : t("accounting.group.unlinked")],
+        [t("accounting.dimension.workflow_operation_id"), d.workflow_operation_id
+          ? <code>{d.workflow_operation_id}</code> : t("accounting.group.unlinked")],
         [t("accounting.invocation.run"), run ? <Link to={run} className="mono">{d.run_id!.slice(0, 8)}</Link> : none],
         [t("stats.column.role"), <>{code("role", d.role)}{d.agent && <span className="muted"> · {d.agent}</span>}</>],
         [t("accounting.invocation.client"), <><span className="mono">{d.provider ?? t("common.undeclared")}</span>{facts.cli_version && <span className="muted"> · {facts.cli_version}</span>}</>],

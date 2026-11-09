@@ -374,6 +374,37 @@ def test_preparation_executor_step_is_its_own_accounting_source(generic, monkeyp
         assert session.scalar(select(func.count()).select_from(UsageCaptureRow)) == 1
 
 
+def test_preparation_closes_an_executor_intent_without_process_evidence(generic, monkeypatch):
+    from my_harness.storage.models import UsageCaptureRow, UsageInvocationRow
+    from my_harness.storage.preparation import PreparationAgentJournal
+    service, _, _, _, _, tool = generic
+    cli_agent(monkeypatch, tool, 'success')
+    original = PreparationAgentJournal.process_intent
+
+    def stop_after_intent(journal, step_id, spec):
+        original(journal, step_id, spec)
+        with Session(service.runtime.engine) as session:
+            row = session.get(UsageInvocationRow, f'preparation_step:{step_id}')
+            assert row.launch == 'pending'  # visible before the native launch
+        raise RuntimeError('Synthetic stop after committed intent')
+
+    monkeypatch.setattr(PreparationAgentJournal, 'process_intent', stop_after_intent)
+    confirmed = confirm(generic)
+    assert service.run_once() == confirmed['id']
+    operation = service.repository.read(confirmed['id'])
+    assert operation['status'] == 'FAILED' and operation['receipt'] is None
+    assert service.run_once() is None
+    process = executor_process(service, operation['id'])
+    assert process.status == 'PENDING' and process.capture is None and process.identity is None
+    with Session(service.runtime.engine) as session:
+        [row] = session.scalars(select(UsageInvocationRow).where(
+            UsageInvocationRow.preparation_id == operation['id'])).all()
+        assert row.preparation_step_id == process.id and row.run_id is row.attempt_id is None
+        assert row.launch == 'unknown_execution' and row.outcome == 'interrupted' and row.finished_at
+        [capture] = session.scalars(select(UsageCaptureRow).where(UsageCaptureRow.invocation_id == row.id)).all()
+        assert capture.document['launch'] == 'unknown_execution' and capture.evidence['coverage'] == 'absent'
+
+
 def test_expired_preparation_never_replays_and_requires_stopped_owner(generic):
     from datetime import timedelta, datetime, timezone
     service, body, executor, *_ = generic
@@ -1165,7 +1196,13 @@ def test_lost_lease_stops_streaming_executor_and_settles_interrupted_evidence(ge
     interrupted = [e for e in result['events'] if e['kind'] == 'process_interrupted']
     assert len(interrupted) == 1 and interrupted[0]['payload']['partial_capture'] is True
     assert next(s for s in result['steps'] if s['spec']['kind'] == 'executor')['status'] == 'STARTED'
+    from my_harness.storage.models import UsageCaptureRow, UsageInvocationRow
     with Session(service.runtime.engine) as session:
         assert session.get(Lock, result['plan']['root']) is None
+        [row] = session.scalars(select(UsageInvocationRow).where(
+            UsageInvocationRow.preparation_id == result['id'])).all()
+        [capture] = session.scalars(select(UsageCaptureRow).where(UsageCaptureRow.invocation_id == row.id)).all()
+        assert row.launch == 'observed' and row.outcome == 'interrupted'
+        assert capture.invocation_id == row.id and capture.evidence['coverage'] == 'partial'
     # Recovery still needs the explicit, unchanged confirm-stopped/successor route; nothing replays.
     assert service.run_once() is None

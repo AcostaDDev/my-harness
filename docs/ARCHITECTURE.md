@@ -406,6 +406,10 @@ and `BillingFields.tsx`.
   accumulates coverage, token sums and exact decimal amount buckets in Python, constant memory per group; it never
   decodes histories, prices or writes. `api/managed.py` exposes `GET /api/managed/accounting/{summary,groups,tasks,
   invocations,cohorts}` and invocation detail/valuations; OpenAPI and generated client types include them.
+  T025 adds workflow and operation filters/grouping from the unique native attempt's exact journal link, including
+  unlinked invocations. Workflow and operation group keys are paged in SQL before accumulating totals. L4 links
+  directly to the invocation detail. The parent autonomous execution is a separate projection of verified
+  delegation links. Historical assistance scope comes from its persisted project association. [T025 record](phase/P002-T025-accounting-efficiency.md).
 
 See the [accounting data](DDBB-DIAGRAM.md#p001-accounting-records) and [accounting flow](flows/metrics-accounting.md).
 

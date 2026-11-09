@@ -164,3 +164,8 @@ sequenceDiagram
   `migrations/versions/0040_observed_step_reads.py`.
 - [Graph continuation](graph-continuation.md), [domain operations](domain-operations.md),
   [accounting](metrics-accounting.md), [archive consultation](backup-consultation.md).
+
+T025's shared launch classifier keeps a wrapper-only interruption unknown. The persisted process identity is
+for the gate until it releases the target. Target stdout or native telemetry establishes observed execution
+and can be partial. A proven gate refusal remains a separate outcome. Existing journal and capture records
+are retained. [Accounting flow](metrics-accounting.md).

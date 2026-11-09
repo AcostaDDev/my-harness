@@ -1,0 +1,182 @@
+{
+  "fixtures": [
+    {
+      "background_bytes": 12000,
+      "catalogue_entries": 40,
+      "full": {
+        "completed": 30,
+        "median_ms": 0.294,
+        "p95_ms": 0.306,
+        "stages": {
+          "completion": {
+            "exchanges": 0,
+            "in_bytes": 55,
+            "out_bytes": 0
+          },
+          "initial": {
+            "exchanges": 0,
+            "in_bytes": 0,
+            "out_bytes": 56207
+          }
+        },
+        "tool_exchanges": 0,
+        "total_bytes": 56262
+      },
+      "on_demand": {
+        "completed": 30,
+        "median_ms": 0.059,
+        "p95_ms": 0.07,
+        "stages": {
+          "completion": {
+            "exchanges": 0,
+            "in_bytes": 55,
+            "out_bytes": 0
+          },
+          "describe": {
+            "exchanges": 1,
+            "in_bytes": 1178,
+            "out_bytes": 88
+          },
+          "initial": {
+            "exchanges": 0,
+            "in_bytes": 0,
+            "out_bytes": 1490
+          },
+          "retrieve": {
+            "exchanges": 1,
+            "in_bytes": 111,
+            "out_bytes": 196
+          },
+          "search": {
+            "exchanges": 1,
+            "in_bytes": 264,
+            "out_bytes": 100
+          }
+        },
+        "tool_exchanges": 3,
+        "total_bytes": 3482
+      },
+      "required_records": 1
+    },
+    {
+      "background_bytes": 63960,
+      "catalogue_entries": 200,
+      "full": {
+        "completed": 30,
+        "median_ms": 1.464,
+        "p95_ms": 1.626,
+        "stages": {
+          "completion": {
+            "exchanges": 0,
+            "in_bytes": 107,
+            "out_bytes": 0
+          },
+          "initial": {
+            "exchanges": 0,
+            "in_bytes": 0,
+            "out_bytes": 283813
+          }
+        },
+        "tool_exchanges": 0,
+        "total_bytes": 283920
+      },
+      "on_demand": {
+        "completed": 30,
+        "median_ms": 0.148,
+        "p95_ms": 0.158,
+        "stages": {
+          "completion": {
+            "exchanges": 0,
+            "in_bytes": 107,
+            "out_bytes": 0
+          },
+          "describe": {
+            "exchanges": 2,
+            "in_bytes": 2351,
+            "out_bytes": 176
+          },
+          "initial": {
+            "exchanges": 0,
+            "in_bytes": 0,
+            "out_bytes": 1550
+          },
+          "retrieve": {
+            "exchanges": 2,
+            "in_bytes": 220,
+            "out_bytes": 392
+          },
+          "search": {
+            "exchanges": 2,
+            "in_bytes": 523,
+            "out_bytes": 195
+          }
+        },
+        "tool_exchanges": 6,
+        "total_bytes": 5514
+      },
+      "required_records": 2
+    },
+    {
+      "background_bytes": 255960,
+      "catalogue_entries": 1000,
+      "full": {
+        "completed": 30,
+        "median_ms": 6.91,
+        "p95_ms": 7.598,
+        "stages": {
+          "completion": {
+            "exchanges": 0,
+            "in_bytes": 162,
+            "out_bytes": 0
+          },
+          "initial": {
+            "exchanges": 0,
+            "in_bytes": 0,
+            "out_bytes": 1352673
+          }
+        },
+        "tool_exchanges": 0,
+        "total_bytes": 1352835
+      },
+      "on_demand": {
+        "completed": 30,
+        "median_ms": 0.55,
+        "p95_ms": 0.582,
+        "stages": {
+          "completion": {
+            "exchanges": 0,
+            "in_bytes": 162,
+            "out_bytes": 0
+          },
+          "describe": {
+            "exchanges": 3,
+            "in_bytes": 3528,
+            "out_bytes": 266
+          },
+          "initial": {
+            "exchanges": 0,
+            "in_bytes": 0,
+            "out_bytes": 1610
+          },
+          "retrieve": {
+            "exchanges": 3,
+            "in_bytes": 333,
+            "out_bytes": 591
+          },
+          "search": {
+            "exchanges": 3,
+            "in_bytes": 784,
+            "out_bytes": 292
+          }
+        },
+        "tool_exchanges": 9,
+        "total_bytes": 7566
+      },
+      "required_records": 3
+    }
+  ],
+  "format": "synthetic-context-efficiency-1",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.4",
+  "repeats": 30
+}

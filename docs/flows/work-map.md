@@ -34,7 +34,7 @@ flowchart TD
 | `map/projects/{p}/phases/{code}/tasks` | L2 | Task nodes (plan, accepted identities, run-only tasks), latest run, attempts and revision limit, acceptance and commit, `depends_on` and `replaces` edges | 300 |
 | `map/projects/{p}/phases/{code}/tasks/{task}/runs` | L2 | Run selector, latest first | 50 |
 | `map/projects/{p}/runs/{run}/steps` | L3 | Agent invocations and the Harness format, validate and commit stages, in order; the run's chat lane (`chats`: active chat invocations attached to the run, at most 20, `chats_truncated`; same on every page, part of the version; P002-T022 re-review, D314) | 200 |
-| `map/projects/{p}/invocations/{i}` | L4 | Header: identity, owning context and breadcrumb for every lane, counters, observed-step state | — |
+| `map/projects/{p}/invocations/{i}` | L4 | Header: identity, owning context, direct workflow operation if linked, breadcrumb for every lane, counters, observed-step state | — |
 | `map/projects/{p}/invocations/{i}/steps` | L4 | T019 steps with source records resolved | 200 |
 | `map/projects/{p}/invocations/{i}/related?group=` | L4 | `records` (receipts, discovery and schema loads, broker and tool events, rulings, context, observation, artifact links) or `permissions` (requests the attempt raised) | 200 |
 | `map/projects/{p}/bubbles?phase=&task=&run=&attempt=&circle=` | L0–L3 | One element's unresolved owner items (P002-T022 review, D314): id, kind, topic, circle, attribution and phase/task/run, filtered exactly by the element's scope and optionally one circle on every page, with the counts of the whole filtered set; keyset by item id | 50 |
@@ -182,6 +182,13 @@ project assistance through its registered project (including logical retirement)
 Historical consultation does not require operational ACTIVE status, compose a checkout or admit new operations. Active and settled invocations
 use the same chronological selection and L4 ownership; global assistance stays unscoped.
 
+
+## Invocation accounting evidence (P002-T025)
+
+The L4 header exposes the graph thread and invocation operation from the same direct journal link as Accounting.
+Unlinked lanes show the absence explicitly. The accounting link uses the L4 ledger identity to open that
+invocation's capture, coverage and valuations in a dedicated read-only detail, also on a restored archive.
+[Accounting flow](metrics-accounting.md).
 
 ## L4 trace and documentation client (P002-T023)
 

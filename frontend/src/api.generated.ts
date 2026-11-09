@@ -4207,6 +4207,14 @@ export interface components {
             phase?: string | null;
             /** Task */
             task?: string | null;
+            /** Workflow Id */
+            workflow_id?: string | null;
+            /** Workflow Operation Id */
+            workflow_operation_id?: string | null;
+            /** Workflow Linked */
+            workflow_linked?: boolean | null;
+            /** Autonomous Run Id */
+            autonomous_run_id?: string | null;
             /** Provider */
             provider?: string | null;
             /** Role */
@@ -4281,7 +4289,7 @@ export interface components {
              * Dimension
              * @enum {string}
              */
-            dimension: "provider" | "effective_model" | "requested_model" | "role" | "purpose" | "work" | "source_kind" | "root" | "phase" | "task" | "day" | "outcome" | "launch";
+            dimension: "provider" | "effective_model" | "requested_model" | "role" | "purpose" | "work" | "source_kind" | "root" | "phase" | "task" | "day" | "outcome" | "launch" | "workflow_id" | "workflow_operation_id" | "autonomous_run_id";
             /**
              * Order
              * @enum {string}
@@ -4345,8 +4353,26 @@ export interface components {
             preparation_id: string | null;
             /** Preparation Step Id */
             preparation_step_id: string | null;
-            /** Operation Id */
+            /**
+             * Operation Id
+             * @description Configuration-assistance operation, if any.
+             */
             operation_id: string | null;
+            /**
+             * Workflow Id
+             * @description Workflow execution (graph thread) of the linked invocation operation.
+             */
+            workflow_id: string | null;
+            /**
+             * Workflow Operation Id
+             * @description Directly linked invocation operation in the workflow journal.
+             */
+            workflow_operation_id: string | null;
+            /**
+             * Autonomous Run Id
+             * @description Parent autonomous execution of the delegated managed run.
+             */
+            autonomous_run_id: string | null;
             /** Request Id */
             request_id: string | null;
             /** Root */
@@ -4445,8 +4471,26 @@ export interface components {
             preparation_id: string | null;
             /** Preparation Step Id */
             preparation_step_id: string | null;
-            /** Operation Id */
+            /**
+             * Operation Id
+             * @description Configuration-assistance operation, if any.
+             */
             operation_id: string | null;
+            /**
+             * Workflow Id
+             * @description Workflow execution (graph thread) of the linked invocation operation.
+             */
+            workflow_id: string | null;
+            /**
+             * Workflow Operation Id
+             * @description Directly linked invocation operation in the workflow journal.
+             */
+            workflow_operation_id: string | null;
+            /**
+             * Autonomous Run Id
+             * @description Parent autonomous execution of the delegated managed run.
+             */
+            autonomous_run_id: string | null;
             /** Request Id */
             request_id: string | null;
             /** Root */
@@ -8887,6 +8931,7 @@ export interface components {
             phase: string | null;
             /** Task */
             task: string | null;
+            workflow_operation?: components["schemas"]["MapWorkflowOperation"] | null;
             /** Breadcrumb */
             breadcrumb: components["schemas"]["MapCrumb"][];
         } & {
@@ -9630,6 +9675,14 @@ export interface components {
             source_records: components["schemas"]["MapSourceRecord"][];
         } & {
             [key: string]: unknown;
+        };
+        /** MapWorkflowOperation */
+        MapWorkflowOperation: {
+            /** Id */
+            id: string;
+            /** Thread Id */
+            thread_id: string;
+            status: components["schemas"]["MapStatus"];
         };
         /** MetricAccountingRead */
         MetricAccountingRead: {
@@ -17571,6 +17624,11 @@ export interface operations {
                 project_id?: string | null;
                 phase?: string | null;
                 task?: string | null;
+                workflow_id?: string | null;
+                workflow_operation_id?: string | null;
+                autonomous_run_id?: string | null;
+                /** @description Filter for presence or absence of a persisted workflow operation link. */
+                workflow_linked?: boolean | null;
                 provider?: string | null;
                 role?: string | null;
                 purpose?: string | null;
@@ -17644,13 +17702,18 @@ export interface operations {
     managed_accounting_groups: {
         parameters: {
             query: {
-                dimension: "provider" | "effective_model" | "requested_model" | "role" | "purpose" | "work" | "source_kind" | "root" | "phase" | "task" | "day" | "outcome" | "launch";
+                dimension: "provider" | "effective_model" | "requested_model" | "role" | "purpose" | "work" | "source_kind" | "root" | "phase" | "task" | "day" | "outcome" | "launch" | "workflow_id" | "workflow_operation_id" | "autonomous_run_id";
                 order?: "invocations" | "key";
                 offset?: number;
                 limit?: number;
                 project_id?: string | null;
                 phase?: string | null;
                 task?: string | null;
+                workflow_id?: string | null;
+                workflow_operation_id?: string | null;
+                autonomous_run_id?: string | null;
+                /** @description Filter for presence or absence of a persisted workflow operation link. */
+                workflow_linked?: boolean | null;
                 provider?: string | null;
                 role?: string | null;
                 purpose?: string | null;
@@ -17727,6 +17790,11 @@ export interface operations {
                 project_id?: string | null;
                 phase?: string | null;
                 task?: string | null;
+                workflow_id?: string | null;
+                workflow_operation_id?: string | null;
+                autonomous_run_id?: string | null;
+                /** @description Filter for presence or absence of a persisted workflow operation link. */
+                workflow_linked?: boolean | null;
                 provider?: string | null;
                 role?: string | null;
                 purpose?: string | null;
@@ -17805,6 +17873,11 @@ export interface operations {
                 project_id?: string | null;
                 phase?: string | null;
                 task?: string | null;
+                workflow_id?: string | null;
+                workflow_operation_id?: string | null;
+                autonomous_run_id?: string | null;
+                /** @description Filter for presence or absence of a persisted workflow operation link. */
+                workflow_linked?: boolean | null;
                 provider?: string | null;
                 role?: string | null;
                 purpose?: string | null;

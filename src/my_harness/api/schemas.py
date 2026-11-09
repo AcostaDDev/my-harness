@@ -1631,7 +1631,8 @@ class MetricsSummaryRead(BaseModel):
 
 AccountingWork = Literal['task_first_pass', 'task_rework', 'phase', 'conversation', 'setup', 'other']
 AccountingDimension = Literal['provider', 'effective_model', 'requested_model', 'role', 'purpose', 'work',
-                              'source_kind', 'root', 'phase', 'task', 'day', 'outcome', 'launch']
+                              'source_kind', 'root', 'phase', 'task', 'day', 'outcome', 'launch',
+                              'workflow_id', 'workflow_operation_id', 'autonomous_run_id']
 AccountingOrder = Literal['invocations', 'key']
 AccountingSource = Literal['managed_attempt', 'preparation_step', 'configuration_assistance']
 AccountingLaunch = Literal['pending', 'not_invoked', 'observed', 'unknown_execution']
@@ -1643,6 +1644,10 @@ class AccountingFiltersRead(BaseModel):
     root: str | None = None
     phase: str | None = None
     task: str | None = None
+    workflow_id: str | None = None
+    workflow_operation_id: str | None = None
+    workflow_linked: bool | None = None
+    autonomous_run_id: str | None = None
     provider: str | None = None
     role: str | None = None
     purpose: str | None = None
@@ -1867,7 +1872,10 @@ class AccountingInvocationRead(BaseModel):
     attempt_id: str | None
     preparation_id: str | None
     preparation_step_id: str | None
-    operation_id: str | None
+    operation_id: str | None = Field(description='Configuration-assistance operation, if any.')
+    workflow_id: str | None = Field(description='Workflow execution (graph thread) of the linked invocation operation.')
+    workflow_operation_id: str | None = Field(description='Directly linked invocation operation in the workflow journal.')
+    autonomous_run_id: str | None = Field(description='Parent autonomous execution of the delegated managed run.')
     request_id: str | None
     root: str | None
     project_id: str | None
@@ -3622,12 +3630,19 @@ class MapCrumb(BaseModel):
     id: str | None
 
 
+class MapWorkflowOperation(BaseModel):
+    id: str
+    thread_id: str
+    status: MapStatus
+
+
 class MapOwner(BaseModel):
     model_config = ConfigDict(extra='allow')
     lane: str
     run_id: str | None
     phase: str | None
     task: str | None
+    workflow_operation: MapWorkflowOperation | None = None
     breadcrumb: list[MapCrumb]
 
 

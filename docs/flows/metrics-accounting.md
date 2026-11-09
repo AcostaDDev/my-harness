@@ -36,10 +36,17 @@ flowchart TD
     Q --> G[Coverage, token sums, compatible amount buckets, groups, task indicators, details; never writes]
 ```
 
-- **Sources.** Managed attempts (task/phase/chat/definition/onboarding), generic preparation executor steps and
-  configuration assistance. Deterministic jobs, native commands, closure, bootstrap commits and other local work
-  create no invocation. A missing process row is `unknown_execution`, never zero; only a refused launch is
-  `not_invoked`. Replaying a settlement with identical evidence appends nothing; changed evidence is a new capture.
+- **Sources.** Managed attempts (task, phase, planning, autonomy reviews, admitted judge, chat, definition and
+  onboarding), generic preparation executor steps and configuration assistance. Deterministic jobs, native
+  commands, closure, bootstrap commits and other local work
+  create no invocation. Discovery and knowledge-delivery records contribute trace evidence within a call.
+  A settled intent with only the gate wrapper's identity is `unknown_execution`. The supervisor starts the
+  wrapper in isolated Python mode with site initialization disabled and records its identity before GO.
+  The CLI receives its configured environment at exec. Sending GO alone leaves execution unconfirmed.
+  Target stdout or native telemetry provides positive launch evidence, including partial streams. A proven
+  launch refusal is `not_invoked`. The recorded native status and partial evidence remain available.
+  The closing owner can preserve partial process evidence. Replaying the same settlement appends no capture
+  or valuation; a distinct native retry uses its own intent identity.
 - **Evidence.** Prompts, argv, environment and paths never enter a capture. The selected view prefers a reconciled
   request partition, then a reconciled per-model partition, then a single response model. Terminal and constituent
   views are never added; requested selections never become reported models. Missing terminal, conflicting request
@@ -71,6 +78,20 @@ flowchart TD
   task work, rework/retries, phase operations, conversations and setup; a phase scope excludes conversations and
   setup by default. Task indicators use attempted and verified-COMMITTED tasks as explicit denominators. Histories
   are never decoded and nothing is priced, backfilled or written on a read.
+- **Workflow scopes (P002-T025).** Summary, groups, task indicators and invocation lists accept
+  `workflow_id` (graph thread), `workflow_operation_id` and `workflow_linked`, together with the existing
+  project/phase/task/role filters. Grouping by either workflow identity includes the unlinked group, and
+  SQL pages its keys before calculating totals. The invocation operation is matched by native attempt,
+  ledger ID and project root. The original `operation_id` is the configuration-assistance operation.
+  L4 opens the exact ledger detail by invocation ID, including on an archive; restored project scopes
+  resolve from persisted identities without a checkout.
+- **Delegated accounting and setup scope (D318 review).** `autonomous_run_id` filters and groups by the
+  parent execution using the matching managed job and sealed inference child. The authorization lineage,
+  project root, managed run, attempt and ledger scope must agree. Multiple matching jobs within the same
+  parent count each invocation once. The immediate workflow ID stays separate. Project-scoped assistance
+  uses its registered project to resolve a missing root in the read projection, including a retired
+  registration. Global assistance remains unscoped.
+  [T025 evidence](../phase/P002-T025-accounting-efficiency.md).
 
 ## Source
 

@@ -13,7 +13,7 @@ from my_harness.storage.managed import Conflict, OwnershipLost
 from my_harness.storage.models import (
     CheckoutLockRow as Lock, ManagedProcessRow as Process,
     ProjectPreparationOperationRow as Operation, ProjectPreparationStepRow as Step,
-    ProjectPreparationEventRow as Event,
+    ProjectPreparationEventRow as Event, UsageInvocationRow as Invocation,
 )
 from my_harness.storage.permissions import actor
 from my_harness.i18n import tr
@@ -125,6 +125,17 @@ class PreparationRepository:
                                       outcome='interrupted', now=self.managed._now())
             self.event(session, row, 'process_interrupted', {'process_id': process.id, 'status': process.status,
                                                              'group_state': state, 'partial_capture': partial is not None})
+
+        self.settle_pending_usage(session, row)
+
+    def settle_pending_usage(self, session, row):
+        """Close unclassified executor intents using recorded process evidence after the launch scope closes."""
+        processes = session.scalars(select(Process).join(Invocation, Invocation.preparation_step_id == Process.id)
+                                    .where(Process.preparation_id == row.id, Invocation.source_kind == 'preparation_step',
+                                           Invocation.launch == 'pending'))
+        for process in processes:
+            accounting.settle_process(session, 'preparation_step', process.id, _process(process),
+                                      outcome='interrupted', now=self.managed._now())
 
     @staticmethod
     def stopped(session, row):

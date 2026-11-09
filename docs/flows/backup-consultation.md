@@ -94,3 +94,12 @@ The exact UTF-8 original is explicit, bounded by T019's 4 MiB plus newline, and 
 sealed capture and the record digest. Restored reads use only the verified bundle copy, even after the original
 checkout and captures disappear. Pending/missing/purged/unverified records return null content and their
 diagnostic. No range, arbitrary path, checkout access or write is admitted.
+
+P002-T025 adds workflow and invocation-operation accounting reads in the same query-only archive.
+The restored map supplies persisted project and invocation identities. Workflow scopes use the journal
+link and L4 opens the exact accounting invocation without composing the original checkout.
+[Accounting flow](metrics-accounting.md).
+
+Accounting also resolves the persisted registry association of project-scoped configuration assistance on
+restored copies, including retired registrations. The invocation identity and its assistance operation ID
+match the original ledger row.

@@ -1502,7 +1502,7 @@ def test_retired_registry_preserves_settled_assistance_history_and_archive(tmp_p
             db.execute(text("""INSERT INTO registered_projects (id, version, status, root, row, row_sha256, trust,
                 created_at, updated_at) VALUES (:id, 1, 'ACTIVE', :root, '{}', :sha, '{}', :at, :at)"""),
                        {'id': ident, 'root': checkout, 'sha': '0' * 64, 'at': NOW})
-        for ident, owner in (('settled', 'historical-registry'), ('foreign', 'foreign-registry'), ('global', None)):
+        for ident, owner in (('settled', 'historical-registry'), ('global', None)):
             db.execute(text("""INSERT INTO configuration_operations (id, format, kind, status, idempotency_key,
                 request_sha256, payload, created_at, updated_at) VALUES (:id, 'configuration-operation-1', 'ASSIST', 'APPLIED',
                 :id, :sha, '{"owner_closed": true}', :at, :at)"""), {'id': ident, 'sha': '0' * 64, 'at': NOW})
@@ -1523,6 +1523,16 @@ def test_retired_registry_preserves_settled_assistance_history_and_archive(tmp_p
     path = f'/projects/{project}/invocations/{invocation}'
 
     def read(http, *, archive=False):
+        accounting = '/api/managed/accounting'
+        params = {'source_kind': 'configuration_assistance'}
+        summary = http.get(f'{accounting}/summary', params=params)
+        assert summary.status_code == 200 and summary.json()['coverage']['invocations'] == 2
+        for scoped_id, count in ((project, 1), ('historical-registry', 1), (foreign, 0)):
+            scoped = http.get(f'{accounting}/summary', params={**params, 'project_id': scoped_id})
+            assert scoped.status_code == 200, scoped.text
+            assert scoped.json()['coverage']['invocations'] == count
+        items = http.get(f'{accounting}/invocations', params={**params, 'project_id': project}).json()['items']
+        assert [(row['id'], row['operation_id'], row['root']) for row in items] == [(invocation, 'settled', str(root))]
         card = next(i for i in get(http, '/projects')['items'] if i['id'] == project)
         circle = next(c for c in card['circles'] if c['circle'] == 'R')
         assert circle['latest_invocation']['invocation_id'] == invocation and not circle['active']

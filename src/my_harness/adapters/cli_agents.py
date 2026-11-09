@@ -557,7 +557,8 @@ class CLIProcessAdapter:
         hashes = {name: hashlib.sha256() for name in ("stdout", "stderr")}
         sizes = {name: 0 for name in hashes}
         try:
-            process = subprocess.Popen((sys.executable, str(Path(__file__).with_name("process_gate.py")),
+            # Keep Python startup hooks out of the capture while passing the configured environment to exec.
+            process = subprocess.Popen((sys.executable, "-I", "-S", str(Path(__file__).with_name("process_gate.py")),
                                         str(gate_read), *argv), cwd=context.root, env=dict(config.environment),
                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                        start_new_session=True, pass_fds=(gate_read,))

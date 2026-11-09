@@ -912,6 +912,10 @@ def managed_router(runtime: ManagedRuntime):
         return value.astimezone(timezone.utc).isoformat(timespec='microseconds') if value is not None else None
 
     def accounting_query(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None,
+                         workflow_id: Scoped = None, workflow_operation_id: Scoped = None,
+                         autonomous_run_id: Scoped = None,
+                         workflow_linked: Annotated[bool | None, Query(
+                             description='Filter for presence or absence of a persisted workflow operation link.')] = None,
                          provider: Scoped = None, role: Scoped = None, purpose: Scoped = None,
                          source_kind: AccountingSource | None = None, outcome: Scoped = None,
                          launch: AccountingLaunch | None = None, requested_model: Scoped = None,
@@ -920,7 +924,16 @@ def managed_router(runtime: ManagedRuntime):
                          started_from: AwareDatetime | None = None, started_before: AwareDatetime | None = None,
                          cohort: Scoped = None):
         """Filters of every accounting read; `cohort` (id or name) replaces the admission-bound selection."""
-        filters = {**metrics_scope(project_id, phase, task), 'provider': provider, 'role': role,
+        from my_harness.storage.inbox import Inbox
+        if project_id is not None and project_id not in runtime.projects:
+            runtime.ready()
+            project_root = call(Inbox(runtime.engine, {}).project_root, project_id)
+            scope = {'root': project_root, 'phase': phase, 'task': task}
+        else:
+            scope = metrics_scope(project_id, phase, task)
+        filters = {**scope, 'provider': provider, 'role': role,
+                   'workflow_id': workflow_id, 'workflow_operation_id': workflow_operation_id,
+                   'workflow_linked': workflow_linked, 'autonomous_run_id': autonomous_run_id,
                    'purpose': purpose, 'source_kind': source_kind, 'outcome': outcome, 'launch': launch,
                    'requested_model': requested_model, 'effective_model': effective_model,
                    'effective_model_kind': effective_model_kind, 'work': work,

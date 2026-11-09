@@ -182,9 +182,18 @@ def test_codex_requested_model_never_becomes_the_reported_model():
     (None, None, False, None, 'unknown_execution'),
     ({**SPEC, 'launch_permitted': False}, 'STOPPED', False, {'status': 'refused', 'group_state': 'dead'}, 'not_invoked'),
     (SPEC, 'STOPPED', True, {'status': 'refused', 'diagnostic_code': 'identity_changed'}, 'not_invoked'),
+    (SPEC, 'STOPPED', False, {'status': 'refused', 'diagnostic_code': 'identity_changed'}, 'unknown_execution'),
+    (SPEC, 'STOPPED', True, {'status': 'refused', 'launch_boundary': 'before_go',
+                             'launch_permitted': False}, 'not_invoked'),
+    (SPEC, 'STOPPED', True, {'status': 'refused', 'launch_boundary': 'before_go',
+                             'launch_permitted': True}, 'unknown_execution'),
     (SPEC, 'PENDING', False, None, 'pending'),
     (SPEC, 'RUNNING', True, None, 'unknown_execution'),
-    (SPEC, 'STOPPED', True, {'status': 'interrupted', 'settled_by': 'closing_owner'}, 'observed'),
+    (SPEC, 'STOPPED', True, {'status': 'interrupted', 'settled_by': 'closing_owner'}, 'unknown_execution'),
+    (SPEC, 'STOPPED', True, {'status': 'interrupted', 'settled_by': 'closing_owner',
+                             'artifacts': {'stderr': {'size': 99}, 'stdout': {'size': 0}}}, 'unknown_execution'),
+    (SPEC, 'STOPPED', True, {'status': 'interrupted', 'settled_by': 'closing_owner',
+                             'artifacts': {'stdout': {'size': 99}}}, 'observed'),
 ])
 def test_launch_gate_needs_positive_evidence(spec, status, identity, capture, expected):
     document = build(spec=spec, status=status, identity_present=identity, capture=capture, selection={})

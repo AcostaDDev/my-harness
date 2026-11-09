@@ -12,7 +12,7 @@ import es from '../src/i18n/es.json' with { type: 'json' };
 globalThis.__tsxHookHarness = {};
 const { I18nProvider } = await import('../src/Language.tsx');
 const { ServiceModeContext } = await import('../src/ServiceMode.tsx');
-const { AccountingPage } = await import('../src/pages/Accounting.tsx');
+const { AccountingPage, AccountingInvocationPage } = await import('../src/pages/Accounting.tsx');
 delete globalThis.__tsxHookHarness;
 
 const t = language => (key, params) => translate({ en, es }, language, key, params);
@@ -44,6 +44,21 @@ test('a bucket claims its full amount only when the API gives one', () => {
   assert.deepEqual(bucketState({ amount: null, known_subtotal: '0.54' }), { state: 'partial', value: '0.54' });
   assert.deepEqual(bucketState({ amount: null, known_subtotal: null }), { state: 'absent', value: null });
   assert.deepEqual(bucketState({ amount: '0', known_subtotal: '0' }), { state: 'full', value: '0' });
+});
+
+test('workflow dimensions narrow accounting with role and project scope, including missing links', () => {
+  const workflow = { key: 'phase-job-7', key_kind: 'value', phase_code: null };
+  const operation = { ...workflow, key: 'operation-9' };
+  const missing = { ...workflow, key: null, key_kind: 'unknown' };
+  const filters = { role: 'judge', ...groupFilter('workflow_id', workflow),
+    ...groupFilter('workflow_operation_id', operation) };
+  assert.equal(accountingQuery({ project: 'synthetic' }, filters),
+    '?project_id=synthetic&role=judge&workflow_id=phase-job-7&workflow_operation_id=operation-9');
+  const parent = { ...workflow, key: 'roadmap-run' };
+  assert.equal(accountingQuery({ project: 'synthetic' }, { ...filters, ...groupFilter('autonomous_run_id', parent) }),
+    '?project_id=synthetic&role=judge&workflow_id=phase-job-7&workflow_operation_id=operation-9&autonomous_run_id=roadmap-run');
+  assert.equal(accountingQuery({}, groupFilter('workflow_id', missing)), '?workflow_linked=false');
+  assert.equal(accountingQuery({}, groupFilter('workflow_operation_id', missing)), '?workflow_linked=false');
 });
 
 test('queries carry the scope, filters, inclusive UTC days and the selection', () => {
@@ -193,6 +208,22 @@ function environment(language, archive) {
       for (const key of ['document', 'localStorage']) delete globalThis[key];
     } };
 }
+
+test('the standalone accounting evidence page reads the exact invocation in an archive', async () => {
+  const env = environment('es', true);
+  try {
+    const html = await env.render(el(I18nProvider, { fixed: 'es' },
+      el(ServiceModeContext.Provider, { value: { read_only_archive: true } },
+        el(AccountingInvocationPage, { invocation: invocation.id }))));
+    assert.ok(html.includes(t('es')('accounting.invocation.back')));
+    assert.ok(html.includes(t('es')('accounting.group.unlinked')));
+    assert.equal(env.timers.length, 0);
+    assert.deepEqual(env.requests, [
+      '/api/managed/accounting/invocations/managed_attempt%3A0f1e2d3c-0001',
+      '/api/managed/accounting/invocations/managed_attempt%3A0f1e2d3c-0001/valuations?offset=0&limit=5',
+    ]);
+  } finally { env.close(); }
+});
 
 for (const [language, archive] of [['en', false], ['es', true]]) {
   test(`accounting page reads only the accounting API and separates bases (${language}, ${archive ? 'archive' : 'live'})`, async () => {

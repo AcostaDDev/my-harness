@@ -3,26 +3,30 @@
 Synthetic ledger rows, temporary SQLite, the local CLI probe and the packaged pinned references only; no provider.
 Run histories hold invalid JSON on purpose: no accounting read may decode them.
 """
+from decimal import Decimal
 import json
 import shutil
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 from my_harness.storage import accounting
-from my_harness.storage.accounting_views import AccountingViews
+from my_harness.storage.accounting_views import AccountingViews, BUCKET
 from my_harness.storage.backup import create_backup, restore_backup
 from my_harness.storage.database import make_engine
 from my_harness.storage.models import (
-    ConfigurationOperationRow, ManagedAttemptRow, ManagedCommitRow, ManagedJobRow, ManagedRunRow, UsageCaptureRow,
+    ConfigurationOperationRow, GraphThreadRow, ManagedAttemptRow, ManagedCommitRow, ManagedJobRow, ManagedRunRow,
+    UsageCaptureRow, WorkflowOperationRow,
     UsageInvocationRow, UsageValuationRow, ValuationCohortMemberRow, ValuationCohortRow,
 )
 from test_backup import db_path, dump_rows
 from test_managed import VERSIONS, context, repository  # noqa: F401
 from test_managed_api import client
 from test_usage_accounting import priced_history
+from my_harness.storage.operation_journal import record_event
 
 ROOT = '/synthetic/root-a'
 NOW = '2026-10-28T10:00:00.000000+00:00'
@@ -71,6 +75,18 @@ class Ledger:
             task_id=native.task_id, purpose=purpose or native.purpose, role=role, agent=agent, requested_model=model,
             versions={f'{agent}_provider': provider}, binding={'profile': {'basis': basis}} if basis else None,
             launch=launch, started_at=started, finished_at=started, recorded_at=started, updated_at=started))
+
+    def link(self, invocation, workflow):
+        if not self.session.get(GraphThreadRow, workflow):
+            self.add(GraphThreadRow(id=workflow, graph_id='synthetic', graph_version='1', fingerprint='f' * 64,
+                                    status='COMPLETED', segments=1, created_at=NOW, updated_at=NOW))
+        job = self.add(ManagedJobRow(idempotency_key=str(uuid4()), run_id=invocation.run_id,
+                                     request_json='{}', status='DONE', created_at=NOW))
+        return self.add(WorkflowOperationRow(id=str(uuid4()), thread_id=workflow, key=invocation.attempt_id,
+                                             root=invocation.root, kind='agent_invocation', refs={},
+                                             request_sha256='f' * 64, status='COMPLETED', job_id=job.id,
+                                             owner_token=str(uuid4()), attempt_id=invocation.attempt_id,
+                                             invocation_id=invocation.id, created_at=NOW, updated_at=NOW))
 
     def assistance(self, *, started=NOW):
         operation = self.add(ConfigurationOperationRow(
@@ -395,6 +411,87 @@ def test_a30_reads_never_write_or_decode_histories(repository, ledger, migrated_
         reader.invocation('managed_attempt:missing')
 
 
+def test_workflow_groups_preserve_grain_selection_and_scope(repository, ledger):
+    run = ledger.run()
+    first = ledger.call(run, 'reviewer')
+    op = ledger.link(first, 'workflow-a')
+    old = ledger.capture(first)
+    ledger.value(first, old, amount='0.440000000001', recorded=NOW)
+    latest = ledger.capture(first, coverage='partial', components=[
+        {'key': 'request', 'reported_model': SONNET, 'semantics': 'claude-cli-1', **C1, 'output_tokens': 42}])
+    ledger.value(first, latest, amount='8.999', origin='admission', recorded='2026-10-29T10:00:00+00:00')
+    for sequence in range(3):
+        record_event(ledger.session, kind='test.evidence', dedupe_key=f'evidence-{sequence}', payload={},
+                     root=first.root, thread_id=op.thread_id, operation_id=op.id, invocation_id=first.id, at=NOW)
+    retry = ledger.call(run, 'reviewer', launch='unknown_execution')
+    retry_op = ledger.link(retry, 'workflow-a')
+    refusal = ledger.call(run, 'judge', launch='not_invoked')
+    ledger.link(refusal, 'workflow-a')
+    foreign = ledger.call(ledger.run(root='/synthetic/root-b'), 'reviewer')
+    ledger.link(foreign, 'workflow-b')
+    ledger.value(foreign, ledger.capture(foreign), status='incomplete', known='0.120000000000')
+    legacy = ledger.call(run, 'reviewer')
+    ledger.capture(legacy, version='legacy-metrics-1')
+    assistance = ledger.assistance()
+
+    # One member can carry multiple compatible-basis selections. Groups rank by member invocation count.
+    scenario = {'profile': {'basis': 'api_usd'}}
+    cohort = ledger.add(ValuationCohortRow(id='wf-cohort', name='workflow-analysis', kind='repricing',
+        status='BUILDING', expected=2, built=1, selection_digest='a' * 64, scenario=scenario,
+        idempotency_key='wf-analysis', request_sha256='c' * 64, selection={},
+        scenario_digest='b' * 64, created_at=NOW))
+    for bucket, value in ((CLAUDE_USD, '0.310000000000'), (EQUIVALENT, '0.210000000000')):
+        chosen = ledger.value(first, latest, origin='repricing', bucket=bucket, amount=value)
+        ledger.add(ValuationCohortMemberRow(cohort_id=cohort.id, invocation_id=first.id,
+                                          basis=bucket['basis'], valuation_id=chosen.id, recorded_at=NOW))
+    ledger.session.commit()
+
+    reader = views(repository)
+    cases = ({}, {'root': ROOT, 'phase': 'P001', 'task': 'P001-T001', 'role': 'reviewer'},
+             {'workflow_id': 'workflow-a'}, {'workflow_linked': False})
+    for filters in cases:
+        for cohort_name in (None, cohort.name):
+            summary = reader.summary(filters, cohort_name)
+            for dimension in ('workflow_id', 'workflow_operation_id', 'role'):
+                for order in ('key', 'invocations'):
+                    def page(offset):
+                        return reader.groups(filters, dimension, offset, 1, cohort=cohort_name, order=order)
+                    groups = every(page)
+                    assert groups == every(page)
+                    assert groups == reader.groups(filters, dimension, 0, 100, cohort=cohort_name, order=order)['items']
+                    for field in ('invocations', 'expected', 'captured', 'outside_selection'):
+                        total = summary['coverage'][field]
+                        if total is not None:
+                            assert sum(group['coverage'][field] for group in groups) == total
+                    for category in ('launch', 'usage', 'valuation'):
+                        for name, count in summary['coverage'][category].items():
+                            assert sum(group['coverage'][category][name] for group in groups) == count
+                    for name, usage in summary['tokens'].items():
+                        assert sum(group['tokens'][name]['sum'] or 0 for group in groups) == (usage['sum'] or 0)
+                    for amount in summary['amounts']:
+                        matches = [b for group in groups for b in group['amounts']
+                                   if tuple(b[k] for k in BUCKET) == tuple(amount[k] for k in BUCKET)]
+                        assert sum(Decimal(b['known_subtotal'] or '0') for b in matches) == Decimal(amount['known_subtotal'])
+                        if cohort_name:
+                            assert amount['amount'] is None
+    scoped = {'root': ROOT, 'phase': 'P001', 'task': 'P001-T001', 'workflow_id': 'workflow-a', 'role': 'reviewer'}
+    page = every(lambda offset: reader.invocations(scoped, offset, 1))
+    assert [i['id'] for i in page] == sorted([first.id, retry.id])
+    assert {i['workflow_operation_id'] for i in page} == {op.id, retry_op.id}
+    assert all(i['run_id'] == run and i['attempt_id'] != i['workflow_operation_id'] for i in page)
+    assert all(i['operation_id'] is None for i in page)
+    narrow = {**scoped, 'workflow_operation_id': op.id}
+    only = reader.summary(narrow)
+    assert only['amounts'][0]['amount'] == '0.440000000001'
+    assert only['tokens']['output_tokens'] == {'sum': 42, 'invocations': 1, 'partial': 1}
+    assert reader.invocations({**narrow, 'root': foreign.root}, 0, 1)['items'] == []
+    detail = reader.invocation(assistance.id)
+    assert detail['operation_id'] == assistance.source_id
+    assert detail['workflow_id'] is detail['workflow_operation_id'] is None
+    missing = reader.groups({'workflow_linked': False}, 'workflow_id', 0, 10)['items']
+    assert [(g['key'], g['key_kind'], g['coverage']['invocations']) for g in missing] == [(None, 'unknown', 2)]
+
+
 # --- integrated ledger, HTTP and restored archive ------------------------------------------------
 
 
@@ -416,6 +513,11 @@ def test_real_ledger_details_api_and_restored_archive(tmp_path, context, reposit
     [valuation] = reader.valuations(executor['id'], 0, 5)['items']
     assert valuation['cohorts'][0]['name'] == 'archive' and valuation['lines']
     assert {ref['kind'] for ref in valuation['references']} >= {'tariff'}
+    with Session(repository.engine) as session, session.begin():
+        operation = Ledger(session).link(session.get(UsageInvocationRow, executor['id']), 'workflow-archive')
+        operation_id = operation.id
+    filters = {'role': 'executor', 'workflow_id': 'workflow-archive', 'workflow_operation_id': operation_id,
+               'cohort': 'archive'}
     configuration = ManagedConfig((ManagedProject('synthetic', context, VERSIONS),))
     with client(str(repository.engine.url), tmp_path, configuration) as http:
         summary = http.get('/api/managed/accounting/summary', params={'cohort': 'archive'})
@@ -441,13 +543,41 @@ def test_real_ledger_details_api_and_restored_archive(tmp_path, context, reposit
         assert http.get('/api/managed/accounting/groups', params={'dimension': 'quota'}).status_code == 422
         assert http.get('/api/managed/accounting/invocations/managed_attempt:none').status_code == 404
         assert http.post('/api/managed/accounting/summary').status_code == 405
+        endpoint = '/api/managed/accounting/groups'
+        scoped = http.get(endpoint, params={**filters, 'project_id': 'synthetic', 'dimension': 'workflow_operation_id'})
+        assert scoped.status_code == 200, scoped.text
+        [group] = scoped.json()['items']
+        assert group['key'] == operation_id and group['amounts'][0]['amount'] == '0.440000000000'
+        map_path = f"/api/managed/map/projects/synthetic/invocations/{executor['id']}"
+        trace = http.get(map_path)
+        assert trace.status_code == 200, trace.text
+        assert trace.json()['owner']['workflow_operation']['id'] == operation_id
+        assert trace.json()['owner']['workflow_operation']['thread_id'] == 'workflow-archive'
     bundle, restored = tmp_path / 'bundle', tmp_path / 'restored'
     create_backup(db_path(migrated_database), bundle, artifact_roots=[port.artifact_root], writers_stopped=True)
     restore_backup(bundle, restored)
     shutil.rmtree(port.artifact_root)  # consultation needs no original roots
-    engine = make_engine(f'sqlite:///{restored / "state.sqlite3"}')
+    shutil.rmtree(context.root)
+    url = f'sqlite:///{restored / "state.sqlite3"}'
+    engine = make_engine(url)
     try:
+        with engine.connect() as db:
+            assert db.scalar(text('PRAGMA query_only')) == 1
         archived = AccountingViews(engine).summary(GLOBAL, cohort='archive')
         assert archived['amounts'] == cohort['amounts'] and archived['coverage'] == cohort['coverage']
+        before = dump_rows(restored / 'state.sqlite3')
+        with client(url, tmp_path, ManagedConfig(supervisor=False)) as http:
+            project = 'run:' + executor['run_id']
+            groups = http.get(endpoint, params={**filters, 'project_id': project, 'dimension': 'workflow_operation_id'})
+            assert groups.status_code == 200, groups.text
+            assert groups.json()['items'] == [group]
+            trace = http.get(f"/api/managed/map/projects/{project}/invocations/{executor['id']}")
+            assert trace.status_code == 200, trace.text
+            assert trace.json()['read_only_archive'] is True
+            assert trace.json()['owner']['workflow_operation']['id'] == operation_id
+            exact = http.get(f"/api/managed/accounting/invocations/{trace.json()['invocation']['invocation_id']}")
+            assert exact.status_code == 200, exact.text
+            assert exact.json()['workflow_operation_id'] == operation_id
+        assert dump_rows(restored / 'state.sqlite3') == before
     finally:
         engine.dispose()

@@ -11,6 +11,7 @@ export type Route =
   | { name: "project-knowledge"; project: string }
   | { name: "stats" }
   | { name: "accounting" }
+  | { name: "accounting-invocation"; invocation: string }
   | { name: "preferences" }
   | { name: "initial-setup" }
   | { name: "configuration" }
@@ -54,6 +55,7 @@ export function parse(pathname: string): Route {
   if (a === "knowledge" && n === 1) return { name: "knowledge" };
   if (a === "stats" && n === 1) return { name: "stats" };
   if (a === "accounting" && n === 1) return { name: "accounting" };
+  if (a === "accounting" && b === "invocations" && n === 3) return { name: "accounting-invocation", invocation: c };
   if (a === "preferences" && n === 1) return { name: "preferences" };
   if (a === "setup" && n === 1) return { name: "initial-setup" };
   if (a === "settings" && b === "configuration" && n === 2) return { name: "configuration" };
@@ -108,6 +110,7 @@ export function href(route: Route): string {
     case "project-knowledge": return `/projects/${e(route.project)}/knowledge`;
     case "stats": return "/stats";
     case "accounting": return "/accounting";
+    case "accounting-invocation": return `/accounting/invocations/${e(route.invocation)}`;
     case "preferences": return "/preferences";
     case "initial-setup": return "/setup";
     case "configuration": return "/settings/configuration";
@@ -152,7 +155,8 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
   }
   if (route.name === "knowledge") items.push({ label: t("knowledge.title"), to: route });
   if (route.name === "stats") items.push({ label: t("nav.stats"), to: route });
-  if (route.name === "accounting") items.push({ label: t("nav.accounting"), to: route });
+  if (route.name === "accounting" || route.name === "accounting-invocation")
+    items.push({ label: t("nav.accounting"), to: { name: "accounting" } });
   if (route.name === "preferences") items.push({ label: t("nav.preferences"), to: route });
   if (route.name === "initial-setup" || route.name === "configuration") items.push({ label: t("configuration.title"), to: route });
   if (route.name === "project-new") items.push({ label: t("nav.new_project"), to: route });

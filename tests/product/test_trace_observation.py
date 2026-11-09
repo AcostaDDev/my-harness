@@ -136,7 +136,7 @@ def test_closing_owner_interruption_and_missing_evidence_stay_unknown():
                                                'settled_by': 'closing_owner'})
     assert interrupted['termination'] == {'writer': 'uncertain', 'exit_code': None, 'class': 'interrupted',
                                           'source': 'supervisor'}
-    assert interrupted['launch'] == 'observed'
+    assert interrupted['launch'] == 'unknown_execution'
     pending = observation.observe(spec=spec, process_status='PENDING', capture=None)
     assert pending['launch'] == 'pending' and pending['termination']['class'] == 'pending'
     nothing = observation.observe(spec=None, process_status=None, capture=None)

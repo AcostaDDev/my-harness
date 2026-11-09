@@ -126,3 +126,8 @@ inference; unknown usage stops only when its cap is set.
 `services/autonomous_effects.py`, `orchestration/roadmap.py`, `services/permission_lifecycle.py`
 (`roadmap_parent`, `task_child`, `end_roadmap`, `delegated_inactive`), `api/autonomous.py`; tests in
 `tests/product/test_autonomous_roadmap.py`.
+
+Accounting's `autonomous_run_id` projects historical parent execution ownership from the sealed child and
+the inference-bearing managed job. The immediate workflow thread remains a separate identity. The read
+projection groups the delegated invocations without reapplying live authority or computing admission caps.
+[Accounting flow](metrics-accounting.md).

@@ -130,9 +130,14 @@ export function InvocationPage({ project, invocation, archive, pollerDeps, base 
       return <li key={`${crumb.level}:${i}`}>{to && i < crumbs.length - 1 && !(archive && (to.name === "chat" || (to.name === "phase" && to.section)))
         ? <Link to={to}>{label}</Link> : <span>{label}</span>}</li>;
     })}</ol></nav>
+    <p><Link to={{ name: "accounting-invocation", invocation: head.invocation_id }}>{t("trace.accounting")}</Link></p>
     <details className="panel"><summary>{t("map.invocation.header")}</summary>
       <dl className="fields map-fields">
         <div><dt>{t("map.field.identity")}</dt><dd><code>{head.invocation_id}</code></dd></div>
+        <div><dt>{t("accounting.dimension.workflow_id")}</dt><dd>{data.owner.workflow_operation
+          ? <code>{data.owner.workflow_operation.thread_id}</code> : t("accounting.group.unlinked")}</dd></div>
+        <div><dt>{t("accounting.dimension.workflow_operation_id")}</dt><dd>{data.owner.workflow_operation
+          ? <code>{data.owner.workflow_operation.id}</code> : t("accounting.group.unlinked")}</dd></div>
         <div><dt>{t("map.field.circle")}</dt><dd>{head.circle ?? t("map.not_observed")} · {roleText(head.role, t)}</dd></div>
         <div><dt>{t("map.field.lane")}</dt><dd><code>{head.lane}</code> · <code>{head.purpose}</code></dd></div>
         <div><dt>{t("map.field.launch")}</dt><dd><MapStatusBadge status={head.launch} /></dd></div>

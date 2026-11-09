@@ -535,6 +535,7 @@ class ProjectPreparation:
             previous_id = body['change'].get('previous_id')
             if previous_id:
                 previous = self.repository.require(session, previous_id)
+                self.repository.settle_pending_usage(session, previous)  # preview checked the previous writer stopped
                 previous.reserved = False
                 self.repository.event(session, previous, 'successor_confirmed', {'successor_id': operation_id})
                 session.execute(delete(Lock).where(Lock.preparation_id == previous_id))
@@ -901,12 +902,14 @@ class ProjectPreparation:
                     session.execute(delete(Lock).where(Lock.preparation_id == row.id))
                 elif row.status != 'ACTIVE':
                     self.repository.stopped(session, row)
+                    self.repository.settle_pending_usage(session, row)
                     row.status = 'CANCELLED'
                     session.execute(delete(Lock).where(Lock.preparation_id == row.id))
             elif action == 'confirm-stopped':
                 if row.status not in ('RECOVERY_REQUIRED', 'FAILED', 'CANCELLED'):
                     raise RegistryError(409, 'recovery_required', tr('preparation.stop_first'))
                 self.repository.stopped(session, row)
+                self.repository.settle_pending_usage(session, row)
                 row.owner_closed = True
                 session.execute(delete(Lock).where(Lock.preparation_id == row.id))
             self.repository.event(session, row, action, {'reason': body.get('reason'),

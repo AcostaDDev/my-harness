@@ -9,7 +9,7 @@ from test_definition import world, BRIEF
 from test_domain_operations import requirement, criterion, phase, task, section, put, run, refused
 from my_harness.core.engine.knowledge import digest
 from my_harness.services.domain_operations import DomainOperations, owner_writer, Caller
-from my_harness.storage.models import KnowledgeRevisionRow
+from my_harness.storage.models import KnowledgeRevisionRow, UsageInvocationRow
 
 
 def proposal(source_sha=None):
@@ -60,6 +60,10 @@ def test_definition_adoption_and_idempotency(world):
     assert world.files() == []
     with Session(world.repo.engine) as session:
         assert len(session.scalars(select(KnowledgeRevisionRow).where(KnowledgeRevisionRow.status == 'ACCEPTED')).all()) == 1
+        [call] = session.scalars(select(UsageInvocationRow)).all()
+        assert (call.source_kind, call.role, call.purpose, call.launch) == (
+            'managed_attempt', 'definition', 'definition', 'unknown_execution')
+        assert call.id == f'managed_attempt:{call.attempt_id}'
 
 
 def test_blocking_questions_and_explicit_deferral(world):
@@ -91,6 +95,10 @@ def test_onboarding_adopts_without_touching_originals_and_refuses_stale_head(onb
             'pending': ['Runtime behavior is unverified'], 'knowledge': proposal(sha256('Propón las fusiones'.encode()).hexdigest())}
     _, turn = world.turn(cid, data)
     assert turn['status'] == 'ANSWERED', turn['result']
+    with Session(world.engine) as session:
+        [call] = session.scalars(select(UsageInvocationRow)).all()
+        assert (call.source_kind, call.role, call.purpose, call.launch) == (
+            'managed_attempt', 'definition', 'onboarding', 'unknown_execution')
     ops, caller = DomainOperations(world.engine), owner_writer(str(world.context.root))
     args = {'conversation_id': cid, 'expected_version': world.view(cid)['version']}
     run(ops, caller, 'intake.stage', {**args, 'turn_id': turn['id'], 'proposal_sha256': digest(data['knowledge'])}, 'stage')

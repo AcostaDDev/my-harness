@@ -32,24 +32,46 @@ PHASE_WORK = ('task_first_pass', 'task_rework', 'phase', 'other')
 TOKENS = ('uncached_input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'cache_write_5m_tokens',
           'cache_write_1h_tokens', 'output_tokens', 'reasoning_tokens')
 BUCKET = ('unit', 'platform', 'product', 'scheme', 'basis', 'counterfactual', 'retrospective')
+JOURNAL_DIMENSIONS = ('workflow_id', 'workflow_operation_id', 'autonomous_run_id')
 DIMENSIONS = {'provider': 'provider', 'effective_model': 'effective_model', 'requested_model': 'requested_model',
               'role': 'role', 'purpose': 'purpose', 'work': 'work', 'source_kind': 'source_kind', 'root': 'root',
-              'phase': 'phase_code', 'task': 'task_id', 'day': 'day', 'outcome': 'outcome', 'launch': 'launch'}
+              'phase': 'phase_code', 'task': 'task_id', 'day': 'day', 'outcome': 'outcome', 'launch': 'launch',
+              **{key: key for key in JOURNAL_DIMENSIONS}}
 ORDERS = ('invocations', 'key')
 FILTERS = ('root', 'phase', 'task', 'provider', 'role', 'purpose', 'source_kind', 'outcome', 'launch',
-           'requested_model', 'effective_model', 'effective_model_kind', 'work', 'started_from', 'started_before')
-EQUAL = {'root': 'root', 'phase': 'phase_code', 'task': 'task_id', 'provider': 'provider', 'role': 'role',
+           'requested_model', 'effective_model', 'effective_model_kind', 'work', 'started_from', 'started_before',
+           *JOURNAL_DIMENSIONS, 'workflow_linked')
+EQUAL = {'phase': 'phase_code', 'task': 'task_id', 'provider': 'provider', 'role': 'role',
          'purpose': 'purpose', 'source_kind': 'source_kind', 'outcome': 'outcome', 'launch': 'launch',
          'requested_model': 'requested_model', 'effective_model': 'effective_model',
-         'effective_model_kind': 'effective_model_kind'}
+         'effective_model_kind': 'effective_model_kind', **{key: key for key in JOURNAL_DIMENSIONS}}
 LEGACY = 'legacy-metrics-1'
 
 # Reported model of every selected component: one name, several (`mixed`) or not established (`unknown`).
 _MODELS = "FROM json_each(c.evidence, '$.components') e"
 _MODEL = "json_extract(e.value, '$.reported_model')"
+# Match the inference-bearing delegated job to its sealed child, including older authorization
+# revisions of the same lineage. Later jobs on the owned managed run (held-review resume) keep
+# that attribution. Commit/adoption references do not independently establish inference ownership.
+_DELEGATED = """
+SELECT j.run_id, parent.root, MIN(parent.id) AS autonomous_run_id
+FROM autonomous_children child
+JOIN managed_jobs j ON j.idempotency_key = child.operation_key
+JOIN autonomous_runs parent ON parent.id = child.run_id
+JOIN autonomous_authorizations auth ON auth.id = child.authorization_id
+     AND auth.lineage_id = parent.lineage_id AND auth.root = parent.root
+JOIN knowledge_projects project ON project.id = auth.project_id AND project.root = parent.root
+WHERE child.origin = 'owner_delegated'
+  AND child.kind IN ('plan_proposal', 'task_plan', 'task_admission', 'phase_check', 'judge_request')
+GROUP BY j.run_id, parent.root
+HAVING MIN(parent.id) = MAX(parent.id)
+"""
+
 BASE = f"""
 SELECT i.id AS id, i.source_kind, i.source_id, i.run_id, i.attempt_id, i.preparation_id, i.preparation_step_id,
-       i.operation_id, i.request_id, i.root, i.project_id, i.phase_code, i.task_id, i.purpose, i.role, i.agent,
+       i.operation_id, o.thread_id AS workflow_id, o.id AS workflow_operation_id, i.request_id,
+       i.root AS native_root, COALESCE(i.root, g.root) AS root, i.project_id, i.phase_code, i.task_id, i.purpose, i.role, i.agent,
+       d.autonomous_run_id,
        COALESCE(json_extract(i.versions, '$.' || i.agent || '_provider'), json_extract(c.document, '$.client.provider'),
                 json_extract(c.document, '$.metric.provider')) AS provider,
        i.requested_model, i.requested_effort, i.launch, i.outcome, i.started_at, i.finished_at,
@@ -77,6 +99,11 @@ FROM usage_invocations i
 LEFT JOIN usage_captures c ON c.id = (SELECT MAX(c2.id) FROM usage_captures c2 WHERE c2.invocation_id = i.id)
 LEFT JOIN managed_attempts a ON a.id = i.attempt_id
 LEFT JOIN managed_runs r ON r.id = i.run_id
+LEFT JOIN workflow_operations o ON o.attempt_id = i.attempt_id AND o.invocation_id = i.id
+       AND o.root = i.root AND o.kind = 'agent_invocation'
+LEFT JOIN registered_projects g ON g.id = i.project_id AND i.source_kind = 'configuration_assistance'
+LEFT JOIN ({_DELEGATED}) d ON i.source_kind = 'managed_attempt'
+       AND d.run_id = r.id AND d.run_id = a.run_id AND d.root = r.root AND d.root = i.root
 """
 VALUATION = """v.id AS valuation_id, v.origin AS valuation_origin, v.status AS valuation_status, v.unit,
        json_extract(v.scenario, '$.platform') AS platform, json_extract(v.scenario, '$.product') AS product,
@@ -128,10 +155,17 @@ def _filtered(filters, params):
     if set(filters) - set(FILTERS):
         raise ValueError(tr('accounting.filter', filter=', '.join(sorted(set(filters) - set(FILTERS)))))
     clauses, binds = [], []
+    if filters.get('root') is not None:
+        clauses.append("(b.native_root = :root OR (b.native_root IS NULL "
+                       "AND b.source_kind = 'configuration_assistance' "
+                       "AND b.project_id IN (SELECT id FROM registered_projects WHERE root = :root)))")
+        params['root'] = filters['root']
     for name, column in EQUAL.items():
         if filters.get(name) is not None:
             clauses.append(f'b.{column} = :{name}')
             params[name] = filters[name]
+    if filters.get('workflow_linked') is not None:
+        clauses.append('b.workflow_id IS NOT NULL' if filters['workflow_linked'] else 'b.workflow_id IS NULL')
     if filters.get('work'):
         clauses.append('b.work IN :work')
         params['work'] = list(filters['work'])
@@ -156,20 +190,35 @@ def scope(filters):
     return filters
 
 
-def _rows(session, filters, selection):
+def _rows(session, filters, selection, journal_page):
     params = {}
     query, binds = _filtered(filters, params)
     join, member = selection.join()
     if selection.cohort is not None:
         params['cohort'] = selection.cohort.id
-    statement = text(f'SELECT b.*, {member}, {VALUATION} FROM ({query}) b {join} ORDER BY b.id, v.id')
+    prefix, page_join = '', ''
+    if journal_page is not None:
+        # Operation groups can be as numerous as invocations. Rank keys in SQL and accumulate only the page.
+        # COUNT counts selected cohort members, including refusals, just as Totals.invocations does.
+        column, offset, limit, order = journal_page
+        count = 'COUNT(*)' if selection.cohort is None else (
+            'COUNT(CASE WHEN EXISTS (SELECT 1 FROM valuation_cohort_members m '
+            'WHERE m.cohort_id = :cohort AND m.invocation_id = b.id) THEN 1 END)')
+        rank = f'{count} DESC, ' if order == 'invocations' else ''
+        keys = (f'SELECT b.{column} AS key FROM ({query}) b GROUP BY b.{column} '
+                f'ORDER BY {rank}b.{column} DESC LIMIT :group_limit OFFSET :group_offset')
+        prefix = f'WITH group_keys AS ({keys}) '
+        page_join = f'JOIN group_keys g ON g.key IS b.{column}'
+        params.update(group_limit=limit + 1, group_offset=offset)
+    statement = text(f'{prefix}SELECT b.*, {member}, {VALUATION} FROM ({query}) b {page_join} {join} '
+                     'ORDER BY b.id, v.id')
     return session.execute(statement.bindparams(*binds), params).mappings()
 
 
-def _invocations(session, filters, selection):
+def _invocations(session, filters, selection, *, journal_page=None):
     """(invocation, [valuation rows]) in id order; a cohort can hold one member per basis."""
     current, valuations = None, []
-    for row in _rows(session, filters, selection):
+    for row in _rows(session, filters, selection, journal_page):
         if current is not None and row['id'] != current['id']:
             yield current, valuations
             valuations = []
@@ -229,13 +278,10 @@ def unpriced_reason(row):
     return 'reference_missing'
 
 
-def _sum(values):
+def _add(total, value):
     with localcontext() as context:
         context.prec = 200
-        total = Decimal(0)
-        for value in values:
-            total += Decimal(value)
-    return format(total, 'f')
+        return (total if total is not None else Decimal(0)) + Decimal(value)
 
 
 def _divide(value, count):
@@ -294,14 +340,14 @@ class Totals:
         self.priced[next(s for s in ('unsupported', 'incomplete', 'complete') if s in statuses)] += 1
         for item in valuations:
             key = tuple(bool(item[k]) if k in ('counterfactual', 'retrospective') else item[k] for k in BUCKET)
-            bucket = self.buckets.setdefault(key, {'counts': Counter(), 'complete': [], 'known': [],
+            bucket = self.buckets.setdefault(key, {'counts': Counter(), 'complete': Decimal(0), 'known': None,
                                                    'reasons': Counter(), 'discrepancies': Counter()})
             bucket['counts'][item['valuation_status']] += 1
             if item['valuation_status'] == 'complete':
-                bucket['complete'].append(item['amount'])
-                bucket['known'].append(item['amount'])
+                bucket['complete'] = _add(bucket['complete'], item['amount'])
+                bucket['known'] = _add(bucket['known'], item['amount'])
             elif item['known_subtotal'] is not None:
-                bucket['known'].append(item['known_subtotal'])
+                bucket['known'] = _add(bucket['known'], item['known_subtotal'])
             bucket['reasons'].update(_json(item['valuation_reasons']) or [])
             if item['discrepancy']:
                 bucket['discrepancies'][item['discrepancy']] += 1
@@ -319,8 +365,8 @@ class Totals:
             result.append({**dict(zip(BUCKET, key)), 'invocations': sum(counts.values()),
                            'complete': counts['complete'], 'incomplete': counts['incomplete'],
                            'unsupported': counts['unsupported'], 'denominator': self.expected,
-                           'amount': _sum(bucket['complete']) if complete else None,
-                           'known_subtotal': _sum(bucket['known']) if bucket['known'] else None,
+                           'amount': format(bucket['complete'], 'f') if complete else None,
+                           'known_subtotal': format(bucket['known'], 'f') if bucket['known'] is not None else None,
                            'reasons': dict(sorted(bucket['reasons'].items())),
                            'discrepancies': dict(sorted(bucket['discrepancies'].items()))})
         return result
@@ -420,7 +466,8 @@ class AccountingViews:
         with Session(self.engine) as session:
             selection = Selection(session, cohort)
             policy, groups = selection.view()['policy'], {}
-            for row, valuations in _invocations(session, filters, selection):
+            journal_page = (column, offset, limit, order) if dimension in JOURNAL_DIMENSIONS else None
+            for row, valuations in _invocations(session, filters, selection, journal_page=journal_page):
                 # Phases and tasks are only unique within their project root (and phase).
                 context = ((row['root'],) if dimension == 'phase' else
                            (row['root'], row['phase_code']) if dimension == 'task' else ())
@@ -434,9 +481,10 @@ class AccountingViews:
                                                               item[0][0], *(str(v) for v in item[0][2:])), reverse=True)
             if order == 'invocations':
                 ranked.sort(key=lambda item: item[1].invocations, reverse=True)  # stable: key order within a count
+            start = 0 if journal_page is not None else offset
             items = [{'key': key[1], 'key_kind': key[0],
                       'root': key[2] if len(key) > 2 else None, 'phase_code': key[3] if len(key) > 3 else None,
-                      **totals.view()} for key, totals in ranked[offset:offset + limit + 1]]
+                      **totals.view()} for key, totals in ranked[start:start + limit + 1]]
             return {'format': FORMAT, 'dimension': dimension, 'order': order, 'filters': filters,
                     'selection': selection.view(), **_page(items, offset, limit)}
 
@@ -530,7 +578,8 @@ class AccountingViews:
         context = {**row, **member}
         expected = member['member'] and row['launch'] != 'not_invoked'
         keys = ('id', 'source_kind', 'source_id', 'run_id', 'attempt_id', 'preparation_id', 'preparation_step_id',
-                'operation_id', 'request_id', 'root', 'project_id', 'phase_code', 'task_id', 'purpose', 'work', 'role',
+                'operation_id', 'workflow_id', 'workflow_operation_id', 'autonomous_run_id', 'request_id', 'root', 'project_id',
+                'phase_code', 'task_id', 'purpose', 'work', 'role',
                 'agent', 'provider', 'requested_model', 'requested_effort', 'effective_model', 'effective_model_kind',
                 'launch', 'outcome', 'started_at', 'finished_at', 'wall_ms')
         return {**{key: row[key] for key in keys},

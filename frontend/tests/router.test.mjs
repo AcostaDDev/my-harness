@@ -29,6 +29,7 @@ const valid = [
   ['/preferences', { name: 'preferences' }],
   ['/projects/mi-web/stats', { name: 'project-stats', project: 'mi-web' }],
   ['/accounting', { name: 'accounting' }],
+  ['/accounting/invocations/managed_attempt%3Aa-1', { name: 'accounting-invocation', invocation: 'managed_attempt:a-1' }],
   ['/projects/mi-web/accounting', { name: 'project-accounting', project: 'mi-web' }],
   ['/runs/abc', { name: 'run-short', run: 'abc' }],
   ['/projects/mi-web/docs', { name: 'docs', project: 'mi-web' }],

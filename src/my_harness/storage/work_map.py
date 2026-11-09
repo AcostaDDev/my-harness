@@ -1506,13 +1506,15 @@ class WorkMap:
         """Owning context for navigation from any lane, including those without a `workflow_operation`."""
         if invocation['run_id'] is None:
             return {'lane': invocation['source_kind'], 'phase': None, 'task': None, 'run_id': None,
+                    'workflow_operation': None,
                     'breadcrumb': [{'level': 'project', 'id': identity['key']},
                                    {'level': 'lane', 'id': invocation['source_kind']},
                                    {'level': 'invocation', 'id': invocation['id'], 'role': invocation['role'],
                                     'ordinal': None}]}
         run = self._run(db, identity, invocation['run_id'])
         operation = db.execute(text("""SELECT id, thread_id, status FROM workflow_operations
-            WHERE attempt_id = :a AND root = :root"""), {'a': invocation['attempt_id'], 'root': run['root']}).mappings().first()
+            WHERE attempt_id = :a AND invocation_id = :i AND root = :root AND kind = 'agent_invocation'"""),
+            {'a': invocation['attempt_id'], 'i': invocation['id'], 'root': run['root']}).mappings().one_or_none()
         crumb = [{'level': 'project', 'id': identity['key']}]
         owner = {'lane': run['purpose'], 'run_id': run['id'], 'phase': None, 'task': None,
                  'workflow_operation': {'id': operation['id'], 'thread_id': operation['thread_id'],

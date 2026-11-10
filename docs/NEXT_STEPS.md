@@ -39,7 +39,9 @@ before T028/T029 without renumbering. The [reviewed contract and matrices](phase
 remain the detailed planning basis. T030 must resolve the designs it owns, including D321 feasibility for selected
 originals/copies/history before T031, all I01–I17 inference policies, gate/evidence semantics and human editing /
 execution impact under D293/D298. Planning adoption does not resolve those designs or complete T030.
-D321/D322 remain accepted policy. Native qualification and operational delivery remain pending.
+D321/D322 remain accepted policy. The [revised local design](phase/P002-T030-contracts.md) and its seven synthetic
+review vectors are ready for technical re-review. The real guest and native transport feasibility tests need
+separate authorization. Profile qualification and operational delivery remain pending.
 Reviewed documentation source `d842fae` on `docs/p002-knowledge-context-proposal` is integrated by the accompanying
 merge into develop; push of develop is owner-authorized. Implementation and operational delivery remain separate.
 Release 0.2.0,
@@ -986,7 +988,12 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Gates:** G15; audits TM01–TM20 against the threat model. **Threats:** TM03, TM06, TM08, TM11, TM16.
 ## P002-T030 — Semantic, context and human-editing contracts and D321 feasibility
 
-**Status:** planned; next task under adopted plan v0.5 (D323). Design only; this planning adoption does not complete it.
+**Status:** [local design revised after technical review](phase/P002-T030-contracts.md), with seven
+[synthetic review vectors](phase/P002-T030-fixtures.md#technical-review-vectors) verified offline.
+Technical re-review and explicit owner acceptance are pending. The component probe is partial evidence.
+D321 real-guest and native transport feasibility tests need separate authorization. T031 remains blocked.
+Local branch `docs/p002-t030-contracts` from `5cc7fe5`; integration into `develop`, 0.2.0 release through protected
+`main`, distribution/publication and installation are pending separately. Recorded installation: 0.1.9.
 **Problem:** the foundations do not yet define all semantic/document, source-access, gate/evidence or human-editing
 boundaries needed by the requested runtime. **Expected result:** an explicitly accepted, implementable contract
 resolves the open choices without assuming a technically enforced read boundary.
@@ -1014,15 +1021,18 @@ identify every implementing owner and required evidence. **T031 is blocked until
 T030 design acceptance are satisfied.** A failed feasibility result returns the concrete incompatibility to the
 owner; it cannot silently relax D321. No new dependency, isolation mechanism or product behavior is adopted by
 this task's planning entry. Native probes/providers still need explicit authorization.
-**Evidence:** design record, feasible boundary/qualification contract, decision resolutions and documentation checks.
+**Evidence:** revised design record, synthetic vectors including two delivered tasks with renewed coverage and
+both recovery fence race orderings, proposed feasibility and qualification protocol, and documentation checks.
+D321 feasibility and design acceptance are open.
 **Basis:** [planning contract](phase/P002-knowledge-context-proposal.md), especially §§4.1, 7.1, 9, 10 and 14; D321–D323.
 **Gates:** D321 feasibility and explicit T030 design acceptance before T031. **Threats:** TM01, TM05, TM09, TM11,
 TM12, TM15, TM16, TM20.
 
 ## P002-T031 — Knowledge, authoring work, gate/evidence and impact persistence
 
-**Status:** planned. **Problem:** the existing model lacks identified decomposition and the durable authoring,
-evaluation and impact associations required by the accepted planning scope.
+**Status:** blocked on explicit T030 design acceptance and verified D321 feasibility. **Problem:** the existing
+model lacks identified decomposition and the durable authoring, evaluation and impact associations required
+by the accepted planning scope.
 **Expected result:** versioned entities/relations and separate recoverable working/evaluation records implement
 the accepted T030 contracts without rewriting history. **Dependencies:** T030, including accepted D321 feasibility.
 

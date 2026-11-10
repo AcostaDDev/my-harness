@@ -6,9 +6,21 @@ Detailed history up to the P001 closure is kept in the [P001 archive](archive/ph
 
 ## Work routing
 
+**P002-T030 delivery (2026-11-10):** design owner P002-T030, on `docs/p002-t030-contracts` from
+clean `develop` / `origin/develop` at `5cc7fe5`. Route: reviewed artifacts → `develop` integration →
+0.2.0 release through protected `main` → distribution/publication → installation. The recorded installation is 0.1.9.
+[Local design artifacts](phase/P002-T030-contracts.md) are revised and uncommitted after eight technical
+review corrections, including separate proofs for task results and shared generations during coverage
+renewal, with seven passing
+[synthetic vectors](phase/P002-T030-fixtures.md#technical-review-vectors).
+Technical re-review and explicit owner acceptance are pending. The offline component probe is partial D321
+evidence. The real guest and native transport tests need separate authorization and verification. D321
+feasibility and design acceptance both block T031. Integration, release, publication and installation
+remain pending separately.
+
 **P002 plan v0.5 adopted (2026-11-09, [D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)):**
 [the reviewed planning contract](phase/P002-knowledge-context-proposal.md) adds T030–T038 before T028/T029,
-without renumbering existing tasks. **Next: P002-T030**, design only. It owns the unresolved schemas, gate/evidence
+without renumbering existing tasks. **Current: P002-T030**, design only. It owns the unresolved schemas, gate/evidence
 semantics, I01–I17 context policies, human-editing/recovery and execution-impact contracts, and D321 enforcement
 feasibility. T031 cannot start until that feasibility gate and the required T030 design acceptance are satisfied.
 D321/D322 remain accepted policy; no mechanism, profile, new format or implementation is declared delivered.

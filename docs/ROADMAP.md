@@ -46,10 +46,12 @@ engine. The accepted T001 contract guides implementation; unsupported evidence c
 **Plan v0.5 adopted as planning on 2026-11-09**
 ([D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)):
 [the reviewed planning contract](phase/P002-knowledge-context-proposal.md) adds T030–T038 before T028/T029 without
-renumbering. **Next: T030**, design only; D321 feasibility for selected originals/copies/history and the required
-T030 design acceptance block T031. Scope covers all T025 inference entries, gate/evidence evaluation and human
-block/entity editing under D293/D298, with explicit domain/export/execution and T037 UI/visual review owners.
-The model/schema/mechanism/impact choices assigned to T030 remain open; no implementation is asserted.
+renumbering. **Current: T030**, [reviewed design proposal integrated into `develop`](phase/P002-T030-contracts.md)
+as source `9894bae`, pending explicit owner acceptance. It covers all T025 inference entries, gate/evidence
+evaluation and human block/entity editing under D293/D298. The synthetic D321 component probe is partial
+evidence. Real guest and native transport feasibility tests still require separate authorization.
+T031 requires demonstrated D321 feasibility and explicit design acceptance.
+The protected-main 0.2.0 release, publication and installation remain separate pending stages.
 T028 depends on T011–T027 and T030–T038. T029 retains package/release qualification and authorized delivery tracking.
 
 **Target release:** `0.2.0`, published at P002 closure (D253). The heading keeps the reserved name; the adopted scope

@@ -17,6 +17,15 @@ The offline component probe is partial D321 evidence. The real guest and native 
 authorization and verification. D321 feasibility and design acceptance both block T031. Release, publication
 and installation remain pending separately.
 
+**P002-T030 D321 preflight (2026-11-10):** local review diff on `docs/p002-t030-d321-preflight` from
+`develop` at `26fc87b`. The [inventory and bounded test preparation](phase/P002-T030-d321.md#local-preflight--2026-11-10)
+identify local Apple virtualization support, Docker Desktop components and macOS Codex artifacts. The
+offline test awaits an approved disposable Linux ARM64 boot bundle and matching launcher/controller and
+guest endpoint, plus authorization to run them. The native test additionally awaits an approved guest
+client and its separately authorized transport. T030 remains open and T031 remains blocked on demonstrated
+D321 feasibility, including owner acceptance of the evidenced scope, and explicit acceptance of the T030 design.
+The preflight diff awaits source review and separate integration. It follows the existing 0.2.0 route above.
+
 **P002 plan v0.5 adopted (2026-11-09, [D323](DECISIONS.md#d323--p002-v05-planning-adoption-and-prerequisites-before-journey-qualification)):**
 [the reviewed planning contract](phase/P002-knowledge-context-proposal.md) adds T030–T038 before T028/T029,
 without renumbering existing tasks. **Current: P002-T030**, design only. It owns the unresolved schemas, gate/evidence

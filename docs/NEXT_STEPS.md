@@ -41,8 +41,9 @@ originals/copies/history before T031, all I01–I17 inference policies, gate/evi
 execution impact under D293/D298. Planning adoption does not resolve those designs or complete T030.
 D321/D322 remain accepted policy. The [reviewed design proposal](phase/P002-T030-contracts.md), source
 `9894bae`, is integrated into `develop`. Explicit owner design acceptance is pending. The real guest and
-native transport feasibility tests need separate authorization. Profile qualification and operational delivery
-remain pending.
+native transport feasibility tests need separate authorization. The [local D321 preflight](phase/P002-T030-d321.md#local-preflight--2026-11-10)
+identifies the missing offline boot/channel bundle and separates it from the later native client and
+transport. Profile qualification and operational delivery remain pending.
 Reviewed documentation source `d842fae` on `docs/p002-knowledge-context-proposal` is integrated by the accompanying
 merge into develop; push of develop is owner-authorized. Implementation and operational delivery remain separate.
 Release 0.2.0,
@@ -992,9 +993,14 @@ findings resolved or recorded as owner-visible release blockers. **Dependencies:
 **Status:** [reviewed design proposal integrated into `develop`](phase/P002-T030-contracts.md), source
 `9894bae` on `docs/p002-t030-contracts` from `5cc7fe5`. Independent technical re-review and all seven
 [synthetic review groups](phase/P002-T030-fixtures.md#technical-review-vectors) passed.
-Explicit owner acceptance is pending. The component probe is partial evidence. D321 real-guest and native
-transport feasibility tests need separate authorization. T031 remains blocked. Release 0.2.0 through protected
-`main`, distribution/publication and installation are pending separately. Recorded installation: 0.1.9.
+T030 remains open. The component probe is partial evidence. The
+[local preflight](phase/P002-T030-d321.md#local-preflight--2026-11-10), reviewed source `e6b60a9` on
+`docs/p002-t030-d321-preflight` from `26fc87b`, is integrated into `develop`. The offline run awaits an approved
+Linux ARM64 boot bundle and matching launcher/controller and guest endpoint, plus authorization to execute. The later native
+test needs an approved guest client and separate authorization for its exact transport and scope. T031 remains
+blocked on both demonstrated D321 feasibility with accepted scope and explicit T030 design acceptance.
+Release 0.2.0 through protected `main`, distribution/publication and installation are pending separately.
+Recorded installation: 0.1.9.
 **Problem:** the foundations do not yet define all semantic/document, source-access, gate/evidence or human-editing
 boundaries needed by the requested runtime. **Expected result:** an explicitly accepted, implementable contract
 resolves the open choices without assuming a technically enforced read boundary.
